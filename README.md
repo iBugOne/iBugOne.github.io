@@ -1,4 +1,4 @@
-# iBug.github.io
+# iBug @ GitHub
 
 Here are my profiles on other websites:
 
