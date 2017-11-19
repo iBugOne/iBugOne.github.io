@@ -14,7 +14,7 @@ callback(
 
 { "name": "[A] NAA > Question as an answer", "description": "If you have a new question, please ask it by clicking the <a href=\"/questions/ask\">Ask Question</a> button. Include a link to this question if it helps provide context."},
 
-{ "name": "[A] NAA > \\\"I'm having this problem, too\\\" comment.", "description": "This does not really answer the question. If you have a different question, you can ask it by clicking <a href=\"/questions/ask\">Ask Question</a>. You can also <a href=\"/help/privileges/set-bounties\">add a bounty</a> to draw more attention to this question once you have enough <a href=\"/help/whats-reputation\">reputation</a>."},
+{ "name": "[A] NAA > *I'm having this problem, too* comment.", "description": "This does not really answer the question. If you have a different question, you can ask it by clicking <a href=\"/questions/ask\">Ask Question</a>. You can also <a href=\"/help/privileges/set-bounties\">add a bounty</a> to draw more attention to this question once you have enough <a href=\"/help/whats-reputation\">reputation</a>."},
 
 { "name": "Expired Link", "description": "<strong>Attention</strong>: This post contains links that are <strong>no longer available</strong>. Please help improve it by replacing with existing, valid links, or text from other sources."},
 
