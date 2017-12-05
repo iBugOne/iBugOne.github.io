@@ -6,7 +6,7 @@ callback(
 
 { "name": "[A] General", "description": "Welcome to $SITENAME$! This is a Q&A site, <a href=\"https://meta.stackexchange.com/q/92107/350567\">not a forum</a>. Please use the `Post Answer` button only if you have a solution to the problem. If you have a <strong>new</strong> question, please ask it by clicking <a href=\"/questions/ask\">Ask Question</a>. Once you have sufficient <a href=\"/help/whats-reputation\">reputation</a>, <a href=\"/help/privileges/vote-up\">you can vote up</a> the question. Alternatively, \"star\" it as a favorite and you will be notified of any new answers."},
 
-{ "name": "[A] NAA > "Thank you" comment", "description": "Please don't add \"thank you\" as an answer. Once you have sufficient <a href=\"/help/whats-reputation\">reputation</a>, you will be able to <a href=\"/help/privileges/vote-up\">vote up questions and answers</a> that you found helpful."},
+{ "name": "[A] NAA > 'Thank you' comment", "description": "Please don't add \"thank you\" as an answer. Once you have sufficient <a href=\"/help/whats-reputation\">reputation</a>, you will be able to <a href=\"/help/privileges/vote-up\">vote up questions and answers</a> that you found helpful."},
 
 { "name": "[A] NAA > Link-only answer (and not spam)", "description": "While this link may answer the question, <a href=\"//meta.stackexchange.com/q/8231\">it is better</a> to include the essential parts of the answer here and provide the link for reference. Link-only answers can become invalid if the linked page changes"},
 
