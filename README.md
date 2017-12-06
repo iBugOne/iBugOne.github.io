@@ -5,10 +5,10 @@
 The correct way to handle exceptions in your development:
 
 ```
-try{
+try {
     something
 }
-catch(e){
+catch(e) {
     window.location.href =
     "stackoverflow.com/search?q=" + e.message;
 }
