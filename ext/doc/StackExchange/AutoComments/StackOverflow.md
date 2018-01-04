@@ -14,7 +14,7 @@ It seems you have a problem with your code. However, we can't help unless we hav
 Questions asking for homework help must include a summary of the work you've done so far to solve the problem, and a description of the difficulty you are having solving it. Please read [How to ask homework questions](//meta.stackoverflow.com/q/334822/5958455) and [edit] your post.
 
 ###[Q] Close > unclear what you're asking
-Please clarify your specific problem or add additional details to highlight exactly what you need. As it's currently written, it¡¯s hard to tell exactly what you're asking. See the [ask] page for help clarifying this question.
+Please clarify your specific problem or add additional details to highlight exactly what you need. As it's currently written, itâ€™s hard to tell exactly what you're asking. See the [ask] page for help clarifying this question.
 
 ### Spam!!
 This answer is spam. [Flag it as spam](//meta.stackexchange.com/a/58035/206345) by **clicking the `flag` link**!
