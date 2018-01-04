@@ -12,7 +12,7 @@ callback(
 
 { "name": "[Q] Close > unclear what you're asking", "description": "Please clarify your specific problem or add additional details to highlight exactly what you need. As it's currently written, it’s hard to tell exactly what you're asking. See the [ask] page for help clarifying this question."},
 
-{ "name": " Spam!!", "description": "This answer is spam. <a href=\"//meta.stackexchange.com/a/58035/206345\">Flag it as spam</a> by <strong>clicking the `flag` link</strong>!"},
+{ "name": "Spam!!", "description": "This answer is spam. <a href=\"//meta.stackexchange.com/a/58035/206345\">Flag it as spam</a> by <strong>clicking the `flag` link</strong>!"},
 
 { "name": "[A] Code only answer", "description": "Thank you for this code snippet, which might provide some limited, immediate help. A <a href=\"//meta.stackexchange.com/q/114762/350567\">proper explanation would greatly improve its long-term value</a> by showing <em>why</em> this is a good solution to the problem, and would make it more useful to future readers with other, similar questions. Please [edit] your answer to add some explanation, including the assumptions you've made."},
 
