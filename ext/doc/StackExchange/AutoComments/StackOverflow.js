@@ -20,11 +20,11 @@ callback(
 
 { "name": "[A] How not to be a spammer", "description": "Please read <a href=\"https://$SITEURL$/help/promotion\">How to not be a spammer</a>."},
 
-{ "name": "[A] NAA > 'Thank you' comment", "description": "Please don't add \"thank you\" as an answer. Once you have sufficient <a href=\"/help/whats-reputation\">reputation</a>, you will be able to <a href=\"/help/privileges/vote-up\">vote up questions and answers</a> that you found helpful."},
-
 { "name": "[A] NAA > Link-only answer (and not spam)", "description": "While this link may answer the question, <a href=\"//meta.stackexchange.com/q/8231\">it is better</a> to include the essential parts of the answer here and provide the link for reference. Link-only answers can become invalid if the linked page changes"},
 
 { "name": "[A] NAA > Commentary on another post, not an answer", "description": "This does not provide an answer to the question. Once you have sufficient <a href=\"/help/whats-reputation\">reputation</a> you will be able to <a href=\"/help/privileges/comment\">comment on any post</a>; instead, <a href=\"//meta.stackexchange.com/q/214173/\">provide answers that don't require clarification from the asker</a>."},
+
+{ "name": "[A] NAA > 'Thank you' comment", "description": "Please don't add \"thank you\" as an answer. Once you have sufficient <a href=\"/help/whats-reputation\">reputation</a>, you will be able to <a href=\"/help/privileges/vote-up\">vote up questions and answers</a> that you found helpful."},
 
 { "name": "[A] NAA > Question as an answer", "description": "If you have a new question, please ask it by clicking the <a href=\"/questions/ask\">Ask Question</a> button. Include a link to this question if it helps provide context."},
 
