@@ -22,7 +22,9 @@ callback(
 
 { "name": "[A] NAA > Link-only answer (and not spam)", "description": "While this link may answer the question, <a href=\"//meta.stackexchange.com/q/8231\">it is better</a> to include the essential parts of the answer here and provide the link for reference. Link-only answers can become invalid if the linked page changes"},
 
-{ "name": "[A] NAA > Commentary on another post, not an answer", "description": "This does not provide an answer to the question. Once you have sufficient <a href=\"/help/whats-reputation\">reputation</a> you will be able to <a href=\"/help/privileges/comment\">comment on any post</a>; instead, <a href=\"//meta.stackexchange.com/q/214173/\">provide answers that don't require clarification from the asker</a>."},
+{ "name": "[A] NAA > Commentary on another post", "description": "This does not provide an answer to the question. Once you have sufficient <a href=\"/help/whats-reputation\">reputation</a> you will be able to <a href=\"/help/privileges/comment\">comment on any post</a>; instead, <a href=\"//meta.stackexchange.com/q/214173/\">provide answers that don't require clarification from the asker</a>."},
+
+{ "name": "[A] NAA > Commentary on another post (enough rep)", "description": "This does not provide an answer to the question. To critique or request clarification from an author, leave a comment below their post."},
 
 { "name": "[A] NAA > 'Thank you' comment", "description": "Please don't add \"thank you\" as an answer. Once you have sufficient <a href=\"/help/whats-reputation\">reputation</a>, you will be able to <a href=\"/help/privileges/vote-up\">vote up questions and answers</a> that you found helpful."},
 
