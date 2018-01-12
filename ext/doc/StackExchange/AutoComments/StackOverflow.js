@@ -18,7 +18,7 @@ callback(
 
 { "name": "[A] General", "description": "This is a Q&A site, <a href=\"https://meta.stackexchange.com/q/92107/350567\">not a forum</a>. Please use the `Post Answer` button only if you have a solution to the problem. If you have a <strong>new</strong> question, please ask it by clicking <a href=\"/questions/ask\">Ask Question</a>. Once you have sufficient <a href=\"/help/whats-reputation\">reputation</a>, <a href=\"/help/privileges/vote-up\">you can vote up</a> the question. Alternatively, \"star\" it as a favorite and you will be notified of any new answers."},
 
-{ "name": "[A] How not to be a spammer", "description": "Please read <a href=\"https://$SITEURL$/help/promotion\">How to not be a spammer</a>."},
+{ "name": "[A] How not to be a spammer", "description": "Please note if you want to promote your own product, website or blog, <strong>you must disclose your affiliation in the answer</strong>. Otherwise, your answer may be flagged as spam. If you are not affiliated with the site, I recommend saying so to prevent this. Please read <a href=\"https://$SITEURL$/help/promotion\">How to not be a spammer</a>."},
 
 { "name": "[A] NAA > Link-only answer (and not spam)", "description": "While this link may answer the question, <a href=\"//meta.stackexchange.com/q/8231\">it is better</a> to include the essential parts of the answer here and provide the link for reference. Link-only answers can become invalid if the linked page changes"},
 
