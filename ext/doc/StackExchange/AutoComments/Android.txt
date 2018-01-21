@@ -8,9 +8,9 @@ Questions about **writing and publishing Android apps, writing custom ROMs, and 
 Questions asking us to **find or recommend an app, device, ROM, accessory or off-site resource** are off-topic for Android Enthusiasts as they tend to attract opinionated answers and spam and become obsolete quickly. [Instead, describe your situation and the specific problem you're trying to solve.](https://stackoverflow.blog/2010/11/23/qa-is-hard-lets-go-shopping/)
 
 ###[A] General
-Welcome to $SITENAME$! This is a Q&A site, [not a forum](https://meta.stackexchange.com/q/92107/350567). Please use the `Post Answer` button only if you have a solution to the problem. If you have a **new** question, please ask it by clicking [Ask Question](/questions/ask). Once you have sufficient [reputation](/help/whats-reputation), [you can vote up](/help/privileges/vote-up) the question. Alternatively, "star" it as a favorite and you will be notified of any new answers.
+This is a Q&A site, [not a forum](https://meta.stackexchange.com/q/92107/350567). Please use the `Post Answer` button only if you have a solution to the problem. If you have a **new** question, please ask it by clicking [Ask Question](/questions/ask). Once you have sufficient [reputation](/help/whats-reputation), [you can vote up](/help/privileges/vote-up) the question. Alternatively, "star" it as a favorite and you will be notified of any new answers.
 
-###[A] NAA > "Thank you" comment
+###[A] NAA > 'Thank you' comment
 Please don't add "thank you" as an answer. Once you have sufficient [reputation](/help/whats-reputation), you will be able to [vote up questions and answers](/help/privileges/vote-up) that you found helpful.
 
 ###[A] NAA > Link-only answer (and not spam)
@@ -30,3 +30,9 @@ This does not really answer the question. If you have a different question, you 
 
 ###[EQ] Improper tagging
 The tags you were using are not appropriate for this question. Please review [What are tags, and how should I use them?](/help/tagging)
+
+###[EQ] Formatting
+[See how you can format and indent your code correctly](//$SITEURL$/help/formatting)
+
+###[EQ] Hi, and thanks!
+[Hi, thanks, ... are considered noise](//meta.stackexchange.com/q/2950/350567)
