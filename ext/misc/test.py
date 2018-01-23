@@ -63,13 +63,18 @@ def malicious_link(s, site, *args):
         else:
             raise tld.exceptions.TldBadUrl('Link text is not a URL')
     except tld.exceptions.TldDomainNotFound:
+        print('TldDomainNotFound')
         return False, ''
     except tld.exceptions.TldBadUrl:
+        print('TldBadUrl')
         return False, ''
     except ValueError as err:
+        print('ValueError')
         return False, ''
 
+    print(parsed_text.domain, parsed_text.tld)
     if parsed_text.tld.split('.')[-1] in SAFE_EXTENSIONS:
+        print('Safe extension')
         return False, ''
     elif levenshtein(parsed_href.domain.lower(), parsed_text.domain.lower()) > LEVEN_DOMAIN_DISTANCE:
         return True, 'Domain {} indicated by possible misleading text {}.'.format(
