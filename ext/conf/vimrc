@@ -33,7 +33,7 @@ if @% =~ ".vimrc"
 	set number
 endif
 autocmd FileType md set expandtab
-autocmd FileType c,h,cpp,hpp,sh,py set number
+autocmd FileType c,h,cpp,hpp,sh,python set number
 autocmd FileType c,cpp map <F9> <Esc>:w<CR>:call GccCompile()<CR>
 autocmd FileType c,cpp map <F10> <Esc>:w<CR>:call RunProgram()<CR>
 autocmd FileType c,cpp map <F11> <Esc>:w<CR>:call GccCompile()<CR>:call RunProgram()<CR>
