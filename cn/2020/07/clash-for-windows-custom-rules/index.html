@@ -1,0 +1,400 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>Clash for Windows 自定义规则整合 - iBug</title>
+		<meta name="description" content="自从今年年初换了机场之后，我从 Shadowsocks-Windows 换到了 Clash for Windows。Clash 确实比纯 SS 好用多了，尤其是订阅功能，特别是订阅里还可以自带一系列分流规则。不过我用的那个订阅规则不够完善，想要自己添加一些。以前用 SS 的时候，我自己写了 PAC 脚本用于实现分流，当然可控性也更好，这次不方便用 PAC 了，就得研究研究 CFW 的功能了，好在有个 Mixin 可以用。">
+		<meta name="author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="Clash for Windows 自定义规则整合">
+		<meta property="og:url" content="https://ibug.io/cn/2020/07/clash-for-windows-custom-rules/">
+		<meta property="og:description" content="自从今年年初换了机场之后，我从 Shadowsocks-Windows 换到了 Clash for Windows。Clash 确实比纯 SS 好用多了，尤其是订阅功能，特别是订阅里还可以自带一系列分流规则。不过我用的那个订阅规则不够完善，想要自己添加一些。以前用 SS 的时候，我自己写了 PAC 脚本用于实现分流，当然可控性也更好，这次不方便用 PAC 了，就得研究研究 CFW 的功能了，好在有个 Mixin 可以用。">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2020-07-18T00:00:00+00:00">
+		<meta property="article:modified_time" content="2020-07-19T01:51:52+00:00">
+		<link rel="canonical" href="https://ibug.io/cn/2020/07/clash-for-windows-custom-rules/">
+		<script type="application/ld+json">
+			{
+			  "@context": "https://schema.org",
+			
+			    "@type": "Person",
+			    "name": "iBug",
+			    "url": "https://ibug.io/"
+			
+			}
+		</script>
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<!-- https://t.co/dKP3o1e -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script>
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=b98b49e">
+		<link rel="stylesheet" href="https://fa.ibugone.com/releases/latest/css/pro.min.css">
+		<!--[if IE]>
+			<style>
+				/* old IE unsupported flexbox fixes */
+				.greedy-nav .site-title {
+				  padding-right: 3em;
+				}
+				.greedy-nav button {
+				  position: absolute;
+				  top: 0;
+				  right: 0;
+				  height: 100%;
+				}
+			</style>
+		<![endif]-->
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+		<meta name="theme-color" content="#EDEDED">
+		<script type="text/javascript">
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+		<!--
+ Minimal Mistakes layout: single
+ Page Path: _cn/2020-07-18-clash-for-windows-custom-rules.md
+ Page Type: 
+-->
+	</head>
+	<body class="layout--single">
+		<nav class="skip-links">
+			<h2 class="screen-reader-text">Skip links</h2>
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<!--[if lt IE 9]>
+			<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+		<![endif]-->
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt=""></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a href="/about/">About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/blog/">Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/projects/">Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="https://github.com/iBug">GitHub <i class="far fa-xs fa-external-link"></i></a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/cn/">中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<svg class="icon" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15.99 16">
+								<path d="M15.5,13.12L13.19,10.8a1.69,1.69,0,0,0-1.28-.55l-0.06-.06A6.5,6.5,0,0,0,5.77,0,6.5,6.5,0,0,0,2.46,11.59a6.47,6.47,0,0,0,7.74.26l0.05,0.05a1.65,1.65,0,0,0,.5,1.24l2.38,2.38A1.68,1.68,0,0,0,15.5,13.12ZM6.4,2A4.41,4.41,0,1,1,2,6.4,4.43,4.43,0,0,1,6.4,2Z" transform="translate(-.01)"></path>
+							</svg>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay"
+  style=" background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('/image/header/cloud-1.jpg');"
+>
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						Clash for Windows 自定义规则整合
+					</h1>
+					<p class="page__meta">
+						<span class="post__meta-date">
+							<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2020-07-18T00:00:00+00:00">July 18, 2020</time>
+						</span>
+						<span class="post__meta-sep"></span>
+						<span class="post__meta-read-time">
+							<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+							1 minute read
+						</span>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person">
+						<div class="author__avatar">
+							<img src="/image/avatar.png" alt="iBug" itemprop="image">
+						</div>
+						<div class="author__content">
+							<h3 class="author__name" itemprop="name">iBug</h3>
+							<div class="author__bio" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer"><i class="far fa-fw fa-envelope" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/ibugthought" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-telegram-plane" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox" />
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="Clash for Windows 自定义规则整合">
+					<meta itemprop="description" content="自从今年年初换了机场之后，我从 Shadowsocks-Windows 换到了 Clash for Windows。Clash 确实比纯 SS 好用多了，尤其是订阅功能，特别是订阅里还可以自带一系列分流规则。不过我用的那个订阅规则不够完善，想要自己添加一些。以前用 SS 的时候，我自己写了 PAC 脚本用于实现分流，当然可控性也更好，这次不方便用 PAC 了，就得研究研究 CFW 的功能了，好在有个 Mixin 可以用。">
+					<meta itemprop="datePublished" content="2020-07-18T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2020-07-19T01:51:52+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-th-list"></i> 目录</h4>
+									</header>
+								</nav>
+							</aside>
+							<p>自从今年年初换了机场之后，我从 <a href="https://github.com/shadowsocks/shadowsocks-windows">Shadowsocks-Windows</a> 换到了 Clash for Windows。Clash 确实比纯 SS 好用多了，尤其是订阅功能，特别是订阅里还可以自带一系列分流规则。不过我用的那个订阅规则不够完善，想要自己添加一些。以前用 SS 的时候，我<a href="https://github.com/iBug/pac">自己写了 PAC 脚本</a>用于实现分流，当然可控性也更好，这次不方便用 PAC 了，就得研究研究 CFW 的功能了，好在有个 Mixin 可以用。</p>
+							<p>首先给出 <a href="https://docs.cfw.lbyczf.com/contents/mixin.html">CFW 关于 Mixin 的说明文档</a>。</p>
+							<p>这里传入的 <code class="language-plaintext highlighter-rouge">content</code> 就是你的 YAML 配置文件（也可能是来自订阅的）。要访问该 YAML 中的内容，可以使用 <code class="language-plaintext highlighter-rouge">content.key</code> 或者 <code class="language-plaintext highlighter-rouge">content["key"]</code> 的方式。</p>
+							<p>例如我使用 OneDrive Business，上传下载的网址以 <code class="language-plaintext highlighter-rouge">sharepoint.com</code> 结尾，为了让 Clash 直连 ODB，使用 <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/unshift">JavaScript 的 <code class="language-plaintext highlighter-rouge">unshift()</code></a> 在订阅的规则前面插入一条新规则。</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="na">cfw-profile-mixin</span><span class="pi">:</span> <span class="pi">|</span>
+  <span class="s">module.exports.parse = async function({ content, name, url }, { axios, yaml, notify }) {</span>
+    <span class="s">content.rules.unshift("DOMAIN-SUFFIX,sharepoint.com,DIRECT");</span>
+    <span class="s">return content;</span>
+  <span class="s">}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>当然有了 JS 之后还可以进行更高级的操作，比如我把订阅里的香港线路都提取出来整合成了一个 Load Balance 选项。</p>
+							<div class="language-javascript highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span><span class="p">.</span><span class="nx">parse</span> <span class="o">=</span> <span class="k">async</span> <span class="kd">function</span><span class="p">({</span><span class="nx">content</span><span class="p">,</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">url</span><span class="p">},</span> <span class="p">{</span><span class="nx">axios</span><span class="p">,</span> <span class="nx">yaml</span><span class="p">,</span> <span class="nx">notify</span><span class="p">})</span> <span class="p">{</span>
+  <span class="nx">content</span><span class="p">.</span><span class="nx">rules</span><span class="p">.</span><span class="nx">unshift</span><span class="p">(</span><span class="dl">"</span><span class="s2">DOMAIN-SUFFIX,sharepoint.com,DIRECT</span><span class="dl">"</span><span class="p">);</span>
+  <span class="nx">proxies</span> <span class="o">=</span> <span class="p">[];</span>
+  <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">proxy</span> <span class="k">of</span> <span class="nx">content</span><span class="p">.</span><span class="nx">proxies</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">proxy</span><span class="p">.</span><span class="nx">server</span> <span class="o">===</span> <span class="kc">undefined</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">proxy</span><span class="p">.</span><span class="nx">name</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="dl">'</span><span class="s1">Hong Kong</span><span class="dl">'</span><span class="p">)</span> <span class="o">!==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">proxies</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">proxy</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">proxies</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">content</span><span class="p">[</span><span class="dl">'</span><span class="s1">proxy-groups</span><span class="dl">'</span><span class="p">].</span><span class="nx">push</span><span class="p">({</span>
+      <span class="dl">'</span><span class="s1">name</span><span class="dl">'</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Load Balance</span><span class="dl">'</span><span class="p">,</span>
+      <span class="dl">'</span><span class="s1">type</span><span class="dl">'</span><span class="p">:</span> <span class="dl">'</span><span class="s1">load-balance</span><span class="dl">'</span><span class="p">,</span>
+      <span class="dl">'</span><span class="s1">proxies</span><span class="dl">'</span><span class="p">:</span> <span class="nx">proxies</span><span class="p">,</span>
+      <span class="dl">'</span><span class="s1">url</span><span class="dl">'</span><span class="p">:</span> <span class="dl">'</span><span class="s1">http://cp.cloudflare.com/generate_204</span><span class="dl">'</span><span class="p">,</span>
+      <span class="dl">'</span><span class="s1">interval</span><span class="dl">'</span><span class="p">:</span> <span class="mi">3</span>
+    <span class="p">});</span>
+    <span class="nx">content</span><span class="p">[</span><span class="dl">'</span><span class="s1">proxy-groups</span><span class="dl">'</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="nx">proxies</span><span class="p">.</span><span class="nx">unshift</span><span class="p">(</span><span class="dl">"</span><span class="s2">Load Balance</span><span class="dl">"</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="nx">content</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Clash for Windows 0.11.0 之后不再使用 <code class="language-plaintext highlighter-rouge">config.yaml</code> 里的配置，而是提供了一个 Settings 界面，可以手动输入 YAML 或者 JavaScript 作为 mixin。首先在 Mixin 那里选择模式为 JavaScript，然后在对应的 Edit 框里输入代码，保存后刷新订阅即可。</p>
+							<p><img src="/image/cfw/settings.png" alt="image" class="block" /></p>
+							<p><img src="/image/cfw/js-mixin.png" alt="image" class="block" /></p>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/clash" class="page__taxonomy-item" rel="tag">clash</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-07-19">July 19, 2020</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=Clash+for+Windows+%E8%87%AA%E5%AE%9A%E4%B9%89%E8%A7%84%E5%88%99%E6%95%B4%E5%90%88%20https%3A%2F%2Fibug.io%2Fcn%2F2020%2F07%2Fclash-for-windows-custom-rules%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fcn%2F2020%2F07%2Fclash-for-windows-custom-rules%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fcn%2F2020%2F07%2Fclash-for-windows-custom-rules%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/cn/2019/11/backTCP-report/" class="pagination--pager" title="backTCP 实验报告
+">Previous</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					&copy; 2020 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.
+					<br>
+					Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.
+					<br>
+					<a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a>
+					<br>
+					Site version <a href="/status">G-301</a>
+				</div>
+				<script src="/assets/js/love.js" type="text/javascript" async="async"></script>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<!-- Including InstantSearch.js library and styling -->
+		<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js"></script>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css">
+		<script>
+			// Instanciating InstantSearch.js with Algolia credentials
+			const search = instantsearch({
+			  appId: '14DZKASAEJ',
+			  apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			  indexName: 'iBug_website',
+			  searchParameters: {
+			    restrictSearchableAttributes: [
+			      'title',
+			      'content'
+			    ]
+			  }
+			});
+			
+			const hitTemplate = function(hit) {
+			  const url = hit.url;
+			  const title = hit._highlightResult.title.value;
+			  const content = hit._highlightResult.html.value;
+			
+			  return `
+			    <div class="list__item">
+			      <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			        <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			        <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			      </article>
+			    </div>
+			  `;
+			}
+			
+			// Adding searchbar and results widgets
+			search.addWidget(
+			  instantsearch.widgets.searchBox({
+			    container: '.search-searchbar',
+			    poweredBy: true,
+			    placeholder: 'Enter your search term...'
+			  })
+			);
+			search.addWidget(
+			  instantsearch.widgets.hits({
+			    container: '.search-hits',
+			    templates: {
+			      item: hitTemplate,
+			      empty: 'No results',
+			    }
+			  })
+			);
+			
+			// Starting the search only when toggle is clicked
+			$(document).ready(function () {
+			  $(".search__toggle").on("click", function() {
+			    if(!search.started) {
+			      search.start();
+			    }
+			  });
+			});
+		</script>
+		<script>
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-115907213-1']);
+			
+			_gaq.push(['_trackPageview']);
+			
+			(function() {
+			  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/cn/2020/07/clash-for-windows-custom-rules/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/cn/2020/07/clash-for-windows-custom-rules"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	</body>
+</html>

@@ -1,0 +1,579 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>数理方程思考题 - iBug</title>
+		<meta name="description" content="2019 年春季中科大《数理方程》课程的一道思考题，最高可给总评加 5 分">
+		<meta name="author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="数理方程思考题">
+		<meta property="og:url" content="https://ibug.io/cn/2019/05/pde-thinking-question/">
+		<meta property="og:description" content="2019 年春季中科大《数理方程》课程的一道思考题，最高可给总评加 5 分">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2019-05-20T00:00:00+00:00">
+		<meta property="article:modified_time" content="2020-05-29T15:27:31+00:00">
+		<link rel="canonical" href="https://ibug.io/cn/2019/05/pde-thinking-question/">
+		<script type="application/ld+json">
+			{
+			  "@context": "https://schema.org",
+			
+			    "@type": "Person",
+			    "name": "iBug",
+			    "url": "https://ibug.io/"
+			
+			}
+		</script>
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<!-- https://t.co/dKP3o1e -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script>
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=b98b49e">
+		<link rel="stylesheet" href="https://fa.ibugone.com/releases/latest/css/pro.min.css">
+		<!--[if IE]>
+			<style>
+				/* old IE unsupported flexbox fixes */
+				.greedy-nav .site-title {
+				  padding-right: 3em;
+				}
+				.greedy-nav button {
+				  position: absolute;
+				  top: 0;
+				  right: 0;
+				  height: 100%;
+				}
+			</style>
+		<![endif]-->
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+		<meta name="theme-color" content="#EDEDED">
+		<script type="text/javascript">
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+		<script type="text/x-mathjax-config">
+			MathJax.Hub.Config({
+				tex2jax: {
+					inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+					displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+					processEscapes: true
+				}
+			});
+		</script>
+		<script type="text/javascript" async
+					src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+		<!--
+ Minimal Mistakes layout: single
+ Page Path: _cn/2019-05-20-pde-thinking-question.md
+ Page Type: 
+-->
+	</head>
+	<body class="layout--single">
+		<nav class="skip-links">
+			<h2 class="screen-reader-text">Skip links</h2>
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<!--[if lt IE 9]>
+			<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+		<![endif]-->
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt=""></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a href="/about/">About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/blog/">Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/projects/">Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="https://github.com/iBug">GitHub <i class="far fa-xs fa-external-link"></i></a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/cn/">中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<svg class="icon" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15.99 16">
+								<path d="M15.5,13.12L13.19,10.8a1.69,1.69,0,0,0-1.28-.55l-0.06-.06A6.5,6.5,0,0,0,5.77,0,6.5,6.5,0,0,0,2.46,11.59a6.47,6.47,0,0,0,7.74.26l0.05,0.05a1.65,1.65,0,0,0,.5,1.24l2.38,2.38A1.68,1.68,0,0,0,15.5,13.12ZM6.4,2A4.41,4.41,0,1,1,2,6.4,4.43,4.43,0,0,1,6.4,2Z" transform="translate(-.01)"></path>
+							</svg>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay"
+  style=" background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('/image/header/cloud-1.jpg');"
+>
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						数理方程思考题
+					</h1>
+					<p class="page__meta">
+						<span class="post__meta-date">
+							<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2019-05-20T00:00:00+00:00">May 20, 2019</time>
+						</span>
+						<span class="post__meta-sep"></span>
+						<span class="post__meta-read-time">
+							<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+							6 minute read
+						</span>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person">
+						<div class="author__avatar">
+							<img src="/image/avatar.png" alt="iBug" itemprop="image">
+						</div>
+						<div class="author__content">
+							<h3 class="author__name" itemprop="name">iBug</h3>
+							<div class="author__bio" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer"><i class="far fa-fw fa-envelope" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/ibugthought" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-telegram-plane" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox" />
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="数理方程思考题">
+					<meta itemprop="description" content="2019 年春季中科大《数理方程》课程的一道思考题，最高可给总评加 5 分">
+					<meta itemprop="datePublished" content="2019-05-20T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2020-05-29T15:27:31+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-th-list"></i> 目录</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#题目p248-例-3">题目（P248 例 3）</a></li>
+										<li><a href="#解答">解答</a>
+											<ul>
+												<li><a href="#1-原问题的求解过程">1. 原问题的求解过程</a></li>
+												<li><a href="#2-解的分析">2. 解的分析</a></li>
+												<li><a href="#3-对所求得的解进行物理解释">3. 对所求得的解进行物理解释</a>
+													<ul>
+														<li><a href="#31-问题的提出">3.1 问题的提出</a></li>
+														<li><a href="#32-一维波动方程中参数-a-的物理意义">3.2 一维波动方程中参数 $a$ 的物理意义</a></li>
+														<li><a href="#33-驻波与固有频率">3.3 驻波与固有频率</a></li>
+														<li><a href="#34-共振">3.4 共振</a></li>
+													</ul>
+												</li>
+												<li><a href="#4-计算机模拟">4. 计算机模拟</a>
+													<ul>
+														<li><a href="#41-准备工作">4.1 准备工作</a></li>
+														<li><a href="#42-静态-3d-绘图">4.2 静态 3D 绘图</a></li>
+														<li><a href="#43-动态图像">4.3 动态图像</a></li>
+													</ul>
+												</li>
+											</ul>
+										</li>
+									</ul>
+								</nav>
+							</aside>
+							<h1 id="题目p248-例-3">题目（P248 例 3）</h1>
+							<blockquote>
+								<p>设弦的一端（$x=0$）固定，另一端（$x=l$）以 $\sin\omega t \; \color{red}{(\omega\ne\frac{n\pi a}l,\;n=1,2,\ldots)}$ 作周期振动，且初值为零，试研究弦的自由振动。</p>
+							</blockquote>
+							<p><strong>问题：</strong>研究当 $\omega \to \frac{n\pi a}l,\;n=1,2,\ldots$ 的时候的弦的振动。</p>
+							<h1 id="解答">解答</h1>
+							<p>要想研究这个特殊情况的振动，首先要观察原问题的求解过程。</p>
+							<h2 id="1-原问题的求解过程">1. 原问题的求解过程</h2>
+							<blockquote>
+								<p>依题意，得定解问题</p>
+								\[\left\{
+								\begin{align}
+								\cfrac{\partial^2u}{\partial t^2} = a^2 \cfrac{\partial^2u}{\partial x^2} \; (0&lt;x&lt;l, t&gt;0)
+								\tag{3}\label{eq3}
+								\\
+								u(t,0) = 0, \, u(t,l) =\sin\omega t
+								\tag{4}\label{eq4}
+								\\
+								u(0,x)=0, \, u_t(0,x) = 0
+								\end{align}
+								\right.\]
+								<p>由于边界条件是非齐次的，首先应把边界条件齐次化。选取合适的 $v(t,x)$ 使得 $v$ 既满足泛定方程，又满足边界条件，这时再令 $u=v+w$ 后得到的关于 $w(t,x)$ 的泛定方程也是齐次的。</p>
+								<p>为此，令</p>
+								\[v(t,x)=X(x)\sin\omega t\]
+								<p>由边界条件 $\eqref{eq4}$，可知 $X(0)=0,X(l)=1$。把 $v(t,x)$ 代入泛定方程 $\eqref{eq3}$，且消去 $\sin\omega t$，得</p>
+								\[X''+\cfrac{\omega^2}{a^2}X=0\]
+								<p>所以</p>
+								\[X(x)=C_1\cos\cfrac{\omega x}a+C_2\sin\cfrac{\omega x}a\]
+								<p>由 $X(0)=0$ 得 $C_1=0$；再由 $X(l)=1$，得</p>
+								\[C_2=\cfrac 1{\color{red}{\sin\cfrac{\omega l}a}}\]
+								<p>从而可得</p>
+								\[X(x) = \cfrac 1{\sin \cfrac{\omega l}a}\sin\cfrac{\omega x}a \\
+								v(t,x) = \cfrac {\sin\cfrac{\omega x}a}{\sin \cfrac{\omega l}a}\sin\omega t\]
+								<p>将 $v(t,x)$ 的表达式和 $u=v+w$ 代回原定解问题，就得到关于 $w$ 的定解问题</p>
+								\[\left\{
+								\begin{array}l
+								\cfrac{\partial^2w}{\partial t^2} = a^2 \cfrac{\partial^2w}{\partial x^2} \; (0&lt;x&lt;l, t&gt;0)
+								\\
+								w(t,0) = w(t,l) = 0
+								\\
+								w(0,x)=0, \, w_t(0,x) = -\omega\cfrac{\sin\cfrac{\omega x}a}{\sin\cfrac{\omega l}a}
+								\end{array}
+								\right.\]
+								<p>由公式解得</p>
+								\[w(t,x) = 2\omega al\sum_{n=1}^{+\infty}\cfrac{(-1)^{n+1}}{\color{red}{(\omega l)^2-(n\pi a)^2}}\sin\cfrac{n\pi at}l\sin\cfrac{n\pi x}l\]
+								<p>相加可得</p>
+								\[u(t,x) = \cfrac {\sin\cfrac{\omega x}a}{\color{red}{\sin \cfrac{\omega l}a}}\sin\omega t + \\
+								2\omega al\sum_{n=1}^{+\infty}\cfrac{(-1)^{n+1}}{\color{red}{(\omega l)^2-(n\pi a)^2}}\sin\cfrac{n\pi at}l\sin\cfrac{n\pi x}l\]
+							</blockquote>
+							<p>这就是原问题的解。</p>
+							<h2 id="2-解的分析">2. 解的分析</h2>
+							<p>从上面的原问题的解可以很直观的发现一点：当 $\omega\to\cfrac{n\pi l}a$ 的时候，会有 $\sin\cfrac{\omega l}a \to \sin n\pi=0$ 以及 $\omega l=n\pi a$ 的情况，进而导致多个地方出现分母为 $0$ 的现象。这些部分已用红色标出。也就是说</p>
+							\[\lim_{\omega \to \frac{n\pi l}a}u(t,x)=\infty ,\, n=1,2,\ldots\]
+							<p>求解一个定解问题，一般包含三个步骤。上面的过程就算是完成了第一个步骤——分析步骤，即从数学和物理的角度出发，找出了所要的解。</p>
+							<p>接下来的步骤与书上相同，跳过第二个步骤——综合步骤，即论证所求得的解的确是原问题的解，满足泛定方程和定解条件的步骤——直接进入第三个步骤，对所求得的解进行物理解释。</p>
+							<h2 id="3-对所求得的解进行物理解释">3. 对所求得的解进行物理解释</h2>
+							<p>对于我们当前求得的这个含有无穷值的解，对其直接进行物理解释并不容易，因此需要从头再看看整个问题的结构。</p>
+							<h3 id="31-问题的提出">3.1 问题的提出</h3>
+							<p>本问题 “理想弦的横振动方程” 在书上的 P197 提出。这里我们忽略提出过程中大量的简化过程，直接观察结果 (P199)</p>
+							\[\cfrac{\partial^2u}{\partial t^2} = a^2 \cfrac{\partial^2u}{\partial x^2} + f(t,x)
+							\\
+							\left( a = \sqrt{\cfrac T\rho} ,\, f(t,x)=\cfrac{g(t,x)}\rho \right)\]
+							<p>由于本问题讨论的是弦的自由振动，因此 $f(t,x)=0$，所以问题化为</p>
+							\[\cfrac{\partial^2u}{\partial t^2} = a^2 \cfrac{\partial^2u}{\partial x^2} ,\;
+							\left( a = \sqrt{\cfrac T\rho} \right)\]
+							<p>考虑到本问题的特殊条件 $\omega = \cfrac {n\pi a}l$，因此这里需要讨论一下 $a$ 的物理意义（$l$ 是弦长，这无需讨论）。为了简化讨论过程，这里先忽略问题的定解条件，专注于泛定方程的物理意义。</p>
+							<h3 id="32-一维波动方程中参数-a-的物理意义">3.2 一维波动方程中参数 $a$ 的物理意义</h3>
+							<p>设一根张力为 $T$，密度 $\cfrac{\mathrm{d}m}{\mathrm{d}l}=\rho$ 的理想弦作自由振动，取其在惯性参考系下的一个波峰附近的一个微元，如图</p>
+							<p><img src="/image/PDE/0.png" alt="image" class="block" /></p>
+							<p>设这一小段弦的曲率半径为 $R$，则该段微元对应的加速度</p>
+							\[a_\bot = -\cfrac{v^2}{R}\]
+							<p>其沿竖直方向所受的合力</p>
+							\[F_\bot = -2T\sin\theta \approx -2T\theta\]
+							<p>又因为</p>
+							\[l=2R\theta\]
+							<p>得</p>
+							\[F_\bot = -2T\theta = \rho \cdot 2R\theta\left(-\cfrac {v^2}{R}\right)
+							\\
+							\therefore v = \sqrt{\cfrac T\rho}\]
+							<p>这时候我们发现，弦上的波速 $v$ 就是一维波动方程的参数 $a$。但是这有什么意义呢？</p>
+							<h3 id="33-驻波与固有频率">3.3 驻波与固有频率</h3>
+							<p>回想力学中学过的驻波相关的内容，两列传播方向相反，而振幅、频率都相同的波相遇时，会形成驻波。由于驻波的两端均固定，因此其波长 $\lambda$ 满足</p>
+							\[2l=n\lambda ,\, n=1,2,\ldots\]
+							<p>而波的频率</p>
+							\[f=\cfrac v\lambda=\cfrac{nv}{2l} ,\, n=1,2,\ldots\]
+							<p>则波的角频率</p>
+							\[\omega = 2\pi f = \cfrac{n\pi v}l\]
+							<p>从上一节中我们得到了波速 $v$ 与方程参数 $a$ 的一致性，因此这里用 $a$ 替代 $v$ 后可得</p>
+							\[\color{red}{\omega = \cfrac{n\pi a}l} \color{black}{,\, n=1,2,\cdots}\]
+							<p>也就是说，$\omega = \cfrac{n\pi a}l$ 是长度为 $l$ 的弦作自由振动的固有频率！当 $n=1$ 时，称 $\omega_1 = \cfrac{\pi a}l$ 为基频，同时也可以知道，一根弦的固有频率一定是基频的整数倍。</p>
+							<h3 id="34-共振">3.4 共振</h3>
+							<p>谈到固有频率，就不得不讨论共振。在一个机械系统中，当受迫振动的频率与结构的固有频率相吻合，就会有共振的发生。在共振频中，受迫振动只需要很小的驱动力，就可在系统中产生巨大的振幅。</p>
+							<p>结合以上分析过程，我们判断，当 $\omega \to \cfrac{n\pi a}l$ 时，在 $u| _ {x=l}$ 端产生的胁迫振动的频率将在弦上产生共振，进而导致振幅随时间的推移可以无限增大，这与理论计算中出现的 $\lim _ {\omega \to \frac{n\pi l}a}u=\infty$ 相符。</p>
+							<p>而共振在历史上非常有名的一次出现，是<a href="https://zh.wikipedia.org/wiki/%E5%A1%94%E7%A7%91%E9%A6%AC%E6%B5%B7%E5%B3%BD%E5%90%8A%E6%A9%8B">塔科马海峡吊桥</a> (Tacoma Narrows Bridge) (1940 年版)。1940 年塔科马海峡吊桥建成通车后不到 5 个月就倒塌了，而倒塌的原因，是因为其桥面厚度不足，在受到强风的吹袭下引起卡门涡街，使桥身摆动；当卡门涡街的振动频率和吊桥自身的固有频率相同时，引起吊桥剧烈共振，最终因振幅过大而崩塌。</p>
+							<h2 id="4-计算机模拟">4. 计算机模拟</h2>
+							<p>为了使问题的求解过程更容易理解，我使用了计算机软件 Wolfram Mathematica 12.0 进行绘图模拟。</p>
+							<h3 id="41-准备工作">4.1 准备工作</h3>
+							<p>首先将 $u(t,x)$ 的解导入软件，定义为函数：</p>
+							<div class="language-mathematica highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nv">u</span><span class="p">[</span><span class="nv">t</span><span class="o">_,</span><span class="w"> </span><span class="nv">x</span><span class="o">_</span><span class="p">]</span><span class="w"> </span><span class="o">:=</span><span class="w"> 
+ </span><span class="m">2</span><span class="o">*</span><span class="nv">a</span><span class="o">*</span><span class="nv">l</span><span class="o">*</span><span class="nv">\[Omega]</span><span class="o">*</span><span class="w">
+   </span><span class="nb">Sum</span><span class="p">[</span><span class="w">
+     </span><span class="p">((</span><span class="o">-</span><span class="m">1</span><span class="p">)</span><span class="o">^</span><span class="p">(</span><span class="nv">n</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="p">)</span><span class="o">*</span><span class="nb">Sin</span><span class="p">[(</span><span class="nb">Pi</span><span class="o">*</span><span class="nv">n</span><span class="o">*</span><span class="nv">x</span><span class="p">)</span><span class="o">/</span><span class="nv">l</span><span class="p">]</span><span class="o">*</span><span class="nb">Sin</span><span class="p">[(</span><span class="nb">Pi</span><span class="o">*</span><span class="nv">a</span><span class="o">*</span><span class="nv">n</span><span class="o">*</span><span class="nv">t</span><span class="p">)</span><span class="o">/</span><span class="nv">l</span><span class="p">])</span><span class="o">/</span><span class="p">((</span><span class="nv">l</span><span class="o">*</span><span class="nv">\[Omega]</span><span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="nb">Pi</span><span class="o">*</span><span class="nv">a</span><span class="o">*</span><span class="nv">n</span><span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="p">)</span><span class="o">,</span><span class="w">
+     </span><span class="p">{</span><span class="nv">n</span><span class="o">,</span><span class="w"> </span><span class="m">1</span><span class="o">,</span><span class="w"> </span><span class="m">20</span><span class="p">}</span><span class="w">
+   </span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="nb">Sin</span><span class="p">[</span><span class="nv">t</span><span class="o">*</span><span class="nv">\[Omega]</span><span class="p">]</span><span class="o">*</span><span class="nb">Sin</span><span class="p">[(</span><span class="nv">x</span><span class="o">*</span><span class="nv">\[Omega]</span><span class="p">)</span><span class="o">/</span><span class="nv">a</span><span class="p">])</span><span class="o">/</span><span class="nb">Sin</span><span class="p">[(</span><span class="nv">l</span><span class="o">*</span><span class="nv">\[Omega]</span><span class="p">)</span><span class="o">/</span><span class="nv">a</span><span class="p">]</span><span class="w">
+</span></code></pre>
+								</div>
+							</div>
+							<p>这里由于计算机计算方式的限制，无法将 $\sum_{n=1}^{+\infty}$ 导入计算。经过测试，当累加上限为 $20$ 时，该函数已经能够提供很好的近似结果了，因此出于各种考虑（尤其是计算资源的利用），这里就取累加上限为 $20$ 了，因此实际绘图的函数是：</p>
+							\[u(t,x) = \cfrac {\sin\cfrac{\omega x}a}{\sin \cfrac{\omega l}a}\sin\omega t + 2\omega al\sum_{n=1}^{20}\cfrac{(-1)^{n+1}}{(\omega l)^2-(n\pi a)^2}\sin\cfrac{n\pi at}l\sin\cfrac{n\pi x}l\]
+							<p>接下来为函数选定合适的参数。根据上面的分析结果，$a$ 为波的传播速率，为了产生较为明显的观察效果，经过测试，我决定选取 $l=10$ 与 $a=1$，则基频 $\omega = \cfrac{\pi a}l = \cfrac \pi{10}$。</p>
+							<p>确定好了参数，就可以开始绘图了。</p>
+							<h3 id="42-静态-3d-绘图">4.2 静态 3D 绘图</h3>
+							<p>如图，当 $\omega = 0.5$ 时，$\omega$ 与任意固有频率都有足够的偏差，此时得到的波形较为随机：</p>
+							<div class="language-mathematica highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="o">;</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="o">;</span><span class="w"> </span><span class="nv">\[Omega]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.5</span><span class="o">;</span><span class="w">
+</span><span class="nb">Plot3D</span><span class="p">[</span><span class="nv">u</span><span class="p">[</span><span class="nv">t</span><span class="o">,</span><span class="w"> </span><span class="nv">x</span><span class="p">]</span><span class="o">,</span><span class="w"> </span><span class="p">{</span><span class="nv">x</span><span class="o">,</span><span class="w"> </span><span class="m">0</span><span class="o">,</span><span class="w"> </span><span class="m">10</span><span class="p">}</span><span class="o">,</span><span class="w"> </span><span class="p">{</span><span class="nv">t</span><span class="o">,</span><span class="w"> </span><span class="m">0</span><span class="o">,</span><span class="w"> </span><span class="m">50</span><span class="p">}]</span><span class="w">
+</span></code></pre>
+								</div>
+							</div>
+							<p><img src="/image/PDE/1.png" alt="image" class="block" /></p>
+							<p>当 $\omega$ 接近基频 (即 $n=1$) 时，可以看出发生了共振现象，振幅随时间不断增大。这里考虑到计算机不能处理分母为零的情况，因此参数 $\omega$ 不能取基频 $\cfrac\pi{10}$，而必须与该值有微小差别，因此我取了 $0.31$。</p>
+							<div class="language-mathematica highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="o">;</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="o">;</span><span class="w"> </span><span class="nv">\[Omega]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.31</span><span class="o">;</span><span class="w">
+</span><span class="nb">Plot3D</span><span class="p">[</span><span class="nv">u</span><span class="p">[</span><span class="nv">t</span><span class="o">,</span><span class="w"> </span><span class="nv">x</span><span class="p">]</span><span class="o">,</span><span class="w"> </span><span class="p">{</span><span class="nv">x</span><span class="o">,</span><span class="w"> </span><span class="m">0</span><span class="o">,</span><span class="w"> </span><span class="m">10</span><span class="p">}</span><span class="o">,</span><span class="w"> </span><span class="p">{</span><span class="nv">t</span><span class="o">,</span><span class="w"> </span><span class="m">0</span><span class="o">,</span><span class="w"> </span><span class="m">200</span><span class="p">}]</span><span class="w">
+</span></code></pre>
+								</div>
+							</div>
+							<p><img src="/image/PDE/3.png" alt="image" class="block" /></p>
+							<p>而当 $\omega$ 接近基频的某个整数倍时，同样能观察到共振现象，但驻波的数量不是一个，而是 $n$ 个。下图取 $n=3$ 绘制：</p>
+							<div class="language-mathematica highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="o">;</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="o">;</span><span class="w"> </span><span class="nv">\[Omega]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">3</span><span class="o">*</span><span class="nb">Pi</span><span class="o">/</span><span class="m">10</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="o">/</span><span class="m">1000</span><span class="o">;</span><span class="w">
+</span><span class="nb">Plot3D</span><span class="p">[</span><span class="nv">u</span><span class="p">[</span><span class="nv">t</span><span class="o">,</span><span class="w"> </span><span class="nv">x</span><span class="p">]</span><span class="o">,</span><span class="w"> </span><span class="p">{</span><span class="nv">x</span><span class="o">,</span><span class="w"> </span><span class="m">0</span><span class="o">,</span><span class="w"> </span><span class="m">10</span><span class="p">}</span><span class="o">,</span><span class="w"> </span><span class="p">{</span><span class="nv">t</span><span class="o">,</span><span class="w"> </span><span class="m">0</span><span class="o">,</span><span class="w"> </span><span class="m">60</span><span class="p">}]</span><span class="w">
+</span></code></pre>
+								</div>
+							</div>
+							<p><img src="/image/PDE/5.png" alt="image" class="block" /></p>
+							<h3 id="43-动态图像">4.3 动态图像</h3>
+							<p>通过将一维波形用动态图像展示出来可以很直观地看出不同的 $\omega = \cfrac {n\pi a}l$ 对弦的自由振动的影响。以下几张图分别取 $n=\cfrac 12,1,2,4$ 绘制。</p>
+							<p>当 $n = \cfrac 12$ 时，右端的受迫振动看起来与弦并不和谐，振幅维持在 $1$ 以下：</p>
+							<div class="language-mathematica highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="o">;</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="o">;</span><span class="w"> </span><span class="nv">\[Omega]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.15</span><span class="o">;</span><span class="w">
+</span><span class="nb">Animate</span><span class="p">[</span><span class="w">
+ </span><span class="nb">Plot</span><span class="p">[</span><span class="nv">u</span><span class="p">[</span><span class="nv">t</span><span class="o">,</span><span class="w"> </span><span class="nv">x</span><span class="p">]</span><span class="o">,</span><span class="w"> </span><span class="p">{</span><span class="nv">x</span><span class="o">,</span><span class="w"> </span><span class="m">0</span><span class="o">,</span><span class="w"> </span><span class="m">10</span><span class="p">}</span><span class="o">,</span><span class="w"> </span><span class="nb">PlotRange</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="o">-</span><span class="m">5</span><span class="o">,</span><span class="w"> </span><span class="m">5</span><span class="p">}]</span><span class="o">,</span><span class="w"> </span><span class="p">{</span><span class="nv">t</span><span class="o">,</span><span class="w"> </span><span class="m">0</span><span class="o">,</span><span class="w"> </span><span class="m">300</span><span class="p">}</span><span class="o">,</span><span class="w"> 
+ </span><span class="nb">AnimationRate</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="m">30</span><span class="p">]</span><span class="w">
+</span></code></pre>
+								</div>
+							</div>
+							<p><img src="/image/PDE/a1.gif" alt="image" class="block" /></p>
+							<p>当 $n=1$ 时，右端受迫振动与弦的基频相吻合，弦的自由振动的振幅随右端受迫振动的影响而不断增大：</p>
+							<div class="language-mathematica highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="o">;</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="o">;</span><span class="w"> </span><span class="nv">\[Omega]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.31</span><span class="o">;</span><span class="w">
+</span><span class="nb">Animate</span><span class="p">[</span><span class="w">
+ </span><span class="nb">Plot</span><span class="p">[</span><span class="nv">u</span><span class="p">[</span><span class="nv">t</span><span class="o">,</span><span class="w"> </span><span class="nv">x</span><span class="p">]</span><span class="o">,</span><span class="w"> </span><span class="p">{</span><span class="nv">x</span><span class="o">,</span><span class="w"> </span><span class="m">0</span><span class="o">,</span><span class="w"> </span><span class="m">10</span><span class="p">}</span><span class="o">,</span><span class="w"> </span><span class="nb">PlotRange</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="o">-</span><span class="m">5</span><span class="o">,</span><span class="w"> </span><span class="m">5</span><span class="p">}]</span><span class="o">,</span><span class="w"> </span><span class="p">{</span><span class="nv">t</span><span class="o">,</span><span class="w"> </span><span class="m">0</span><span class="o">,</span><span class="w"> </span><span class="m">120</span><span class="o">,</span><span class="w"> </span><span class="m">0.4</span><span class="p">}</span><span class="o">,</span><span class="w"> 
+ </span><span class="nb">AnimationRate</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="m">30</span><span class="p">]</span><span class="w">
+</span></code></pre>
+								</div>
+							</div>
+							<p><img src="/image/PDE/a2.gif" alt="image" class="block" /></p>
+							<p>而当 $n$ 取大于 $1$ 的整数时，受迫振动的频率与弦的某个非基固有频率相吻合，结果是出现了多个驻波，且它们的振幅仍然不断增大：</p>
+							<div class="language-mathematica highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="o">;</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="o">;</span><span class="w"> </span><span class="nv">\[Omega]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.63</span><span class="o">;</span><span class="w">
+</span><span class="nb">Animate</span><span class="p">[</span><span class="w">
+ </span><span class="nb">Plot</span><span class="p">[</span><span class="nv">u</span><span class="p">[</span><span class="nv">t</span><span class="o">,</span><span class="w"> </span><span class="nv">x</span><span class="p">]</span><span class="o">,</span><span class="w"> </span><span class="p">{</span><span class="nv">x</span><span class="o">,</span><span class="w"> </span><span class="m">0</span><span class="o">,</span><span class="w"> </span><span class="m">10</span><span class="p">}</span><span class="o">,</span><span class="w"> </span><span class="nb">PlotRange</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="o">-</span><span class="m">5</span><span class="o">,</span><span class="w"> </span><span class="m">5</span><span class="p">}]</span><span class="o">,</span><span class="w"> </span><span class="p">{</span><span class="nv">t</span><span class="o">,</span><span class="w"> </span><span class="m">0</span><span class="o">,</span><span class="w"> </span><span class="m">120</span><span class="o">,</span><span class="w"> </span><span class="m">0.4</span><span class="p">}</span><span class="o">,</span><span class="w"> 
+ </span><span class="nb">AnimationRate</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="m">30</span><span class="p">]</span><span class="w">
+</span></code></pre>
+								</div>
+							</div>
+							<p><img src="/image/PDE/a3.gif" alt="image" class="block" /></p>
+							<div class="language-mathematica highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="o">;</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="o">;</span><span class="w"> </span><span class="nv">\[Omega]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.257</span><span class="o">;</span><span class="w">
+</span><span class="nb">Animate</span><span class="p">[</span><span class="w">
+ </span><span class="nb">Plot</span><span class="p">[</span><span class="nv">u</span><span class="p">[</span><span class="nv">t</span><span class="o">,</span><span class="w"> </span><span class="nv">x</span><span class="p">]</span><span class="o">,</span><span class="w"> </span><span class="p">{</span><span class="nv">x</span><span class="o">,</span><span class="w"> </span><span class="m">0</span><span class="o">,</span><span class="w"> </span><span class="m">10</span><span class="p">}</span><span class="o">,</span><span class="w"> </span><span class="nb">PlotRange</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">{</span><span class="o">-</span><span class="m">5</span><span class="o">,</span><span class="w"> </span><span class="m">5</span><span class="p">}]</span><span class="o">,</span><span class="w"> </span><span class="p">{</span><span class="nv">t</span><span class="o">,</span><span class="w"> </span><span class="m">0</span><span class="o">,</span><span class="w"> </span><span class="m">120</span><span class="o">,</span><span class="w"> </span><span class="m">0.4</span><span class="p">}</span><span class="o">,</span><span class="w"> 
+ </span><span class="nb">AnimationRate</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="m">30</span><span class="p">]</span><span class="w">
+</span></code></pre>
+								</div>
+							</div>
+							<p><img src="/image/PDE/a4.gif" alt="image" class="block" /></p>
+							<p>以上就是我对 $\omega \to \frac{n\pi a}l,\;n=1,2,\ldots$ 的时候的理想弦的自由振动的非齐次混合问题的研究。</p>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/study-notes" class="page__taxonomy-item" rel="tag">study-notes</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-05-29">May 29, 2020</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=%E6%95%B0%E7%90%86%E6%96%B9%E7%A8%8B%E6%80%9D%E8%80%83%E9%A2%98%20https%3A%2F%2Fibug.io%2Fcn%2F2019%2F05%2Fpde-thinking-question%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fcn%2F2019%2F05%2Fpde-thinking-question%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fcn%2F2019%2F05%2Fpde-thinking-question%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/cn/2018/12/chisel-101/" class="pagination--pager" title="Chisel 配置及入门
+">Previous</a>
+							<a href="/cn/2019/06/about-internet-security/" class="pagination--pager" title="简论当代网络安全
+">Next</a>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					&copy; 2020 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.
+					<br>
+					Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.
+					<br>
+					<a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a>
+					<br>
+					Site version <a href="/status">G-301</a>
+				</div>
+				<script src="/assets/js/love.js" type="text/javascript" async="async"></script>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<!-- Including InstantSearch.js library and styling -->
+		<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js"></script>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css">
+		<script>
+			// Instanciating InstantSearch.js with Algolia credentials
+			const search = instantsearch({
+			  appId: '14DZKASAEJ',
+			  apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			  indexName: 'iBug_website',
+			  searchParameters: {
+			    restrictSearchableAttributes: [
+			      'title',
+			      'content'
+			    ]
+			  }
+			});
+			
+			const hitTemplate = function(hit) {
+			  const url = hit.url;
+			  const title = hit._highlightResult.title.value;
+			  const content = hit._highlightResult.html.value;
+			
+			  return `
+			    <div class="list__item">
+			      <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			        <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			        <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			      </article>
+			    </div>
+			  `;
+			}
+			
+			// Adding searchbar and results widgets
+			search.addWidget(
+			  instantsearch.widgets.searchBox({
+			    container: '.search-searchbar',
+			    poweredBy: true,
+			    placeholder: 'Enter your search term...'
+			  })
+			);
+			search.addWidget(
+			  instantsearch.widgets.hits({
+			    container: '.search-hits',
+			    templates: {
+			      item: hitTemplate,
+			      empty: 'No results',
+			    }
+			  })
+			);
+			
+			// Starting the search only when toggle is clicked
+			$(document).ready(function () {
+			  $(".search__toggle").on("click", function() {
+			    if(!search.started) {
+			      search.start();
+			    }
+			  });
+			});
+		</script>
+		<script>
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-115907213-1']);
+			
+			_gaq.push(['_trackPageview']);
+			
+			(function() {
+			  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/cn/2019/05/pde-thinking-question/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/cn/2019/05/pde-thinking-question"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	</body>
+</html>

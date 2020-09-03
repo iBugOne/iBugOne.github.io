@@ -1,0 +1,585 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>Managing servers with OpenSSH Certificate Authority - iBug</title>
+		<meta name="description" content="Since the addition of the website server for an external corporation, I now have 5 Linux servers to manage on my own. I also have 4 terminal devices that I use to connect to those servers: two of my laptops, my Android phone (using Termux), and one of those servers that I use as a workstation.">
+		<meta name="author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="Managing servers with OpenSSH Certificate Authority">
+		<meta property="og:url" content="https://ibug.io/blog/2019/12/manage-servers-with-ssh-ca/">
+		<meta property="og:description" content="Since the addition of the website server for an external corporation, I now have 5 Linux servers to manage on my own. I also have 4 terminal devices that I use to connect to those servers: two of my laptops, my Android phone (using Termux), and one of those servers that I use as a workstation.">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2019-12-23T00:00:00+00:00">
+		<meta property="article:modified_time" content="2020-04-20T22:29:05+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2019/12/manage-servers-with-ssh-ca/">
+		<script type="application/ld+json">
+			{
+			  "@context": "https://schema.org",
+			
+			    "@type": "Person",
+			    "name": "iBug",
+			    "url": "https://ibug.io/"
+			
+			}
+		</script>
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<!-- https://t.co/dKP3o1e -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script>
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=b98b49e">
+		<link rel="stylesheet" href="https://fa.ibugone.com/releases/latest/css/pro.min.css">
+		<!--[if IE]>
+			<style>
+				/* old IE unsupported flexbox fixes */
+				.greedy-nav .site-title {
+				  padding-right: 3em;
+				}
+				.greedy-nav button {
+				  position: absolute;
+				  top: 0;
+				  right: 0;
+				  height: 100%;
+				}
+			</style>
+		<![endif]-->
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+		<meta name="theme-color" content="#EDEDED">
+		<script type="text/javascript">
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+		<!--
+ Minimal Mistakes layout: single
+ Page Path: _posts/2019-12-23-manage-servers-with-ssh-ca.md
+ Page Type: 
+-->
+	</head>
+	<body class="layout--single">
+		<nav class="skip-links">
+			<h2 class="screen-reader-text">Skip links</h2>
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<!--[if lt IE 9]>
+			<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+		<![endif]-->
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt=""></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a href="/about/">About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/blog/">Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/projects/">Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="https://github.com/iBug">GitHub <i class="far fa-xs fa-external-link"></i></a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/cn/">中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<svg class="icon" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 15.99 16">
+								<path d="M15.5,13.12L13.19,10.8a1.69,1.69,0,0,0-1.28-.55l-0.06-.06A6.5,6.5,0,0,0,5.77,0,6.5,6.5,0,0,0,2.46,11.59a6.47,6.47,0,0,0,7.74.26l0.05,0.05a1.65,1.65,0,0,0,.5,1.24l2.38,2.38A1.68,1.68,0,0,0,15.5,13.12ZM6.4,2A4.41,4.41,0,1,1,2,6.4,4.43,4.43,0,0,1,6.4,2Z" transform="translate(-.01)"></path>
+							</svg>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay" style=" background-image: url('/image/header/code-1.jpg');">
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						Managing servers with OpenSSH Certificate Authority
+					</h1>
+					<p class="page__meta">
+						<span class="post__meta-date">
+							<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2019-12-23T00:00:00+00:00">December 23, 2019</time>
+						</span>
+						<span class="post__meta-sep"></span>
+						<span class="post__meta-read-time">
+							<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+							6 minute read
+						</span>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person">
+						<div class="author__avatar">
+							<img src="/image/avatar.png" alt="iBug" itemprop="image">
+						</div>
+						<div class="author__content">
+							<h3 class="author__name" itemprop="name">iBug</h3>
+							<div class="author__bio" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer"><i class="far fa-fw fa-envelope" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/ibugthought" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-telegram-plane" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox">
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="Managing servers with OpenSSH Certificate Authority">
+					<meta itemprop="description" content="Since the addition of the website server for an external corporation, I now have 5 Linux servers to manage on my own. I also have 4 terminal devices that I use to connect to those servers: two of my laptops, my Android phone (using Termux), and one of those servers that I use as a workstation.">
+					<meta itemprop="datePublished" content="2019-12-23T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2020-04-20T22:29:05+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title">
+											<i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#what-is-an-ssh-ca">What is an SSH CA?</a></li>
+										<li><a href="#creating-an-ssh-ca">Creating an SSH CA</a></li>
+										<li>
+											<a href="#authenticating-hosts-with-ssh-ca">Authenticating hosts with SSH CA</a>
+											<ul>
+												<li><a href="#sign-a-host-key">Sign a host key</a></li>
+												<li><a href="#restrict-signature-validity-range">Restrict signature validity range</a></li>
+												<li><a href="#configure-clients">Configure clients</a></li>
+											</ul>
+										</li>
+										<li>
+											<a href="#authenticating-users-with-ssh-ca">Authenticating users with SSH CA</a>
+											<ul>
+												<li><a href="#configure-servers">Configure servers</a></li>
+												<li><a href="#sign-user-keys">Sign user keys</a></li>
+												<li><a href="#separating-access-to-different-hosts">Separating access to different hosts</a></li>
+											</ul>
+										</li>
+										<li><a href="#other-tips">Other tips</a></li>
+									</ul>
+								</nav>
+							</aside>
+							<p>Since the addition of the website server for an external corporation, I now have 5 Linux servers to manage on my own. I also have 4 terminal devices that I use to connect to those servers: two of my laptops, my Android phone (using <a href="https://termux.com/">Termux</a>), and one of those servers that I use as a workstation.</p>
+							<p>Managing SSH keys has always been a headache for this many computers, as all of them on one side have to be updated of the new key whenever one on the other side changes or rotates its key. In case of a client key change, the new key must be uploaded to all servers. And in a worse case where the original key is lost, the uploading needs to be done with the help of another client (computer or phone), which is an additional layer of unnecessary complexity and cumber.</p>
+							<p>Not until I took over a system of many servers did I learn about SSH CA. It’s for sure to the rescue!</p>
+							<h2 id="what-is-an-ssh-ca">What is an SSH CA?</h2>
+							<p>Long story short, an SSH Certificate Authority is a <a href="https://en.wikipedia.org/wiki/Certificate_authority">certificate authority</a> for SSH hosts. A client can trust all server signed by the CA by simply trusting the CA. And more powerfully, a server can <em>also</em> trust all user keys if the user key has a signature from the CA, and the server trusts the CA for signing user keys.</p>
+							<p>By properly configuring servers and clients, a rotated or otherwise changed key, be it a host key or a user key, will no longer cause chaos of copying public keys from everywhere, to everywhere. The follow-up is as simple as getting another CA signature for the new key, and everything will go smoothly as if nothing has happened.</p>
+							<h2 id="creating-an-ssh-ca">Creating an SSH CA</h2>
+							<p>Creating a CA is as easy as generating a key pair for it, and publishing its public key.</p>
+							<p>To generate a key pair for a CA, you’d do it the usual way you generate a regular SSH key pair:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>ssh-keygen <span class="nt">-f</span> my_ca
+</code></pre>
+								</div>
+							</div>
+							<p>Proceed through the prompts, and you’ll find two files <code class="language-plaintext highlighter-rouge">my_ca</code> and <code class="language-plaintext highlighter-rouge">my_ca.pub</code> in your current directory. Contrary to SSH keys that you use for regular purposes, I highly recommend setting a password for this key, since it’s going to be <em>way</em> more powerful than those. Protect the private key carefully, and leave the public part somewhere easily accessible, like <a href="https://ibugone.com/assets/ssh-ca.pub.txt">mine</a>.</p>
+							<h2 id="authenticating-hosts-with-ssh-ca">Authenticating hosts with SSH CA</h2>
+							<h3 id="sign-a-host-key">Sign a host key</h3>
+							<p>To sign a host key with your CA, copy its <strong>public</strong> part (like <code class="language-plaintext highlighter-rouge">ssh_host_rsa_key.pub</code>) to a convenient place, and run the following command.</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>ssh-keygen <span class="nt">-s</span> &lt;ca private key&gt; <span class="nt">-I</span> &lt;signature name&gt; <span class="nt">-h</span> &lt;host key&gt;
+</code></pre>
+								</div>
+							</div>
+							<p>You’ll find a file named <code class="language-plaintext highlighter-rouge">ssh_host_rsa_key-cert.pub</code> in your current directory, which you should copy back to the server. Because sshd(8) doesn’t look for host certificates by default, you shold edit <code class="language-plaintext highlighter-rouge">/etc/ssh/sshd_config</code> to instruct it to do so. Add this line to the file to let it work:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>HostCertificate /etc/ssh/ssh_host_rsa_key-cert.pub
+</code></pre>
+								</div>
+							</div>
+							<p>Then run <code class="language-plaintext highlighter-rouge">systemctl reload ssh</code> (or <code class="language-plaintext highlighter-rouge">service sshd reload</code> if you’re not running on systemd) to reload the configuration.</p>
+							<h3 id="restrict-signature-validity-range">Restrict signature validity range</h3>
+							<p>As a security measure, you probably don’t want the signature remain valid even if stolen. The <code class="language-plaintext highlighter-rouge">-n</code> option is there for you to specify “valid principals”. For example, you can specify a signature valid for <code class="language-plaintext highlighter-rouge">s.ibugone.com,10.250.0.2</code>, and this signature is accepted by clients only if the server is accessed from <code class="language-plaintext highlighter-rouge">s.ibugone.com</code> or <code class="language-plaintext highlighter-rouge">10.250.0.2</code>. If someone steals the private key and the CA signature and installs it on another host, for example <code class="language-plaintext highlighter-rouge">q.ibugone.com</code> or <code class="language-plaintext highlighter-rouge">10.250.0.3</code>, the SSH client will complain:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>Certificate invalid: name is not a listed principal
+</code></pre>
+								</div>
+							</div>
+							<p>Unless the attacker can hijack your DNS (for authenticated domain names) or even your routers (for plain IP addresses), this signature is useless when stolen, and you can safely forget about it and sign a new one for the regenerated host key.</p>
+							<div class="notice--primary">
+								<h4 class="no_toc" id="tip">
+									<i class="far fa-lightbulb"></i> Tip</h4>
+								<p>You can see the certificate information using <code class="language-plaintext highlighter-rouge">ssh-keygen -L</code> command. For example:</p>
+								<div class="language-shell highlighter-rouge">
+									<div class="highlight">
+										<pre class="highlight"><code>ssh-keygen <span class="nt">-Lf</span> /etc/ssh/ssh_host_rsa_key-cert.pub
+</code></pre>
+									</div>
+									  </div>
+							</div>
+							<h3 id="configure-clients">Configure clients</h3>
+							<p>Now let’s configure clients to trust CA signatures. You’ll need to publish the public key of the CA (as said before) so clients can easily acquire it. Put a line like this in a client’s <code class="language-plaintext highlighter-rouge">known_hosts</code> file:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>@cert-authority * ssh-rsa &lt;publicKeyGibberish&gt;
+</code></pre>
+								</div>
+							</div>
+							<p>You can automate the addition of the above line using shell scripts:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nb">printf</span> <span class="s2">"@cert-authority * "</span> | <span class="nb">cat</span> - my_ca.pub <span class="o">&gt;&gt;</span> ~/.ssh/known_hosts
+</code></pre>
+								</div>
+							</div>
+							<p>Now try SSHing into a host with a CA signature. You’ll notice that SSH doesn’t prompt for “unknown host” even if it’s not listed in the <code class="language-plaintext highlighter-rouge">known_hosts</code> file, which is because of the magic of the <code class="language-plaintext highlighter-rouge">@cert-authority</code> line. Should you be interested in the details, you can use <code class="language-plaintext highlighter-rouge">ssh -vvv</code> to let SSH client generate extra information.</p>
+							<h2 id="authenticating-users-with-ssh-ca">Authenticating users with SSH CA</h2>
+							<h3 id="configure-servers">Configure servers</h3>
+							<p>We’ll start this part with server side configuration. We want the server to trust user certificates signed by the CA, so we’ll copy the CA’s public key onto the server, and again edit <code class="language-plaintext highlighter-rouge">/etc/ssh/sshd_config</code> and add the following line.</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>TrustedUserCAKeys /etc/ssh/ssh_user_ca
+</code></pre>
+								</div>
+							</div>
+							<p>Make sure you’ve put the CA public key at <code class="language-plaintext highlighter-rouge">/etc/ssh/ssh_user_ca</code>, or you should change the path in the above configuration accordingly. Again, run <code class="language-plaintext highlighter-rouge">systemctl reload ssh</code> or <code class="language-plaintext highlighter-rouge">service sshd reload</code> to reload the SSH server.</p>
+							<div class="notice--primary">
+								<h4 class="no_toc" id="pro-tip">
+									<i class="far fa-lightbulb"></i> Pro Tip</h4>
+								<p>Did you notice that the configuration line is named CA<strong>Keys</strong>, not just CA<strong>Key</strong>? Yes, you can add multiple public keys to that file just like you’re already doing with <code class="language-plaintext highlighter-rouge">authorized_keys</code> file.</p>
+							</div>
+							<h3 id="sign-user-keys">Sign user keys</h3>
+							<p>Now, to grant access to all servers configured this way to a user, ask for their public key and create a signature. The command is similar to that when signing a host certificate, except that there’s no <code class="language-plaintext highlighter-rouge">-h</code> switch (it’s for signing hosts), and the <code class="language-plaintext highlighter-rouge">-n</code> (named principals) option is mandatory this time.</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>ssh-keygen <span class="nt">-s</span> my_ca <span class="nt">-I</span> &lt;user name&gt; <span class="nt">-n</span> root,ubuntu id_rsa.pub
+</code></pre>
+								</div>
+							</div>
+							<p>This will create a <code class="language-plaintext highlighter-rouge">id_rsa-cert.pub</code> file under the current directory, which you want to send back to the user so they can use this signature to log in to servers.</p>
+							<p>Contrary to host signatures, the SSH client doesn’t need extra configuration, because it automatically looks for the certificate file by appending <code class="language-plaintext highlighter-rouge">-cert.pub</code> to the name of the private key. Again you can use <code class="language-plaintext highlighter-rouge">ssh -vvv</code> to see what’s going on under the hood.</p>
+							<h3 id="separating-access-to-different-hosts">Separating access to different hosts</h3>
+							<p>As you’ve probably noticed, if you sign a user certificate with <code class="language-plaintext highlighter-rouge">root</code> being a listed principal, the corresponding private key can be used to log in as root on <em>ALL</em> servers that trust the certificate authority. This is rarely a desired result, and you’re probably looking for a cure for the issue.</p>
+							<p>Fortunately, SSH supports an “authorized principals” setting, which allows granting access to users with specific “principals”. In general, you want separate authorized principals for different users on hosts. Here’s what you can start with, by enabling this setting in <code class="language-plaintext highlighter-rouge">sshd_config</code>:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>AuthorizedPrincipalsFile /etc/ssh/authorized_principals/%u
+</code></pre>
+								</div>
+							</div>
+							<p>You can then create lists of authorized names for each user under <code class="language-plaintext highlighter-rouge">/etc/ssh/authorized_principals</code>. For example, you can have the following lines in <code class="language-plaintext highlighter-rouge">/etc/ssh/authorized_principals/root</code>:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>taokystrong
+</code></pre>
+								</div>
+							</div>
+							<p>After reloading SSH server, users with a certificate containing <code class="language-plaintext highlighter-rouge">taokystrong</code> as a listed principal (supplied by the <code class="language-plaintext highlighter-rouge">-n</code> option when signing the certificate using <code class="language-plaintext highlighter-rouge">ssh-keygen</code>) can log in as root on this host (and <code class="language-plaintext highlighter-rouge">taokystrong</code> as well), but not any other user on this host, or the root user on any other server. Note that certificates signed for <code class="language-plaintext highlighter-rouge">root</code> can still log in as root on any servers that trust this CA.</p>
+							<div class="notice--primary">
+								<h4 class="no_toc" id="good-practices">Good practices</h4>
+								<p>For personal uses, it’s perfectly fine to use one CA for both hosts and users, but in larger corporations with a complex server layout, it’s a general practice to use separate CAs for host authentication and user authentication.</p>
+							</div>
+							<h2 id="other-tips">Other tips</h2>
+							<p>OpenSSH is a complicated and powerful SSH ecosystem. There are far more available options than those described in this article. For example, certificates can have a “validity period”, and the commands can also be limited (instead of granting a full shell).</p>
+							<p>For more detailed and authoritative information about thses configuration, <a href="https://linux.die.net/man/5/sshd_config">the man page for <code class="language-plaintext highlighter-rouge">sshd_config</code></a> is always a good point to look at.</p>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/linux" class="page__taxonomy-item" rel="tag">linux</a><span class="sep">, </span>
+									<a href="/tag/ssh" class="page__taxonomy-item" rel="tag">ssh</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-04-20">April 20, 2020</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=Managing+servers+with+OpenSSH+Certificate+Authority%20https%3A%2F%2Fibug.io%2Fblog%2F2019%2F12%2Fmanage-servers-with-ssh-ca%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2019%2F12%2Fmanage-servers-with-ssh-ca%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A%2F%2Fibug.io%2Fblog%2F2019%2F12%2Fmanage-servers-with-ssh-ca%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/blog/2019/11/change-nvidia-account-email/" class="pagination--pager" title="How to change email of your Nvidia account
+">Previous</a>
+							<a href="/blog/2019/12/mass-crawl-douban-with-aws/" class="pagination--pager" title="High-performance mass web crawling on AWS
+">Next</a>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+				<div class="page__related">
+					<h4 class="page__related-title">You may also enjoy</h4>
+					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="post__meta-date">
+										<i class="far fa-fw fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2019-12-28T00:00:00+00:00">December 28, 2019</time>
+									</span>
+									<br>
+									<span class="post__meta-read-time">
+										<i class="far fa-fw fa-fw fa-clock" aria-hidden="true"></i>
+										16 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on the training data of 9M user-item pairs and a social network.
+								</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2020/04/ssh-8.2-rsa-ca/" rel="permalink">Use RSA CA Certificates with OpenSSH 8.2
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="post__meta-date">
+										<i class="far fa-fw fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2020-04-07T00:00:00+00:00">April 7, 2020</time>
+									</span>
+									<br>
+									<span class="post__meta-read-time">
+										<i class="far fa-fw fa-fw fa-clock" aria-hidden="true"></i>
+										3 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">OpenSSH 8.2 is coming to the latest Long-Term Service release of Ubuntu, Focal Fossa (20.04), and has some breaking changes for users using an SSH Certificate Authority.
+								</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2020/02/use-mysql-cli-without-password/" rel="permalink">3 ways to use MySQL / MariaDB CLI without password
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="post__meta-date">
+										<i class="far fa-fw fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2020-02-04T00:00:00+00:00">February 4, 2020</time>
+									</span>
+									<br>
+									<span class="post__meta-read-time">
+										<i class="far fa-fw fa-fw fa-clock" aria-hidden="true"></i>
+										4 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">For all of us who are learning to use or developing with MySQL or MariaDB, it’s a common task to manually log in to the database for inspection. This is usually done with the mysql command line client, and for sure it’s cumbersome to log in to the database using your application’s credentials. Fo...</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2019/08/speech-at-msc-2019/" rel="permalink">My speech at Microsoft Summer Camp 2019
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="post__meta-date">
+										<i class="far fa-fw fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2019-08-14T00:00:00+00:00">August 14, 2019</time>
+									</span>
+									<br>
+									<span class="post__meta-read-time">
+										<i class="far fa-fw fa-fw fa-clock" aria-hidden="true"></i>
+										10 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">This is a translated version from the Chinese (original) script. The slideshow can be acquired here. For comments, please head to the Chinese version of this post.
+								</p>
+							</article>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					© 2020 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.
+					<br>
+					Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.
+					<br>
+					<a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a>
+					<br>
+					Site version <a href="/status">G-301</a>
+				</div>
+				<script src="/assets/js/love.js" type="text/javascript" async="async"></script>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<!-- Including InstantSearch.js library and styling -->
+		<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js"></script>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css">
+		<script>
+			// Instanciating InstantSearch.js with Algolia credentials
+			const search = instantsearch({
+			  appId: '14DZKASAEJ',
+			  apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			  indexName: 'iBug_website',
+			  searchParameters: {
+			    restrictSearchableAttributes: [
+			      'title',
+			      'content'
+			    ]
+			  }
+			});
+			
+			const hitTemplate = function(hit) {
+			  const url = hit.url;
+			  const title = hit._highlightResult.title.value;
+			  const content = hit._highlightResult.html.value;
+			
+			  return `
+			    <div class="list__item">
+			      <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			        <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			        <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			      </article>
+			    </div>
+			  `;
+			}
+			
+			// Adding searchbar and results widgets
+			search.addWidget(
+			  instantsearch.widgets.searchBox({
+			    container: '.search-searchbar',
+			    poweredBy: true,
+			    placeholder: 'Enter your search term...'
+			  })
+			);
+			search.addWidget(
+			  instantsearch.widgets.hits({
+			    container: '.search-hits',
+			    templates: {
+			      item: hitTemplate,
+			      empty: 'No results',
+			    }
+			  })
+			);
+			
+			// Starting the search only when toggle is clicked
+			$(document).ready(function () {
+			  $(".search__toggle").on("click", function() {
+			    if(!search.started) {
+			      search.start();
+			    }
+			  });
+			});
+		</script>
+		<script>
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-115907213-1']);
+			
+			_gaq.push(['_trackPageview']);
+			
+			(function() {
+			  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/blog/2019/12/manage-servers-with-ssh-ca/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2019/12/manage-servers-with-ssh-ca"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+		</noscript>
+	</body>
+</html>

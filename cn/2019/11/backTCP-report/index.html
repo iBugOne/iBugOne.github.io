@@ -1,0 +1,590 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>backTCP 实验报告 - iBug</title>
+		<meta name="description" content="backTCP 是中科大 2019 年秋季《计算机网络》课程的一次实验任务">
+		<meta name="author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="backTCP 实验报告">
+		<meta property="og:url" content="https://ibug.io/cn/2019/11/backTCP-report/">
+		<meta property="og:description" content="backTCP 是中科大 2019 年秋季《计算机网络》课程的一次实验任务">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2019-11-17T00:00:00+00:00">
+		<meta property="article:modified_time" content="2020-05-29T15:27:31+00:00">
+		<link rel="canonical" href="https://ibug.io/cn/2019/11/backTCP-report/">
+		<script type="application/ld+json">
+			{
+			  "@context": "https://schema.org",
+			
+			    "@type": "Person",
+			    "name": "iBug",
+			    "url": "https://ibug.io/"
+			
+			}
+		</script>
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<!-- https://t.co/dKP3o1e -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script>
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=b98b49e">
+		<link rel="stylesheet" href="https://fa.ibugone.com/releases/latest/css/pro.min.css">
+		<!--[if IE]>
+			<style>
+				/* old IE unsupported flexbox fixes */
+				.greedy-nav .site-title {
+				  padding-right: 3em;
+				}
+				.greedy-nav button {
+				  position: absolute;
+				  top: 0;
+				  right: 0;
+				  height: 100%;
+				}
+			</style>
+		<![endif]-->
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+		<meta name="theme-color" content="#EDEDED">
+		<script type="text/javascript">
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+		<!--
+ Minimal Mistakes layout: single
+ Page Path: _cn/2019-11-17-backTCP-report.md
+ Page Type: 
+-->
+	</head>
+	<body class="layout--single">
+		<nav class="skip-links">
+			<h2 class="screen-reader-text">Skip links</h2>
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<!--[if lt IE 9]>
+			<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+		<![endif]-->
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt=""></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a href="/about/">About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/blog/">Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/projects/">Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="https://github.com/iBug">GitHub <i class="far fa-xs fa-external-link"></i></a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/cn/">中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<svg class="icon" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 15.99 16">
+								<path d="M15.5,13.12L13.19,10.8a1.69,1.69,0,0,0-1.28-.55l-0.06-.06A6.5,6.5,0,0,0,5.77,0,6.5,6.5,0,0,0,2.46,11.59a6.47,6.47,0,0,0,7.74.26l0.05,0.05a1.65,1.65,0,0,0,.5,1.24l2.38,2.38A1.68,1.68,0,0,0,15.5,13.12ZM6.4,2A4.41,4.41,0,1,1,2,6.4,4.43,4.43,0,0,1,6.4,2Z" transform="translate(-.01)"></path>
+							</svg>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay" style=" background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('/image/header/cloud-1.jpg');">
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						backTCP 实验报告
+					</h1>
+					<p class="page__lead">backTCP 是中科大 2019 年秋季《计算机网络》课程的一次实验任务
+					</p>
+					<p class="page__meta">
+						<span class="post__meta-date">
+							<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2019-11-17T00:00:00+00:00">November 17, 2019</time>
+						</span>
+						<span class="post__meta-sep"></span>
+						<span class="post__meta-read-time">
+							<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+							9 minute read
+						</span>
+					</p>
+					<p>
+						<a href="https://github.com/iBug/backTCP" class="btn btn--light-outline btn--large"><i class="fab fa-github"></i> GitHub</a>
+						<a href="https://github.com/iBug/backTCP-python/files/3818860/V2.0.pdf" class="btn btn--light-outline btn--large"><i class="fas fa-file-alt"></i> 实验文档</a>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person">
+						<div class="author__avatar">
+							<img src="/image/avatar.png" alt="iBug" itemprop="image">
+						</div>
+						<div class="author__content">
+							<h3 class="author__name" itemprop="name">iBug</h3>
+							<div class="author__bio" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer"><i class="far fa-fw fa-envelope" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/ibugthought" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-telegram-plane" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox">
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="backTCP 实验报告">
+					<meta itemprop="description" content="backTCP 是中科大 2019 年秋季《计算机网络》课程的一次实验任务">
+					<meta itemprop="datePublished" content="2019-11-17T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2020-05-29T15:27:31+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title">
+											<i class="fas fa-th-list"></i> 目录</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#%E4%B8%80%E5%AE%9E%E9%AA%8C%E5%86%85%E5%AE%B9">一、实验内容</a></li>
+										<li><a href="#%E4%BA%8C%E5%AE%9E%E9%AA%8C%E7%8E%AF%E5%A2%83">二、实验环境</a></li>
+										<li>
+											<a href="#%E4%B8%89%E5%AE%9E%E7%8E%B0%E6%AD%A5%E9%AA%A4">三、实现步骤</a>
+											<ul>
+												<li>
+													<a href="#31-%E9%80%9A%E7%94%A8%E9%80%BB%E8%BE%91">3.1 通用逻辑</a>
+													<ul>
+														<li><a href="#311-backtcp-%E5%A4%B4">3.1.1 backTCP 头</a></li>
+														<li><a href="#312-backtcp-%E8%BF%9E%E6%8E%A5%E5%8F%A5%E6%9F%84">3.1.2 backTCP 连接句柄</a></li>
+														<li><a href="#313-backtcp-%E8%BF%9E%E6%8E%A5%E4%BF%A1%E6%81%AF">3.1.3 backTCP 连接信息</a></li>
+													</ul>
+												</li>
+												<li><a href="#32-%E5%8F%91%E9%80%81%E9%80%BB%E8%BE%91">3.2 发送逻辑</a></li>
+												<li><a href="#33-%E6%8E%A5%E6%94%B6%E9%80%BB%E8%BE%91">3.3 接收逻辑</a></li>
+												<li><a href="#34-%E4%B8%BB%E7%A8%8B%E5%BA%8F%E9%80%BB%E8%BE%91">3.4 主程序逻辑</a></li>
+												<li>
+													<a href="#35-%E4%BC%98%E7%82%B9%E4%B8%8E%E4%B8%8D%E8%B6%B3">3.5 优点与不足</a>
+													<ul>
+														<li><a href="#%E4%BC%98%E7%82%B9">优点</a></li>
+														<li><a href="#%E7%BC%BA%E7%82%B9">缺点</a></li>
+													</ul>
+												</li>
+												<li><a href="#36-%E6%B5%8B%E8%AF%95%E4%BF%A1%E9%81%93%E5%AE%9E%E7%8E%B0-">3.6 测试信道实现 </a></li>
+											</ul>
+										</li>
+										<li>
+											<a href="#%E5%9B%9B%E7%BB%93%E6%9E%9C%E5%B1%95%E7%A4%BA">四、结果展示</a>
+											<ul>
+												<li><a href="#41-%E7%B3%BB%E7%BB%9F%E7%8E%AF%E5%A2%83%E4%B8%8E%E7%BC%96%E8%AF%91">4.1 系统环境与编译</a></li>
+												<li><a href="#42-%E7%9B%B4%E6%8E%A5%E4%BC%A0%E8%BE%93">4.2 直接传输</a></li>
+												<li><a href="#43-%E7%BB%8F%E8%BF%87%E6%B5%8B%E8%AF%95%E4%BF%A1%E9%81%93%E4%BC%A0%E8%BE%93">4.3 经过测试信道传输</a></li>
+												<li><a href="#45-%E7%BB%93%E8%AE%BA">4.5 结论</a></li>
+											</ul>
+										</li>
+									</ul>
+								</nav>
+							</aside>
+							<h1 id="一实验内容">一、实验内容</h1>
+							<p>backTCP 的目标是实现面向无连接的可靠传输功能，能够解决数据包在传输过程中出现的乱序以及丢包问题。由于考虑的是无连接的网络，因此该作业不需要考虑传统 TCP 中的三次握手连接建立过程。此外，假设传输中数据不会出现错误，因此只需要考虑如何解决数据包的乱序和丢包问题。</p>
+							<p>由于实验文档缺失细节，并且助教允许在非关键位置自由发挥，因此我的实现与实验文档中的内容有以下区别：</p>
+							<ol>
+								<li>由于实验文档中指出 backTCP 是面向无连接的，因此我的实现采用了 UDP 作为传输层协议</li>
+								<li>出于各种考虑，我的实现采用了修改过的 backTCP 数据包头。与实验文档中指定的包头格式的唯一区别在于我的 backTCP 包头多了一个 1 字节的域 <code class="language-plaintext highlighter-rouge">data_len</code>，使得包头总长度变成了 8 字节</li>
+							</ol>
+							<p>因为上面两处修改涉及 backTCP 的底层结构，因此测试信道不能直接使用我公开的代码模板中的版本。当然，我也给出了一个修改版的测试信道程序，其后端实现与我的 backTCP 一致（尽管它是使用 Python 语言编写的）。该修改版测试信道在我的公开仓库的 <code class="language-plaintext highlighter-rouge">udp-mod</code> 分支中：<a href="https://github.com/iBug/backTCP-python/tree/udp-mod">https://github.com/iBug/backTCP-python/tree/udp-mod</a></p>
+							<h1 id="二实验环境">二、实验环境</h1>
+							<p>尽管我发布了一个使用 Python 语言编写的程序框架，但是由于我自己的代码很早就开始编写了，当初为了更加契合主题，直接使用 Linux 系统调用，因此我的代码使用 C 语言在 Linux 环境下编写。我自己经测试的系统环境为 Ubuntu 19.04 “Disco Dingo”，内核版本为 5.0，但理论上在任何较新的 Linux 系统中都可以正常运行，例如 Ubuntu 16.04, Debian 8 “Jessie” 以及 CentOS 7 等。编译环境需要 C 编译器和 Make (项目提供 <code class="language-plaintext highlighter-rouge">Makefile</code>)</p>
+							<h1 id="三实现步骤">三、实现步骤</h1>
+							<h2 id="31-通用逻辑">3.1 通用逻辑</h2>
+							<h3 id="311-backtcp-头">3.1.1 backTCP 头</h3>
+							<p>我采用的修改版 backTCP 头结构如下所示：</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">typedef</span> <span class="k">struct</span> <span class="n">_BTcpHeader</span> <span class="p">{</span>
+    <span class="kt">uint8_t</span> <span class="n">btcp_sport</span><span class="p">;</span>  <span class="c1">// source port - unused</span>
+    <span class="kt">uint8_t</span> <span class="n">btcp_dport</span><span class="p">;</span>  <span class="c1">// destination port - unused</span>
+    <span class="kt">uint8_t</span> <span class="n">btcp_seq</span><span class="p">;</span>    <span class="c1">// sequence number</span>
+    <span class="kt">uint8_t</span> <span class="n">btcp_ack</span><span class="p">;</span>    <span class="c1">// acknowledgement number</span>
+    <span class="kt">uint8_t</span> <span class="n">data_off</span><span class="p">;</span>    <span class="c1">// data offset in bytes</span>
+    <span class="kt">uint8_t</span> <span class="n">win_size</span><span class="p">;</span>    <span class="c1">// window size</span>
+    <span class="kt">uint8_t</span> <span class="n">flags</span><span class="p">;</span>       <span class="c1">// flags</span>
+    <span class="kt">uint8_t</span> <span class="n">data_len</span><span class="p">;</span>    <span class="c1">// data length (excl. header)</span>
+<span class="p">}</span> <span class="n">BTcpHeader</span><span class="p">;</span>
+</code></pre>
+								</div>
+							</div>
+							<p>各个域的意义如下：</p>
+							<ul>
+								<li>
+									<code class="language-plaintext highlighter-rouge">btcp_sport</code>, <code class="language-plaintext highlighter-rouge">btcp_dport</code> 是助教给出的文档中的内容。我实在没想到它们有什么用，因此它们在所有数据包中都被置为零，并且被忽略</li>
+								<li>
+									<code class="language-plaintext highlighter-rouge">btcp_seq</code> 为 backTCP 包序号，范围为 0~255，超出范围的取模处理（模 256）</li>
+								<li>
+									<code class="language-plaintext highlighter-rouge">btcp_ack</code> 为 backTCP 响应序号，指示下一个期望的包编号，而不是已全部收到的包中的最大编号（实际上等于该编号 +1）。这样做的一个好处是减少了多处的 +1 -1 运算，以及潜在的由它们带来的混乱</li>
+								<li>
+									<code class="language-plaintext highlighter-rouge">data_off</code> 表示数据段的开始位置，本实现中应该恒为 8，因为 backTCP 头中不包含传统 TCP 头的可选字段（因此理论上它也是不必要的）</li>
+								<li>
+									<code class="language-plaintext highlighter-rouge">win_size</code> 指示当前发送窗口中剩余的包数量，因此连续发送的一串包中该字段应该逐渐减小至零，可供接收端参考以调整接收窗口（虽然实际上好像并没有根据发送窗口来调整接收窗口的逻辑）</li>
+								<li>
+									<code class="language-plaintext highlighter-rouge">flags</code> 在代码中有三个位是被使用的，但是实际上只有一个位 0x01 (重传) 会影响功能。另外两个无用字段为 0x02 (指示传输结束，实际采用另一种实现) 和 0x40 (模仿传统 TCP，指示该包为一个 ACK 包，由于各种原因未采用)</li>
+								<li>
+									<code class="language-plaintext highlighter-rouge">data_len</code> 是我自己加的，用于从被暂存的包中确定实际数据长度，避免产生错误输出</li>
+							</ul>
+							<h3 id="312-backtcp-连接句柄">3.1.2 backTCP 连接句柄</h3>
+							<p>为了方便使用与维护，我将底层的 UDP 套接字包装成为 <code class="language-plaintext highlighter-rouge">BTcpConnection</code> 句柄指针。使用方式与 <code class="language-plaintext highlighter-rouge">FILE*</code> 极为相似：</p>
+							<ul>
+								<li>
+									<code class="language-plaintext highlighter-rouge">BTOpen</code> 函数打开一个 backTCP 连接，初始化底层套接字与连接属性，并返回一个指向连接元信息的指针</li>
+								<li>
+									<code class="language-plaintext highlighter-rouge">BTSend</code>, <code class="language-plaintext highlighter-rouge">BTRecv</code> 等函数接收一个 <code class="language-plaintext highlighter-rouge">BTcpConnection</code> 指针指示要使用的 backTCP 连接</li>
+								<li>
+									<code class="language-plaintext highlighter-rouge">BTClose</code> 接收一个 <code class="language-plaintext highlighter-rouge">BTcpConnection</code> 指针，进行清理工作，然后销毁这个指针</li>
+							</ul>
+							<p>该句柄指针与 C 语言标准文件句柄指针的用法比较：</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">BTcpConnection</span> <span class="o">*</span><span class="n">conn</span> <span class="o">=</span> <span class="n">BTOpen</span><span class="p">(...)</span><span class="o">:</span>
+<span class="kt">FILE</span> <span class="o">*</span><span class="n">fp</span> <span class="o">=</span> <span class="n">fopen</span><span class="p">(...);</span>
+</code></pre>
+								</div>
+							</div>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">BTSend</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="p">...);</span>
+<span class="n">BTRecv</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="p">...);</span>
+<span class="n">fprintf</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="p">...);</span>
+<span class="n">fscanf</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="p">....);</span>
+</code></pre>
+								</div>
+							</div>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">BTClose</span><span class="p">(</span><span class="n">conn</span><span class="p">);</span>
+<span class="n">fclose</span><span class="p">(</span><span class="n">conn</span><span class="p">);</span>
+</code></pre>
+								</div>
+							</div>
+							<h3 id="313-backtcp-连接信息">3.1.3 backTCP 连接信息</h3>
+							<p><code class="language-plaintext highlighter-rouge">BTcpConnection</code> 结构如下：</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">typedef</span> <span class="k">struct</span> <span class="n">_BTcpConnection</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">socket</span><span class="p">;</span>
+    <span class="k">struct</span> <span class="n">sockaddr_in</span> <span class="n">addr</span><span class="p">;</span>
+    <span class="n">BTcpState</span> <span class="n">state</span><span class="p">;</span>
+    <span class="n">BTcpConfig</span> <span class="n">config</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">BTcpConnection</span><span class="p">;</span>
+</code></pre>
+								</div>
+							</div>
+							<p>其中：</p>
+							<ul>
+								<li>
+									<code class="language-plaintext highlighter-rouge">socket</code> 为底层套接字所使用的文件描述符</li>
+								<li>
+									<code class="language-plaintext highlighter-rouge">addr</code> 指示另一端的地址（仅支持 IPv4）</li>
+								<li>
+									<code class="language-plaintext highlighter-rouge">state</code> 存储了连接的一些状态信息，因为一个 <code class="language-plaintext highlighter-rouge">BTcpConnection</code> 可能会被多次用于调用发送或接收函数，需要存储中间状态，就像 <code class="language-plaintext highlighter-rouge">FILE*</code> 可以多次用于调用 <code class="language-plaintext highlighter-rouge">fread</code>/<code class="language-plaintext highlighter-rouge">fwrite</code> 等函数一样</li>
+								<li>
+									<code class="language-plaintext highlighter-rouge">config</code> 存储了连接的一些设置信息，例如最大数据段长度、接收超时时间、ACK 超时时间等。这个字段本来是准备提供通过命令行修改 backTCP 连接属性的功能的，但是由于时间匆忙未能实现。该字段在初始化连接时会被置为默认值（最大数据长度 64 字节，ACK 超时时间为 10 ms，这两个值与实验文档中的要求一致；接收窗口 10 个包，接收超时时间为 5 ms）</li>
+							</ul>
+							<h2 id="32-发送逻辑">3.2 发送逻辑</h2>
+							<p>对于发送部分，<code class="language-plaintext highlighter-rouge">btcp_sport</code>, <code class="language-plaintext highlighter-rouge">btcp_dport</code> 和 <code class="language-plaintext highlighter-rouge">btcp_ack</code> 三个域是没有使用的（但是接收方返回的响应包中的 <code class="language-plaintext highlighter-rouge">btcp_ack</code> 字段会被检查）。</p>
+							<p>发送函数原型为 <code class="language-plaintext highlighter-rouge">size_t BTSend(BTcpConnection* conn, const void* data, size_t len)</code>，各参数意义如下：</p>
+							<ul>
+								<li>
+									<code class="language-plaintext highlighter-rouge">conn</code> 为 backTCP 连接句柄，见 3.1.2 节</li>
+								<li>
+									<code class="language-plaintext highlighter-rouge">data</code> 指向待发送数据，这些数据会被分割并包装成 backTCP 包然后发送</li>
+								<li>
+									<code class="language-plaintext highlighter-rouge">len</code> 指示 <code class="language-plaintext highlighter-rouge">data</code> 中数据的长度</li>
+								<li>返回值为实际成功发出的字节数</li>
+							</ul>
+							<p>函数首先进行必要的初始化，例如分配一些缓冲区，从 <code class="language-plaintext highlighter-rouge">conn-&gt;state</code> 中恢复必要的状态信息等。</p>
+							<p>发送函数中主体循环的逻辑为：</p>
+							<ul>
+								<li>检查窗口大小，从 <code class="language-plaintext highlighter-rouge">data</code> 中读取数据，拼装数据包，并将窗口中的数据包全部发出</li>
+								<li>等待对面发来 ACK 包，使用 poll(2) 系统调用来检测有没有收到包，或者超时</li>
+								<li>根据 ACK 结果作出响应
+									<ul>
+										<li>超时：将窗口中所有包重新发送一遍</li>
+										<li>收到 ACK 包：检查接收方发回的 ACK 值与窗口大小，调整发送窗口位置与大小，进入下一轮循环</li>
+									</ul>
+								</li>
+								<li>发送完全部数据后，清理（释放申请的内存、将状态信息存回 <code class="language-plaintext highlighter-rouge">conn-&gt;state</code> 中）并返回</li>
+							</ul>
+							<p>其中，主体循环第一次迭代时的发送窗口大小为 1，即仅发出一个包然后等待接收端的响应，方便根据接收端状态进行动态调整。</p>
+							<h2 id="33-接收逻辑">3.3 接收逻辑</h2>
+							<p>对于接收部分，<code class="language-plaintext highlighter-rouge">btcp_sport</code>, <code class="language-plaintext highlighter-rouge">btcp_dport</code>, <code class="language-plaintext highlighter-rouge">btcp_seq</code>, <code class="language-plaintext highlighter-rouge">data_off</code> 和 <code class="language-plaintext highlighter-rouge">data_len</code> 五个域是没有使用的（但发送方传来的后三个字段会被检查）</p>
+							<p>接收函数原型为 <code class="language-plaintext highlighter-rouge">size_t BTRecv(BTcpConnection* conn, void* data, size_t len)</code>，各参数意义与 <code class="language-plaintext highlighter-rouge">BTSend</code> 相同，区别是 <code class="language-plaintext highlighter-rouge">data</code> 需要可写（这是显然的）</p>
+							<p>初始化工作与发送部分相似，但在进入主体循环之前会无限期等待第一个包（因为是面向无连接的），然后根据自身配置信息作出响应。</p>
+							<p>接收函数中主体循环的逻辑为：</p>
+							<ul>
+								<li>等待并接收每一个包，直到以下事件之一发生，否则将收到的包根据 <code class="language-plaintext highlighter-rouge">btcp_seq</code> 序号放入暂存区（接收窗口）
+									<ul>
+										<li>发送端指示发完了，即收到一个 <code class="language-plaintext highlighter-rouge">win_size = 0</code> 的包</li>
+										<li>本地的暂存区满了</li>
+										<li>超时没收到包（使用接收超时）</li>
+									</ul>
+								</li>
+								<li>收到的数据包如果遇到以下情况之一会被丢弃，而不是放入暂存区
+									<ul>
+										<li>
+											<code class="language-plaintext highlighter-rouge">btcp_seq</code> 序号所指示的数据包已存在于暂存区中</li>
+										<li>该包含有错误的 <code class="language-plaintext highlighter-rouge">data_off</code> 或 <code class="language-plaintext highlighter-rouge">data_len</code>
+										</li>
+									</ul>
+								</li>
+								<li>整理收到的数据包，将连续的数据包存入接收数据（即函数的 <code class="language-plaintext highlighter-rouge">data</code> 参数），然后移进窗口，并统计缺失的数据包。若有缺失的数据包，则发回的 ACK 包中会通过 <code class="language-plaintext highlighter-rouge">btcp_ack</code> 和 <code class="language-plaintext highlighter-rouge">win_size</code> 指示发送端将缺失的包发来，实现选择重传 (SR)</li>
+								<li>若收到长度为零的包或接收数据区已存入足够的数据（通过函数的 <code class="language-plaintext highlighter-rouge">len</code> 参数指定），退出循环并清理</li>
+							</ul>
+							<h2 id="34-主程序逻辑">3.4 主程序逻辑</h2>
+							<p>主程序负责处理命令行参数（使用 getopt 库灵活处理）并实际创建连接和发送/接收数据。命令行参数的用法可以通过 <code class="language-plaintext highlighter-rouge">btsend --help</code> 或 <code class="language-plaintext highlighter-rouge">btrecv --help</code> 命令查看，支持指定地址、端口等，其中文件名必须给出。</p>
+							<p>为了减少内存使用，同时由于后端 backTCP 也支持，文件将以 64 KiB 的块大小读入，按块发送或接收。</p>
+							<h2 id="35-优点与不足">3.5 优点与不足</h2>
+							<h3 id="优点">优点</h3>
+							<ul>
+								<li>能够可靠地处理丢包与乱序问题</li>
+								<li>支持选择重传（请加分）</li>
+								<li>实现方式为前后端分离，后端代码可以单独编译成库并在其他程序中调用（可以编译出 <code class="language-plaintext highlighter-rouge">libbtcp.so</code> 动态链接，尽管目前的 <code class="language-plaintext highlighter-rouge">Makefile</code> 并没有指出如何编译，但是经测试这是可以正常使用的）</li>
+								<li>支持在一个“连接”中多次调用发送/接收函数</li>
+							</ul>
+							<h3 id="缺点">缺点</h3>
+							<ul>
+								<li>命令行功能有限，例如不支持修改 backTCP 的属性等</li>
+								<li>窗口滑动采用 memmove(3) 而不是只修改索引，效率较低</li>
+								<li>前端程序仅支持单个函数的发送接收</li>
+								<li>部分异常未良好处理</li>
+								<li>指示关闭连接的 0 字节 UDP 包若丢包，会导致接收端无限等待（因此测试信道看到这个包就会原样转发，绕过“捣乱”逻辑）</li>
+							</ul>
+							<h2 id="36-测试信道实现-">3.6 测试信道实现 <a href="https://github.com/iBug/TetrisAI/releases/latest"><i class="fab fa-github"></i></a>
+							</h2>
+							<p>既然公开的测试信道是我写的，我就在这把它当做我提交的实验的一部分吧。</p>
+							<p>测试信道为了方便，使用 Python 语言编写，通过序列化 <code class="language-plaintext highlighter-rouge">BTcpPacket.__bytes__</code> 和反序列化 <code class="language-plaintext highlighter-rouge">@staticmethod BTcpPacket.from_bytes</code> 来在二进制序列和 <code class="language-plaintext highlighter-rouge">BTcpPacket</code> 类之间转换，同时使用 <code class="language-plaintext highlighter-rouge">argparse</code> 库提供丰富的命令行选项。</p>
+							<p>该程序在解析完命令行参数后，首先创建一个额外的线程将接收端返回的包原样转发给发送端，这是因为实验文档中（还是助教，我也忘了）说明了 ACK 包不会丢包。然后从一系列“动作”中随机选择一个，从发送端接收数据包并执行抽中的动作。目前测试信道支持以下 4 种动作：</p>
+							<ul>
+								<li>什么都不做，直接转发给接收端</li>
+								<li>将包丢弃，除非包头指示该包为重传，此时什么都不做并转发</li>
+								<li>一次性接收两个包并将它们交换顺序后发出</li>
+								<li>一次性接收三个包，随机化它们的顺序，并随机复制或丢弃一个包。重传的包不会被复制或丢弃</li>
+							</ul>
+							<p>若收到 0 字节的 UDP 包，则停止动作并将所有已收到的包发给接收端，然后关闭</p>
+							<h1 id="四结果展示">四、结果展示</h1>
+							<h2 id="41-系统环境与编译">4.1 系统环境与编译</h2>
+							<p><img src="/image/backTCP/1.png" alt="" class="block"></p>
+							<h2 id="42-直接传输">4.2 直接传输</h2>
+							<p><img src="/image/backTCP/2.png" alt="" class="block"></p>
+							<p><img src="/image/backTCP/3.png" alt="" class="block"></p>
+							<h2 id="43-经过测试信道传输">4.3 经过测试信道传输</h2>
+							<p><img src="/image/backTCP/4.png" alt="" class="block"></p>
+							<p><img src="/image/backTCP/5.png" alt="" class="block"></p>
+							<h2 id="45-结论">4.5 结论</h2>
+							<p>根据控制台输出，可以看到，不论是直接传输还是经过测试信道“捣蛋”时的传输，都可以完整传输一个 150 KB 的文件。在有测试信道时，发送端和接收端都能正确检测丢包和乱序，并采取合适的措施确保接收到的数据块是完整的。同时接收端也能够使用 ACK 包头中的信息，让发送端仅传回丢失的包，然后从缓冲区中恢复完整的书架序列，说明选择重传的功能也正确工作。</p>
+						</section>
+						<footer class="page__meta">
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-05-29">May 29, 2020</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=backTCP+%E5%AE%9E%E9%AA%8C%E6%8A%A5%E5%91%8A%20https%3A%2F%2Fibug.io%2Fcn%2F2019%2F11%2FbackTCP-report%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fcn%2F2019%2F11%2FbackTCP-report%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A%2F%2Fibug.io%2Fcn%2F2019%2F11%2FbackTCP-report%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/cn/2019/08/speech-at-msc-2019/" class="pagination--pager" title="我在微软夏令营 2019 的分享
+">Previous</a>
+							<a href="/cn/2020/07/clash-for-windows-custom-rules/" class="pagination--pager" title="Clash for Windows 自定义规则整合
+">Next</a>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					© 2020 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.
+					<br>
+					Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.
+					<br>
+					<a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a>
+					<br>
+					Site version <a href="/status">G-301</a>
+				</div>
+				<script src="/assets/js/love.js" type="text/javascript" async="async"></script>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<!-- Including InstantSearch.js library and styling -->
+		<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js"></script>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css">
+		<script>
+			// Instanciating InstantSearch.js with Algolia credentials
+			const search = instantsearch({
+			  appId: '14DZKASAEJ',
+			  apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			  indexName: 'iBug_website',
+			  searchParameters: {
+			    restrictSearchableAttributes: [
+			      'title',
+			      'content'
+			    ]
+			  }
+			});
+			
+			const hitTemplate = function(hit) {
+			  const url = hit.url;
+			  const title = hit._highlightResult.title.value;
+			  const content = hit._highlightResult.html.value;
+			
+			  return `
+			    <div class="list__item">
+			      <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			        <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			        <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			      </article>
+			    </div>
+			  `;
+			}
+			
+			// Adding searchbar and results widgets
+			search.addWidget(
+			  instantsearch.widgets.searchBox({
+			    container: '.search-searchbar',
+			    poweredBy: true,
+			    placeholder: 'Enter your search term...'
+			  })
+			);
+			search.addWidget(
+			  instantsearch.widgets.hits({
+			    container: '.search-hits',
+			    templates: {
+			      item: hitTemplate,
+			      empty: 'No results',
+			    }
+			  })
+			);
+			
+			// Starting the search only when toggle is clicked
+			$(document).ready(function () {
+			  $(".search__toggle").on("click", function() {
+			    if(!search.started) {
+			      search.start();
+			    }
+			  });
+			});
+		</script>
+		<script>
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-115907213-1']);
+			
+			_gaq.push(['_trackPageview']);
+			
+			(function() {
+			  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/cn/2019/11/backTCP-report/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/cn/2019/11/backTCP-report"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+		</noscript>
+	</body>
+</html>

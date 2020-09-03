@@ -1,0 +1,611 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>Working against WordPress DeBlocker plugin - iBug</title>
+		<meta name="description" content="I’ll go straight to the solution (keep in mind that it’s considerably primitive, so use at your own risk) with code attached below. It’s a Tampermonkey userscript.">
+		<meta name="author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="Working against WordPress DeBlocker plugin">
+		<meta property="og:url" content="https://ibug.io/blog/2020/08/work-against-wordpress-deblocker/">
+		<meta property="og:description" content="I’ll go straight to the solution (keep in mind that it’s considerably primitive, so use at your own risk) with code attached below. It’s a Tampermonkey userscript.">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2020-08-13T00:00:00+00:00">
+		<meta property="article:modified_time" content="2020-08-13T02:10:39+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2020/08/work-against-wordpress-deblocker/">
+		<script type="application/ld+json">
+			{
+			  "@context": "https://schema.org",
+			
+			    "@type": "Person",
+			    "name": "iBug",
+			    "url": "https://ibug.io/"
+			
+			}
+		</script>
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<!-- https://t.co/dKP3o1e -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script>
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=b98b49e">
+		<link rel="stylesheet" href="https://fa.ibugone.com/releases/latest/css/pro.min.css">
+		<!--[if IE]>
+			<style>
+				/* old IE unsupported flexbox fixes */
+				.greedy-nav .site-title {
+				  padding-right: 3em;
+				}
+				.greedy-nav button {
+				  position: absolute;
+				  top: 0;
+				  right: 0;
+				  height: 100%;
+				}
+			</style>
+		<![endif]-->
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+		<meta name="theme-color" content="#EDEDED">
+		<script type="text/javascript">
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+		<!--
+ Minimal Mistakes layout: single
+ Page Path: _posts/2020-08-13-work-against-wordpress-deblocker.md
+ Page Type: 
+-->
+	</head>
+	<body class="layout--single">
+		<nav class="skip-links">
+			<h2 class="screen-reader-text">Skip links</h2>
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<!--[if lt IE 9]>
+			<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+		<![endif]-->
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt=""></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a href="/about/">About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/blog/">Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/projects/">Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="https://github.com/iBug">GitHub <i class="far fa-xs fa-external-link"></i></a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/cn/">中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<svg class="icon" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 15.99 16">
+								<path d="M15.5,13.12L13.19,10.8a1.69,1.69,0,0,0-1.28-.55l-0.06-.06A6.5,6.5,0,0,0,5.77,0,6.5,6.5,0,0,0,2.46,11.59a6.47,6.47,0,0,0,7.74.26l0.05,0.05a1.65,1.65,0,0,0,.5,1.24l2.38,2.38A1.68,1.68,0,0,0,15.5,13.12ZM6.4,2A4.41,4.41,0,1,1,2,6.4,4.43,4.43,0,0,1,6.4,2Z" transform="translate(-.01)"></path>
+							</svg>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay" style=" background-image: url('/image/header/mountain-1.jpg');">
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						Working against WordPress DeBlocker plugin
+					</h1>
+					<p class="page__meta">
+						<span class="post__meta-date">
+							<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2020-08-13T00:00:00+00:00">August 13, 2020</time>
+						</span>
+						<span class="post__meta-sep"></span>
+						<span class="post__meta-read-time">
+							<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+							5 minute read
+						</span>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person">
+						<div class="author__avatar">
+							<img src="/image/avatar.png" alt="iBug" itemprop="image">
+						</div>
+						<div class="author__content">
+							<h3 class="author__name" itemprop="name">iBug</h3>
+							<div class="author__bio" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer"><i class="far fa-fw fa-envelope" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/ibugthought" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-telegram-plane" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox">
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="Working against WordPress DeBlocker plugin">
+					<meta itemprop="description" content="I’ll go straight to the solution (keep in mind that it’s considerably primitive, so use at your own risk) with code attached below. It’s a Tampermonkey userscript.">
+					<meta itemprop="datePublished" content="2020-08-13T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2020-08-13T02:10:39+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title">
+											<i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#encounter">Encounter</a></li>
+										<li><a href="#getting-f12-developer-tools">Getting F12 Developer Tools</a></li>
+										<li><a href="#locating-the-script">Locating the script</a></li>
+										<li><a href="#tackling-the-vicious-script">Tackling the vicious script</a></li>
+										<li><a href="#the-bottom-line">The bottom line</a></li>
+									</ul>
+								</nav>
+							</aside>
+							<p>I’ll go straight to the solution (keep in mind that it’s considerably primitive, so use at your own risk) with code attached below. It’s a <a href="https://www.tampermonkey.net/">Tampermonkey</a> userscript.</p>
+							<div class="language-javascript highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="c1">// ==UserScript==</span>
+<span class="c1">// @name         WordPress Anti-DeBlocker</span>
+<span class="c1">// @version      0.1</span>
+<span class="c1">// @author       iBug</span>
+<span class="c1">// @match        *://*/*</span>
+<span class="c1">// @license      MIT</span>
+<span class="c1">// @grant        none</span>
+<span class="c1">// @run-at       document-start</span>
+<span class="c1">// ==/UserScript==</span>
+
+<span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nb">document</span><span class="p">)</span> <span class="p">{</span>
+    <span class="dl">'</span><span class="s1">use strict</span><span class="dl">'</span><span class="p">;</span>
+
+    <span class="kd">const</span> <span class="nx">addEventListener_orig</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">;</span>
+    <span class="nb">document</span><span class="p">.</span><span class="nx">addEventListener</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">,</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">d</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// a = event name (string), b = function</span>
+        <span class="kd">var</span> <span class="nx">code</span> <span class="o">=</span> <span class="nx">b</span><span class="p">.</span><span class="nx">toString</span><span class="p">();</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">a</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">DOMContentLoaded</span><span class="dl">"</span> <span class="o">&amp;&amp;</span> <span class="nx">code</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="sr">/dev</span><span class="se">\W?</span><span class="sr">tool/i</span><span class="p">))</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">Blocked function. Code below</span><span class="dl">"</span><span class="p">);</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">code</span><span class="p">);</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="nx">addEventListener_orig</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">,</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">d</span><span class="p">);</span>
+    <span class="p">};</span>
+<span class="p">})(</span><span class="nb">document</span><span class="p">);</span>
+</code></pre>
+								</div>
+							</div>
+							<h2 id="encounter">Encounter</h2>
+							<p>I was searching for some resources when I came across a WordPress site. I had both ABP and uBO installed, and the website flashed blood red. So it was an ad blocker detector, easy peasy, and I hit Ctrl-Shift-I, only to find that it didn’t work. I tried F12 and found it was blocked, too, so there must be other methods I could resort too.</p>
+							<h2 id="getting-f12-developer-tools">Getting F12 Developer Tools</h2>
+							<p>If I can’t open Dev Tools with the page showing, I can always have it open <em>before</em> the page loads. I had a sense this would be a tough opponent, so I opened an incognito window, enabled ad blocker extensions, opened Dev Tools, and navigated to the page.</p>
+							<p><img src="/image/wp-anti-deblocker/debugger-pause.png" alt="debugger paused" class="block"></p>
+							<p>Whoa, it’s paused with the debugger, and when I go to the Elements tab, I found that the script had removed the whole DOM, leaving only the <code class="language-plaintext highlighter-rouge">&lt;html&gt;</code> tag behind:</p>
+							<p><img src="/image/wp-anti-deblocker/empty-dom.png" alt="empty dom" class="block"></p>
+							<p>That was <strong>OUTRAGEOUS</strong>! It’s the most offensive script I’ve seen. I must track it down and counter it.</p>
+							<p>Looking at the <strong>Network</strong> tab, there are so many scripts that I probably can’t inspect them one-by-one.</p>
+							<p>When I reload the page, I found that my whole Chrome went unresponsive, and I had to stop it from Task Manager. What a job they’ve done!</p>
+							<h2 id="locating-the-script">Locating the script</h2>
+							<p>One (and the only one so far) key behavior is its removal of the whole DOM, so if I could track that change, I could very accurately locate the offending script.</p>
+							<p>I opened Chrome in incognito mode again, and opened Dev Tools. I need to add a breakpoint on change to the root element, and I have to add the watcher after opening the page, so the first thing to do is to add a breakpoint at page load. I navigated to the <strong>Sources</strong> tab, under <strong>Event Listener Breakpoints</strong>, I checked <code class="language-plaintext highlighter-rouge">load</code>:</p>
+							<p><img src="/image/wp-anti-deblocker/breakpoint-load.png" alt="breakpoint load" class="block"></p>
+							<p>Then I navigated to the page, and an innocent script hit the breakpoint.</p>
+							<p><img src="/image/wp-anti-deblocker/break-at-load.png" alt="break at load" class="block"></p>
+							<p>That wasn’t too much of a problem, as I could then switch to the <strong>Elements</strong> tab and add a breakpoint onto the <code class="language-plaintext highlighter-rouge">&lt;html&gt;</code> element:</p>
+							<p><img src="/image/wp-anti-deblocker/set-breakpoint-on-html.png" alt="set breakpoint on html" class="block"></p>
+							<p>The next task would be a bit boring, to keep on continuing the debugger while keeping an eye on what’s running.</p>
+							<p><img src="/image/wp-anti-deblocker/continue-execution.png" alt="continue execution" class="block"></p>
+							<p>The same innocent script, along with jQuery, showed up around 20 times, before the first suspicious script poped up:</p>
+							<p><img src="/image/wp-anti-deblocker/first-suspicious-script.png" alt="first suspicious script" class="block"></p>
+							<p>It was named <code class="language-plaintext highlighter-rouge">ads.min.js</code> and was pretty short, as shown below (formatted):</p>
+							<div class="language-javascript highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="dl">"</span><span class="s2">use strict</span><span class="dl">"</span><span class="p">;</span>
+
+<span class="kd">let</span> <span class="nx">e</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="dl">"</span><span class="s2">div</span><span class="dl">"</span><span class="p">);</span>
+<span class="nx">e</span><span class="p">.</span><span class="nx">id</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">mdp-deblocker-ads</span><span class="dl">"</span><span class="p">;</span>
+<span class="nx">e</span><span class="p">.</span><span class="nx">style</span><span class="p">.</span><span class="nx">display</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">none</span><span class="dl">"</span><span class="p">;</span>
+<span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">e</span><span class="p">);</span>
+</code></pre>
+								</div>
+							</div>
+							<p>So I let it continue.</p>
+							<p>It quickly became a tedious task, stepping through all those jQuery and analytics script with nothing interesting.</p>
+							<p>Recalling that the offending script would remove both <code class="language-plaintext highlighter-rouge">&lt;head&gt;</code> and <code class="language-plaintext highlighter-rouge">&lt;body&gt;</code> elements, I changed the breakpoint to them:</p>
+							<p><img src="/image/wp-anti-deblocker/set-breakpoint-on-body.png" alt="set breakpoint on body" class="block"></p>
+							<p>It turned out that I did the right thing. Another suspicious script showed up very quickly:</p>
+							<p><img src="/image/wp-anti-deblocker/offending-script-found.png" alt="offending script found" class="block"></p>
+							<p>It’s minified and had a jumbled file name. Scrolling the line to the beginning shows a heavy hint that it’s the one I was looking for:</p>
+							<p><img src="/image/wp-anti-deblocker/start-of-script.png" alt="start of script" class="block"></p>
+							<p>Its comments pretty much told it all: <em>Most effective way to detect ad blockers</em>, so I pulled it out and took a closer look.</p>
+							<p>It wasn’t hard to find some traits, for example, the following code is a part of it:</p>
+							<div class="language-javascript highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">throw</span> <span class="p">((</span><span class="nx">checkStatus</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">on</span><span class="dl">"</span><span class="p">),</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="dl">"</span><span class="s2">Dev tools checker</span><span class="dl">"</span><span class="p">));</span>
+</code></pre>
+								</div>
+							</div>
+							<h2 id="tackling-the-vicious-script">Tackling the vicious script</h2>
+							<p>The script starts with an event listener:</p>
+							<div class="language-javascript highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nb">document</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span>
+  <span class="dl">"</span><span class="s2">DOMContentLoaded</span><span class="dl">"</span><span class="p">,</span>
+  <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+      <span class="c1">// function body</span>
+  <span class="p">},</span>
+  <span class="kc">false</span>
+<span class="p">);</span>
+</code></pre>
+								</div>
+							</div>
+							<p>As I’m not particularly interested in disassembling the whole thing (you can always run it through a formatter to get a better idea of it), I decided to monkey-patch the event listener.</p>
+							<p>Because the script runs at a rather early stage of page load, I need to do something <em>even faster</em>, so it would be nice to run the “solution script” as soon as the page is “created”. This can be done using Tampermonkey’s <code class="language-plaintext highlighter-rouge">@run-on document-start</code> directive:</p>
+							<div class="language-javascript highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="c1">// ==UserScript==</span>
+<span class="c1">// @name         WordPress Anti-DeBlocker</span>
+<span class="c1">// @run-at       document-start</span>
+<span class="c1">// ==/UserScript==</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Now I could write my logic and check what’s being executed. Let’s get <code class="language-plaintext highlighter-rouge">document.addEventListener</code> hooked up first:</p>
+							<div class="language-javascript highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kd">const</span> <span class="nx">addEventListener_orig</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">;</span>
+<span class="nb">document</span><span class="p">.</span><span class="nx">addEventListener</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{};</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Looking at <a href="https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener">the function prototype</a>, it may have up to 4 arguments, so the patched function also needs to have 4:</p>
+							<div class="language-javascript highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nb">document</span><span class="p">.</span><span class="nx">addEventListener</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">,</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">d</span><span class="p">)</span> <span class="p">{};</span>
+</code></pre>
+								</div>
+							</div>
+							<p>It’s not a good naming choice, but neither is it a must to have good coding styles here, so I’m going to pass it over here.</p>
+							<p>As shown by the code, it adds a listener to the <code class="language-plaintext highlighter-rouge">DOMContentLoaded</code> event, with its code containing <code class="language-plaintext highlighter-rouge">dev tools checker</code>. Knowing that the source code of a function can be retrieved with <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/toString"><code class="language-plaintext highlighter-rouge">toString</code></a> method, I easily composed the following code:</p>
+							<div class="language-javascript highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kd">const</span> <span class="nx">addEventListener_orig</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">;</span>
+<span class="nb">document</span><span class="p">.</span><span class="nx">addEventListener</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">,</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">d</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// a = event name (string), b = function</span>
+    <span class="kd">var</span> <span class="nx">code</span> <span class="o">=</span> <span class="nx">b</span><span class="p">.</span><span class="nx">toString</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">a</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">DOMContentLoaded</span><span class="dl">"</span> <span class="o">&amp;&amp;</span> <span class="nx">code</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="sr">/dev</span><span class="se">\W?</span><span class="sr">tool/i</span><span class="p">))</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">Blocked function. Code below</span><span class="dl">"</span><span class="p">);</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">code</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nx">addEventListener_orig</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">,</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">d</span><span class="p">);</span>
+<span class="p">};</span>
+</code></pre>
+								</div>
+							</div>
+							<p>The idea is simple: If something matching the known patterns of the target script, interrupt and deny its code.</p>
+							<p>The last thing is I need this countermeasure to run on all sites, so the <code class="language-plaintext highlighter-rouge">@match</code> directive should be the wildest wildcard:</p>
+							<div class="language-javascript highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="c1">// ==UserScript==</span>
+<span class="c1">// @name         WordPress Anti-DeBlocker</span>
+<span class="c1">// @match        *://*/*</span>
+<span class="c1">// @run-at       document-start</span>
+<span class="c1">// ==/UserScript==</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Now save the userscript and reload the page. I knew that my solution worked as soon as I saw the expected output:</p>
+							<p><img src="/image/wp-anti-deblocker/captured-script.png" alt="captured script" class="block"></p>
+							<p>Well done, iBug! You’ve just got another achievement for defeating this plugin!</p>
+							<h2 id="the-bottom-line">The bottom line</h2>
+							<p>While ads could be an important income for websites, there are users who detest them. Compelling every single and last user to disable their ad blocker for you is blunt and abusive. If you really want every piece of crummy money from your nasty ads, go fuck yourself.</p>
+							<p>Developer always wins.</p>
+							<p>I’ve uploaded the sample to <a href="https://download.ibugone.com/wp-deblocker-2.0.3.js">https://download.ibugone.com/wp-deblocker-2.0.3.js</a> for analysis (run it through VSCode formatter or <code class="language-plaintext highlighter-rouge">clang-format</code> first).</p>
+							<p>Finally, <a rel="nofollow noreferrer" href="https://1.envato.market/deblocker">here’s the link</a> to the horrible WordPress plugin, if you want to find out for yourself.</p>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/web" class="page__taxonomy-item" rel="tag">web</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-08-13">August 13, 2020</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=Working+against+WordPress+DeBlocker+plugin%20https%3A%2F%2Fibug.io%2Fblog%2F2020%2F08%2Fwork-against-wordpress-deblocker%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2020%2F08%2Fwork-against-wordpress-deblocker%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A%2F%2Fibug.io%2Fblog%2F2020%2F08%2Fwork-against-wordpress-deblocker%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/blog/2020/05/jekyll-better-related-posts/" class="pagination--pager" title="Enabling better “Related Posts” with Jekyll
+">Previous</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+				<div class="page__related">
+					<h4 class="page__related-title">You may also enjoy</h4>
+					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="post__meta-date">
+										<i class="far fa-fw fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2019-12-28T00:00:00+00:00">December 28, 2019</time>
+									</span>
+									<br>
+									<span class="post__meta-read-time">
+										<i class="far fa-fw fa-fw fa-clock" aria-hidden="true"></i>
+										16 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on the training data of 9M user-item pairs and a social network.
+								</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2019/08/speech-at-msc-2019/" rel="permalink">My speech at Microsoft Summer Camp 2019
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="post__meta-date">
+										<i class="far fa-fw fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2019-08-14T00:00:00+00:00">August 14, 2019</time>
+									</span>
+									<br>
+									<span class="post__meta-read-time">
+										<i class="far fa-fw fa-fw fa-clock" aria-hidden="true"></i>
+										10 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">This is a translated version from the Chinese (original) script. The slideshow can be acquired here. For comments, please head to the Chinese version of this post.
+								</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2018/04/build-github-pages-with-travis-ci/" rel="permalink">Build GitHub Pages with Travis CI
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="post__meta-date">
+										<i class="far fa-fw fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2018-04-14T00:00:00+00:00">April 14, 2018</time>
+									</span>
+									<br>
+									<span class="post__meta-read-time">
+										<i class="far fa-fw fa-fw fa-clock" aria-hidden="true"></i>
+										6 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">I just set up my GitHub Pages to be built with Travis CI. It’s amazing. → 
+								</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2019/12/manage-servers-with-ssh-ca/" rel="permalink">Managing servers with OpenSSH Certificate Authority
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="post__meta-date">
+										<i class="far fa-fw fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2019-12-23T00:00:00+00:00">December 23, 2019</time>
+									</span>
+									<br>
+									<span class="post__meta-read-time">
+										<i class="far fa-fw fa-fw fa-clock" aria-hidden="true"></i>
+										6 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">Since the addition of the website server for an external corporation, I now have 5 Linux servers to manage on my own. I also have 4 terminal devices that I use to connect to those servers: two of my laptops, my Android phone (using Termux), and one of those servers that I use as a workstation.
+								</p>
+							</article>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					© 2020 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.
+					<br>
+					Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.
+					<br>
+					<a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a>
+					<br>
+					Site version <a href="/status">G-301</a>
+				</div>
+				<script src="/assets/js/love.js" type="text/javascript" async="async"></script>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<!-- Including InstantSearch.js library and styling -->
+		<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js"></script>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css">
+		<script>
+			// Instanciating InstantSearch.js with Algolia credentials
+			const search = instantsearch({
+			  appId: '14DZKASAEJ',
+			  apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			  indexName: 'iBug_website',
+			  searchParameters: {
+			    restrictSearchableAttributes: [
+			      'title',
+			      'content'
+			    ]
+			  }
+			});
+			
+			const hitTemplate = function(hit) {
+			  const url = hit.url;
+			  const title = hit._highlightResult.title.value;
+			  const content = hit._highlightResult.html.value;
+			
+			  return `
+			    <div class="list__item">
+			      <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			        <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			        <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			      </article>
+			    </div>
+			  `;
+			}
+			
+			// Adding searchbar and results widgets
+			search.addWidget(
+			  instantsearch.widgets.searchBox({
+			    container: '.search-searchbar',
+			    poweredBy: true,
+			    placeholder: 'Enter your search term...'
+			  })
+			);
+			search.addWidget(
+			  instantsearch.widgets.hits({
+			    container: '.search-hits',
+			    templates: {
+			      item: hitTemplate,
+			      empty: 'No results',
+			    }
+			  })
+			);
+			
+			// Starting the search only when toggle is clicked
+			$(document).ready(function () {
+			  $(".search__toggle").on("click", function() {
+			    if(!search.started) {
+			      search.start();
+			    }
+			  });
+			});
+		</script>
+		<script>
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-115907213-1']);
+			
+			_gaq.push(['_trackPageview']);
+			
+			(function() {
+			  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/blog/2020/08/work-against-wordpress-deblocker/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2020/08/work-against-wordpress-deblocker"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+		</noscript>
+	</body>
+</html>

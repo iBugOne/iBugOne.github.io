@@ -1,0 +1,554 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>Use RSA CA Certificates with OpenSSH 8.2 - iBug</title>
+		<meta name="description" content="OpenSSH 8.2 is coming to the latest Long-Term Service release of Ubuntu, Focal Fossa (20.04), and has some breaking changes for users using an SSH Certificate Authority.">
+		<meta name="author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="Use RSA CA Certificates with OpenSSH 8.2">
+		<meta property="og:url" content="https://ibug.io/blog/2020/04/ssh-8.2-rsa-ca/">
+		<meta property="og:description" content="OpenSSH 8.2 is coming to the latest Long-Term Service release of Ubuntu, Focal Fossa (20.04), and has some breaking changes for users using an SSH Certificate Authority.">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2020-04-07T00:00:00+00:00">
+		<meta property="article:modified_time" content="2020-08-13T11:26:46+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2020/04/ssh-8.2-rsa-ca/">
+		<script type="application/ld+json">
+			{
+			  "@context": "https://schema.org",
+			
+			    "@type": "Person",
+			    "name": "iBug",
+			    "url": "https://ibug.io/"
+			
+			}
+		</script>
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<!-- https://t.co/dKP3o1e -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script>
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=b98b49e">
+		<link rel="stylesheet" href="https://fa.ibugone.com/releases/latest/css/pro.min.css">
+		<!--[if IE]>
+			<style>
+				/* old IE unsupported flexbox fixes */
+				.greedy-nav .site-title {
+				  padding-right: 3em;
+				}
+				.greedy-nav button {
+				  position: absolute;
+				  top: 0;
+				  right: 0;
+				  height: 100%;
+				}
+			</style>
+		<![endif]-->
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+		<meta name="theme-color" content="#EDEDED">
+		<script type="text/javascript">
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+		<!--
+ Minimal Mistakes layout: single
+ Page Path: _posts/2020-04-07-ssh-8.2-rsa-ca.md
+ Page Type: 
+-->
+	</head>
+	<body class="layout--single">
+		<nav class="skip-links">
+			<h2 class="screen-reader-text">Skip links</h2>
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<!--[if lt IE 9]>
+			<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+		<![endif]-->
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt=""></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a href="/about/">About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/blog/">Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/projects/">Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="https://github.com/iBug">GitHub <i class="far fa-xs fa-external-link"></i></a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/cn/">中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<svg class="icon" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 15.99 16">
+								<path d="M15.5,13.12L13.19,10.8a1.69,1.69,0,0,0-1.28-.55l-0.06-.06A6.5,6.5,0,0,0,5.77,0,6.5,6.5,0,0,0,2.46,11.59a6.47,6.47,0,0,0,7.74.26l0.05,0.05a1.65,1.65,0,0,0,.5,1.24l2.38,2.38A1.68,1.68,0,0,0,15.5,13.12ZM6.4,2A4.41,4.41,0,1,1,2,6.4,4.43,4.43,0,0,1,6.4,2Z" transform="translate(-.01)"></path>
+							</svg>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay" style=" background-image: url('/image/header/code-1.jpg');">
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						Use RSA CA Certificates with OpenSSH 8.2
+					</h1>
+					<p class="page__meta">
+						<span class="post__meta-date">
+							<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2020-04-07T00:00:00+00:00">April 7, 2020</time>
+						</span>
+						<span class="post__meta-sep"></span>
+						<span class="post__meta-read-time">
+							<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+							3 minute read
+						</span>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person">
+						<div class="author__avatar">
+							<img src="/image/avatar.png" alt="iBug" itemprop="image">
+						</div>
+						<div class="author__content">
+							<h3 class="author__name" itemprop="name">iBug</h3>
+							<div class="author__bio" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer"><i class="far fa-fw fa-envelope" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/ibugthought" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-telegram-plane" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox">
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="Use RSA CA Certificates with OpenSSH 8.2">
+					<meta itemprop="description" content="OpenSSH 8.2 is coming to the latest Long-Term Service release of Ubuntu, Focal Fossa (20.04), and has some breaking changes for users using an SSH Certificate Authority.">
+					<meta itemprop="datePublished" content="2020-04-07T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2020-08-13T11:26:46+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title">
+											<i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#fix">Bring back the compatibility</a></li>
+										<li><a href="#new-certificate">Sign new certificates</a></li>
+									</ul>
+								</nav>
+							</aside>
+							<p>OpenSSH 8.2 is coming to the latest Long-Term Service release of Ubuntu, Focal Fossa (20.04), and has some breaking changes for users using <a href="/p/30">an SSH Certificate Authority</a>.</p>
+							<p>With OpenSSH 8.1 or older, the default certificate type when signing with <code class="language-plaintext highlighter-rouge">ssh-keygen</code> is <code class="language-plaintext highlighter-rouge">ssh-rsa</code>, although ECDSA- and SHA2-based algorithms have been supported since OpenSSH 5.7. As cited in the <a href="https://www.openssh.com/txt/release-8.2">release notes</a>,</p>
+							<blockquote>
+								<p>It is now possible[1] to perform chosen-prefix attacks against the SHA-1 hash algorithm for less than USD$50K.</p>
+								<p><sup>[1] <em>SHA-1 is a Shambles: First Chosen-Prefix Collision on SHA-1 and Application to the PGP Web of Trust</em><br>
+										Leurent, G and Peyrin, T (2020) <a href="https://eprint.iacr.org/2020/014.pdf">https://eprint.iacr.org/2020/014.pdf</a></sup></p>
+							</blockquote>
+							<p>So the SHA-1 based RSA certificate algorithm is no longer considered secure. As a result,</p>
+							<blockquote>
+								<ul>
+									<li>ssh(1), sshd(8), ssh-keygen(1): this release removes the <code class="language-plaintext highlighter-rouge">ssh-rsa</code> (RSA/SHA1) algorithm from those accepted for certificate signatures (i.e. the client and server <code class="language-plaintext highlighter-rouge">CASignatureAlgorithms</code> option) and will use the <code class="language-plaintext highlighter-rouge">rsa-sha2-512</code> signature algorithm by default when the ssh-keygen(1) CA signs new certificates.</li>
+								</ul>
+							</blockquote>
+							<p>The immediate effect is, when you attempt to log in to a host that presents an RSA/SHA1 certificate, instead of logging in successfully, SSH will complain with the following message:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>check_host_cert: certificate signature algorithm ssh-rsa: signature algorithm not supported
+</code></pre>
+								</div>
+							</div>
+							<p>and of course, you’re again asked to trust the host key even if you’ve already trusted the <code class="language-plaintext highlighter-rouge">@cert-authority</code>.</p>
+							<p>This can be particularly annoying in larger organizations where the deployment of RSA/SHA1 certificates has spanned everywhere, and OpenSSH 8.2 essentially just broke them all.</p>
+							<p>Rest assured, there’s a way to make everything go back to normal once more. But as suggested by OpenSSH, <strong>you should not rely on this and should instead move away from <code class="language-plaintext highlighter-rouge">ssh-rsa</code> certificates soon</strong>.</p>
+							<h2 id="fix">Bring back the compatibility</h2>
+							<p>As described above, the value <code class="language-plaintext highlighter-rouge">ssh-rsa</code> has been dropped from the default list of the <code class="language-plaintext highlighter-rouge">CASignatureAlgorithms</code>, though as of April 8, the man page for <code class="language-plaintext highlighter-rouge">ssh_config(5)</code> contains a small mistake, which claims the default value of <code class="language-plaintext highlighter-rouge">CASignatureAlgorithms</code> is as follows:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>CASignatureAlgorithms ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa
+</code></pre>
+								</div>
+							</div>
+							<p>The actual value, of course, is the same as the above list with <code class="language-plaintext highlighter-rouge">ssh-rsa</code> stripped off, and all you need to do is to add it back.</p>
+							<p>If you just want to fix this for yourself, you can add the following lines to your <code class="language-plaintext highlighter-rouge">~/.ssh/config</code> file:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>Host *
+  CASignatureAlgorithms ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519,rsa-sha2-512,rsa-sha2-256,ssh-rsa
+</code></pre>
+								</div>
+							</div>
+							<p>If you want to fix this for all users on a system, you can add the same lines to <code class="language-plaintext highlighter-rouge">/etc/ssh/ssh_config</code> instead, which will affect all <code class="language-plaintext highlighter-rouge">ssh</code> commands run on that system. <strong>Remember this is still not recommended in favor of upgrating the signature algorithm.</strong></p>
+							<h2 id="new-certificate">Sign new certificates</h2>
+							<div class="notice--success">
+								<h4 class="no_toc" id="good-news">
+									<i class="fas fa-fw fa-check"></i> Good news</h4>
+								<p>You don’t have to generate a new CA and deploy it everywhere. You can still use your RSA private key to generate new certificates for your machines, though it does require a little research first.</p>
+							</div>
+							<p>Let’s start by looking at the man page for ssh-keygen(1).</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>ssh-keygen <span class="nt">-s</span> ca_key <span class="nt">-I</span> certificate_identity <span class="o">[</span><span class="nt">-h</span><span class="o">]</span> <span class="o">[</span><span class="nt">-U</span><span class="o">]</span> <span class="o">[</span><span class="nt">-D</span> pkcs11_provider] <span class="o">[</span><span class="nt">-n</span> principals] <span class="o">[</span><span class="nt">-O</span> option] <span class="o">[</span><span class="nt">-V</span> validity_interval] <span class="o">[</span><span class="nt">-z</span> serial_number] file ...
+</code></pre>
+								</div>
+							</div>
+							<p>It doesn’t look like there’s a way to control the certificate algorithm. But hold on, have you tried the <code class="language-plaintext highlighter-rouge">-t</code> option that appears in many other subcommands…?</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>ssh-keygen <span class="nt">-s</span> ~/.ssh/ca <span class="nt">-I</span> Example <span class="nt">-t</span> rsa-sha2-256 id_rsa.pub
+<span class="c">#                                  ^^^^^^^^^^^^^^^</span>
+</code></pre>
+								</div>
+							</div>
+							<p>This will generate a new certificate at <code class="language-plaintext highlighter-rouge">id_rsa-cert.pub</code>. You might want to examine it at once, and you might probably be disappointed to see that it still begins with <code class="language-plaintext highlighter-rouge">ssh-rsa-cert-v01@openssh.com</code>.</p>
+							<p><strong>That simply doesn’t matter.</strong> To examine a certificate, you should use the <code class="language-plaintext highlighter-rouge">ssh-keygen -L</code> command:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>ssh-keygen <span class="nt">-Lf</span> id_rsa-cert.pub
+</code></pre>
+								</div>
+							</div>
+							<p>… and check its output:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>id_rsa-cert.pub:
+        Type: ssh-rsa-cert-v01@openssh.com user certificate
+        Public key: RSA-CERT SHA256:yP2N3uawwSuoJdww2miEYrsGuBictGYJ6VmkdhvtYcg
+        Signing CA: RSA SHA256:yP2N3uawwSuoJdww2miEYrsGuBictGYJ6VmkdhvtYcg (using rsa-sha2-256)
+        Key ID: "Example"
+        Serial: 0
+        Valid: forever
+        Principals: (none)
+        Critical Options: (none)
+        Extensions:
+                permit-X11-forwarding
+                permit-agent-forwarding
+                permit-port-forwarding
+                permit-pty
+                permit-user-rc
+</code></pre>
+								</div>
+							</div>
+							<p>Notice how the fourth line reads <code class="language-plaintext highlighter-rouge">using rsa-sha2-256</code>? It’s now signed with a different algorithm that’s not considered deprecated anymore, which means it’s ready to deploy.</p>
+							<div class="notice--primary">
+								<h4 class="no_toc" id="tip">
+									<i class="fas fa-fw fa-lightbulb"></i> Tip</h4>
+								<p>OpenSSH 8.2 defaults to using the <code class="language-plaintext highlighter-rouge">rsa-sha2-256</code> algorithm when signing new certificates with an RSA private key, so the <code class="language-plaintext highlighter-rouge">-t</code> option is only necessary if you’re using OpenSSH 8.1 or older.</p>
+							</div>
+							<p>You can try running <code class="language-plaintext highlighter-rouge">ssh-keygen -L</code> on one of your old certificates to see how SSH describes it. This is left as a small quiz for you to figure out for yourself.</p>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/linux" class="page__taxonomy-item" rel="tag">linux</a><span class="sep">, </span>
+									<a href="/tag/ssh" class="page__taxonomy-item" rel="tag">ssh</a>
+								</span>
+							</p>
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+								<span itemprop="keywords">
+									<a href="/category/study-notes" class="page__taxonomy-item" rel="tag">study-notes</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-08-13">August 13, 2020</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=Use+RSA+CA+Certificates+with+OpenSSH+8.2%20https%3A%2F%2Fibug.io%2Fblog%2F2020%2F04%2Fssh-8.2-rsa-ca%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2020%2F04%2Fssh-8.2-rsa-ca%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A%2F%2Fibug.io%2Fblog%2F2020%2F04%2Fssh-8.2-rsa-ca%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/blog/2020/02/use-mysql-cli-without-password/" class="pagination--pager" title="3 ways to use MySQL / MariaDB CLI without password
+">Previous</a>
+							<a href="/blog/2020/05/jekyll-better-related-posts/" class="pagination--pager" title="Enabling better “Related Posts” with Jekyll
+">Next</a>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+				<div class="page__related">
+					<h4 class="page__related-title">You may also enjoy</h4>
+					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2019/12/manage-servers-with-ssh-ca/" rel="permalink">Managing servers with OpenSSH Certificate Authority
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="post__meta-date">
+										<i class="far fa-fw fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2019-12-23T00:00:00+00:00">December 23, 2019</time>
+									</span>
+									<br>
+									<span class="post__meta-read-time">
+										<i class="far fa-fw fa-fw fa-clock" aria-hidden="true"></i>
+										6 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">Since the addition of the website server for an external corporation, I now have 5 Linux servers to manage on my own. I also have 4 terminal devices that I use to connect to those servers: two of my laptops, my Android phone (using Termux), and one of those servers that I use as a workstation.
+								</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="post__meta-date">
+										<i class="far fa-fw fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2019-12-28T00:00:00+00:00">December 28, 2019</time>
+									</span>
+									<br>
+									<span class="post__meta-read-time">
+										<i class="far fa-fw fa-fw fa-clock" aria-hidden="true"></i>
+										16 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on the training data of 9M user-item pairs and a social network.
+								</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2019/11/optimize-github-pages-with-cloudflare/" rel="permalink">Make your GitHub Pages website faster with Cloudflare
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="post__meta-date">
+										<i class="far fa-fw fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2019-11-11T00:00:00+00:00">November 11, 2019</time>
+									</span>
+									<br>
+									<span class="post__meta-read-time">
+										<i class="far fa-fw fa-fw fa-clock" aria-hidden="true"></i>
+										4 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">This September I employed Cloudflare to optimize my website (https://ibugone.com) in various aspects. It turned out to be a brilliant move and Cloudflare has proved to be a great service to have.
+								</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2020/02/use-mysql-cli-without-password/" rel="permalink">3 ways to use MySQL / MariaDB CLI without password
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="post__meta-date">
+										<i class="far fa-fw fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2020-02-04T00:00:00+00:00">February 4, 2020</time>
+									</span>
+									<br>
+									<span class="post__meta-read-time">
+										<i class="far fa-fw fa-fw fa-clock" aria-hidden="true"></i>
+										4 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">For all of us who are learning to use or developing with MySQL or MariaDB, it’s a common task to manually log in to the database for inspection. This is usually done with the mysql command line client, and for sure it’s cumbersome to log in to the database using your application’s credentials. Fo...</p>
+							</article>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					© 2020 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.
+					<br>
+					Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.
+					<br>
+					<a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a>
+					<br>
+					Site version <a href="/status">G-301</a>
+				</div>
+				<script src="/assets/js/love.js" type="text/javascript" async="async"></script>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<!-- Including InstantSearch.js library and styling -->
+		<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js"></script>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css">
+		<script>
+			// Instanciating InstantSearch.js with Algolia credentials
+			const search = instantsearch({
+			  appId: '14DZKASAEJ',
+			  apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			  indexName: 'iBug_website',
+			  searchParameters: {
+			    restrictSearchableAttributes: [
+			      'title',
+			      'content'
+			    ]
+			  }
+			});
+			
+			const hitTemplate = function(hit) {
+			  const url = hit.url;
+			  const title = hit._highlightResult.title.value;
+			  const content = hit._highlightResult.html.value;
+			
+			  return `
+			    <div class="list__item">
+			      <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			        <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			        <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			      </article>
+			    </div>
+			  `;
+			}
+			
+			// Adding searchbar and results widgets
+			search.addWidget(
+			  instantsearch.widgets.searchBox({
+			    container: '.search-searchbar',
+			    poweredBy: true,
+			    placeholder: 'Enter your search term...'
+			  })
+			);
+			search.addWidget(
+			  instantsearch.widgets.hits({
+			    container: '.search-hits',
+			    templates: {
+			      item: hitTemplate,
+			      empty: 'No results',
+			    }
+			  })
+			);
+			
+			// Starting the search only when toggle is clicked
+			$(document).ready(function () {
+			  $(".search__toggle").on("click", function() {
+			    if(!search.started) {
+			      search.start();
+			    }
+			  });
+			});
+		</script>
+		<script>
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-115907213-1']);
+			
+			_gaq.push(['_trackPageview']);
+			
+			(function() {
+			  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/blog/2020/04/ssh-8.2-rsa-ca/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2020/04/ssh-8.2-rsa-ca"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+		</noscript>
+	</body>
+</html>

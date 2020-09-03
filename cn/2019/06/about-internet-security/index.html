@@ -1,0 +1,512 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.1 by Michael Rose
+  Copyright 2013-2019 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>简论当代网络安全 - iBug</title>
+		<meta name="description" content="21 世纪是信息时代，在信息时代中，每个人都有能力去自由地产生、获取、使用和传递信息。而在信息的获取和传递的过程中，计算机互联网是最重要的载体。随着 21 世纪的到来，计算机互联网也走入了家家户户，成为百姓日常生活中不可或缺的基础设施。而随着网络的普及，与其相关的安全事项自然也成为了一个重要话题。">
+		<meta name="author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="简论当代网络安全">
+		<meta property="og:url" content="https://ibug.io/cn/2019/06/about-internet-security/">
+		<meta property="og:description" content="21 世纪是信息时代，在信息时代中，每个人都有能力去自由地产生、获取、使用和传递信息。而在信息的获取和传递的过程中，计算机互联网是最重要的载体。随着 21 世纪的到来，计算机互联网也走入了家家户户，成为百姓日常生活中不可或缺的基础设施。而随着网络的普及，与其相关的安全事项自然也成为了一个重要话题。">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2019-06-14T00:00:00+00:00">
+		<meta property="article:modified_time" content="2020-05-29T15:27:31+00:00">
+		<link rel="canonical" href="https://ibug.io/cn/2019/06/about-internet-security/">
+		<script type="application/ld+json">
+			{
+			  "@context": "https://schema.org",
+			
+			    "@type": "Person",
+			    "name": "iBug",
+			    "url": "https://ibug.io/"
+			
+			}
+		</script>
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<!-- https://t.co/dKP3o1e -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script>
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=b98b49e">
+		<link rel="stylesheet" href="https://fa.ibugone.com/releases/latest/css/pro.min.css">
+		<!--[if IE]>
+			<style>
+				/* old IE unsupported flexbox fixes */
+				.greedy-nav .site-title {
+				  padding-right: 3em;
+				}
+				.greedy-nav button {
+				  position: absolute;
+				  top: 0;
+				  right: 0;
+				  height: 100%;
+				}
+			</style>
+		<![endif]-->
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+		<meta name="theme-color" content="#EDEDED">
+		<script type="text/javascript">
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+		<!--
+ Minimal Mistakes layout: single
+ Page Path: _cn/2019-06-14-about-internet-security.md
+ Page Type: 
+-->
+	</head>
+	<body class="layout--single">
+		<nav class="skip-links">
+			<h2 class="screen-reader-text">Skip links</h2>
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<!--[if lt IE 9]>
+			<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+		<![endif]-->
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt=""></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a href="/about/">About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/blog/">Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/projects/">Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="https://github.com/iBug">GitHub <i class="far fa-xs fa-external-link"></i></a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/cn/">中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<svg class="icon" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15.99 16">
+								<path d="M15.5,13.12L13.19,10.8a1.69,1.69,0,0,0-1.28-.55l-0.06-.06A6.5,6.5,0,0,0,5.77,0,6.5,6.5,0,0,0,2.46,11.59a6.47,6.47,0,0,0,7.74.26l0.05,0.05a1.65,1.65,0,0,0,.5,1.24l2.38,2.38A1.68,1.68,0,0,0,15.5,13.12ZM6.4,2A4.41,4.41,0,1,1,2,6.4,4.43,4.43,0,0,1,6.4,2Z" transform="translate(-.01)"></path>
+							</svg>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay"
+  style=" background-image: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('/image/header/cloud-1.jpg');"
+>
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						简论当代网络安全
+					</h1>
+					<p class="page__meta">
+						<span class="post__meta-date">
+							<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2019-06-14T00:00:00+00:00">June 14, 2019</time>
+						</span>
+						<span class="post__meta-sep"></span>
+						<span class="post__meta-read-time">
+							<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+							12 minute read
+						</span>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person">
+						<div class="author__avatar">
+							<img src="/image/avatar.png" alt="iBug" itemprop="image">
+						</div>
+						<div class="author__content">
+							<h3 class="author__name" itemprop="name">iBug</h3>
+							<div class="author__bio" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer"><i class="far fa-fw fa-envelope" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/ibugthought" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-telegram-plane" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox" />
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="简论当代网络安全">
+					<meta itemprop="description" content="21 世纪是信息时代，在信息时代中，每个人都有能力去自由地产生、获取、使用和传递信息。而在信息的获取和传递的过程中，计算机互联网是最重要的载体。随着 21 世纪的到来，计算机互联网也走入了家家户户，成为百姓日常生活中不可或缺的基础设施。而随着网络的普及，与其相关的安全事项自然也成为了一个重要话题。">
+					<meta itemprop="datePublished" content="2019-06-14T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2020-05-29T15:27:31+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-th-list"></i> 目录</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#个人层面的网络安全事件">个人层面的网络安全事件</a>
+											<ul>
+												<li><a href="#1-cih-病毒-1998">1. CIH 病毒 (1998)</a></li>
+												<li><a href="#2-熊猫烧香-2006-2007">2. 熊猫烧香 (2006-2007)</a></li>
+												<li><a href="#3-xcodeghost-事件-2015">3. XcodeGhost 事件 (2015)</a></li>
+												<li><a href="#4-wannacry-勒索病毒-2017">4. WannaCry 勒索病毒 (2017)</a></li>
+											</ul>
+										</li>
+										<li><a href="#企业层面的网络安全事件">企业层面的网络安全事件</a>
+											<ul>
+												<li><a href="#5-csdn-密码泄露事件-2011">5. CSDN 密码泄露事件 (2011)</a></li>
+												<li><a href="#6-icloud-名人照片泄露事件-2014">6. iCloud 名人照片泄露事件 (2014)</a></li>
+												<li><a href="#7-哔哩哔哩源代码泄露事件-2019">7. 哔哩哔哩源代码泄露事件 (2019)</a></li>
+											</ul>
+										</li>
+										<li><a href="#国家层面的网络安全事件">国家层面的网络安全事件</a>
+											<ul>
+												<li><a href="#8-震网-2010">8. 震网 (2010)</a></li>
+												<li><a href="#9-棱镜门-2007-2013">9. 棱镜门 (2007-2013)</a></li>
+											</ul>
+										</li>
+										<li><a href="#对网络安全的关注">对网络安全的关注</a>
+											<ul>
+												<li><a href="#网络攻击目的的变化">网络攻击目的的变化</a></li>
+												<li><a href="#网络设备的普及与多样化">网络设备的普及与多样化</a></li>
+												<li><a href="#网络技术的更新与迭代">网络技术的更新与迭代</a></li>
+												<li><a href="#公民对个人隐私的关注">公民对个人隐私的关注</a></li>
+											</ul>
+										</li>
+										<li><a href="#应对网络安全问题的措施">应对网络安全问题的措施</a>
+											<ul>
+												<li><a href="#国家">国家</a></li>
+												<li><a href="#个人">个人</a></li>
+												<li><a href="#网络服务运营者">网络服务运营者</a></li>
+											</ul>
+										</li>
+										<li><a href="#结语">结语</a></li>
+										<li><a href="#参考资料">参考资料</a></li>
+									</ul>
+								</nav>
+							</aside>
+							<p>21 世纪是信息时代，在信息时代中，每个人都有能力去自由地产生、获取、使用和传递信息。而在信息的获取和传递的过程中，计算机互联网是最重要的载体。随着 21 世纪的到来，计算机互联网也走入了家家户户，成为百姓日常生活中不可或缺的基础设施。而随着网络的普及，与其相关的安全事项自然也成为了一个重要话题。</p>
+							<p>中国科学技术大学公选课《网络安全基础与应用》课程的幻灯片中对“网络安全”是这样定义的：</p>
+							<blockquote>
+								<p>网络安全是指网络系统的硬、软件及其系统中的数据受到保护，不会由于偶然或恶意的原因而遭到破坏、更改、泄露等。</p>
+							</blockquote>
+							<p>如同人身安全和财产安全一样，在网络安全的领域中发生的事件也有它自己的特点。下面用几个例子说明网络安全对于个人、对于企业和对于国家的意义。</p>
+							<h2 id="个人层面的网络安全事件">个人层面的网络安全事件</h2>
+							<h3 id="1-cih-病毒-1998">1. CIH 病毒 (1998)</h3>
+							<p>CIH 是由当时仍在大同大学（台湾）就读的陈盈豪编写，其初衷是挑战当时被广泛接受的“杀毒软件可以有效防止病毒”这一认知，而病毒的命名也是作者的姓名首字母 (<strong>C</strong>hen <strong>I</strong>ng-<strong>h</strong>au)。该病毒在每年的 4 月 26 日发作，用大量垃圾数据覆盖硬盘内容，导致数据损坏和系统崩溃，并尝试重写 BIOS 内容，可导致硬件损坏并需要返厂维修。</p>
+							<p>据估计，全球范围内超过 6,000 万台计算机受到感染，并因此造成了约 10 亿美元的损失。</p>
+							<h3 id="2-熊猫烧香-2006-2007">2. 熊猫烧香 (2006-2007)</h3>
+							<p>“熊猫烧香” 是一种经过多次变种的病毒，受其感染的计算机中的可执行文件会变成熊猫举着三根香的图标，因而得名。该病毒主要通过网络下载的文件传播，同时也大量利用当时常见的体现出网络安全防范意识低的现象，例如默认密码和空密码，以及未及时安装系统安全更新而导致的可利用的已知漏洞。</p>
+							<p>据新闻《”熊猫烧香”作者被抓获 灰色资产成幕后元凶》报导，</p>
+							<blockquote>
+								<p>在最嚣张的时候，李俊（病毒作者）效仿安全厂商的做法，设立病毒自动升级服务器。曾在一天之中升级 8 次，公然挑战反病毒软件厂商，甚至在病毒中嵌入自己的名字，其嚣张气焰不可一世。”</p>
+							</blockquote>
+							<h3 id="3-xcodeghost-事件-2015">3. XcodeGhost 事件 (2015)</h3>
+							<p>Xcode 是苹果公司发布的用于在 iOS 和 macOS 等操作系统中开发应用程序的开发软件，通过官方的 Mac App Store 免费提供，而由于在中国大陆连接 Mac App Store 常常遇到各种问题，因此不少开发者选择从百度网盘或论坛等较为方便的渠道下载 Xcode 软件，这带来了安全隐患，也是本次事件发生的主要原因之一。</p>
+							<p>黑客通过修改 Xcode 软件，使得用修改后的 Xcode 编译出来的应用程序都带有黑客提前准备的代码（该代码名为 XcodeGhost，即本事件的名称），收集隐私信息并上传至黑客的服务器。被插入后门的 Xcode 软件通过论坛等渠道传播，造成了此次事件。</p>
+							<p>XcodeGhost 事件中大量国产应用程序受影响，其中不乏多个知名软件，如微信、网易云音乐、滴滴出行、58 同城、高德地图，甚至 12306 手机软件和一些金融相关的软件（如同花顺）。</p>
+							<h3 id="4-wannacry-勒索病毒-2017">4. WannaCry 勒索病毒 (2017)</h3>
+							<p>2017 年初由于美国国家安全局 (NSA, National Security Agency) 的“武器库”泄露，使得 Windows 操作系统中的“永恒之蓝”漏洞被外界所知。微软公司于 2017 年 3 月 14 日发布了针对“永恒之蓝”的补丁，然而利用该漏洞传播的 WannaCry 勒索病毒在两个月后大规模爆发，在全世界范围内传播。受攻击的公司和企业包括西班牙电信、英国国民保健署和联邦快递等。</p>
+							<p>该病毒会将受害计算机上的所有文件加密，并向受害者索要 300 或 600 美元等值的比特币，且声称若一个星期不支付比特币则“撕票”。该病毒内置的勒索信有多种语言，其中中文版勒索信中有一句话是这么写的：</p>
+							<blockquote>
+								<p>我敢保证，没有我们的解密服务，就算老天爷来了也不能恢复这些文档。</p>
+							</blockquote>
+							<h2 id="企业层面的网络安全事件">企业层面的网络安全事件</h2>
+							<h3 id="5-csdn-密码泄露事件-2011">5. CSDN 密码泄露事件 (2011)</h3>
+							<p>2011 年 12 月 21 日，网络消息称 CSDN 社区遭黑客攻击，600 万用户账户和明文密码泄露。</p>
+							<p>通常情况下，用户密码不应当明文存储，而是使用安全的措施处理，例如加密后，再存储。</p>
+							<p>网络文章《CSDN 明文口令泄露的启示》指出：</p>
+							<blockquote>
+								<p>我昨晚下载了 www.csdn.net.sql 文件，并分析了一下这个文件，经过各种 awk, grep, sort, uniq, sed 后，下面是我看到的东西：</p>
+								<ul>
+									<li>有近 45 万的用户使用 123456789 和 12345678 做口令。</li>
+									<li>有近 40 万的用户使用自己的生日做口令。</li>
+									<li>有近 15 万的用户使用自己的手机号做口令。</li>
+									<li>有近 25 万的用户使用自己的 QQ 号做口令。</li>
+									<li>设置成弱口令的用户占了 590 万，也就是那种就算你用 MD5 或是 SHA 散列的也能很快就被暴力破解出来的口令。</li>
+									<li>只有 8000 多个用户的口令里在 8 个长度以上，并有大写字母，小写字母，数字，并不在字典表里。</li>
+								</ul>
+							</blockquote>
+							<h3 id="6-icloud-名人照片泄露事件-2014">6. iCloud 名人照片泄露事件 (2014)</h3>
+							<p>2014 年 8 月 31 日，约 200 张好莱坞女性艺人的私人照片被人盗取并上传至贴图网站 4chan，并随后在互联网中被大量转发。苹果公司调查发现，这些私人照片的盗取者为获取图片，非常有针对性地攻击了帐户名、密码和安全问题。据事后分析，该事件可能与 iCloud 登录时允许无限次尝试密码有关。</p>
+							<h3 id="7-哔哩哔哩源代码泄露事件-2019">7. 哔哩哔哩源代码泄露事件 (2019)</h3>
+							<p>2019 年 4 月 22 日下午，有网友发现 B 站（哔哩哔哩视频网站）的网站后台源代码疑似被上传至 GitHub，并且不少关键基础设施，如数据库等，其用户名密码被硬编码在代码里面。在该代码被 GitHub 平台禁用前，其评论区看板已积累超过 6,000 条回复，并且随后几天的网络中不断流传出围观群众在代码中发现的彩蛋，如欺骗用户发送虚假弹幕：</p>
+							<blockquote>
+								<p>//抽奖不成功也要发送弹幕，概率20% 造成一种很多人中奖的假象</p>
+							</blockquote>
+							<h2 id="国家层面的网络安全事件">国家层面的网络安全事件</h2>
+							<h3 id="8-震网-2010">8. 震网 (2010)</h3>
+							<p>震网 (Stuxnet) 在 2010 年 6 月被俄罗斯安全公司首次发现，是针对工业控制系统的蠕虫病毒。该病毒利用西门子的控制系统和 Windows 系统的多个漏洞进行传输和破坏，并通过伪装其他公司的数字签名来逃避检测。2012 年，美国官员承认这个病毒是由美国国家安全局在以色列的协助下研发的，目的在于阻止伊朗发展核武器。</p>
+							<p>美国对伊朗核武器设施进行的这种有长期准备、组织了庞大的精英黑客团队、有针对性和持续性的攻击称为 APT攻击。APT 指的是高级持续性威胁 (Advanced Persistent Threat)，是隐匿而持久的电脑入侵过程，通常由某些人员精心策划，针对特定的目标。其通常是出于商业或政治动机，针对特定组织或国家，并要求在长时间内保持高隐蔽性。本例就是一个典型的 APT 攻击。</p>
+							<h3 id="9-棱镜门-2007-2013">9. 棱镜门 (2007-2013)</h3>
+							<p>棱镜计划是一项由美国国家安全局自 2007 年开始实施的网络监控计划，其深度监听使用加入计划的互联网公司的服务的用户，和与国外人士通信的美国公民，收集的数据包括电子邮件、视频、图片、通话、传输的文件等。该计划由美国国家安全局的合约外包员工爱德华 · 斯诺登于 2013 年 6 月向世人公开，而在此之前，德国总理默克尔据传已经被美国监听长达 11 年。</p>
+							<h2 id="对网络安全的关注">对网络安全的关注</h2>
+							<p>通过上面的例子可以看出，网络安全与每一个使用网络的人息息相关，因此对网络安全的关注也在随时代的变化而不断增长。</p>
+							<h3 id="网络攻击目的的变化">网络攻击目的的变化</h3>
+							<p>在计算机网络发展的早期，大部分网络攻击没有太大的利益驱使，攻击者的目的大多只是为了好玩和证明自己的技术实力；而今天的网络中，大量的攻击都有商业或政治等利益的驱使，因此现在大多数的网络攻击不再是“明目张胆”的炫耀，而是偷偷进入系统中进行破坏或者窃取信息等。</p>
+							<h3 id="网络设备的普及与多样化">网络设备的普及与多样化</h3>
+							<p>10 ~ 20 年前，不是每个人都能用上连接网络的电脑；而现在，几乎每个人都有连接 4G 网络的智能手机，互联网中产生的信息量也在爆炸性地增长。因此，对个人的网络攻击的目标也从传统的个人计算机扩展到了多样化的网络设备，这样的攻击的目标群体也更大。毫不夸张地说，互联网已经成为了现代的基础设施，如果被攻击破坏，造成的影响是无法估算的。</p>
+							<h3 id="网络技术的更新与迭代">网络技术的更新与迭代</h3>
+							<p>从计算机系统的初期开始，计算机技术就一直在进行高速地发展和更新换代，与之相伴的也是网络安全领域层出不穷的新型攻击技术。网络攻击的技术从利用软件漏洞传播和发作的蠕虫病毒，到具有社会工程学面貌的钓鱼邮件，再到近几年颇受关注的硬件漏洞，使现代的网络安全技术对防御人员的要求也越来越高。</p>
+							<h3 id="公民对个人隐私的关注">公民对个人隐私的关注</h3>
+							<p>近年来的多起隐私泄露事件使得公民对个人隐私的关注也在不断提升：</p>
+							<ul>
+								<li>
+									<p>2016 年 12 月 12 日 《南方都市报》：《恐怖！南都记者700元就买到同事行踪，包括乘机、开房、上网吧等11项记录》</p>
+								</li>
+								<li>2018 年 8 月，华住旗下酒店数据库泄露，涉及 1.3 亿人的个人信息和开房记录等 5 亿多条信息。根据泄露的数据库配置文件，数据库暴露在互联网中，使用默认账户，密码为 123456。</li>
+								<li>2019 年 1 月，由于 58 同城的一个数据库未做安全保护措施，超过 2 亿中国用户的简历被泄露。</li>
+							</ul>
+							<p>另外，2018 年 3 月，百度董事长李彦宏表示“中国人愿用隐私换方便”，在网络上引起轩然大波，并被央视等多家媒体点名批评。这体现出人民对隐私的关注和对隐私权的需求越来越大。</p>
+							<h2 id="应对网络安全问题的措施">应对网络安全问题的措施</h2>
+							<!-- 谈完了问题，下面就要来谈谈我们每个人在网络安全领域能做的事。 -->
+							<h3 id="国家">国家</h3>
+							<p>针对层出不穷的网络安全问题，我们也不是手束手无策乖乖就范的肉鸡。早在 2016 年 11 月，我国就通过了《网络安全法》，该法律已于 2017 年 6 月 1 日正式实施。该法律的不少内容针对近年的网络安全隐患，如个人信息泄露等；明确了网络诈骗等行为的定义和刑罚，明确了网络运营商的责任，要求其处置违法信息、配合侦察机关工作等。</p>
+							<p>而在此之前，我国也有其他与信息安全相关的法律法规，如</p>
+							<ul>
+								<li>国务院 -《计算机信息系统安全保护条例》、《互联网信息服务管理办法》</li>
+								<li>公安部 - 《计算机病毒防治管理办法》</li>
+								<li>公安部等六部委 - 《信息安全等级保护管理办法》</li>
+								<li>全国人大常委会 - 《保守国家秘密法》</li>
+							</ul>
+							<p>这些法律法规包含了对个人信息的保护、对网络运营者的安全要求，是对公民在网络安全领域的有效的法律保护。与这些法律法规相伴的，是具有相关功能的职能部门，如网信办和国家互联网应急中心。</p>
+							<h3 id="个人">个人</h3>
+							<p>在个人层面，应当学会自我保护。一方面在受到侵害时要拿起法律武器维护自己的合法权益以外，另一方面也要了解相关知识、提高安全意识、加强自我保护。</p>
+							<ul>
+								<li>及时更新系统和软件，安装安全软件</li>
+								<li>谨慎对待不知名的或来源未知的软件，拒绝盗版和破解版软件</li>
+								<li>避免在多个网络账号中重复使用相同密码，不要使用弱密码</li>
+							</ul>
+							<h3 id="网络服务运营者">网络服务运营者</h3>
+							<p>网络服务运营者应当具有安全意识和责任意识，主动承担起自己在网络安全中应承担的责任，积极解决安全问题。同时，网络服务运营者可以采取的措施有</p>
+							<ul>
+								<li>
+									<p>建立有效的安全生产责任制度，定期对自己提供的网络服务进行安全审查，加强防护，做到未雨绸缪，将安全隐患解决于未然</p>
+								</li>
+								<li>设立安全响应中心 (Security Response Center, SRC)，积极接受白帽黑客的安全反馈</li>
+								<li>进行网络安全培训，提升员工的网络安全意识，避免在服务中出现常见的安全漏洞</li>
+							</ul>
+							<h2 id="结语">结语</h2>
+							<p>总而言之，21 世纪中，随着网络技术的不断进步，网络安全的重要性也日益上升。只有关注网络安全、提高网络安全意识、加强网络安全保护、增进网络安全的研究与探索，才能跟紧时代的脚步，不在发展的路上摔跟头。</p>
+							<h2 id="参考资料">参考资料</h2>
+							<ol>
+								<li>「网络安全基础及应用」课程第 1 章 PPT，<a href="http://staff.ustc.edu.cn/~hsi/nsea/ch01.pdf">http://staff.ustc.edu.cn/~hsi/nsea/ch01.pdf</a></li>
+								<li>Virus:DOS/CIH Description | F-Secure Labs，<a href="https://www.f-secure.com/v-descs/cih.shtml">https://www.f-secure.com/v-descs/cih.shtml</a></li>
+								<li>CIH 作者陈盈豪在 HITCON 2013 上的演讲：兴趣执着和专注力让我与众不同，<a href="https://bbs.pediy.com/thread-176361.htm">https://bbs.pediy.com/thread-176361.htm</a></li>
+								<li>李俊的人生病毒：靠熊猫烧香成毒王 网赌 7000 万二进宫，<a href="https://news.ifeng.com/a/20180101/54713980_0.shtml">https://news.ifeng.com/a/20180101/54713980_0.shtml</a></li>
+								<li>“熊猫烧香”作者被抓获 灰色资产成幕后元凶，<a href="http://money.163.com/07/0213/02/3767TGC8002524SC.html">http://money.163.com/07/0213/02/3767TGC8002524SC.html</a></li>
+								<li>What You Need to Know About iOS Malware XcodeGhost，<a href="https://www.macrumors.com/2015/09/20/xcodeghost-chinese-malware-faq/">https://www.macrumors.com/2015/09/20/xcodeghost-chinese-malware-faq/</a></li>
+								<li>XcodeGhost 源代码，<a href="https://github.com/XcodeGhostSource/XcodeGhost">https://github.com/XcodeGhostSource/XcodeGhost</a></li>
+								<li>Xcode 非官方版本恶意代码污染事件（XcodeGhost）的分析与综述，<a href="https://www.antiy.com/response/xcodeghost.html">https://www.antiy.com/response/xcodeghost.html</a></li>
+								<li>Reflections on Trusting Trust，Communications of the ACM. August 1984, 27 (8): 761–763.</li>
+								<li>关于防范 Windows 操作系统勒索软件 Wannacry 的情况通报，<a href="https://www.cert.org.cn/publish/main/9/2017/20170513170143329476057/20170513170143329476057_.html">https://www.cert.org.cn/publish/main/9/2017/20170513170143329476057/20170513170143329476057_.html</a></li>
+								<li>安天针对勒索蠕虫“魔窟”（WannaCry）的深度分析报告，<a href="https://www.antiy.com/response/wannacry.html">https://www.antiy.com/response/wannacry.html</a></li>
+								<li>CSDN 明文口令泄露的启示，<a href="https://coolshell.cn/articles/6193.html">https://coolshell.cn/articles/6193.html</a></li>
+								<li>CSDN 产品总监范凯就密码明文保存问题发布解释，<a href="https://36kr.com/p/70800">https://36kr.com/p/70800</a></li>
+								<li>Apple Media Advisory - Update to Celebrity Photo Investigation，<a href="https://www.apple.com/newsroom/2014/09/02Apple-Media-Advisory/">https://www.apple.com/newsroom/2014/09/02Apple-Media-Advisory/</a></li>
+								<li>The Heartbleed Bug，<a href="http://heartbleed.com/">http://heartbleed.com/</a></li>
+								<li>AVG on Heartbleed: It’s dangerous to go alone. Take this (an AVG tool)，<a href="https://www.theregister.co.uk/2014/05/20/heartbleed_still_prevalent/">https://www.theregister.co.uk/2014/05/20/heartbleed_still_prevalent/</a></li>
+								<li>「震网」病毒的震撼，<a href="https://zhuanlan.zhihu.com/p/24037701">https://zhuanlan.zhihu.com/p/24037701</a></li>
+								<li>西门子曝系统新漏洞中国企业恐受波及，<a href="http://jjckb.xinhuanet.com/2011-06/07/content_313556.htm">http://jjckb.xinhuanet.com/2011-06/07/content_313556.htm</a></li>
+								<li>Stuxnet worm slithers into China, heralds alien invasion，<a href="https://www.theregister.co.uk/2010/10/01/stuxnet_china_analysis/">https://www.theregister.co.uk/2010/10/01/stuxnet_china_analysis/</a></li>
+								<li>棱镜门泄密事件五周年，改变了什么？，<a href="https://news.sina.cn/global/szzx/doc-ihcqccip8322391.d.html?vt=4">https://news.sina.cn/global/szzx/doc-ihcqccip8322391.d.html?vt=4</a></li>
+								<li>Everything you need to know about PRISM，<a href="https://www.theverge.com/2013/7/17/4517480/nsa-spying-prism-surveillance-cheat-sheet">https://www.theverge.com/2013/7/17/4517480/nsa-spying-prism-surveillance-cheat-sheet</a></li>
+								<li>Mikko Hypponen: Fighting viruses, defending the net，<a href="https://www.ted.com/talks/mikko_hypponen_fighting_viruses_defending_the_net">https://www.ted.com/talks/mikko_hypponen_fighting_viruses_defending_the_net</a></li>
+								<li>中国互联网络发展状况统计报告 - 中共中央网络安全和信息化委员会办公室，<a href="http://www.cac.gov.cn/wxb_pdf/CNNIC42.pdf">http://www.cac.gov.cn/wxb_pdf/CNNIC42.pdf</a></li>
+								<li>Meltdown and Spectre，<a href="https://meltdownattack.com/">https://meltdownattack.com/</a></li>
+								<li>华住 5 亿条用户信息疑泄露 警方已介入调查，<a href="http://www.xinhuanet.com/fortune/2018-08/29/c_1123343927.htm">http://www.xinhuanet.com/fortune/2018-08/29/c_1123343927.htm</a></li>
+								<li>超 2 亿中国用户简历曝光！MongoDB 又一重大安全事故，<a href="https://www.infoq.cn/article/TL*mYAa6vjUb26gItCdY">https://www.infoq.cn/article/TL*mYAa6vjUb26gItCdY</a></li>
+								<li>恐怖！南都记者 700 元就买到同事行踪，包括乘机、开房、上网吧等 11 项记录，<a href="http://epaper.oeeee.com/epaper/A/html/2016-12/12/content_103959.htm">http://epaper.oeeee.com/epaper/A/html/2016-12/12/content_103959.htm</a></li>
+								<li>中华人民共和国网络安全法，<a href="http://www.npc.gov.cn/npc/xinwen/2016-11/07/content_2001605.htm">http://www.npc.gov.cn/npc/xinwen/2016-11/07/content_2001605.htm</a></li>
+								<li>《网络安全法》概览，<a href="https://assets.kpmg/content/dam/kpmg/cn/pdf/zh/2017/02/overview-of-cybersecurity-law.pdf">https://assets.kpmg/content/dam/kpmg/cn/pdf/zh/2017/02/overview-of-cybersecurity-law.pdf</a></li>
+								<li>国家互联网信息办公室关于《数据安全管理办法（征求意见稿）》公开征求意见的通知，<a href="http://www.chinalaw.gov.cn/government_public/content/2019-05/28/657_235862.html">http://www.chinalaw.gov.cn/government_public/content/2019-05/28/657_235862.html</a></li>
+								<li>国家计算机网络应急技术处理协调中心简介，<a href="https://www.cert.org.cn/publish/main/34/index.html">https://www.cert.org.cn/publish/main/34/index.html</a></li>
+								<li>App 违法收集个人信息官方投诉举报渠道来了，<a href="https://www.ithome.com/0/416/613.htm">https://www.ithome.com/0/416/613.htm</a></li>
+							</ol>
+						</section>
+						<footer class="page__meta">
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-05-29">May 29, 2020</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=%E7%AE%80%E8%AE%BA%E5%BD%93%E4%BB%A3%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%20https%3A%2F%2Fibug.io%2Fcn%2F2019%2F06%2Fabout-internet-security%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fcn%2F2019%2F06%2Fabout-internet-security%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fcn%2F2019%2F06%2Fabout-internet-security%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/cn/2019/05/pde-thinking-question/" class="pagination--pager" title="数理方程思考题
+">Previous</a>
+							<a href="/cn/2019/08/speech-at-msc-2019/" class="pagination--pager" title="我在微软夏令营 2019 的分享
+">Next</a>
+						</nav>
+					</div>
+				</article>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					&copy; 2020 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.
+					<br>
+					Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.
+					<br>
+					<a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a>
+					<br>
+					Site version <a href="/status">G-301</a>
+				</div>
+				<script src="/assets/js/love.js" type="text/javascript" async="async"></script>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<!-- Including InstantSearch.js library and styling -->
+		<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js"></script>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css">
+		<script>
+			// Instanciating InstantSearch.js with Algolia credentials
+			const search = instantsearch({
+			  appId: '14DZKASAEJ',
+			  apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			  indexName: 'iBug_website',
+			  searchParameters: {
+			    restrictSearchableAttributes: [
+			      'title',
+			      'content'
+			    ]
+			  }
+			});
+			
+			const hitTemplate = function(hit) {
+			  const url = hit.url;
+			  const title = hit._highlightResult.title.value;
+			  const content = hit._highlightResult.html.value;
+			
+			  return `
+			    <div class="list__item">
+			      <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			        <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			        <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			      </article>
+			    </div>
+			  `;
+			}
+			
+			// Adding searchbar and results widgets
+			search.addWidget(
+			  instantsearch.widgets.searchBox({
+			    container: '.search-searchbar',
+			    poweredBy: true,
+			    placeholder: 'Enter your search term...'
+			  })
+			);
+			search.addWidget(
+			  instantsearch.widgets.hits({
+			    container: '.search-hits',
+			    templates: {
+			      item: hitTemplate,
+			      empty: 'No results',
+			    }
+			  })
+			);
+			
+			// Starting the search only when toggle is clicked
+			$(document).ready(function () {
+			  $(".search__toggle").on("click", function() {
+			    if(!search.started) {
+			      search.start();
+			    }
+			  });
+			});
+		</script>
+		<script>
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-115907213-1']);
+			
+			_gaq.push(['_trackPageview']);
+			
+			(function() {
+			  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+	</body>
+</html>
