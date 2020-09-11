@@ -21,7 +21,7 @@
 		<meta property="og:description" content="Last time I wrote an article about NAT traversal using FRP, which has been my personal solution for exposing SSH access of machines behind NAT to the internet for a long time.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2019-07-16T00:00:00+00:00">
-		<meta property="article:modified_time" content="2020-05-13T01:48:49+00:00">
+		<meta property="article:modified_time" content="2020-09-12T03:05:53+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2019/07/systemd-service-template/">
 		<script type="application/ld+json">
 			{
@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=093d558">
+		<link rel="stylesheet" href="/assets/css/main.css?v=b101909">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -198,7 +198,7 @@
 					<meta itemprop="headline" content="Creating templated Systemd services">
 					<meta itemprop="description" content="Last time I wrote an article about NAT traversal using FRP, which has been my personal solution for exposing SSH access of machines behind NAT to the internet for a long time.">
 					<meta itemprop="datePublished" content="2019-07-16T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2020-05-13T01:48:49+00:00">
+					<meta itemprop="dateModified" content="2020-09-12T03:05:53+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -216,22 +216,22 @@
 							<p>As time goes by, I get more devices behind NAT and more VPS hosts providing FRP access, and the need for connecting one device with multiple FRP hosts arises. Surely, one solution would be writing multiple config files and Systemd service files for each instance of <code class="language-plaintext highlighter-rouge">frpc</code>, which would just run perfectly.</p>
 							<h2 id="writing-multiple-systemd-service-files">Writing multiple Systemd service files</h2>
 							<p>Let’s start this with one <code class="language-plaintext highlighter-rouge">frpc.service</code> file that I wrote and am using:</p>
-							<div class="language-ini highlighter-rouge">
+							<div class="language-systemd highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="nn">[Unit]</span>
-<span class="py">Description</span><span class="p">=</span><span class="s">FRP Client Service</span>
-<span class="py">After</span><span class="p">=</span><span class="s">network.target</span>
-<span class="py">StartLimitIntervalSec</span><span class="p">=</span><span class="s">0</span>
+									<pre class="highlight"><code><span class="k">[Unit]</span>
+<span class="nt">Description</span><span class="p">=</span>FRP Client Service
+<span class="nt">After</span><span class="p">=</span>network.target
+<span class="nt">StartLimitIntervalSec</span><span class="p">=</span>0
 
-<span class="nn">[Service]</span>
-<span class="py">Type</span><span class="p">=</span><span class="s">simple</span>
-<span class="py">Restart</span><span class="p">=</span><span class="s">always</span>
-<span class="py">RestartSec</span><span class="p">=</span><span class="s">1</span>
-<span class="py">User</span><span class="p">=</span><span class="s">root</span>
-<span class="py">ExecStart</span><span class="p">=</span><span class="s">/usr/local/bin/frpc -c /etc/frpc.ini</span>
+<span class="k">[Service]</span>
+<span class="nt">Type</span><span class="p">=</span>simple
+<span class="nt">Restart</span><span class="p">=</span>always
+<span class="nt">RestartSec</span><span class="p">=</span>1
+<span class="nt">User</span><span class="p">=</span>root
+<span class="nt">ExecStart</span><span class="p">=</span>/usr/local/bin/frpc -c /etc/frpc.ini
 
-<span class="nn">[Install]</span>
-<span class="py">WantedBy</span><span class="p">=</span><span class="s">multi-user.target</span>
+<span class="k">[Install]</span>
+<span class="nt">WantedBy</span><span class="p">=</span>multi-user.target
 </code></pre>
 								</div>
 							</div>
@@ -297,7 +297,7 @@ systemctl <span class="nb">enable </span>frpc@default.service
 									<a href="/tag/linux" class="page__taxonomy-item" rel="tag">linux</a>
 								</span>
 							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-05-13">May 13, 2020</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-09-12">September 12, 2020</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
@@ -433,7 +433,7 @@ systemctl <span class="nb">enable </span>frpc@default.service
 					<br>
 					<a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a>
 					<br>
-					Site version <a href="/status">G-314</a>
+					Site version <a href="/status">G-315</a>
 				</div>
 				<script src="/assets/js/love.js" type="text/javascript" async="async"></script>
 			</footer>
