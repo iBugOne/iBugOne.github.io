@@ -21,7 +21,7 @@
 		<meta property="og:description" content="Why use an external service when there’s an in-house GitHub service?">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2020-09-19T00:00:00+00:00">
-		<meta property="article:modified_time" content="2020-09-21T01:07:17+00:00">
+		<meta property="article:modified_time" content="2020-09-21T01:08:56+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2020/09/build-github-pages-with-github-actions/">
 		<script type="application/ld+json">
 			{
@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=c715392">
+		<link rel="stylesheet" href="/assets/css/main.css?v=f3ab1fd">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -198,7 +198,7 @@
 					<meta itemprop="headline" content="Build GitHub Pages with GitHub Actions">
 					<meta itemprop="description" content="Why use an external service when there’s an in-house GitHub service?">
 					<meta itemprop="datePublished" content="2020-09-19T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2020-09-21T01:07:17+00:00">
+					<meta itemprop="dateModified" content="2020-09-21T01:08:56+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -215,13 +215,13 @@
 							</div>
 							<p>Earlier this year, I switched my GitHub Pages build from CircleCI to GitHub Actions.</p>
 							<p>Yep, an article is missing for CircleCI, but why is it still needed? GitHub Actions is better than CircleCI in <em>almost</em> every aspect, except for its CPU that runs slightly slower than that of CircleCI.</p>
-							<h1 id="1-review">1. Review</h1>
+							<h2 id="1-review">1. Review</h2>
 							<p>In <a href="2018-04-14-build-github-pages-with-travis-ci.md">my previous article</a> on building with Travis CI, we went through the steps of setting up a local build environment for our Jekyll site. We set up a Ruby development environment, installed <code class="language-plaintext highlighter-rouge">gem</code> and <code class="language-plaintext highlighter-rouge">bundle</code>, wrote a <code class="language-plaintext highlighter-rouge">Gemfile</code>, and built the Jekyll site locally.</p>
 							<p>If you’re not yet ready for this part, check out that article first. I’m going straight to the main content this time.</p>
-							<h1 id="setup-actions">2. Setting up GitHub Actions</h1>
+							<h2 id="setup-actions">2. Setting up GitHub Actions</h2>
 							<p>Getting GitHub Actions ready for building is <em>much</em> easier than Travis CI, as everything you need to do is to push a config file into <code class="language-plaintext highlighter-rouge">.github/workflows</code> directory of your repository.</p>
 							<p>If you’re working on a forked repository, you may want to navigate to the “Actions” tab in your repository, and enable Actions there. Actions is disabled for forked repositories by default.</p>
-							<h2 id="setup-build">Configure build settings</h2>
+							<h3 id="setup-build">Configure build settings</h3>
 							<p>You can use any name for the config file, but here I’ll go with <code class="language-plaintext highlighter-rouge">build.yml</code>. Here’s a minimal set of steps you’ll need.</p>
 							<div class="language-yaml highlighter-rouge">
 								<div class="highlight">
@@ -263,11 +263,11 @@
 								<li><strong>Build site.</strong> Same as above, self-explanatory.</li>
 							</ol>
 							<p>The build process is mostly the same as on Travis CI, except that many steps that are automatically taken on Travis CI have to be written explicitly.</p>
-							<h1 id="deploy-actions">3. Deploy to GitHub</h1>
-							<h2 id="access-token">Access token</h2>
+							<h2 id="deploy-actions">3. Deploy to GitHub</h2>
+							<h3 id="access-token">Access token</h3>
 							<p>You’ve probably noticed that there’s a <code class="language-plaintext highlighter-rouge">${{ secrets.GITHUB_TOKEN }}</code> in the above GitHub Actions config. That’s <a href="https://docs.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token">a neat feature</a> GitHub provides. The main downside is that the token has access only to the repository the workflow is running on (as well as any other public resources). So if you want to push to a different repository, you’ll still have to resort to creating your personal access token (PAT) for it.</p>
 							<p>To keep things simple, I’ll assume you’re pushing to the same repository for deployment, where the GitHub-provided token can be used.</p>
-							<h2 id="setup-deployment">Setting up deployment</h2>
+							<h3 id="setup-deployment">Setting up deployment</h3>
 							<p>The deploy script from the other Travis CI article is as follows (with names replaced, of course):</p>
 							<div class="language-shell highlighter-rouge">
 								<div class="highlight">
@@ -299,7 +299,7 @@ git push <span class="nt">--force</span> deploy master <span class="o">&gt;</spa
 </code></pre>
 								</div>
 							</div>
-							<h2 id="fixing-issues-with-github-actions">Fixing issues with GitHub Actions</h2>
+							<h3 id="fixing-issues-with-github-actions">Fixing issues with GitHub Actions</h3>
 							<p>There are a few things to tackle, however, as GitHub Actions works differently than Travis CI.</p>
 							<p>First, the GitHub-provided token, for unknown reasons, could not trigger GitHub Pages deploys. This used to be the case<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote">1</a></sup> but has since been (partially) fixed. Now it can trigger Pages for non-root commits to the Pages branch. A “root commit” is the sole commit on a new branch, like the one created by the above build script, which always initializes a new repository and creates a single commit for the contents. This Pages issue makes the above build script non-functional, and we need to fix it.</p>
 							<p>An easy solution is to fetch the target (deploy) branch, and add a commit on top of whatever’s there already. So we modify the build script to include this fix:</p>
@@ -322,7 +322,7 @@ git push <span class="nt">--force</span> deploy master <span class="o">&gt;</spa
 								</div>
 							</div>
 							<p>In this revised script, we first fetch the target branch, with depth set to 1 to avoid unnecessary downloads. Then we reset our “branch pointer” to the fetched branch (<code class="language-plaintext highlighter-rouge">FETCH_HEAD</code>), before finally adding our content as another commit on top of it.</p>
-							<h2 id="fixing-issues-with-github-actions---alternative-approach">Fixing issues with GitHub Actions - Alternative approach</h2>
+							<h3 id="fixing-issues-with-github-actions---alternative-approach">Fixing issues with GitHub Actions - Alternative approach</h3>
 							<p>There’s an alternative solution to this issue, by cloning the deploy repository beforehand (and remove <code class="language-plaintext highlighter-rouge">git init</code> from the deploy step).</p>
 							<p>Insert this “clone” step <em>before</em> the “build” step:</p>
 							<div class="language-yaml highlighter-rouge">
@@ -356,7 +356,7 @@ git push <span class="nt">--force</span> deploy master <span class="o">&gt;</spa
 								</div>
 							</div>
 							<p>I recall that Jekyll 4.0 has this setting emplaced by default, but can’t find the reference for now, so I’m recommending that you explicitly write this into your config file even if you have Jekyll 4 locally (which you probably don’t if you’re using the <code class="language-plaintext highlighter-rouge">github-pages</code> gem). It’s a good idea to write configurations explicitly, after all.</p>
-							<h1 id="finally">Finally</h1>
+							<h2 id="finally">Finally</h2>
 							<p>Now then, why did I migrate my website build to GitHub Actions, if both Travis CI and CircleCI are running perfectly?</p>
 							<p>I chose so for the following reasons:</p>
 							<ul>
@@ -528,7 +528,7 @@ git push <span class="nt">--force</span> deploy master <span class="o">&gt;</spa
 					<br>
 					<a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a>
 					<br>
-					Site version <a href="/status">G-319</a>
+					Site version <a href="/status">G-320</a>
 				</div>
 				<script src="/assets/js/love.js" type="text/javascript" async="async"></script>
 			</footer>

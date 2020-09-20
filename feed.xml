@@ -1,17 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2020-09-20T17:07:57+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Build GitHub Pages with GitHub Actions</title><link href="https://ibug.io/blog/2020/09/build-github-pages-with-github-actions/" rel="alternate" type="text/html" title="Build GitHub Pages with GitHub Actions" /><published>2020-09-19T00:00:00+00:00</published><updated>2020-09-21T01:07:17+00:00</updated><id>https://ibug.io/blog/2020/09/build-github-pages-with-github-actions</id><content type="html" xml:base="https://ibug.io/blog/2020/09/build-github-pages-with-github-actions/">&lt;div class=&quot;notice--primary&quot;&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2020-09-20T17:09:37+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Build GitHub Pages with GitHub Actions</title><link href="https://ibug.io/blog/2020/09/build-github-pages-with-github-actions/" rel="alternate" type="text/html" title="Build GitHub Pages with GitHub Actions" /><published>2020-09-19T00:00:00+00:00</published><updated>2020-09-21T01:08:56+00:00</updated><id>https://ibug.io/blog/2020/09/build-github-pages-with-github-actions</id><content type="html" xml:base="https://ibug.io/blog/2020/09/build-github-pages-with-github-actions/">&lt;div class=&quot;notice--primary&quot;&gt;
 				&lt;h4 class=&quot;no_toc&quot; id=&quot;heads-up&quot;&gt;&lt;i class=&quot;fas fa-fw fa-lightbulb&quot;&gt;&lt;/i&gt; Heads up&lt;/h4&gt;
 				&lt;p&gt;I wrote &lt;a href=&quot;2018-04-14-build-github-pages-with-travis-ci.md&quot;&gt;another article&lt;/a&gt; two years ago about building with Travis CI, but from my experience in the past half year, GitHub Actions is, in all aspects, a better option than Travis CI.&lt;/p&gt;
 				&lt;p&gt;You should also read that article if you’re unfamiliar with &lt;a href=&quot;https://jekyllrb.com/&quot;&gt;Jekyll&lt;/a&gt;, as I won’t be repeating common basics. This article will focus on GitHub Actions rather than building a Jekyll site in general.&lt;/p&gt;
 				&lt;/div&gt;
 				&lt;p&gt;Earlier this year, I switched my GitHub Pages build from CircleCI to GitHub Actions.&lt;/p&gt;
 				&lt;p&gt;Yep, an article is missing for CircleCI, but why is it still needed? GitHub Actions is better than CircleCI in &lt;em&gt;almost&lt;/em&gt; every aspect, except for its CPU that runs slightly slower than that of CircleCI.&lt;/p&gt;
-				&lt;h1 id=&quot;1-review&quot;&gt;1. Review&lt;/h1&gt;
+				&lt;h2 id=&quot;1-review&quot;&gt;1. Review&lt;/h2&gt;
 				&lt;p&gt;In &lt;a href=&quot;2018-04-14-build-github-pages-with-travis-ci.md&quot;&gt;my previous article&lt;/a&gt; on building with Travis CI, we went through the steps of setting up a local build environment for our Jekyll site. We set up a Ruby development environment, installed &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gem&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bundle&lt;/code&gt;, wrote a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Gemfile&lt;/code&gt;, and built the Jekyll site locally.&lt;/p&gt;
 				&lt;p&gt;If you’re not yet ready for this part, check out that article first. I’m going straight to the main content this time.&lt;/p&gt;
-				&lt;h1 id=&quot;setup-actions&quot;&gt;2. Setting up GitHub Actions&lt;/h1&gt;
+				&lt;h2 id=&quot;setup-actions&quot;&gt;2. Setting up GitHub Actions&lt;/h2&gt;
 				&lt;p&gt;Getting GitHub Actions ready for building is &lt;em&gt;much&lt;/em&gt; easier than Travis CI, as everything you need to do is to push a config file into &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.github/workflows&lt;/code&gt; directory of your repository.&lt;/p&gt;
 				&lt;p&gt;If you’re working on a forked repository, you may want to navigate to the “Actions” tab in your repository, and enable Actions there. Actions is disabled for forked repositories by default.&lt;/p&gt;
-				&lt;h2 id=&quot;setup-build&quot;&gt;Configure build settings&lt;/h2&gt;
+				&lt;h3 id=&quot;setup-build&quot;&gt;Configure build settings&lt;/h3&gt;
 				&lt;p&gt;You can use any name for the config file, but here I’ll go with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;build.yml&lt;/code&gt;. Here’s a minimal set of steps you’ll need.&lt;/p&gt;
 				&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;build&lt;/span&gt;
 				&lt;span class=&quot;na&quot;&gt;on&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;push&lt;/span&gt;
@@ -49,11 +49,11 @@
 				&lt;li&gt;&lt;strong&gt;Build site.&lt;/strong&gt; Same as above, self-explanatory.&lt;/li&gt;
 				&lt;/ol&gt;
 				&lt;p&gt;The build process is mostly the same as on Travis CI, except that many steps that are automatically taken on Travis CI have to be written explicitly.&lt;/p&gt;
-				&lt;h1 id=&quot;deploy-actions&quot;&gt;3. Deploy to GitHub&lt;/h1&gt;
-				&lt;h2 id=&quot;access-token&quot;&gt;Access token&lt;/h2&gt;
+				&lt;h2 id=&quot;deploy-actions&quot;&gt;3. Deploy to GitHub&lt;/h2&gt;
+				&lt;h3 id=&quot;access-token&quot;&gt;Access token&lt;/h3&gt;
 				&lt;p&gt;You’ve probably noticed that there’s a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;${{ secrets.GITHUB_TOKEN }}&lt;/code&gt; in the above GitHub Actions config. That’s &lt;a href=&quot;https://docs.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token&quot;&gt;a neat feature&lt;/a&gt; GitHub provides. The main downside is that the token has access only to the repository the workflow is running on (as well as any other public resources). So if you want to push to a different repository, you’ll still have to resort to creating your personal access token (PAT) for it.&lt;/p&gt;
 				&lt;p&gt;To keep things simple, I’ll assume you’re pushing to the same repository for deployment, where the GitHub-provided token can be used.&lt;/p&gt;
-				&lt;h2 id=&quot;setup-deployment&quot;&gt;Setting up deployment&lt;/h2&gt;
+				&lt;h3 id=&quot;setup-deployment&quot;&gt;Setting up deployment&lt;/h3&gt;
 				&lt;p&gt;The deploy script from the other Travis CI article is as follows (with names replaced, of course):&lt;/p&gt;
 				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;_site
 				git init
@@ -77,7 +77,7 @@
 				&lt;span class=&quot;s&quot;&gt;git remote add deploy https://${{ secrets.GITHUB_TOKEN }}@github.com/&amp;lt;yourname&amp;gt;/&amp;lt;yourname&amp;gt;.github.io.git &amp;gt;/dev/null 2&amp;gt;&amp;amp;1&lt;/span&gt;
 				&lt;span class=&quot;s&quot;&gt;git push --force deploy gh-pages &amp;gt;/dev/null 2&amp;gt;&amp;amp;1&lt;/span&gt;
 				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-				&lt;h2 id=&quot;fixing-issues-with-github-actions&quot;&gt;Fixing issues with GitHub Actions&lt;/h2&gt;
+				&lt;h3 id=&quot;fixing-issues-with-github-actions&quot;&gt;Fixing issues with GitHub Actions&lt;/h3&gt;
 				&lt;p&gt;There are a few things to tackle, however, as GitHub Actions works differently than Travis CI.&lt;/p&gt;
 				&lt;p&gt;First, the GitHub-provided token, for unknown reasons, could not trigger GitHub Pages deploys. This used to be the case&lt;sup id=&quot;fnref:1&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; but has since been (partially) fixed. Now it can trigger Pages for non-root commits to the Pages branch. A “root commit” is the sole commit on a new branch, like the one created by the above build script, which always initializes a new repository and creates a single commit for the contents. This Pages issue makes the above build script non-functional, and we need to fix it.&lt;/p&gt;
 				&lt;p&gt;An easy solution is to fetch the target (deploy) branch, and add a commit on top of whatever’s there already. So we modify the build script to include this fix:&lt;/p&gt;
@@ -96,7 +96,7 @@
 				&lt;span class=&quot;s&quot;&gt;git push deploy gh-pages &amp;gt;/dev/null 2&amp;gt;&amp;amp;1&lt;/span&gt;
 				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 				&lt;p&gt;In this revised script, we first fetch the target branch, with depth set to 1 to avoid unnecessary downloads. Then we reset our “branch pointer” to the fetched branch (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;FETCH_HEAD&lt;/code&gt;), before finally adding our content as another commit on top of it.&lt;/p&gt;
-				&lt;h2 id=&quot;fixing-issues-with-github-actions---alternative-approach&quot;&gt;Fixing issues with GitHub Actions - Alternative approach&lt;/h2&gt;
+				&lt;h3 id=&quot;fixing-issues-with-github-actions---alternative-approach&quot;&gt;Fixing issues with GitHub Actions - Alternative approach&lt;/h3&gt;
 				&lt;p&gt;There’s an alternative solution to this issue, by cloning the deploy repository beforehand (and remove &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;git init&lt;/code&gt; from the deploy step).&lt;/p&gt;
 				&lt;p&gt;Insert this “clone” step &lt;em&gt;before&lt;/em&gt; the “build” step:&lt;/p&gt;
 				&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Prepare build&lt;/span&gt;
@@ -118,7 +118,7 @@
 				&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;na&quot;&gt;keep_files&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;.git&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;]&lt;/span&gt;
 				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 				&lt;p&gt;I recall that Jekyll 4.0 has this setting emplaced by default, but can’t find the reference for now, so I’m recommending that you explicitly write this into your config file even if you have Jekyll 4 locally (which you probably don’t if you’re using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;github-pages&lt;/code&gt; gem). It’s a good idea to write configurations explicitly, after all.&lt;/p&gt;
-				&lt;h1 id=&quot;finally&quot;&gt;Finally&lt;/h1&gt;
+				&lt;h2 id=&quot;finally&quot;&gt;Finally&lt;/h2&gt;
 				&lt;p&gt;Now then, why did I migrate my website build to GitHub Actions, if both Travis CI and CircleCI are running perfectly?&lt;/p&gt;
 				&lt;p&gt;I chose so for the following reasons:&lt;/p&gt;
 				&lt;ul&gt;
