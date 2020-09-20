@@ -21,7 +21,7 @@
 		<meta property="og:description" content="Why use an external service when there’s an in-house GitHub service?">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2020-09-19T00:00:00+00:00">
-		<meta property="article:modified_time" content="2020-09-21T01:08:56+00:00">
+		<meta property="article:modified_time" content="2020-09-21T01:12:47+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2020/09/build-github-pages-with-github-actions/">
 		<script type="application/ld+json">
 			{
@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=f3ab1fd">
+		<link rel="stylesheet" href="/assets/css/main.css?v=459e337">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -198,7 +198,7 @@
 					<meta itemprop="headline" content="Build GitHub Pages with GitHub Actions">
 					<meta itemprop="description" content="Why use an external service when there’s an in-house GitHub service?">
 					<meta itemprop="datePublished" content="2020-09-19T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2020-09-21T01:08:56+00:00">
+					<meta itemprop="dateModified" content="2020-09-21T01:12:47+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -210,13 +210,13 @@
 							</aside>
 							<div class="notice--primary">
 								<h4 class="no_toc" id="heads-up"><i class="fas fa-fw fa-lightbulb"></i> Heads up</h4>
-								<p>I wrote <a href="2018-04-14-build-github-pages-with-travis-ci.md">another article</a> two years ago about building with Travis CI, but from my experience in the past half year, GitHub Actions is, in all aspects, a better option than Travis CI.</p>
+								<p>I wrote <a href="/blog/2018/04/build-github-pages-with-travis-ci/">another article</a> two years ago about building with Travis CI, but from my experience in the past half year, GitHub Actions is, in all aspects, a better option than Travis CI.</p>
 								<p>You should also read that article if you’re unfamiliar with <a href="https://jekyllrb.com/">Jekyll</a>, as I won’t be repeating common basics. This article will focus on GitHub Actions rather than building a Jekyll site in general.</p>
 							</div>
 							<p>Earlier this year, I switched my GitHub Pages build from CircleCI to GitHub Actions.</p>
 							<p>Yep, an article is missing for CircleCI, but why is it still needed? GitHub Actions is better than CircleCI in <em>almost</em> every aspect, except for its CPU that runs slightly slower than that of CircleCI.</p>
 							<h2 id="1-review">1. Review</h2>
-							<p>In <a href="2018-04-14-build-github-pages-with-travis-ci.md">my previous article</a> on building with Travis CI, we went through the steps of setting up a local build environment for our Jekyll site. We set up a Ruby development environment, installed <code class="language-plaintext highlighter-rouge">gem</code> and <code class="language-plaintext highlighter-rouge">bundle</code>, wrote a <code class="language-plaintext highlighter-rouge">Gemfile</code>, and built the Jekyll site locally.</p>
+							<p>In <a href="/blog/2018/04/build-github-pages-with-travis-ci/">my previous article</a> on building with Travis CI, we went through the steps of setting up a local build environment for our Jekyll site. We set up a Ruby development environment, installed <code class="language-plaintext highlighter-rouge">gem</code> and <code class="language-plaintext highlighter-rouge">bundle</code>, wrote a <code class="language-plaintext highlighter-rouge">Gemfile</code>, and built the Jekyll site locally.</p>
 							<p>If you’re not yet ready for this part, check out that article first. I’m going straight to the main content this time.</p>
 							<h2 id="setup-actions">2. Setting up GitHub Actions</h2>
 							<p>Getting GitHub Actions ready for building is <em>much</em> easier than Travis CI, as everything you need to do is to push a config file into <code class="language-plaintext highlighter-rouge">.github/workflows</code> directory of your repository.</p>
@@ -528,7 +528,7 @@ git push <span class="nt">--force</span> deploy master <span class="o">&gt;</spa
 					<br>
 					<a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a>
 					<br>
-					Site version <a href="/status">G-320</a>
+					Site version <a href="/status">G-321</a>
 				</div>
 				<script src="/assets/js/love.js" type="text/javascript" async="async"></script>
 			</footer>
