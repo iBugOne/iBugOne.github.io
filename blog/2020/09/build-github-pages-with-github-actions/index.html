@@ -1,0 +1,623 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.20.2 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>Build GitHub Pages with GitHub - iBug</title>
+		<meta name="description" content="Why use an external service when there’s an in-house GitHub service?">
+		<meta name="author" content="iBug">
+		<meta property="article:author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="Build GitHub Pages with GitHub">
+		<meta property="og:url" content="https://ibug.io/blog/2020/09/build-github-pages-with-github-actions/">
+		<meta property="og:description" content="Why use an external service when there’s an in-house GitHub service?">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2020-09-19T00:00:00+00:00">
+		<meta property="article:modified_time" content="2020-09-21T00:52:08+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2020/09/build-github-pages-with-github-actions/">
+		<script type="application/ld+json">
+			{
+			  "@context": "https://schema.org",
+			
+			    "@type": "Person",
+			    "name": "iBug",
+			    "url": "https://ibug.io/"
+			
+			}
+		</script>
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<!-- https://t.co/dKP3o1e -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script>
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=f0a5d33">
+		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css">
+		<!--[if IE]>
+			<style>
+				/* old IE unsupported flexbox fixes */
+				.greedy-nav .site-title {
+				  padding-right: 3em;
+				}
+				.greedy-nav button {
+				  position: absolute;
+				  top: 0;
+				  right: 0;
+				  height: 100%;
+				}
+			</style>
+		<![endif]-->
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+		<meta name="theme-color" content="#EDEDED">
+		<script type="text/javascript">
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+		<!--
+ Minimal Mistakes layout: single
+ Page Path: _posts/2020-09-19-build-github-pages-with-github-actions.md
+ Page Type: 
+-->
+	</head>
+	<body class="layout--single">
+		<nav class="skip-links">
+			<h2 class="screen-reader-text">Skip links</h2>
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<!--[if lt IE 9]>
+			<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+		<![endif]-->
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt=""></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a href="/about/">About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/blog/">Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/projects/">Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="https://github.com/iBug">GitHub <i class="far fa-xs fa-external-link"></i></a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/cn/">中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<svg class="icon" width="16" height="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 15.99 16">
+								<path d="M15.5,13.12L13.19,10.8a1.69,1.69,0,0,0-1.28-.55l-0.06-.06A6.5,6.5,0,0,0,5.77,0,6.5,6.5,0,0,0,2.46,11.59a6.47,6.47,0,0,0,7.74.26l0.05,0.05a1.65,1.65,0,0,0,.5,1.24l2.38,2.38A1.68,1.68,0,0,0,15.5,13.12ZM6.4,2A4.41,4.41,0,1,1,2,6.4,4.43,4.43,0,0,1,6.4,2Z" transform="translate(-.01)"></path>
+							</svg>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay"
+  style=" background-image: url('/image/header/mountain-1.jpg');"
+>
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						Build GitHub Pages with GitHub
+					</h1>
+					<p class="page__meta">
+						<span class="page__meta-date">
+							<i class="far fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2020-09-19T00:00:00+00:00">September 19, 2020</time>
+						</span>
+						<span class="page__meta-sep"></span>
+						<span class="page__meta-readtime">
+							<i class="far fa-clock" aria-hidden="true"></i>
+							6 minute read
+						</span>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person">
+						<div class="author__avatar">
+							<img src="/image/avatar.png" alt="iBug" itemprop="image">
+						</div>
+						<div class="author__content">
+							<h3 class="author__name" itemprop="name">iBug</h3>
+							<div class="author__bio" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer"><i class="far fa-fw fa-envelope" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/ibugthought" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-telegram-plane" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox" />
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="Build GitHub Pages with GitHub">
+					<meta itemprop="description" content="Why use an external service when there’s an in-house GitHub service?">
+					<meta itemprop="datePublished" content="2020-09-19T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2020-09-21T00:52:08+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+								</nav>
+							</aside>
+							<div class="notice--primary">
+								<h4 class="no_toc" id="heads-up"><i class="fas fa-fw fa-lightbulb"></i> Heads up</h4>
+								<p>I wrote <a href="2018-04-14-build-github-pages-with-travis-ci.md">another article</a> two years ago about building with Travis CI, but from my experience in the past half year, GitHub Actions is, in all aspects, a better option than Travis CI.</p>
+								<p>You should also read that article if you’re unfamiliar with <a href="https://jekyllrb.com/">Jekyll</a>, as I won’t be repeating common basics. This article will focus on GitHub Actions rather than building a Jekyll site in general.</p>
+							</div>
+							<p>Earlier this year, I switched my GitHub Pages build from CircleCI to GitHub Actions.</p>
+							<p>Yep, an article is missing for CircleCI, but why is it still needed? GitHub Actions is better than CircleCI in <em>almost</em> every aspect, except for its CPU that runs slightly slower than that of CircleCI.</p>
+							<h1 id="1-review">1. Review</h1>
+							<p>In <a href="2018-04-14-build-github-pages-with-travis-ci.md">my previous article</a> on building with Travis CI, we went through the steps of setting up a local build environment for our Jekyll site. We set up a Ruby development environment, installed <code class="language-plaintext highlighter-rouge">gem</code> and <code class="language-plaintext highlighter-rouge">bundle</code>, wrote a <code class="language-plaintext highlighter-rouge">Gemfile</code>, and built the Jekyll site locally.</p>
+							<p>If you’re not yet ready for this part, check out that article first. I’m going straight to the main content this time.</p>
+							<h1 id="setup-actions">2. Setting up GitHub Actions</h1>
+							<p>Getting GitHub Actions ready for building is <em>much</em> easier than Travis CI, as everything you need to do is to push a config file into <code class="language-plaintext highlighter-rouge">.github/workflows</code> directory of your repository.</p>
+							<p>If you’re working on a forked repository, you may want to navigate to the “Actions” tab in your repository, and enable Actions there. Actions is disabled for forked repositories by default.</p>
+							<h2 id="setup-build">Configure build settings</h2>
+							<p>You can use any name for the config file, but here I’ll go with <code class="language-plaintext highlighter-rouge">build.yml</code>. Here’s a minimal set of steps you’ll need.</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="na">name</span><span class="pi">:</span> <span class="s">build</span>
+<span class="na">on</span><span class="pi">:</span> <span class="s">push</span>
+<span class="na">jobs</span><span class="pi">:</span>
+  <span class="na">build</span><span class="pi">:</span>
+    <span class="na">runs-on</span><span class="pi">:</span> <span class="s">ubuntu-latest</span>
+    <span class="na">steps</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">uses</span><span class="pi">:</span> <span class="s">actions/checkout@v2</span>
+    <span class="pi">-</span> <span class="na">uses</span><span class="pi">:</span> <span class="s">actions/setup-ruby@v1</span>
+      <span class="na">with</span><span class="pi">:</span>
+        <span class="na">ruby-version</span><span class="pi">:</span> <span class="m">2.7</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Setup cache for Bundler</span>
+      <span class="na">id</span><span class="pi">:</span> <span class="s">cache</span>
+      <span class="na">uses</span><span class="pi">:</span> <span class="s">actions/cache@v2</span>
+      <span class="na">with</span><span class="pi">:</span>
+        <span class="na">path</span><span class="pi">:</span> <span class="s">vendor/bundle</span>
+        <span class="na">key</span><span class="pi">:</span> <span class="s">${{ runner.os }}-bundler-${{ hashFiles('Gemfile') }}</span>
+        <span class="na">restore-keys</span><span class="pi">:</span> <span class="pi">|</span>
+          <span class="s">${{ runner.os }}-bundler-</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Install dependencies</span>
+      <span class="na">run</span><span class="pi">:</span> <span class="pi">|</span>
+        <span class="s">bundle install --path=vendor/bundle</span>
+    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Build site</span>
+      <span class="na">run</span><span class="pi">:</span> <span class="s">bundle exec jekyll build --profile --trace</span>
+      <span class="na">env</span><span class="pi">:</span>
+        <span class="na">JEKYLL_ENV</span><span class="pi">:</span> <span class="s">production</span>
+        <span class="na">JEKYLL_GITHUB_TOKEN</span><span class="pi">:</span> <span class="s">${{ secrets.GITHUB_TOKEN }}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Unlike Travis CI, all GitHub Actions builds run in an identical environment, while specific languages and software are loaded at runtime. This workflow contains 5 steps, with each step being:</p>
+							<ol>
+								<li><strong>Clone and checkout the repository.</strong> Contrary to Travis CI, GitHub Actions does not clone the repository automatically, as GitHub Actions is intended for more general purposes than only running Continuous Integrations.</li>
+								<li><strong>Setup Ruby development environment.</strong> This one is obvious, since Jekyll is written in Ruby.</li>
+								<li><strong>Setup cache.</strong> For the same reason as with Travis CI: Caching installed gems speeds up <em>subsequent</em> builds.</li>
+								<li><strong>Install dependencies.</strong> Self-explanatory.</li>
+								<li><strong>Build site.</strong> Same as above, self-explanatory.</li>
+							</ol>
+							<p>The build process is mostly the same as on Travis CI, except that many steps that are automatically taken on Travis CI have to be written explicitly.</p>
+							<h1 id="deploy-actions">3. Deploy to GitHub</h1>
+							<h2 id="access-token">Access token</h2>
+							<p>You’ve probably noticed that there’s a <code class="language-plaintext highlighter-rouge">${{ secrets.GITHUB_TOKEN }}</code> in the above GitHub Actions config. That’s <a href="https://docs.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token">a neat feature</a> GitHub provides. The main downside is that the token has access only to the repository the workflow is running on (as well as any other public resources). So if you want to push to a different repository, you’ll still have to resort to creating your personal access token (PAT) for it.</p>
+							<p>To keep things simple, I’ll assume you’re pushing to the same repository for deployment, where the GitHub-provided token can be used.</p>
+							<h2 id="setup-deployment">Setting up deployment</h2>
+							<p>The deploy script from the other Travis CI article is as follows (with names replaced, of course):</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nb">cd </span>_site
+git init
+git config user.name <span class="s2">"GitHub"</span>
+git config user.email <span class="s2">"noreply@github.com"</span>
+git add <span class="nt">--all</span>
+git commit <span class="nt">--message</span> <span class="s2">"Auto deploy from GitHub Actions build </span><span class="nv">$GITHUB_RUN_NUMBER</span><span class="s2">"</span>
+git remote add deploy https://<span class="k">${</span><span class="p">{ secrets.GITHUB_TOKEN </span><span class="k">}</span><span class="o">}</span>@github.com/&lt;yourname&gt;/&lt;yourname&gt;.github.io.git <span class="o">&gt;</span>/dev/null 2&gt;&amp;1
+git push <span class="nt">--force</span> deploy master <span class="o">&gt;</span>/dev/null 2&gt;&amp;1
+</code></pre>
+								</div>
+							</div>
+							<p>Again, replace <code class="language-plaintext highlighter-rouge">&lt;yourname&gt;</code> with your GitHub username in the above script.</p>
+							<p>Now, instead of writing it to a file, we can add this script directly to the build config, as shown below:</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Deploy site</span>
+      <span class="na">run</span><span class="pi">:</span> <span class="pi">|</span>
+        <span class="s">cd _site</span>
+        <span class="s">git init</span>
+        <span class="s">git config user.name "GitHub"</span>
+        <span class="s">git config user.email "noreply@github.com"</span>
+        <span class="s">git add --all</span>
+        <span class="s">git commit --message "Auto deploy from GitHub Actions build $GITHUB_RUN_NUMBER"</span>
+        <span class="s">git remote add deploy https://${{ secrets.GITHUB_TOKEN }}@github.com/&lt;yourname&gt;/&lt;yourname&gt;.github.io.git &gt;/dev/null 2&gt;&amp;1</span>
+        <span class="s">git push --force deploy gh-pages &gt;/dev/null 2&gt;&amp;1</span>
+</code></pre>
+								</div>
+							</div>
+							<h2 id="fixing-issues-with-github-actions">Fixing issues with GitHub Actions</h2>
+							<p>There are a few things to tackle, however, as GitHub Actions works differently than Travis CI.</p>
+							<p>First, the GitHub-provided token, for unknown reasons, could not trigger GitHub Pages deploys. This used to be the case<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote">1</a></sup> but has since been (partially) fixed. Now it can trigger Pages for non-root commits to the Pages branch. A “root commit” is the sole commit on a new branch, like the one created by the above build script, which always initializes a new repository and creates a single commit for the contents. This Pages issue makes the above build script non-functional, and we need to fix it.</p>
+							<p>An easy solution is to fetch the target (deploy) branch, and add a commit on top of whatever’s there already. So we modify the build script to include this fix:</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Deploy site</span>
+      <span class="na">run</span><span class="pi">:</span> <span class="pi">|</span>
+        <span class="s">cd _site</span>
+        <span class="s">git init</span>
+        <span class="s">git config user.name "GitHub"</span>
+        <span class="s">git config user.email "noreply@github.com"</span>
+        <span class="s">git remote add deploy https://${{ secrets.GITHUB_TOKEN }}@github.com/&lt;yourname&gt;/&lt;yourname&gt;.github.io.git &gt;/dev/null 2&gt;&amp;1</span>
+        <span class="s">git fetch --depth=1 deploy gh-pages</span>
+        <span class="s">git reset --soft FETCH_HEAD</span>
+        <span class="s">git checkout -B gh-pages</span>
+        <span class="s">git add --all</span>
+        <span class="s">git commit --message "Auto deploy from GitHub Actions build $GITHUB_RUN_NUMBER"</span>
+        <span class="s">git push deploy gh-pages &gt;/dev/null 2&gt;&amp;1</span>
+</code></pre>
+								</div>
+							</div>
+							<p>In this revised script, we first fetch the target branch, with depth set to 1 to avoid unnecessary downloads. Then we reset our “branch pointer” to the fetched branch (<code class="language-plaintext highlighter-rouge">FETCH_HEAD</code>), before finally adding our content as another commit on top of it.</p>
+							<h2 id="fixing-issues-with-github-actions---alternative-approach">Fixing issues with GitHub Actions - Alternative approach</h2>
+							<p>There’s an alternative solution to this issue, by cloning the deploy repository beforehand (and remove <code class="language-plaintext highlighter-rouge">git init</code> from the deploy step).</p>
+							<p>Insert this “clone” step <em>before</em> the “build” step:</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Prepare build</span>
+      <span class="na">run</span><span class="pi">:</span> <span class="pi">|</span>
+        <span class="s">git clone -q --depth=1 --branch=gh-pages --single-branch --no-checkout \</span>
+          <span class="s">https://${{ secrets.GITHUB_TOKEN }}@github.com/&lt;yourname&gt;/&lt;yourname&gt;.github.io.git _site/</span>
+</code></pre>
+								</div>
+							</div>
+							<p>and change the deploy step to this:</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>    <span class="pi">-</span> <span class="na">name</span><span class="pi">:</span> <span class="s">Deploy site</span>
+      <span class="na">run</span><span class="pi">:</span> <span class="pi">|</span>
+        <span class="s">cd _site</span>
+        <span class="s">git config user.name "GitHub"</span>
+        <span class="s">git config user.email "noreply@github.com"</span>
+        <span class="s">git add --all</span>
+        <span class="s">git commit --message "Auto deploy from GitHub Actions build $GITHUB_RUN_NUMBER"</span>
+        <span class="s">git push deploy gh-pages</span>
+</code></pre>
+								</div>
+							</div>
+							<p>An important note is that you should tell Jekyll to keep your <code class="language-plaintext highlighter-rouge">.git</code> folder in the <code class="language-plaintext highlighter-rouge">_site</code> directory when building your site. This can be done by adding the following settings to your <code class="language-plaintext highlighter-rouge">_config.yml</code>:</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="na">keep_files</span><span class="pi">:</span> <span class="pi">[</span><span class="nv">.git</span><span class="pi">]</span>
+</code></pre>
+								</div>
+							</div>
+							<p>I recall that Jekyll 4.0 has this setting emplaced by default, but can’t find the reference for now, so I’m recommending that you explicitly write this into your config file even if you have Jekyll 4 locally (which you probably don’t if you’re using the <code class="language-plaintext highlighter-rouge">github-pages</code> gem). It’s a good idea to write configurations explicitly, after all.</p>
+							<h1 id="finally">Finally</h1>
+							<p>Now then, why did I migrate my website build to GitHub Actions, if both Travis CI and CircleCI are running perfectly?</p>
+							<p>I chose so for the following reasons:</p>
+							<ul>
+								<li>It’s free for public repositories, with unlimited total usage. One rarely hits the total usage quota, however, even with CircleCI, which has a monthly limit of 1,000 total run minutes.
+									<ul>
+										<li>CircleCI’s limit applies at account level, and does not differentiate between public and private repositories.</li>
+									</ul>
+								</li>
+								<li>Better runtime environments, except for CPU power, which is only slightly slower that that on CircleCI.
+									<ul>
+										<li>Boots faster, runs faster, more memory</li>
+									</ul>
+								</li>
+								<li>It’s provided by GitHub and hosted by Microsoft Azure, which may be more trustable than Travis CI and CircleCI for some users.</li>
+								<li>One less external service to depend on. No more need to log into a separate website to review logs.</li>
+								<li>… and more</li>
+							</ul>
+							<p>The primary downside compared to Travis CI is increased build config complexity, but on the other hand it adds more flexibility to your build patterns, which reciprocates.</p>
+							<p>But the most important thing to note is that whatever others tell, you should try and find the one most suitable for you.</p>
+							<div class="footnotes" role="doc-endnotes">
+								<ol>
+									<li id="fn:1" role="doc-endnote">
+										<p>https://github.community/t/github-action-not-triggering-gh-pages-upon-push/16096 <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/development" class="page__taxonomy-item" rel="tag">development</a><span class="sep">, </span>
+									<a href="/tag/github-pages" class="page__taxonomy-item" rel="tag">github-pages</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-09-21">September 21, 2020</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=Build+GitHub+Pages+with+GitHub%20https%3A%2F%2Fibug.io%2Fblog%2F2020%2F09%2Fbuild-github-pages-with-github-actions%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2020%2F09%2Fbuild-github-pages-with-github-actions%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2020%2F09%2Fbuild-github-pages-with-github-actions%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/blog/2020/08/work-against-wordpress-deblocker/" class="pagination--pager" title="Working against WordPress DeBlocker plugin
+">Previous</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+				<div class="page__related">
+					<h4 class="page__related-title">You may also enjoy</h4>
+					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2018/04/build-github-pages-with-travis-ci/" rel="permalink">Build GitHub Pages with Travis CI
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="page__meta-date">
+										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2018-04-14T00:00:00+00:00">April 14, 2018</time>
+									</span>
+									<span class="page__meta-sep"></span>
+									<span class="page__meta-readtime">
+										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+										6 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">
+									Update 2020
+								</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="page__meta-date">
+										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2019-12-28T00:00:00+00:00">December 28, 2019</time>
+									</span>
+									<span class="page__meta-sep"></span>
+									<span class="page__meta-readtime">
+										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+										16 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on the training data of 9M user-item pairs and a social network.
+								</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2019/08/speech-at-msc-2019/" rel="permalink">My speech at Microsoft Summer Camp 2019
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="page__meta-date">
+										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2019-08-14T00:00:00+00:00">August 14, 2019</time>
+									</span>
+									<span class="page__meta-sep"></span>
+									<span class="page__meta-readtime">
+										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+										10 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">This is a translated version from the Chinese (original) script. The slideshow can be acquired here. For comments, please head to the Chinese version of this post.
+								</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2019/12/manage-servers-with-ssh-ca/" rel="permalink">Managing servers with OpenSSH Certificate Authority
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="page__meta-date">
+										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2019-12-23T00:00:00+00:00">December 23, 2019</time>
+									</span>
+									<span class="page__meta-sep"></span>
+									<span class="page__meta-readtime">
+										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+										6 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">Since the addition of the website server for an external corporation, I now have 5 Linux servers to manage on my own. I also have 4 terminal devices that I use to connect to those servers: two of my laptops, my Android phone (using Termux), and one of those servers that I use as a workstation.
+								</p>
+							</article>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					&copy; 2020 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.
+					<br>
+					Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.
+					<br>
+					<a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a>
+					<br>
+					Site version <a href="/status">G-317</a>
+				</div>
+				<script src="/assets/js/love.js" type="text/javascript" async="async"></script>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<!-- Including InstantSearch.js library and styling -->
+		<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js"></script>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css">
+		<script>
+			// Instanciating InstantSearch.js with Algolia credentials
+			const search = instantsearch({
+			  appId: '14DZKASAEJ',
+			  apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			  indexName: 'iBug_website',
+			  searchParameters: {
+			    restrictSearchableAttributes: [
+			      'title',
+			      'content'
+			    ]
+			  }
+			});
+			
+			const hitTemplate = function(hit) {
+			  const url = hit.url;
+			  const title = hit._highlightResult.title.value;
+			  const content = hit._highlightResult.html.value;
+			
+			  return `
+			    <div class="list__item">
+			      <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			        <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			        <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			      </article>
+			    </div>
+			  `;
+			}
+			
+			// Adding searchbar and results widgets
+			search.addWidget(
+			  instantsearch.widgets.searchBox({
+			    container: '.search-searchbar',
+			    poweredBy: true,
+			    placeholder: 'Enter your search term...'
+			  })
+			);
+			search.addWidget(
+			  instantsearch.widgets.hits({
+			    container: '.search-hits',
+			    templates: {
+			      item: hitTemplate,
+			      empty: 'No results',
+			    }
+			  })
+			);
+			
+			// Starting the search only when toggle is clicked
+			$(document).ready(function () {
+			  $(".search__toggle").on("click", function() {
+			    if(!search.started) {
+			      search.start();
+			    }
+			  });
+			});
+		</script>
+		<script>
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-115907213-1']);
+			
+			_gaq.push(['_trackPageview']);
+			
+			(function() {
+			  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/blog/2020/09/build-github-pages-with-github-actions/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2020/09/build-github-pages-with-github-actions"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	</body>
+</html>

@@ -21,7 +21,7 @@
 		<meta property="og:description" content="If you use a dedicated CI service, there’ll be no more plugin restrictions.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2018-04-14T00:00:00+00:00">
-		<meta property="article:modified_time" content="2019-05-01T11:36:50+00:00">
+		<meta property="article:modified_time" content="2020-09-21T00:52:08+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2018/04/build-github-pages-with-travis-ci/">
 		<script type="application/ld+json">
 			{
@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=6adb72f">
+		<link rel="stylesheet" href="/assets/css/main.css?v=f0a5d33">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -196,9 +196,9 @@
 				</div>
 				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
 					<meta itemprop="headline" content="Build GitHub Pages with Travis CI">
-					<meta itemprop="description" content="I just set up my GitHub Pages to be built with Travis CI. It’s amazing. → ">
+					<meta itemprop="description" content="   Update 2020">
 					<meta itemprop="datePublished" content="2018-04-14T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2019-05-01T11:36:50+00:00">
+					<meta itemprop="dateModified" content="2020-09-21T00:52:08+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -206,26 +206,13 @@
 									<header>
 										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
 									</header>
-									<ul class="toc__menu">
-										<li><a href="#whats-travis">What’s Travis CI?</a></li>
-										<li><a href="#ok-but-why-do-i-need-it">OK, but why do I need it?</a></li>
-										<li><a href="#setting-up">1. Setting up your workspace for local building</a></li>
-										<li><a href="#setup-travis">2. Setting up Travis CI build</a>
-											<ul>
-												<li><a href="#set-up-travis-ci">Set up Travis CI</a></li>
-												<li><a href="#setup-build">Set up build settings</a></li>
-											</ul>
-										</li>
-										<li><a href="#deploy-travis">3. Use Travis to deploy to GitHub</a>
-											<ul>
-												<li><a href="#generating-access-token-for-travis-ci">Generating access token for Travis CI</a></li>
-												<li><a href="#setup-deployment">Setting up deployment</a></li>
-											</ul>
-										</li>
-										<li><a href="#miscellaneous">4. Miscellaneous</a></li>
-									</ul>
 								</nav>
 							</aside>
+							<div class="notice--primary">
+								<h4 class="no_toc" id="update-2020"><i class="fas fa-fw fa-lightbulb"></i> Update 2020</h4>
+								<p>I wrote <a href="2020-09-19-build-github-pages-with-github-actions.md">another article</a> two years later about building with GitHub Actions.</p>
+								<p>From my experiences in the past half year, GitHub Actions is, in all aspects, a better option than Travis CI. So after getting the basic knowledge of building your site, it’s recommended that you continue to that article instead.</p>
+							</div>
 							<p>I just set up my GitHub Pages to be built with Travis CI. It’s amazing. → <a href="https://travis-ci.org/iBug/iBug-source"><img src="https://travis-ci.org/iBug/iBug-source.svg?branch=master" alt="Build Status" style="display: inline-block; vertical-align: middle;" /></a></p>
 							<p>This site is now automatically built with Jekyll and pushed to my GitHub Pages repository whenever I push a commit to the <a href="https://github.com/iBug/iBug-source">source repository</a>. Some build information is available on an <a href="https://ibug.io/about">About page</a> that I specifically designed for auditing purposes.</p>
 							<p><strong>Previous state</strong>: A site that’s previously hosted on GitHub Pages, with source files directly put in <strong><em>username</em>.github.io</strong>, and uses one of <a href="https://github.com/pages-themes">GitHub’s official themes</a>.</p>
@@ -345,7 +332,7 @@ git push <span class="nt">--force</span> deploy master <span class="o">&gt;</spa
 									<a href="/tag/github-pages" class="page__taxonomy-item" rel="tag">github-pages</a>
 								</span>
 							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2019-05-01">May 1, 2019</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-09-21">September 21, 2020</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
@@ -368,6 +355,27 @@ git push <span class="nt">--force</span> deploy master <span class="o">&gt;</spa
 				<div class="page__related">
 					<h4 class="page__related-title">You may also enjoy</h4>
 					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2020/09/build-github-pages-with-github-actions/" rel="permalink">Build GitHub Pages with GitHub
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="page__meta-date">
+										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2020-09-19T00:00:00+00:00">September 19, 2020</time>
+									</span>
+									<span class="page__meta-sep"></span>
+									<span class="page__meta-readtime">
+										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+										7 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">Why use an external service when there’s an in-house GitHub service?
+								</p>
+							</article>
+						</div>
 						<div class="grid__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<h2 class="archive__item-title no_toc" itemprop="headline">
@@ -431,27 +439,6 @@ git push <span class="nt">--force</span> deploy master <span class="o">&gt;</spa
 								</p>
 							</article>
 						</div>
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<h2 class="archive__item-title no_toc" itemprop="headline">
-									<a href="/blog/2019/04/os-lab-1/" rel="permalink">Build a minimal Linux system and run it in QEMU
-									</a>
-								</h2>
-								<p class="page__meta">
-									<span class="page__meta-date">
-										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-										<time datetime="2019-04-07T00:00:00+00:00">April 7, 2019</time>
-									</span>
-									<span class="page__meta-sep"></span>
-									<span class="page__meta-readtime">
-										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										6 minute read
-									</span>
-								</p>
-								<p class="archive__item-excerpt" itemprop="description">Linux is the #1 open-source operating system nowadays, and many people are running a Linux distro, such as Ubuntu or Arch. Linux is also the most popular choice for a server OS.
-								</p>
-							</article>
-						</div>
 					</div>
 				</div>
 			</div>
@@ -481,7 +468,7 @@ git push <span class="nt">--force</span> deploy master <span class="o">&gt;</spa
 					<br>
 					<a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a>
 					<br>
-					Site version <a href="/status">G-316</a>
+					Site version <a href="/status">G-317</a>
 				</div>
 				<script src="/assets/js/love.js" type="text/javascript" async="async"></script>
 			</footer>
