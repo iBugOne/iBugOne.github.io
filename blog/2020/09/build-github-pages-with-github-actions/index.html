@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=459e337">
+		<link rel="stylesheet" href="/assets/css/main.css?v=be4889e">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -206,6 +206,23 @@
 									<header>
 										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
 									</header>
+									<ul class="toc__menu">
+										<li><a href="#1-review">1. Review</a></li>
+										<li><a href="#setup-actions">2. Setting up GitHub Actions</a>
+											<ul>
+												<li><a href="#setup-build">Configure build settings</a></li>
+											</ul>
+										</li>
+										<li><a href="#deploy-actions">3. Deploy to GitHub</a>
+											<ul>
+												<li><a href="#access-token">Access token</a></li>
+												<li><a href="#setup-deployment">Setting up deployment</a></li>
+												<li><a href="#fixing-issues-with-github-actions">Fixing issues with GitHub Actions</a></li>
+												<li><a href="#fixing-issues-with-github-actions---alternative-approach">Fixing issues with GitHub Actions - Alternative approach</a></li>
+											</ul>
+										</li>
+										<li><a href="#finally">Finally</a></li>
+									</ul>
 								</nav>
 							</aside>
 							<div class="notice--primary">
@@ -528,7 +545,7 @@ git push <span class="nt">--force</span> deploy master <span class="o">&gt;</spa
 					<br>
 					<a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a>
 					<br>
-					Site version <a href="/status">G-321</a>
+					Site version <a href="/status">G-322</a>
 				</div>
 				<script src="/assets/js/love.js" type="text/javascript" async="async"></script>
 			</footer>

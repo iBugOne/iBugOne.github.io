@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=459e337">
+		<link rel="stylesheet" href="/assets/css/main.css?v=be4889e">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -206,6 +206,24 @@
 									<header>
 										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
 									</header>
+									<ul class="toc__menu">
+										<li><a href="#whats-travis">What’s Travis CI?</a></li>
+										<li><a href="#ok-but-why-do-i-need-it">OK, but why do I need it?</a></li>
+										<li><a href="#setting-up">1. Setting up your workspace for local building</a></li>
+										<li><a href="#setup-travis">2. Setting up Travis CI build</a>
+											<ul>
+												<li><a href="#set-up-travis-ci">Set up Travis CI</a></li>
+												<li><a href="#setup-build">Set up build settings</a></li>
+											</ul>
+										</li>
+										<li><a href="#deploy-travis">3. Use Travis to deploy to GitHub</a>
+											<ul>
+												<li><a href="#generating-access-token-for-travis-ci">Generating access token for Travis CI</a></li>
+												<li><a href="#setup-deployment">Setting up deployment</a></li>
+											</ul>
+										</li>
+										<li><a href="#miscellaneous">4. Miscellaneous</a></li>
+									</ul>
 								</nav>
 							</aside>
 							<div class="notice--primary">
@@ -468,7 +486,7 @@ git push <span class="nt">--force</span> deploy master <span class="o">&gt;</spa
 					<br>
 					<a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a>
 					<br>
-					Site version <a href="/status">G-321</a>
+					Site version <a href="/status">G-322</a>
 				</div>
 				<script src="/assets/js/love.js" type="text/javascript" async="async"></script>
 			</footer>
