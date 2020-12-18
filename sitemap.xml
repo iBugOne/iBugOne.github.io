@@ -2,31 +2,31 @@
 	<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 		<url>
 			<loc>https://ibug.io/cn/2018/12/chisel-101/</loc>
-			<lastmod>2020-05-29T15:27:31+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/cn/2019/05/pde-thinking-question/</loc>
-			<lastmod>2020-05-29T15:27:31+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/cn/2019/06/about-internet-security/</loc>
-			<lastmod>2020-05-29T15:27:31+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/cn/2019/08/speech-at-msc-2019/</loc>
-			<lastmod>2020-05-29T15:27:31+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/cn/2019/11/backTCP-report/</loc>
-			<lastmod>2020-05-29T15:27:31+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/cn/2020/07/clash-for-windows-custom-rules/</loc>
-			<lastmod>2020-07-19T01:51:52+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/about/</loc>
-			<lastmod>2020-08-11T01:58:52+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/cv/</loc>
@@ -38,7 +38,7 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/entertainment/</loc>
-			<lastmod>2020-07-16T01:07:18+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/friends/</loc>
@@ -46,7 +46,7 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/links/</loc>
-			<lastmod>2020-02-17T09:49:13+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:16+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/privacy-policy/</loc>
@@ -54,191 +54,191 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/projects-old/</loc>
-			<lastmod>2019-12-13T23:26:55+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:16+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/skills/</loc>
-			<lastmod>2020-06-25T21:06:48+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/small-projects/</loc>
-			<lastmod>2019-12-09T01:24:37+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:16+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/status/</loc>
-			<lastmod>2020-06-15T14:57:43+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2009/11/regex-match-open-tags-except-xhtml-self-contained-tags/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2017/06/android-phone-cores/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2017/08/append-int-to-stdstring/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2018/03/joining-smokedetector/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2018/04/build-github-pages-with-travis-ci/</loc>
-			<lastmod>2020-09-21T00:52:08+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2018/05/python-reversi/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2018/05/alpha-beta-pruning/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2018/06/minimal-complete-verifiable-example/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2018/06/new-xbox-one-s-controller/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2018/08/crack-advanced-systemcare-11-5/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2018/09/batch-convert-with-vbs/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2018/11/program-nexys4-ddr-with-storage/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/02/ssh-into-lan-computer/</loc>
-			<lastmod>2020-05-13T01:48:49+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/02/setup-ubuntu-in-vmware/</loc>
-			<lastmod>2020-11-06T20:39:13+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/02/setup-ubuntu-in-vmware-cn/</loc>
-			<lastmod>2020-11-06T20:39:13+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/02/bootstrapping-make/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/03/first-touch-with-awk/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/04/os-lab-1/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/05/mathematica-keygen/</loc>
-			<lastmod>2020-08-29T00:17:06+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/06/save-commit-from-github/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/07/circleci-ssh-deploy-keys/</loc>
-			<lastmod>2020-09-03T03:30:52+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/07/systemd-service-template/</loc>
-			<lastmod>2020-09-12T03:05:53+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/08/speech-at-msc-2019/</loc>
-			<lastmod>2020-08-13T11:06:13+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/09/raspberry-pi-4-review-benchmark/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/09/convert-dfa-to-regex/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/11/optimize-github-pages-with-cloudflare/</loc>
-			<lastmod>2020-04-23T23:07:47+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/11/change-nvidia-account-email/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/12/manage-servers-with-ssh-ca/</loc>
-			<lastmod>2020-04-20T22:29:05+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/12/mass-crawl-douban-with-aws/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2020/02/use-mysql-cli-without-password/</loc>
-			<lastmod>2020-02-11T12:41:43+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:16+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2020/04/ssh-8.2-rsa-ca/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2020/05/jekyll-better-related-posts/</loc>
-			<lastmod>2020-08-13T11:26:46+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2020/08/work-against-wordpress-deblocker/</loc>
-			<lastmod>2020-08-13T02:10:39+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2020/09/build-github-pages-with-github-actions/</loc>
-			<lastmod>2020-09-29T00:56:11+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/project/OJSandbox/</loc>
-			<lastmod>2019-12-13T23:24:17+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:16+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/project/vlab/</loc>
-			<lastmod>2019-12-13T23:24:17+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:16+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/project/USTC-RV-Chisel/</loc>
-			<lastmod>2019-12-13T23:24:17+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:16+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/project/jekyll-environment-variables/</loc>
-			<lastmod>2019-12-13T23:24:17+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:16+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/project/TetrisAI/</loc>
-			<lastmod>2019-12-13T23:24:17+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:16+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/project/SpaceRider/</loc>
-			<lastmod>2019-12-13T23:24:17+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:16+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/project/PyReversi/</loc>
-			<lastmod>2019-12-13T23:24:17+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:16+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/project/pac-generator/</loc>
-			<lastmod>2020-07-27T01:36:10+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/share/jekyll-themes/</loc>
-			<lastmod>2020-01-21T01:47:54+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:16+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/year/</loc>
@@ -250,11 +250,11 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/</loc>
-			<lastmod>2020-06-22T21:40:23+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/projects/</loc>
-			<lastmod>2019-12-13T23:26:55+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:16+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/so/selected-answers/</loc>
@@ -397,22 +397,22 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/</loc>
-			<lastmod>2020-06-12T02:28:24+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2/</loc>
-			<lastmod>2020-06-12T02:28:24+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/3/</loc>
-			<lastmod>2020-06-12T02:28:24+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/4/</loc>
-			<lastmod>2020-06-12T02:28:24+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/5/</loc>
-			<lastmod>2020-06-12T02:28:24+00:00</lastmod>
+			<lastmod>2020-12-18T16:19:17+00:00</lastmod>
 		</url>
 	</urlset>
