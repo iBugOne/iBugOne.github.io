@@ -21,7 +21,7 @@
 		<meta property="og:description" content="Another JavaScript project">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2019-05-11T00:00:00+00:00">
-		<meta property="article:modified_time" content="2020-12-18T16:19:17+00:00">
+		<meta property="article:modified_time" content="2020-12-22T16:15:03+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2019/05/mathematica-keygen/">
 		<script type="application/ld+json">
 			{
@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=7c40f06">
+		<link rel="stylesheet" href="/assets/css/main.css?v=f4dfdf7">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -198,12 +198,13 @@
 				</div>
 				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
 					<meta itemprop="headline" content="Wolfram Mathematica 12 Key Generator Online">
-					<meta itemprop="description" content="Supports Wolfram Mathematica 12.0 and 12.1">
+					<meta itemprop="description" content="Supports Wolfram Mathematica 12.x">
 					<meta itemprop="datePublished" content="2019-05-11T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2020-12-18T16:19:17+00:00">
+					<meta itemprop="dateModified" content="2020-12-22T16:15:03+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
-							<h3 id="supports-wolfram-mathematica-120-and-121">Supports Wolfram Mathematica 12.0 and 12.1</h3>
+							<h3 id="supports-wolfram-mathematica-12x">Supports Wolfram Mathematica 12.x</h3>
+							<p>This includes 12.0, 12.1, 12.2 and any future version that begins with 12.</p>
 							<div class="notice--warning">
 								<h4 class="no_toc" id="notice"><i class="fa fas fa-exclamation-circle"></i> Notice</h4>
 								<p>Does <strong>not</strong> work for other Wolfram products (e.g. Wolfram Player). It’s for Mathematica only!</p>
@@ -225,6 +226,7 @@
 								    }
 								    return n;
 								}
+								
 								function genPassword(str, hash) {
 								    for (var byteIndex = str.length - 1; byteIndex >= 0; byteIndex--) {
 								        hash = f1(hash, str.charCodeAt(byteIndex), 0x105C3);
@@ -271,6 +273,16 @@
 								    return true;
 								}
 								
+								function genActivationKey() {
+								    s = "";
+								    for (let i = 0; i < 14; i++) {
+								        s += Math.floor(Math.random() * 10);
+								        if (i === 3 || i === 7)
+								            s += "-";
+								    }
+								    return s;
+								}
+								
 								Array.prototype.getRandom = function () {
 								    return this[Math.floor(Math.random() * this.length)];
 								}
@@ -279,13 +291,16 @@
 								    if (!checkMathId(mathId)) {
 								        document.getElementById("result").innerText = "Bad MathID!";
 								    } else {
-								        activationKey = "";
-								        for (let i = 0; i < 14; i++) {
-								            activationKey += Math.floor(Math.random() * 10);
-								            if (i === 3 || i === 7)
-								                activationKey += "-";
+								        var activationKey = genActivationKey();
+								        var magicNumbers;
+								        var software = "mma";
+								        if (software === "mma") {
+								            // Mathematica 12
+								            magicNumbers = [10690, 12251, 17649, 24816, 33360, 35944, 36412, 42041, 42635, 44011, 53799, 56181, 58536, 59222, 61041];
+								        } else if (software === "sm") {
+								            // SystemModeler 12
+								            magicNumbers = [4912, 4961, 22384, 24968, 30046, 31889, 42446, 43787, 48967, 61182, 62774];
 								        }
-								        var magicNumbers = [10690, 12251, 17649, 24816, 33360, 35944, 36412, 42041, 42635, 44011, 53799, 56181, 58536, 59222, 61041];
 								        var password = genPassword(mathId + "$1&" + activationKey, magicNumbers.getRandom());
 								        document.getElementById("result").innerHTML = `
 								        <p>
@@ -313,7 +328,7 @@
 									<a href="/category/keygen" class="page__taxonomy-item" rel="tag">keygen</a>
 								</span>
 							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-12-18">December 18, 2020</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2020-12-22">December 22, 2020</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
@@ -339,26 +354,6 @@
 						<div class="grid__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<h2 class="archive__item-title no_toc" itemprop="headline">
-									<a href="/blog/2020/02/use-mysql-cli-without-password/" rel="permalink">3 ways to use MySQL / MariaDB CLI without password
-									</a>
-								</h2>
-								<p class="page__meta">
-									<span class="page__meta-date">
-										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-										<time datetime="2020-02-04T00:00:00+00:00">February 4, 2020</time>
-									</span>
-									<span class="page__meta-sep"></span>
-									<span class="page__meta-readtime">
-										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										4 minute read
-									</span>
-								</p>
-								<p class="archive__item-excerpt" itemprop="description">For all of us who are learning to use or developing with MySQL or MariaDB, it’s a common task to manually log in to the database for inspection. This is usually done with the mysql command line client, and for sure it’s cumbersome to log in to the database using your application’s credentials. Fo...</p>
-							</article>
-						</div>
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<h2 class="archive__item-title no_toc" itemprop="headline">
 									<a href="/blog/2018/04/build-github-pages-with-travis-ci/" rel="permalink">Build GitHub Pages with Travis CI
 									</a>
 								</h2>
@@ -381,6 +376,47 @@
 						<div class="grid__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2020/02/use-mysql-cli-without-password/" rel="permalink">3 ways to use MySQL / MariaDB CLI without password
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="page__meta-date">
+										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2020-02-04T00:00:00+00:00">February 4, 2020</time>
+									</span>
+									<span class="page__meta-sep"></span>
+									<span class="page__meta-readtime">
+										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+										4 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">For all of us who are learning to use or developing with MySQL or MariaDB, it’s a common task to manually log in to the database for inspection. This is usually done with the mysql command line client, and for sure it’s cumbersome to log in to the database using your application’s credentials. Fo...</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="page__meta-date">
+										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2019-12-28T00:00:00+00:00">December 28, 2019</time>
+									</span>
+									<span class="page__meta-sep"></span>
+									<span class="page__meta-readtime">
+										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+										16 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on the training data of 9M user-item pairs and a social network.
+								</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
 									<a href="/blog/2019/12/manage-servers-with-ssh-ca/" rel="permalink">Managing servers with OpenSSH Certificate Authority
 									</a>
 								</h2>
@@ -396,27 +432,6 @@
 									</span>
 								</p>
 								<p class="archive__item-excerpt" itemprop="description">Since the addition of the website server for an external corporation, I now have 5 Linux servers to manage on my own. I also have 4 terminal devices that I use to connect to those servers: two of my laptops, my Android phone (using Termux), and one of those servers that I use as a workstation.
-								</p>
-							</article>
-						</div>
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<h2 class="archive__item-title no_toc" itemprop="headline">
-									<a href="/blog/2020/08/work-against-wordpress-deblocker/" rel="permalink">Working against WordPress DeBlocker plugin
-									</a>
-								</h2>
-								<p class="page__meta">
-									<span class="page__meta-date">
-										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-										<time datetime="2020-08-13T00:00:00+00:00">August 13, 2020</time>
-									</span>
-									<span class="page__meta-sep"></span>
-									<span class="page__meta-readtime">
-										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										5 minute read
-									</span>
-								</p>
-								<p class="archive__item-excerpt" itemprop="description">I’ll go straight to the solution (keep in mind that it’s considerably primitive, so use at your own risk) with code attached below. It’s a Tampermonkey userscript.
 								</p>
 							</article>
 						</div>
@@ -449,7 +464,7 @@
 					<br>
 					<a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a>
 					<br>
-					Site version <a href="/status">G-366</a>
+					Site version <a href="/status">G-367</a>
 				</div>
 				<script src="/assets/js/love.js" type="text/javascript" async="async"></script>
 			</footer>
