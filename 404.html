@@ -39,7 +39,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=0057c3b">
+		<link rel="stylesheet" href="/assets/css/main.css?v=5466fdd">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -152,15 +152,24 @@
 					</nav>
 				</div>
 				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
-					<meta itemprop="dateModified" content="2019-07-03T13:22:32+00:00">
+					<meta itemprop="dateModified" content="2021-01-06T02:45:24+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<h1 id="-404"><i class="fas fa-frown"></i> 404</h1>
 							<p>Oops, it seems you’re trying to visit something that’s lost somewhere. You should totally drop that and try jQuery. It’s great and does all the things.</p>
 							<h2 id="-what-about-giving-away-a-second"><i class="fas fa-frog"></i> What about giving away a second?</h2>
+							<script>
+								const url = window.location.href;
+								const path = url.split(/[?#]/, 1)[0];
+								if (path.endsWith(".html")) {
+								    // Redirect to strip off bad suffix
+								    let newpath = path.slice(0, -5) + url.slice(path.length, url.length);
+								    window.location.href = newpath;
+								}
+							</script>
 						</section>
 						<footer class="page__meta">
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2019-07-03">July 3, 2019</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-01-06">January 6, 2021</time></p>
 						</footer>
 					</div>
 				</article>
@@ -189,7 +198,7 @@
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-408</a>
+						Site version <a href="/status" class="version-text">G-409</a>
 					</p>
 				</div>
 				<script src="/assets/js/love.js" type="text/javascript" async="async"></script>
