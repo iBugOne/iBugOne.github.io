@@ -21,7 +21,7 @@
 		<meta property="og:description" content="Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are without diving into all the gory details of them, so I decided to go on this exploration myself.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2021-01-31T00:00:00+00:00">
-		<meta property="article:modified_time" content="2021-01-30T20:03:58+00:00">
+		<meta property="article:modified_time" content="2021-01-30T20:28:52+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2021/01/linux-container-explained/">
 		<script type="application/ld+json">
 			{
@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=f01f390">
+		<link rel="stylesheet" href="/assets/css/main.css?v=f3a81b9">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -200,7 +200,7 @@
 						<meta itemprop="headline" content="A Deep Dive into Containers">
 						<meta itemprop="description" content="Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are without diving into all the gory details of them, so I decided to go on this exploration myself.">
 						<meta itemprop="datePublished" content="2021-01-31T00:00:00+00:00">
-						<meta itemprop="dateModified" content="2021-01-30T20:03:58+00:00">
+						<meta itemprop="dateModified" content="2021-01-30T20:28:52+00:00">
 						<div class="page__inner-wrap">
 							<section class="page__content" itemprop="text">
 								<aside class="sidebar__right sticky">
@@ -220,28 +220,28 @@
 											<li><a href="#namespaces">Namespaces</a></li>
 											<li><a href="#mounts">Mounts</a>
 												<ul>
-													<li><a href="#creating-device-nodes">Creating device nodes</a></li>
+													<li><a href="#device-nodes">Creating device nodes</a></li>
 												</ul>
 											</li>
-											<li><a href="#pivot_root">pivot_root</a></li>
+											<li><a href="#pivot-root">pivot_root</a></li>
 											<li><a href="#capabilities">Capabilities</a></li>
 											<li><a href="#seccomp">SecComp</a></li>
-											<li><a href="#system-call-filtering">System call filtering</a>
+											<li><a href="#syscall-filter">System call filtering</a>
 												<ul>
-													<li><a href="#system-call-whitelist">System call whitelist</a></li>
-													<li><a href="#loading-seccomp-filter">Loading SecComp filter</a></li>
+													<li><a href="#syscall-whitelist">System call whitelist</a></li>
+													<li><a href="#loading-seccomp">Loading SecComp filter</a></li>
 													<li><a href="#seccomp-caveats">Caveats</a>
 														<ul>
-															<li><a href="#incompatible-system-calls">Incompatible system calls</a></li>
-															<li><a href="#precautionary-checking">Precautionary checking</a></li>
+															<li><a href="#seccomp-incompatible-syscalls">Incompatible system calls</a></li>
+															<li><a href="#seccomp-checking">Precautionary checking</a></li>
 														</ul>
 													</li>
 												</ul>
 											</li>
-											<li><a href="#resource-restriction">Resource restriction</a>
+											<li><a href="#cgroups">Resource restriction</a>
 												<ul>
-													<li><a href="#mounting-cgroup-controllers-inside-the-container">Mounting cgroup controllers inside the container</a></li>
-													<li><a href="#a-small-problem-with-cgroup-namespace">A small problem with cgroup namespace</a></li>
+													<li><a href="#mount-cgroup-controllers">Mounting cgroup controllers inside the container</a></li>
+													<li><a href="#cgroup-namespace-caveat">A small problem with cgroup namespace</a></li>
 												</ul>
 											</li>
 											<li><a href="#conclusion">Conclusion</a>
@@ -481,9 +481,8 @@ tmpfs on /run type tmpfs (rw,nosuid,nodev,noexec,relatime,size=13191916k,mode=75
 									</div>
 								</div>
 								<p>The fourth parameter corresponds to the flags we discussed above. All applicable flags can be found in the man page for <a href="https://man7.org/linux/man-pages/man2/mount.2.html"><code class="language-plaintext highlighter-rouge">mount(2)</code></a>.</p>
-								<p>Keep in mind that, however, the last parameter isn’t entirely useless. It’s simply not used for now, but it’ll play a role later. (Actually, you may have noticed already. Good job for that.)
-									{#mount-data-parameter}</p>
-								<h3 id="creating-device-nodes">Creating device nodes</h3>
+								<p id="mount-data-parameter">Keep in mind that, however, the last parameter isn’t entirely useless. It’s simply not used for now, but it’ll play a role later. (Actually, you may have noticed already. Good job for that.)</p>
+								<h3 id="device-nodes">Creating device nodes</h3>
 								<p>Now that we have an empty <code class="language-plaintext highlighter-rouge">/dev</code> directory, we should populate it with some device nodes so that software expecting their presence could work. At a minimum, we need <code class="language-plaintext highlighter-rouge">null</code>, <code class="language-plaintext highlighter-rouge">zero</code>, <code class="language-plaintext highlighter-rouge">random</code> and <code class="language-plaintext highlighter-rouge">urandom</code>, but you can add <code class="language-plaintext highlighter-rouge">tty</code> and <code class="language-plaintext highlighter-rouge">console</code> if you want (these two are a bit different - you have been warned).</p>
 								<p>Device nodes are created with <a href="https://man7.org/linux/man-pages/man2/mknod.2.html"><code class="language-plaintext highlighter-rouge">mknod(2)</code></a>, whose prototype is:</p>
 								<div class="language-c highlighter-rouge">
@@ -509,7 +508,7 @@ tmpfs on /run type tmpfs (rw,nosuid,nodev,noexec,relatime,size=13191916k,mode=75
 </code></pre>
 									</div>
 								</div>
-								<h2 id="pivot_root">pivot_root</h2>
+								<h2 id="pivot-root">pivot_root</h2>
 								<p>We’re ready with mounts, so now we can take a look at switching the root filesystem for our container.</p>
 								<p>The <a href="#base-program">base program</a> used <code class="language-plaintext highlighter-rouge">chroot()</code> for the time being, but talking about a (baseline) secure container, <a href="https://github.com/earthquake/chw00t">it’s terrible</a>. We have to resort to another Linux feature, <code class="language-plaintext highlighter-rouge">pivot_root</code>, for this purpose.</p>
 								<p>Let’s first take a look at <a href="https://man7.org/linux/man-pages/man2/pivot_root.2.html">its man page</a> to determine its prototype.</p>
@@ -593,7 +592,7 @@ tmpfs on /run type tmpfs (rw,nosuid,nodev,noexec,relatime,size=13191916k,mode=75
 								<h2 id="seccomp">SecComp</h2>
 								<p>SecComp (Secure Computing) is a security module in Linux that lets a process to transition one-way into a “secure state” where no system call other than <code class="language-plaintext highlighter-rouge">read()</code>, <code class="language-plaintext highlighter-rouge">write()</code>, <code class="language-plaintext highlighter-rouge">sigreturn()</code> and <code class="language-plaintext highlighter-rouge">exit()</code> is allowed. It’s easily noticeable that this feature is too strict for making something useful, and <strong>seccomp-bpf</strong> is an extension to the rescue.</p>
 								<p>Seccomp BPF extends the seccomp module with Berkeley Packer Filter (BPF), an embedded instruction set that allows highly customized seccomp rules to be deployed. With BPF, you can create custom logic for system call filtering, including matching and testing individual system call arguments.</p>
-								<h2 id="system-call-filtering">System call filtering</h2>
+								<h2 id="syscall-filter">System call filtering</h2>
 								<p>To ensure full control, we’re using a whitelist for system calls. This means any unknown one will be rejected. So we’ll start by creating a new “SecComp filter context”, and set the default action to “reject”. By “reject”, we’ll return “permission denied” when a process tries to call it.</p>
 								<div class="language-c highlighter-rouge">
 									<div class="highlight">
@@ -602,7 +601,7 @@ tmpfs on /run type tmpfs (rw,nosuid,nodev,noexec,relatime,size=13191916k,mode=75
 									</div>
 								</div>
 								<p>The <code class="language-plaintext highlighter-rouge">SCMP_ACT_ERRNO(1)</code> refers exactly to “respond with EPERM”, which will be hit if no other filters apply.</p>
-								<h3 id="system-call-whitelist">System call whitelist</h3>
+								<h3 id="syscall-whitelist">System call whitelist</h3>
 								<p>We’ll now add each “safe” system call to our filter and set it to “allowed”. To save some time scratching your head examining each system call, we’ll adopt <a href="https://github.com/moby/moby/blob/master/profiles/seccomp/default.json">Docker’s syscall whitelist</a>. Each system call will be wrapped in <code class="language-plaintext highlighter-rouge">SCMP_SYS</code> so it’s turned into a suitable number used inside SecComp.</p>
 								<p>We need to add the whole big list of “general” system calls, plus some platform- or scenario-specific ones, namely, two special system calls for <code class="language-plaintext highlighter-rouge">amd64</code> platform, and a few others for system administration, since we’ve allowed <code class="language-plaintext highlighter-rouge">CAP_SYS_ADMIN</code> inside the container.</p>
 								<p>Use your favorite text processing toolstack to get the big list into a C-array so we can loop over, like <a href="https://github.com/iBug/iSpawn/blob/master/syscall_allow.c">this</a>:</p>
@@ -662,7 +661,7 @@ tmpfs on /run type tmpfs (rw,nosuid,nodev,noexec,relatime,size=13191916k,mode=75
 </code></pre>
 									</div>
 								</div>
-								<h3 id="loading-seccomp-filter">Loading SecComp filter</h3>
+								<h3 id="loading-seccomp">Loading SecComp filter</h3>
 								<p>After our filter has been constructed, we can load it onto our process for it to take effect.</p>
 								<div class="language-c highlighter-rouge">
 									<div class="highlight">
@@ -678,9 +677,9 @@ tmpfs on /run type tmpfs (rw,nosuid,nodev,noexec,relatime,size=13191916k,mode=75
 									</div>
 								</div>
 								<h3 id="seccomp-caveats">Caveats</h3>
-								<h4 id="incompatible-system-calls">Incompatible system calls</h4>
+								<h4 id="seccomp-incompatible-syscalls">Incompatible system calls</h4>
 								<p>As I worked this out on an Ubuntu 18.04 environment, some newer system calls weren’t available in my system headers, like the <code class="language-plaintext highlighter-rouge">io_uring</code>-related ones that are introduced in Linux 5.1. You can safely comment out any of them that your compiler complains about not recognizing. There shouldn’t be too many of them if your environment is up-to-date, though.</p>
-								<h4 id="precautionary-checking">Precautionary checking</h4>
+								<h4 id="seccomp-checking">Precautionary checking</h4>
 								<p>As it’s too common for one of the function calls to fail, I’ve added sanity checks for them. Here’s the complete code of this part.</p>
 								<div class="language-c highlighter-rouge">
 									<div class="highlight">
@@ -703,7 +702,7 @@ tmpfs on /run type tmpfs (rw,nosuid,nodev,noexec,relatime,size=13191916k,mode=75
 </code></pre>
 									</div>
 								</div>
-								<h2 id="resource-restriction">Resource restriction</h2>
+								<h2 id="cgroups">Resource restriction</h2>
 								<p>The last part we’ll visit is restricting container resources. Surely we don’t want a container to overuse system resources like CPU or RAM and make the host system less stable. Linux Control Groups (Cgroups) is designed for efficient resource constraint that we’re going to make use of. There are many “cgroup systems” for different aspects of system resources, including CPU, RAM and even disk I/O. Looks pretty neat, right?</p>
 								<p>Unlike other parts we’ve built so far, cgroup doesn’t use system calls for setup and configuration, but a filesystem-based interface instead, like those in <code class="language-plaintext highlighter-rouge">/proc</code> or <code class="language-plaintext highlighter-rouge">/sys</code>. In fact, the cgroup control interface resides exactly under <code class="language-plaintext highlighter-rouge">/sys</code>, at <code class="language-plaintext highlighter-rouge">/sys/fs/cgroup</code>. With this interface, we read and write “files” to change configuration values, and create and delete directories to add or remove structures.</p>
 								<p>There are multiple cgroup “controllers” working on different aspects of system resources, each having a distinct tree structure under <code class="language-plaintext highlighter-rouge">/sys/fs/cgroup</code>. So first we’ll examine what cgroup controllers are available:</p>
@@ -771,7 +770,7 @@ cgroup.procs           pid.current        pid.max
 									<h4 class="no_toc" id="heads-up"><i class="fas fa-fw fa-lightbulb"></i> Heads up</h4>
 									<p>The course lab at the time was based on Ubuntu 18.04 with Linux kernel 5.3 (18.04 HWE). The cgroup controllers in newer kernels may be very different from what’s presented in this article. For example, with Linux 5.4 on Ubuntu 20.04, the keys in PID cgroup begins with <code class="language-plaintext highlighter-rouge">pids.</code> instead of <code class="language-plaintext highlighter-rouge">pid.</code>, and <code class="language-plaintext highlighter-rouge">blkio</code> has a completely different set of available keys. Make sure you examine the cgroup directories before copying and pasting code.</p>
 								</div>
-								<h3 id="mounting-cgroup-controllers-inside-the-container">Mounting cgroup controllers inside the container</h3>
+								<h3 id="mount-cgroup-controllers">Mounting cgroup controllers inside the container</h3>
 								<p>To enable applications in our container to use cgroup controllers, we must mount them inside. Like how we mounted <code class="language-plaintext highlighter-rouge">/sys</code>, <code class="language-plaintext highlighter-rouge">/tmp</code> and other filesystems, we check the output of <code class="language-plaintext highlighter-rouge">mount</code> to determine how we’re going to call <code class="language-plaintext highlighter-rouge">mount(2)</code>.</p>
 								<div class="language-text highlighter-rouge">
 									<div class="highlight">
@@ -812,7 +811,7 @@ cgroup.procs           pid.current        pid.max
 </code></pre>
 									</div>
 								</div>
-								<h3 id="a-small-problem-with-cgroup-namespace">A small problem with cgroup namespace</h3>
+								<h3 id="cgroup-namespace-caveat">A small problem with cgroup namespace</h3>
 								<p>During my experiments, I noticed a strange issue where I could see the host cgroup hierarchies in my container implementation. It turns out that the cgroup “root” inside a cgroup namespace is the subtree the process belongs in when this cgroup namespace is created / isolated. Once the namespaces is created, its root is determined and fixed, even if the “root” process is moved into another subtree later.</p>
 								<p>This means the child process must be “moved” to the desired cgroup subtree before the cgroup namespace is isolated. This leaves us with two options:</p>
 								<ol>
@@ -1022,7 +1021,7 @@ cgroup.procs           pid.current        pid.max
 						<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 						<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 						<p>
-							Site version <a href="/status" class="version-text">G-449</a>
+							Site version <a href="/status" class="version-text">G-450</a>
 						</p>
 					</div>
 				</footer>
