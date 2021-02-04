@@ -66,7 +66,7 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/stack-overflow/</loc>
-			<lastmod>2021-01-03T19:54:10+00:00</lastmod>
+			<lastmod>2021-02-04T23:39:52+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/status/</loc>
@@ -217,6 +217,10 @@
 			<lastmod>2021-02-04T21:47:35+00:00</lastmod>
 		</url>
 		<url>
+			<loc>https://ibug.io/blog/2021/02/traceroute-from-vmware/</loc>
+			<lastmod>2021-02-04T23:39:52+00:00</lastmod>
+		</url>
+		<url>
 			<loc>https://ibug.io/project/OJSandbox/</loc>
 			<lastmod>2020-12-18T16:19:16+00:00</lastmod>
 		</url>
@@ -354,6 +358,9 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/tag/c/</loc>
+		</url>
+		<url>
+			<loc>https://ibug.io/tag/windows/</loc>
 		</url>
 		<url>
 			<loc>https://ibug.io/category/stack-overflow/</loc>

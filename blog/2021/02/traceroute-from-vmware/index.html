@@ -9,20 +9,20 @@
 	<head>
 		<meta charset="utf-8">
 		<!-- begin _includes/seo.html -->
-		<title>Enabling better “Related Posts” with Jekyll - iBug</title>
-		<meta name="description" content="There’s a less-known feature of Jekyll that populates related_posts correctly with “related” posts, instead of the 10 latest posts when it’s disabled by default.">
+		<title>Fix traceroute not showing intermediate results in a virtual machine on Windows - iBug</title>
+		<meta name="description" content="Today when I was running some networking diagnostics from an Ubuntu inside VMware Workstation, I noticed this strange result from mtr (My Traceroute):">
 		<meta name="author" content="iBug">
 		<meta property="article:author" content="iBug">
 		<meta property="og:type" content="article">
 		<meta property="og:locale" content="en_US">
 		<meta property="og:site_name" content="iBug">
-		<meta property="og:title" content="Enabling better “Related Posts” with Jekyll">
-		<meta property="og:url" content="https://ibug.io/blog/2020/05/jekyll-better-related-posts/">
-		<meta property="og:description" content="There’s a less-known feature of Jekyll that populates related_posts correctly with “related” posts, instead of the 10 latest posts when it’s disabled by default.">
+		<meta property="og:title" content="Fix traceroute not showing intermediate results in a virtual machine on Windows">
+		<meta property="og:url" content="https://ibug.io/blog/2021/02/traceroute-from-vmware/">
+		<meta property="og:description" content="Today when I was running some networking diagnostics from an Ubuntu inside VMware Workstation, I noticed this strange result from mtr (My Traceroute):">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
-		<meta property="article:published_time" content="2020-05-27T00:00:00+00:00">
-		<meta property="article:modified_time" content="2021-02-04T21:47:35+00:00">
-		<link rel="canonical" href="https://ibug.io/blog/2020/05/jekyll-better-related-posts/">
+		<meta property="article:published_time" content="2021-02-04T00:00:00+00:00">
+		<meta property="article:modified_time" content="2021-02-04T23:39:52+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2021/02/traceroute-from-vmware/">
 		<script type="application/ld+json">
 			{
 			  "@context": "https://schema.org",
@@ -66,7 +66,7 @@
 		</script>
 		<!--
  Minimal Mistakes layout: single
- Page Path: _posts/2020/2020-05-27-jekyll-better-related-posts.md
+ Page Path: _posts/2021/2021-02-04-traceroute-from-vmware.md
  Page Type: 
 -->
 	</head>
@@ -128,17 +128,17 @@
 >
 				<div class="wrapper">
 					<h1 id="page-title" class="page__title" itemprop="headline">
-						Enabling better “Related Posts” with Jekyll
+						Fix traceroute not showing intermediate results in a virtual machine on Windows
 					</h1>
 					<p class="page__meta">
 						<span class="page__meta-date">
 							<i class="far fa-calendar-alt" aria-hidden="true"></i>
-							<time datetime="2020-05-27T00:00:00+00:00">May 27, 2020</time>
+							<time datetime="2021-02-04T00:00:00+00:00">February 4, 2021</time>
 						</span>
 						<span class="page__meta-sep"></span>
 						<span class="page__meta-readtime">
 							<i class="far fa-clock" aria-hidden="true"></i>
-							1 minute read
+							3 minute read
 						</span>
 					</p>
 				</div>
@@ -194,10 +194,10 @@
 					</nav>
 				</div>
 				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
-					<meta itemprop="headline" content="Enabling better “Related Posts” with Jekyll">
-					<meta itemprop="description" content="There’s a less-known feature of Jekyll that populates related_posts correctly with “related” posts, instead of the 10 latest posts when it’s disabled by default.">
-					<meta itemprop="datePublished" content="2020-05-27T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2021-02-04T21:47:35+00:00">
+					<meta itemprop="headline" content="Fix traceroute not showing intermediate results in a virtual machine on Windows">
+					<meta itemprop="description" content="Today when I was running some networking diagnostics from an Ubuntu inside VMware Workstation, I noticed this strange result from mtr (My Traceroute):">
+					<meta itemprop="datePublished" content="2021-02-04T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2021-02-04T23:39:52+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -206,67 +206,115 @@
 										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
 									</header>
 									<ul class="toc__menu">
-										<li><a href="#lsi">LSI</a></li>
-										<li><a href="#improving-the-speed">Improving the speed</a></li>
+										<li><a href="#the-answer">The answer</a></li>
+										<li><a href="#the-solution">The solution</a>
+											<ul>
+												<li><a href="#bonus">Bonus</a></li>
+											</ul>
+										</li>
 									</ul>
 								</nav>
 							</aside>
-							<p>There’s a less-known feature of Jekyll that populates <code class="language-plaintext highlighter-rouge">related_posts</code> correctly with “related” posts, instead of the 10 latest posts when it’s disabled by default.</p>
-							<h2 id="lsi">LSI</h2>
-							<p>Back in October 2019 I gave this feature a try, but the first obstacle was that there weren’t any documentations around it. I had to struggle through random Google results to find the solution.</p>
-							<p>Fortunately, it wasn’t hidden or scattered around so terribly. Jekyll has an official plugin <a href="https://github.com/jekyll/classifier-reborn">classifier-reborn</a> to enable <a href="https://jekyll.github.io/classifier-reborn/lsi">LSI (latent semantic indexing)</a>, so one can simply install the gem and get Jekyll’s LSI feature running. The recommended way has always been adding requirements to your <code class="language-plaintext highlighter-rouge">Gemfile</code>, like this:</p>
-							<div class="language-ruby highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code><span class="n">gem</span> <span class="s2">"classifier-reborn"</span>
-</code></pre>
-								</div>
-							</div>
-							<p>And then refresh your dependency installation with <code class="language-plaintext highlighter-rouge">bundle install</code>. You can try building your site again with LSI enabled by appending <code class="language-plaintext highlighter-rouge">--lsi</code> to <code class="language-plaintext highlighter-rouge">jekyll build</code> command:</p>
-							<div class="language-shell highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code>bundle <span class="nb">exec </span>jekyll build <span class="nt">--lsi</span>
-</code></pre>
-								</div>
-							</div>
-							<p>Sit back and make yourself a cup of coffee, because what follows is going to <em>really slow</em>. For every 10 posts with 1000 words each, you’re going to have to wait for a minute for Jekyll to build your site (measured on GitHub Actions). This grows terribly as for larger sites, each build could take more than 10 minutes.</p>
-							<p>The build time scared me off when I first tried with it.</p>
-							<h2 id="improving-the-speed">Improving the speed</h2>
-							<p>Fortunately, there is GNU Scientific Library to help speed up the process. There’s also a Ruby wrapper <code class="language-plaintext highlighter-rouge">gsl</code> for this.</p>
-							<p>To fully utilize the enhancements from GSL, a native library is required. On Ubuntu / Debian, this can be done by installing the package <code class="language-plaintext highlighter-rouge">libgsl-dev</code>. On macOS, <code class="language-plaintext highlighter-rouge">brew install gsl</code> will suffice. Then you can proceed to adding <code class="language-plaintext highlighter-rouge">gem "gsl"</code> to your <code class="language-plaintext highlighter-rouge">Gemfile</code>.</p>
-							<p>The results are delighting: GSL reduced the build time of this website from 75s to 3s on my local machine (i7-8850H, Ubuntu 20.04), and from nearly 3 minutes to 8 seconds on GitHub Actions.</p>
+							<p>Today when I was running some networking diagnostics from an Ubuntu inside VMware Workstation, I noticed this strange result from <a href="https://en.wikipedia.org/wiki/MTR_(software)"><code class="language-plaintext highlighter-rouge">mtr</code> (My Traceroute)</a>:</p>
+							<p><img src="/image/linux/traceroute-failure.png" alt="MTR with all intermediate hops blank" class="block" /></p>
+							<p>This doesn’t look right. Googling around brought me to this page: <a href="https://communities.vmware.com/t5/VMware-Workstation-Player/traceroute-from-Ubuntu-just-shows-first-and-last-hops-on/m-p/1677263">traceroute from Ubuntu just shows first and last hops on VMPlayer 3.1.4 - VMware Technology Network VMTN</a></p>
+							<p>The answers below mentioned two points:</p>
+							<ul>
+								<li><em>On the other hand once I switched to bridge, everything works.</em></li>
+								<li><em>What about the intermediary requests, well the answers come back but somehow they are blocked by the Windows firewall.</em></li>
+							</ul>
+							<p>I immediately realized that it’s because <strong>Windows Firewall blocked responses from the intermediate hops</strong>.</p>
+							<h2 id="the-answer">The answer</h2>
 							<div class="notice--primary">
-								<h4 class="no_toc" id="note"><i class="fas fa-lightbulb"></i> Note</h4>
-								<p>GitHub Pages doesn’t support LSI natively. You’ll have to build your site with a CI service (like GitHub Actions) and deploy manually.</p>
+								<h4 class="no_toc" id="the-short-answer"><i class="fas fa-shield-check"></i> The short answer</h4>
+								<p>The responses from the intermediate routers aren’t “expected” and are blocked off by Windows Firewall.</p>
 							</div>
-							<p>Happy Jekylling!</p>
-							<p>Special thanks to this article <a href="https://frankindev.com/2019/11/21/enable-related-posts-with-lsi/">https://frankindev.com/2019/11/21/enable-related-posts-with-lsi/</a>.</p>
+							<h4 class="no_toc" id="the-long-answer">The long answer</h4>
+							<p>Windows Firewall has a built-in connection tracking mechanism, similar to that of Linux (conntrack). Since <code class="language-plaintext highlighter-rouge">mtr</code> sends <a href="https://en.wikipedia.org/wiki/Ping_(networking_utility)#Echo_request">pings (ICMP Echo Requests)</a> to the target host, Windows Firewall is expecting ICMP Echo Replies from the target host as the correct response. However, traceroute works by sending packets with TTL starting from 1 until it reaches the target host, and receiving “timed out” notices from the intermediate routers when the packet “dies from time”. This creates two discrepancies:</p>
+							<ul>
+								<li>The responses are ICMP Time Exceeded packets, not Echo Replies.</li>
+								<li>The responses come from the intermediate routers, not the target host.</li>
+							</ul>
+							<p>This unfortunately somehow “broke” the connection tracking mechanism in Windows Firewall, and leads to the responses being blocked off by Windows Firewall by default.</p>
+							<h2 id="the-solution">The solution</h2>
+							<div class="notice--primary">
+								<h4 class="no_toc" id="the-short-solution"><i class="fas fa-shield-check"></i> The short solution</h4>
+								<p>Just turn off Windows Firewall entirely. <strong>You probably don’t want to or shouldn’t do this.</strong> Read on for the complete and real solution.</p>
+							</div>
+							<p>The correct solution to this problem is to let the intermediary responses through Windows Firewall. To actually do this, we’ll <strong>create a new firewall rule that allows ICMP Time Exceeded packets to come in</strong>. You can stop here now if you know how to configure Windows Firewall.</p>
+							<p>Step-by-step solution:</p>
+							<ol>
+								<li>Open <strong>Windows Defender Firewall with Advanced Security</strong> (at least it’s called as such on my Windows 10). This can be done in two ways:
+									<ul>
+										<li>Go to <strong>Start</strong> → <strong>Windows Administrative Tools</strong> → <strong>Windows Defender Firewall with Advanced Security</strong></li>
+										<li>Or hit <strong><kbd><i class="fab fa-fw fa-windows"></i>Win</kbd>+<kbd>R</kbd></strong>, enter <code class="language-plaintext highlighter-rouge">WF.msc</code> and hit Enter.</li>
+									</ul>
+								</li>
+								<li>
+									<p>Select <strong>Inbound Rules</strong> on the left and then <strong>New Rule…</strong> on the right.</p>
+									<p><img src="https://i.stack.imgur.com/m1suMs.png" alt="Screenshot" class="block" /></p>
+								</li>
+								<li>
+									<p>Follow the prompt to create a new rule. Select the following options for each step. Note that the desired options are selected by default in some steps so you can simply click <strong>Next</strong>.</p>
+									<ul>
+										<li>Rule Type: <strong>Custom</strong></li>
+										<li>Program: <strong>All programs</strong> (just click Next)</li>
+										<li>Protocol and Ports:
+											<ul>
+												<li>Protocol type: <strong>ICMPv4</strong></li>
+												<li><em>(Optional)</em> Internet Control Message Protocol (ICMP) settings: Click <strong>Customize</strong> → Select <strong>Specific ICMP types</strong> and tick <strong>Time Exceeded</strong></li>
+											</ul>
+										</li>
+										<li>Scope: <strong>Any IP address</strong> for both (just click Next)</li>
+										<li>Action: <strong>Allow</strong> (just click Next)</li>
+										<li>Profile: Select all (just click Next)</li>
+										<li>Name: <strong>Core Networking - Time Exceeded (ICMPv4-In)</strong> (apparently just any name you prefer)</li>
+									</ul>
+									<p>Click <strong>Finish</strong> and you should immediately see intermediate hops if you’re using <code class="language-plaintext highlighter-rouge">mtr</code>. For example:</p>
+									<p><img src="/image/linux/traceroute-ok.png" alt="MTR correctly functioning" class="block" /></p>
+								</li>
+								<li>
+									<p><em>(Optional)</em> Repeat the above steps but select <strong>ICMPv6</strong> for <em>Protocol type</em> if you want to enable IPv6 traceroute. Don’t forget to give it a different name (e.g. <em>(ICMPv6-In)</em> at the end).</p>
+									<ul>
+										<li>In my case there’s already a built-in rule named <strong>Core Networking - Time Exceeded (ICMPv6-In)</strong> which is even enabled by default. If you find it there, you can simply enable it.</li>
+									</ul>
+								</li>
+							</ol>
+							<h3 id="bonus">Bonus</h3>
+							<p>If you want to make your rule <em>more solid</em> and <em>look</em> “canonical”, you can add it to the built-in system group <strong>Core Networking</strong> with the help of PowerShell.</p>
+							<div class="language-powershell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nv">$rule</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-NetFirewallRule</span><span class="w"> </span><span class="nt">-DisplayName</span><span class="w"> </span><span class="s2">"Core Networking - Time Exceeded (ICMPv4-In)"</span><span class="w">
+</span><span class="nv">$rule</span><span class="o">.</span><span class="nf">Group</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Core Networking"</span><span class="w">
+</span><span class="nv">$rule</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Set-NetFirewallRule</span><span class="w">
+</span></code></pre>
+								</div>
+							</div>
+							<p>Your new rull will looks like this after running the above commands. You may need to restart the Windows Firewall window to see changes.</p>
+							<p><img src="/image/windows/core-networking-time-exceeded-icmpv4-in.png" alt="New Rule" class="block" /></p>
+							<hr />
+							<p>This article was originally written as <a href="https://superuser.com/a/1623001/688600">an answer on Super User</a>.</p>
 						</section>
 						<footer class="page__meta">
 							<p class="page__taxonomy">
 								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
 								<span itemprop="keywords">
-									<a href="/tag/jekyll" class="page__taxonomy-item" rel="tag">jekyll</a>
-								</span>
-							</p>
-							<p class="page__taxonomy">
-								<strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
-								<span itemprop="keywords">
-									<a href="/category/study-notes" class="page__taxonomy-item" rel="tag">study-notes</a>
+									<a href="/tag/networking" class="page__taxonomy-item" rel="tag">networking</a><span class="sep">, </span>
+									<a href="/tag/windows" class="page__taxonomy-item" rel="tag">windows</a>
 								</span>
 							</p>
 							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-02-04">February 4, 2021</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
-							<a href="https://twitter.com/intent/tweet?text=Enabling+better+%22Related+Posts%22+with+Jekyll%20https%3A%2F%2Fibug.io%2Fblog%2F2020%2F05%2Fjekyll-better-related-posts%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
-							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2020%2F05%2Fjekyll-better-related-posts%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
-							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2020%2F05%2Fjekyll-better-related-posts%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+							<a href="https://twitter.com/intent/tweet?text=Fix+traceroute+not+showing+intermediate+results+in+a+virtual+machine+on+Windows%20https%3A%2F%2Fibug.io%2Fblog%2F2021%2F02%2Ftraceroute-from-vmware%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F02%2Ftraceroute-from-vmware%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F02%2Ftraceroute-from-vmware%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
 						</section>
 						<nav class="pagination">
-							<a href="/blog/2020/04/ssh-8.2-rsa-ca/" class="pagination--pager" title="Use RSA CA Certificates with OpenSSH 8.2
+							<a href="/blog/2021/01/linux-container-explained/" class="pagination--pager" title="A Deep Dive into Containers
 ">Previous</a>
-							<a href="/blog/2020/08/work-against-wordpress-deblocker/" class="pagination--pager" title="Working against WordPress DeBlocker plugin
-">Next</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
 						</nav>
 					</div>
 					<div class="page__comments">
@@ -277,28 +325,6 @@
 				<div class="page__related">
 					<h4 class="page__related-title">You may also enjoy</h4>
 					<div class="grid__wrapper">
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<h2 class="archive__item-title no_toc" itemprop="headline">
-									<a href="/blog/2018/04/build-github-pages-with-travis-ci/" rel="permalink">Build GitHub Pages with Travis CI
-									</a>
-								</h2>
-								<p class="page__meta">
-									<span class="page__meta-date">
-										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-										<time datetime="2018-04-14T00:00:00+00:00">April 14, 2018</time>
-									</span>
-									<span class="page__meta-sep"></span>
-									<span class="page__meta-readtime">
-										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										6 minute read
-									</span>
-								</p>
-								<p class="archive__item-excerpt" itemprop="description">
-									Update December 2020
-								</p>
-							</article>
-						</div>
 						<div class="grid__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<h2 class="archive__item-title no_toc" itemprop="headline">
@@ -313,31 +339,10 @@
 									<span class="page__meta-sep"></span>
 									<span class="page__meta-readtime">
 										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										20 minute read
+										24 minute read
 									</span>
 								</p>
 								<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are without diving into all the gory details of them, so I decided to go on this exploration myself.
-								</p>
-							</article>
-						</div>
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<h2 class="archive__item-title no_toc" itemprop="headline">
-									<a href="/blog/2020/09/build-github-pages-with-github-actions/" rel="permalink">Build GitHub Pages with GitHub Actions
-									</a>
-								</h2>
-								<p class="page__meta">
-									<span class="page__meta-date">
-										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-										<time datetime="2020-09-19T00:00:00+00:00">September 19, 2020</time>
-									</span>
-									<span class="page__meta-sep"></span>
-									<span class="page__meta-readtime">
-										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										7 minute read
-									</span>
-								</p>
-								<p class="archive__item-excerpt" itemprop="description">Why use an external service when there’s an in-house GitHub service?
 								</p>
 							</article>
 						</div>
@@ -359,6 +364,48 @@
 									</span>
 								</p>
 								<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on the training data of 9M user-item pairs and a social network.
+								</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2019/12/manage-servers-with-ssh-ca/" rel="permalink">Managing servers with OpenSSH Certificate Authority
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="page__meta-date">
+										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2019-12-23T00:00:00+00:00">December 23, 2019</time>
+									</span>
+									<span class="page__meta-sep"></span>
+									<span class="page__meta-readtime">
+										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+										6 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">Since the addition of the website server for an external corporation, I now have 5 Linux servers to manage on my own. I also have 4 terminal devices that I use to connect to those servers: two of my laptops, my Android phone (using Termux), and one of those servers that I use as a workstation.
+								</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2019/08/speech-at-msc-2019/" rel="permalink">My speech at Microsoft Summer Camp 2019
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="page__meta-date">
+										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2019-08-14T00:00:00+00:00">August 14, 2019</time>
+									</span>
+									<span class="page__meta-sep"></span>
+									<span class="page__meta-readtime">
+										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+										10 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">This is a translated version from the Chinese (original) script. The slideshow can be acquired here. For comments, please head to the Chinese version of this post.
 								</p>
 							</article>
 						</div>
@@ -469,8 +516,8 @@
 		</script>
 		<script>
 			var disqus_config = function () {
-			  this.page.url = "https://ibug.io/blog/2020/05/jekyll-better-related-posts/";  /* Replace PAGE_URL with your page's canonical URL variable */
-			  this.page.identifier = "/blog/2020/05/jekyll-better-related-posts"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			  this.page.url = "https://ibug.io/blog/2021/02/traceroute-from-vmware/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2021/02/traceroute-from-vmware"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
 			};
 			(function() { /* DON'T EDIT BELOW THIS LINE */
 			  var d = document, s = d.createElement('script');
