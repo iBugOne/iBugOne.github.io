@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=32ae3cc">
+		<link rel="stylesheet" href="/assets/css/main.css?v=03a563b">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/iBug-web/static/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -216,7 +216,7 @@
 								</nav>
 							</aside>
 							<p>Today when I was running some networking diagnostics from an Ubuntu inside VMware Workstation, I noticed this strange result from <a href="https://en.wikipedia.org/wiki/MTR_(software)"><code class="language-plaintext highlighter-rouge">mtr</code> (My Traceroute)</a>:</p>
-							<p><img src="/image/linux/traceroute-failure.png" alt="MTR with all intermediate hops blank" class="block" /></p>
+							<p><img src="/image/linux/traceroute-failure.png" alt="MTR with all intermediate hops blank" /></p>
 							<p>This doesn’t look right. Googling around brought me to this page: <a href="https://communities.vmware.com/t5/VMware-Workstation-Player/traceroute-from-Ubuntu-just-shows-first-and-last-hops-on/m-p/1677263">traceroute from Ubuntu just shows first and last hops on VMPlayer 3.1.4 - VMware Technology Network VMTN</a></p>
 							<p>The answers in that thread mentioned two points:</p>
 							<ul>
@@ -252,7 +252,7 @@
 								</li>
 								<li>
 									<p>Select <strong>Inbound Rules</strong> on the left and then <strong>New Rule…</strong> on the right.</p>
-									<p><img src="https://i.stack.imgur.com/m1suMs.png" alt="Screenshot" class="block" /></p>
+									<p><img src="https://i.stack.imgur.com/m1suMs.png" alt="Screenshot" /></p>
 								</li>
 								<li>
 									<p>Follow the prompt to create a new rule. Select the following options for each step. Note that the desired options are selected by default in some steps so you can simply click <strong>Next</strong>.</p>
@@ -271,7 +271,7 @@
 										<li>Name: <strong>Core Networking - Time Exceeded (ICMPv4-In)</strong> (apparently just any name you prefer)</li>
 									</ul>
 									<p>Click <strong>Finish</strong> and you should immediately see intermediate hops if you’re using <code class="language-plaintext highlighter-rouge">mtr</code>. For example:</p>
-									<p><img src="/image/linux/traceroute-ok.png" alt="MTR correctly functioning" class="block" /></p>
+									<p><img src="/image/linux/traceroute-ok.png" alt="MTR correctly functioning" /></p>
 								</li>
 								<li>
 									<p><em>(Optional)</em> Repeat the above steps but select <strong>ICMPv6</strong> for <em>Protocol type</em> if you want to enable IPv6 traceroute. Don’t forget to give it a different name (e.g. <em>(ICMPv6-In)</em> at the end).</p>
@@ -291,7 +291,7 @@
 								</div>
 							</div>
 							<p>Your new rule will look like this after running the above commands. You may need to restart the Windows Firewall window to see changes.</p>
-							<p><img src="/image/windows/core-networking-time-exceeded-icmpv4-in.png" alt="New Rule" class="block" /></p>
+							<p><img src="/image/windows/core-networking-time-exceeded-icmpv4-in.png" alt="New Rule" /></p>
 							<hr />
 							<p>This article was originally written as <a href="https://superuser.com/a/1623001/688600">an answer on Super User</a>.</p>
 						</section>
@@ -436,7 +436,7 @@
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-484</a>
+						Site version <a href="/status" class="version-text">G-485</a>
 					</p>
 				</div>
 			</footer>

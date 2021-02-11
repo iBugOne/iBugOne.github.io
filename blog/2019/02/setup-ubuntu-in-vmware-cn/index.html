@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=32ae3cc">
+		<link rel="stylesheet" href="/assets/css/main.css?v=03a563b">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/iBug-web/static/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -216,7 +216,7 @@
 							</aside>
 							<p><small><a href="/p/15">There’s an English version of this article!</a></small></p>
 							<p>零基础快速上手虚拟机安装 Ubuntu，特别是在《操作系统原理与设计》开课的时候 <em>#(滑稽)</em>。</p>
-							<p><img src="/image/setup-vmware/vmware-splash.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/vmware-splash.png" alt="" /></p>
 							<h1 id="0-准备工作">0. 准备工作</h1>
 							<p>由于本文教程安装的是带有桌面环境的 Linux 发行版，因此推荐为客户机（虚拟机）分配至少 2 GB 的内存，以保证流畅运行。由此，主机配置内存应有 6 GB 或更多。如果你的机器没有那么多内存，可以考虑以下方案：</p>
 							<ul>
@@ -228,38 +228,38 @@
 							<p>由于作者只有运行 Windows 的电脑，因此 macOS 下安装 VMware Fusion 及 VirtualBox 的教程委托朋友编写，你可以点击<a href="https://blog.taoky.moe/2019-02-23/installing-os-on-vm.html">这里</a>阅读。</p>
 							<h1 id="1-在-windows-下安装-vmware-workstation">1. 在 Windows 下安装 VMware Workstation</h1>
 							<p>打开下载好的 VMware Workstation 安装包（需要管理员权限）</p>
-							<p><img src="/image/setup-vmware/vm-1.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/vm-1.png" alt="" /></p>
 							<p>点击 [下一步] 继续，选择一种安装方式。对于大部分人来说，选择<strong>典型</strong>就可以了。按照提示完成 VMware Workstation 的安装。安装完成后需要重启电脑，以确保所有组件都能正常工作。</p>
 							<p>重启后你应该能在桌面和开始菜单看到这样一个图标：</p>
-							<p><img src="/image/setup-vmware/Win10-tile.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/Win10-tile.png" alt="" /></p>
 							<p>双击打开 VMware Workstation，接受用户协议 (EULA) 并按提示输入密钥。如果你看到下面的窗口，说明你已经成功安装 VMware Workstation。</p>
-							<p><img src="/image/setup-vmware/home-page.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/home-page.png" alt="" /></p>
 							<h1 id="2-安装-ubuntu-桌面版的虚拟机">2. 安装 Ubuntu 桌面版的虚拟机</h1>
 							<p>如上图所示，主页有三个大按钮。你可能已经发现了，第一个就是”创建新虚拟机“。点一下，然后就可以看到”创建新虚拟机向导“，如图：</p>
-							<p><img src="/image/setup-vmware/nvmw-1.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/nvmw-1.png" alt="" /></p>
 							<p>同样，对于大部分人来说，<strong>典型（推荐）</strong>就像它写的那样——是推荐的选项。</p>
 							<p>在下一页，选择<strong>安装光盘镜像</strong>并选择刚刚下载的 Ubuntu 系统镜像（格式是 ISO）。VMware Workstation 应该检测到 Ubuntu 安装盘并提示你将使用“简易安装”来安装操作系统。</p>
-							<p><img src="/image/setup-vmware/nvmw-2.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/nvmw-2.png" alt="" /></p>
 							<p>点击 [下一步] 之后，你可以指定虚拟机的主机名（系统内部的“本机名称”，用于网络连接等），以及用户名和密码。由于虚拟机是一个独立的环境，而且只为你所用，因此弱密码不会带来什么安全问题（例如，图中所有空填的都是 <code class="language-plaintext highlighter-rouge">vmware</code>，包括密码）。</p>
-							<p><img src="/image/setup-vmware/nvmw-3.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/nvmw-3.png" alt="" /></p>
 							<p>在下一页中，你可以给这个虚拟机起个名字（这个名字将显示在菜单中），并指定一个存储位置。对大多数人来说，出于多种考虑，存储在 C 盘里不是一个期望的选择。在 Linux 或者 macOS 中，你可以将虚拟机放在你的 <code class="language-plaintext highlighter-rouge">$HOME</code> 中。如图所示，我给虚拟机起名就叫 <strong>Ubuntu 18.04</strong>，并将它放在 D 盘里。</p>
-							<p><img src="/image/setup-vmware/nvmw-4.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/nvmw-4.png" alt="" /></p>
 							<p>接下来，为虚拟机创建一个虚拟磁盘。忽略 VMware 的建议值，16 GB 已经足够大多数初次接触 Ubuntu 的人使用了。本示例中我指定了 8 GB（这个容量对于示例来说足够了）。选择<strong>将虚拟磁盘作为单个文件存储</strong>以获得较高性能——相信你的磁盘应对大文件的能力。</p>
-							<p><img src="/image/setup-vmware/nvmw-5.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/nvmw-5.png" alt="" /></p>
 							<p>好了，以上就是你需要指定的设置选项了。检查一下并确认虚拟机的硬件配置。你可以在这里自定义虚拟机的硬件配置，比如，删掉打印机和声卡，或者增加一些处理器核心和内存（如果你的主机有足够多的资源）。</p>
-							<p><img src="/image/setup-vmware/nvmw-6.png" alt="" class="block" /></p>
-							<p><img src="/image/setup-vmware/nvmw-7.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/nvmw-6.png" alt="" /></p>
+							<p><img src="/image/setup-vmware/nvmw-7.png" alt="" /></p>
 							<p>关闭向导后，开启虚拟机。初次开机的界面如图：</p>
-							<p><img src="/image/setup-vmware/u-1.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/u-1.png" alt="" /></p>
 							<p>就像之前所说，虚拟机中安装 Ubuntu 的过程是由 VMware 的简易安装功能全自动完成的。你可以看到 Ubuntu 的安装界面，如下所示：</p>
-							<p><img src="/image/setup-vmware/u-2.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/u-2.png" alt="" /></p>
 							<p>取决于主机配置（尤其是硬盘速度），虚拟机将很快重启，新系统的第一次开机通常会比较慢。稍等片刻，你就能看到 Ubuntu 的登录界面。输入密码后，就可以看到 Ubuntu 的桌面。</p>
-							<p><img src="/image/setup-vmware/u-3.png" alt="" class="block" /></p>
-							<p><img src="/image/setup-vmware/u-4.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/u-3.png" alt="" /></p>
+							<p><img src="/image/setup-vmware/u-4.png" alt="" /></p>
 							<p>进入桌面后，<em>Ubuntu 的新特性</em>会弹出来。你可以简单看一下，这里没有特别重要的信息。</p>
-							<p><img src="/image/setup-vmware/u-5.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/u-5.png" alt="" /></p>
 							<p>按 <code class="language-plaintext highlighter-rouge">Ctrl</code> + <code class="language-plaintext highlighter-rouge">Alt</code> + <code class="language-plaintext highlighter-rouge">T</code> 可以打开 Ubuntu 自带的终端模拟器。</p>
-							<p><img src="/image/setup-vmware/u-6.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/u-6.png" alt="" /></p>
 							<p>最后，为了快速配置 Ubuntu 的生产力，我写了一个<a href="https://github.com/iBug/shGadgets/blob/master/quick-setup.sh">快速配置脚本</a>，你可以用以下命令使用它：</p>
 							<div class="language-shell highlighter-rouge">
 								<div class="highlight">
@@ -413,7 +413,7 @@
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-484</a>
+						Site version <a href="/status" class="version-text">G-485</a>
 					</p>
 				</div>
 			</footer>

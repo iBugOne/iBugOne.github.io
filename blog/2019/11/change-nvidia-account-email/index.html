@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=32ae3cc">
+		<link rel="stylesheet" href="/assets/css/main.css?v=03a563b">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/iBug-web/static/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -203,16 +203,16 @@
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<p>I recently retired a few old email addresses, and am currently going in a row to change email for accounts associated with those emails. Everything else went smoothly, with my Nvidia account being an exception - There wasn’t an option to change it!</p>
-							<p><img src="/image/nv-account/main-page.png" alt="no change option?!?" class="block" /></p>
+							<p><img src="/image/nv-account/main-page.png" alt="no change option?!?" /></p>
 							<p>My first idea was to Google for solutions, and the first few results were on the GeForce forum saying you need to contact supprt. I did so, and ended up being told that emails can only be changed once per account, and there’s no more option to change it once more. What a terrible UX design!</p>
 							<p>I decided to give it a try to work around this. I first created another account and checked where the [Change Email] was located. Not any hard.</p>
-							<p><img src="/image/nv-account/change-button.png" alt="the change button" class="block" /></p>
+							<p><img src="/image/nv-account/change-button.png" alt="the change button" /></p>
 							<p>From a web developer’s perspective, it’s a must to open F12 Developer Tools and examine the button:</p>
-							<p><img src="/image/nv-account/change-button-f12.png" alt="the change button - examined" class="block" /></p>
+							<p><img src="/image/nv-account/change-button-f12.png" alt="the change button - examined" /></p>
 							<p>Then I switched back to my old account and examined the same part of HTML:</p>
-							<p><img src="/image/nv-account/change-button-disabled-f12.png" alt="no change button - examined" class="block" /></p>
+							<p><img src="/image/nv-account/change-button-disabled-f12.png" alt="no change button - examined" /></p>
 							<p>Now it seems clear to me: The last thing to do before succeeding is to purge that <code class="language-plaintext highlighter-rouge">display: none;</code> from the button. Double-click on the text and you can delete it with ease:</p>
-							<p><img src="/image/nv-account/removing-style.png" alt="remove display none" class="block" /></p>
+							<p><img src="/image/nv-account/removing-style.png" alt="remove display none" /></p>
 							<p>Voilà! You can now click it to change email for your Nvidia account. Why on earth did they decide that email can only be changed once per account? It sucks!</p>
 						</section>
 						<footer class="page__meta">
@@ -356,7 +356,7 @@
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-484</a>
+						Site version <a href="/status" class="version-text">G-485</a>
 					</p>
 				</div>
 			</footer>

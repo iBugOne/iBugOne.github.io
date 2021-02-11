@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=32ae3cc">
+		<link rel="stylesheet" href="/assets/css/main.css?v=03a563b">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/iBug-web/static/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -204,13 +204,13 @@
 								without noticing that my local ref <code class="language-plaintext highlighter-rouge">origin/master</code> is 1 commit behind the actual <code class="language-plaintext highlighter-rouge">master</code> on GitHub.
 								My friend pushed his work (1 commit) to it, and now it’s lost.</p>
 							<p>Fortunately, I haven’t closed my terminal yet, so there’s at least some place to look at:</p>
-							<p><img src="/image/git-restore/1.png" alt="image" class="block" /></p>
+							<p><img src="/image/git-restore/1.png" alt="image" /></p>
 							<p>From the terminal log, I knew that the SHA of the lost commit begins with <code class="language-plaintext highlighter-rouge">b3c3b36</code>, so it appeared very intuitive for me to just try fetching the commit, but no luck:</p>
-							<p><img src="/image/git-restore/2.png" alt="image" class="block" /></p>
+							<p><img src="/image/git-restore/2.png" alt="image" /></p>
 							<p>I recalled that GitHub can show commits with only first 7 digits of its SHA, so I constructed the URL <a href="https://github.com/iBug/USTC-RV-Chisel/commit/b3c3b36">https://github.com/iBug/USTC-RV-Chisel/commit/b3c3b36</a> and followed it:</p>
-							<p><img src="/image/git-restore/3.png" alt="image" class="block" /></p>
+							<p><img src="/image/git-restore/3.png" alt="image" /></p>
 							<p>Now trying it again with the full SHA that’s easily retrieved from the web page:</p>
-							<p><img src="/image/git-restore/4.png" alt="image" class="block" /></p>
+							<p><img src="/image/git-restore/4.png" alt="image" /></p>
 							<p>Hello? Does GitHub allow this? Oh-no!</p>
 							<p>I Googled around for a few minutes, and concluded that GitHub doesn’t allow fetching this commit, because it’s <em>unadvertised</em>.</p>
 							<p>Thinking around for ideas, I decided to give it a try to rebuild the commit.</p>
@@ -241,19 +241,19 @@ git reset --hard ee216e3  # This is the parent commit of the lost commit
 								</div>
 							</div>
 							<p>The next thing was to examine the tarball to determine the top-level folder name:</p>
-							<p><img src="/image/git-restore/5.png" alt="image" class="block" /></p>
+							<p><img src="/image/git-restore/5.png" alt="image" /></p>
 							<p>To make it easier to merge my working directory with the tarball, I renamed my local folder to match the one in the tarball:</p>
-							<p><img src="/image/git-restore/6.png" alt="image" class="block" /></p>
+							<p><img src="/image/git-restore/6.png" alt="image" /></p>
 							<p>Now it’s time to rebuild the commit!</p>
 							<p>Now that the working directory is restored, all that’s left to do is to figure out the committer information and commit time.</p>
 							<p>I must say here that retrieving those information from the GitHub API is an easier way to do it programmatically, but since I had the browser page open as well as my local repository, fetching the exact time from the web page was the method easier to reach, and committer information can be seen from <code class="language-plaintext highlighter-rouge">git log</code>.</p>
-							<p><img src="/image/git-restore/7.png" alt="image" class="block" /></p>
+							<p><img src="/image/git-restore/7.png" alt="image" /></p>
 							<p><sup>The exact time in ISO 8601 format is available through F12<sup></sup></sup></p>
 							<p>With all the required information collected, I rebuilt the commit myself:</p>
-							<p><img src="/image/git-restore/8.png" alt="image" class="block" /></p>
+							<p><img src="/image/git-restore/8.png" alt="image" /></p>
 							<p>Look! The new commit has the same SHA as the lost commit! So they’re the same commit now.</p>
 							<p>Pushing the restored commit back happily:</p>
-							<p><img src="/image/git-restore/9.png" alt="image" class="block" /></p>
+							<p><img src="/image/git-restore/9.png" alt="image" /></p>
 						</section>
 						<footer class="page__meta">
 							<p class="page__taxonomy">
@@ -403,7 +403,7 @@ git reset --hard ee216e3  # This is the parent commit of the lost commit
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-484</a>
+						Site version <a href="/status" class="version-text">G-485</a>
 					</p>
 				</div>
 			</footer>

@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=32ae3cc">
+		<link rel="stylesheet" href="/assets/css/main.css?v=03a563b">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/iBug-web/static/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -248,24 +248,24 @@
 							<p>I was searching for some resources when I came across a WordPress site. I had both ABP and uBO installed, and the website flashed blood red. So it was an ad blocker detector, easy peasy, and I hit Ctrl-Shift-I, only to find that it didn’t work. I tried F12 and found it was blocked, too, so there must be other methods I could resort too.</p>
 							<h2 id="getting-f12-developer-tools">Getting F12 Developer Tools</h2>
 							<p>If I can’t open Dev Tools with the page showing, I can always have it open <em>before</em> the page loads. I had a sense this would be a tough opponent, so I opened an incognito window, enabled ad blocker extensions, opened Dev Tools, and navigated to the page.</p>
-							<p><img src="/image/wp-anti-deblocker/debugger-pause.png" alt="debugger paused" class="block"></p>
+							<p><img src="/image/wp-anti-deblocker/debugger-pause.png" alt="debugger paused"></p>
 							<p>Whoa, it’s paused with the debugger, and when I go to the Elements tab, I found that the script had removed the whole DOM, leaving only the <code class="language-plaintext highlighter-rouge">&lt;html&gt;</code> tag behind:</p>
-							<p><img src="/image/wp-anti-deblocker/empty-dom.png" alt="empty dom" class="block"></p>
+							<p><img src="/image/wp-anti-deblocker/empty-dom.png" alt="empty dom"></p>
 							<p>That was <strong>OUTRAGEOUS</strong>! It’s the most offensive script I’ve seen. I must track it down and counter it.</p>
 							<p>Looking at the <strong>Network</strong> tab, there are so many scripts that I probably can’t inspect them one-by-one.</p>
 							<p>When I reload the page, I found that my whole Chrome went unresponsive, and I had to stop it from Task Manager. What a job they’ve done!</p>
 							<h2 id="locating-the-script">Locating the script</h2>
 							<p>One (and the only one so far) key behavior is its removal of the whole DOM, so if I could track that change, I could very accurately locate the offending script.</p>
 							<p>I opened Chrome in incognito mode again, and opened Dev Tools. I need to add a breakpoint on change to the root element, and I have to add the watcher after opening the page, so the first thing to do is to add a breakpoint at page load. I navigated to the <strong>Sources</strong> tab, under <strong>Event Listener Breakpoints</strong>, I checked <code class="language-plaintext highlighter-rouge">load</code>:</p>
-							<p><img src="/image/wp-anti-deblocker/breakpoint-load.png" alt="breakpoint load" class="block"></p>
+							<p><img src="/image/wp-anti-deblocker/breakpoint-load.png" alt="breakpoint load"></p>
 							<p>Then I navigated to the page, and an innocent script hit the breakpoint.</p>
-							<p><img src="/image/wp-anti-deblocker/break-at-load.png" alt="break at load" class="block"></p>
+							<p><img src="/image/wp-anti-deblocker/break-at-load.png" alt="break at load"></p>
 							<p>That wasn’t too much of a problem, as I could then switch to the <strong>Elements</strong> tab and add a breakpoint onto the <code class="language-plaintext highlighter-rouge">&lt;html&gt;</code> element:</p>
-							<p><img src="/image/wp-anti-deblocker/set-breakpoint-on-html.png" alt="set breakpoint on html" class="block"></p>
+							<p><img src="/image/wp-anti-deblocker/set-breakpoint-on-html.png" alt="set breakpoint on html"></p>
 							<p>The next task would be a bit boring, to keep on continuing the debugger while keeping an eye on what’s running.</p>
-							<p><img src="/image/wp-anti-deblocker/continue-execution.png" alt="continue execution" class="block"></p>
+							<p><img src="/image/wp-anti-deblocker/continue-execution.png" alt="continue execution"></p>
 							<p>The same innocent script, along with jQuery, showed up around 20 times, before the first suspicious script poped up:</p>
-							<p><img src="/image/wp-anti-deblocker/first-suspicious-script.png" alt="first suspicious script" class="block"></p>
+							<p><img src="/image/wp-anti-deblocker/first-suspicious-script.png" alt="first suspicious script"></p>
 							<p>It was named <code class="language-plaintext highlighter-rouge">ads.min.js</code> and was pretty short, as shown below (formatted):</p>
 							<div class="language-javascript highlighter-rouge">
 								<div class="highlight">
@@ -281,11 +281,11 @@
 							<p>So I let it continue.</p>
 							<p>It quickly became a tedious task, stepping through all those jQuery and analytics script with nothing interesting.</p>
 							<p>Recalling that the offending script would remove both <code class="language-plaintext highlighter-rouge">&lt;head&gt;</code> and <code class="language-plaintext highlighter-rouge">&lt;body&gt;</code> elements, I changed the breakpoint to them:</p>
-							<p><img src="/image/wp-anti-deblocker/set-breakpoint-on-body.png" alt="set breakpoint on body" class="block"></p>
+							<p><img src="/image/wp-anti-deblocker/set-breakpoint-on-body.png" alt="set breakpoint on body"></p>
 							<p>It turned out that I did the right thing. Another suspicious script showed up very quickly:</p>
-							<p><img src="/image/wp-anti-deblocker/offending-script-found.png" alt="offending script found" class="block"></p>
+							<p><img src="/image/wp-anti-deblocker/offending-script-found.png" alt="offending script found"></p>
 							<p>It’s minified and had a jumbled file name. Scrolling the line to the beginning shows a heavy hint that it’s the one I was looking for:</p>
-							<p><img src="/image/wp-anti-deblocker/start-of-script.png" alt="start of script" class="block"></p>
+							<p><img src="/image/wp-anti-deblocker/start-of-script.png" alt="start of script"></p>
 							<p>Its comments pretty much told it all: <em>Most effective way to detect ad blockers</em>, so I pulled it out and took a closer look.</p>
 							<p>It wasn’t hard to find some traits, for example, the following code is a part of it:</p>
 							<div class="language-javascript highlighter-rouge">
@@ -365,7 +365,7 @@
 								</div>
 							</div>
 							<p>Now save the userscript and reload the page. I knew that my solution worked as soon as I saw the expected output:</p>
-							<p><img src="/image/wp-anti-deblocker/captured-script.png" alt="captured script" class="block"></p>
+							<p><img src="/image/wp-anti-deblocker/captured-script.png" alt="captured script"></p>
 							<p>Well done, iBug! You’ve just got another achievement for defeating this plugin!</p>
 							<h2 id="the-bottom-line">The bottom line</h2>
 							<p>While ads could be an important income for websites, there are users who detest them. Compelling every single and last user to disable their ad blocker for you is blunt and abusive. If you really want every piece of crummy money from your nasty ads, go fuck yourself.</p>
@@ -514,7 +514,7 @@
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-484</a>
+						Site version <a href="/status" class="version-text">G-485</a>
 					</p>
 				</div>
 			</footer>

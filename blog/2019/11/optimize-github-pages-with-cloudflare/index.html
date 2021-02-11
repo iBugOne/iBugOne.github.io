@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=32ae3cc">
+		<link rel="stylesheet" href="/assets/css/main.css?v=03a563b">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/iBug-web/static/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -229,7 +229,7 @@
 								</nav>
 							</aside>
 							<p>This September I employed Cloudflare to optimize my website (<a href="https://ibugone.com">https://ibugone.com</a>) in various aspects. It turned out to be a brilliant move and Cloudflare has proved to be a great service to have.</p>
-							<p><img src="/image/homepage.jpg" alt="Landing page of my website" class="block" /></p>
+							<p><img src="/image/homepage.jpg" alt="Landing page of my website" /></p>
 							<h2 id="benefits">Benefits</h2>
 							<h3 id="faster-site-loading">Faster site loading</h3>
 							<p>While I haven’t made strict benchmarks, people all over the world have reported that my website loads faster and smoother than before.</p>
@@ -252,7 +252,7 @@ X-Served-By: cache-tyo19946-TYO
 							<h3 id="http-settings">Custom behavior of HTTP response</h3>
 							<p>If you host your site on vanilla GitHub Pages, there’s not much you can do with HTTP response, like cache control and redirects. By default, GitHub Pages sets all expiration times for static assets to 10 minutes, but for sure you may want certain files to be cached for longer. Like me, I would like all images on my site to be cached for as long as possible, which is not possible with GitHub Pages on its own.</p>
 							<p>Cloudflare offers a variety of tweaks via Page Rules, so I could achieve my goal with a Page Rule setting:</p>
-							<p><img src="/image/cloudflare/image-caching.png" alt="My Cloudflare setting for image caching" class="block" /></p>
+							<p><img src="/image/cloudflare/image-caching.png" alt="My Cloudflare setting for image caching" /></p>
 							<p>Instead of fetching an identical copy from GitHub Pages’ origin server, browsers will now cache all image on my website for a year, and Cloudflare’s CDN servers will cache my images for up to 30 days. Other available options include redirection and performance optimizations, and it’s up to you to explore them all.</p>
 							<h3 id="more-secure-https-settings">More secure HTTPS settings</h3>
 							<p>Some time ago, GitHub Pages didn’t support HTTPS with custom domains, which was quite a downside for such a popular service. At that time, Cloudflare was almost the only option to add HTTPS support to your website. While now this is no longer the case, there’re still some weaknesses and limitations, for example the lack of support for HSTS and the occasional failure of renewing an SSL certificate. With Cloudflare you can add HSTS headers to all responses coming from your website, further improving security.</p>
@@ -262,11 +262,11 @@ X-Served-By: cache-tyo19946-TYO
 							<p>Next, you’ll be prompted for the domain you want to add to Cloudflare. Enter the domain and Cloudflare will perform a quick scan of all records, and you can manually review them and add missing records, if any.</p>
 							<p>To enable Cloudflare CDN for domains under which you run a website, click the grey cloud icon so it becomes orange. This means that website will be proxied and delivered via Cloudflare, and its DNS record will instead resolve to some of Cloudflare’s IPs.</p>
 							<p>That’s all, isn’t it simple? But wait, there’s more that Cloudflare provides, and you can now explore all of them and see which fits your needs.</p>
-							<p><img src="/image/cloudflare/apps.png" alt="Apps that Cloudflare provides" class="block" /></p>
+							<p><img src="/image/cloudflare/apps.png" alt="Apps that Cloudflare provides" /></p>
 							<h3 id="using-page-rules">Using Page Rules</h3>
 							<p>Let’s turn our focus onto the Page Rules app. With Page Rules you can configure Cloudflare behavior on specific “routes”, or URL patterns. One common use case is to create a permanent redirect from your <code class="language-plaintext highlighter-rouge">www</code> domain to your apex domain, or in the reverse direction.</p>
 							<p>For example, if I want to create a permanent redirect from <code class="language-plaintext highlighter-rouge">www.ibugone.com</code> to <code class="language-plaintext highlighter-rouge">ibugone.com</code>, I would create a Page Rule like this:</p>
-							<p><img src="/image/cloudflare/page-rule-301.png" alt="Page Rule for 301 redirection from www.ibugone.com to ibugone.com" class="block" /></p>
+							<p><img src="/image/cloudflare/page-rule-301.png" alt="Page Rule for 301 redirection from www.ibugone.com to ibugone.com" /></p>
 							<p>And there’s an aggressive image caching setting <a href="#http-settings">described before</a>. There are many Page Rule options for you to explore, and there are always one or more that fits your needs.</p>
 							<h3 id="more-features">Get the best out of Cloudflare</h3>
 							<p>For newer webmasters, you might want to ensure <strong>SSL / TLS</strong> works as expected. The <strong>Full</strong> mode makes Cloudflare fetch original content from your website via HTTPS without validating the certificate on your server. For GitHub Pages this is the option you generally want, as GitHub Pages presents its default certificate for <code class="language-plaintext highlighter-rouge">*.github.io</code> if it doesn’t have a certificate for your domain. This is good enough for your website behind Cloudflare.</p>
@@ -423,7 +423,7 @@ X-Served-By: cache-tyo19946-TYO
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-484</a>
+						Site version <a href="/status" class="version-text">G-485</a>
 					</p>
 				</div>
 			</footer>

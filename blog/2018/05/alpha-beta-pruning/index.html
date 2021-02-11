@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=32ae3cc">
+		<link rel="stylesheet" href="/assets/css/main.css?v=03a563b">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/iBug-web/static/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -234,7 +234,7 @@
 							<p>The alpha-beta pruning algorithm is based on the fact that one side wants to maximize the evaluated score, while the other wants to minimize it. Both sides are later referred to as Max and Min.</p>
 							<p>The algorithm maintains two values, alpha and beta, which represent the minimum score Max is assured of, and the maximum score Min is assured of, respectively. The values start at the “worst state”, i.e., \(\alpha=-\infty\) and \(\beta=+\infty\). Whenever it goes to a point where \(\alpha\gt\beta\), we know that this branch need not be examined as it will never be reached, given that both sides have found out that it’s no better (or worse) than a known, assured branch.</p>
 							<p>This image from Wikipedia demonstrates it well:</p>
-							<p><img src="/image/ab-pruning-wikipedia.png" alt="Image sourced from Wikipedia" class="block" /></p>
+							<p><img src="/image/ab-pruning-wikipedia.png" alt="Image sourced from Wikipedia" /></p>
 							<p>Let’s call the above tree “Levels 0 to 4”, where Level 0 contains only one node, the root node, and it’s where the searching starts.
 								Levels 1 to 4 contains 3, 5, 7, 9 white nodes each. Greyed-out nodes are pruned by the alpha-beta algorithm. The numbers on the nodes are the best (maximum or minimum) score assured at this branch.</p>
 							<p>The tree is searched from left to right. It first completes the leftmost two nodes at level 4 and backtracks to the first node at level 2. At this time at the level 2 node, both sides know that this branch can assure Max of a minimum score of 5. The searching then goes to the second node at level 3, and it finds that this node can assure Min of a score of 4, which is lower than the minimum that Max has been assured of. This means that Max will not choose this branch if the game has reached the first node at level 2, and we can safely cut off the searching here (prune this branch).</p>
@@ -320,7 +320,7 @@
 							</div>
 							<h1 id="optimization">Optimization</h1>
 							<p>As seen in the image from Wikipedia:</p>
-							<p><img src="/image/ab-pruning-wikipedia.png" alt="Image from Wikipedia" class="block" /></p>
+							<p><img src="/image/ab-pruning-wikipedia.png" alt="Image from Wikipedia" /></p>
 							<p>We can see that if the 2nd node at level 2 is examined earlier, the 1st node would have been pruned. We want to find a way to make pruning occur more often, further improving the performance of the algorithm.</p>
 							<p>In most typical games, a partially good move often leads to better subsequences, and vice versa. This fact implies that we can sort the current steps we’re going deep into, and search better moves first. Worse moves will likely be pruned more often. This leads to a small change in the code:</p>
 							<div class="language-javascript highlighter-rouge">
@@ -515,7 +515,7 @@
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-484</a>
+						Site version <a href="/status" class="version-text">G-485</a>
 					</p>
 				</div>
 			</footer>

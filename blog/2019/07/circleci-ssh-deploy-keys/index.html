@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=32ae3cc">
+		<link rel="stylesheet" href="/assets/css/main.css?v=03a563b">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/iBug-web/static/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -212,7 +212,7 @@
 							</aside>
 							<p>A year ago back I <a href="/p/4">wrote an article</a> on automating build &amp; deployment of GitHub Pages website with Travis CI. It’s a great CI service at first, but since <a href="https://blog.travis-ci.com/2018-10-04-combining-linux-infrastructures">Travis CI has completely moved away from containers</a>, speed is a real issue to whoever is concerned. On the other side, CircleCI is continuing their builds with Docker-based containers, whose rapid response is a <em>great</em> advantage against VMs with slow boot time.</p>
 							<p>Migrating the build script from Travis CI was an intuitive and easy step, but I immediately got disappointed by CircleCI’s logging: Secret environment variables get exposed in the log as soon as any command or program prints them.</p>
-							<p><img src="/image/circleci/token-leak.png" alt="image" class="block" /></p>
+							<p><img src="/image/circleci/token-leak.png" alt="image" /></p>
 							<p>That’s particularly annoying because I used Personal Access Tokens to push built content back to GitHub, and this kind of straightforward leaks is a huge security issue, so I looked around for alternatives, and came up with the idea of using a deploy key with write access.</p>
 							<p>Setting up the basics wasn’t any difficult on its own for anyone with a bit experience in Linux:</p>
 							<ul>
@@ -242,9 +242,9 @@ git clone <span class="nt">--depth</span><span class="o">=</span>3 <span class="
 								</div>
 							</div>
 							<p>It’s particularly confusing when you’ve written your SSH private key to the correct path, set the correct permission and expecting SSH to respect your key, only to find it’s actually offering another key to GitHub and fails.</p>
-							<p><img src="/image/circleci/ssh-fail.png" alt="image" class="block" /></p>
+							<p><img src="/image/circleci/ssh-fail.png" alt="image" /></p>
 							<p>Digging around with debug information (set <code class="language-plaintext highlighter-rouge">GIT_SSH_COMMAND='ssh -vv'</code>), I noticed this absurd thing:</p>
-							<p><img src="/image/circleci/key-not-found.png" alt="image" class="block" /></p>
+							<p><img src="/image/circleci/key-not-found.png" alt="image" /></p>
 							<p>Clearly, the aptly placed key wasn’t even found by SSH, rendering it completely unusable in status quo. I’ve even tried crafting <code class="language-plaintext highlighter-rouge">~/.ssh/config</code>, but unfortunately it’s ignored as well.</p>
 							<h3 id="solution">Solution</h3>
 							<p>Just like most other CLI utilities, SSH respects command-line arguments loyally. So you would just specify the identity file there:</p>
@@ -254,7 +254,7 @@ git clone <span class="nt">--depth</span><span class="o">=</span>3 <span class="
 </code></pre>
 								</div>
 							</div>
-							<p><img src="/image/circleci/solution.png" alt="image" class="block" /></p>
+							<p><img src="/image/circleci/solution.png" alt="image" /></p>
 							<p>And I don’t even know what’s going on behind the scenes, but it just works.</p>
 							<p>Reference: <a href="https://stackoverflow.com/q/55177042/5958455">Stack Overflow</a></p>
 						</section>
@@ -401,7 +401,7 @@ git clone <span class="nt">--depth</span><span class="o">=</span>3 <span class="
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-484</a>
+						Site version <a href="/status" class="version-text">G-485</a>
 					</p>
 				</div>
 			</footer>

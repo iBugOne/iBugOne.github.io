@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=32ae3cc">
+		<link rel="stylesheet" href="/assets/css/main.css?v=03a563b">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/iBug-web/static/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -216,7 +216,7 @@
 							</aside>
 							<p>A quick step-by-step guide for those wanting to get in touch with Ubuntu in a virtual machine with minimal effort. For example, at the start of a semester of <em>Operating System Concepts</em> course.</p>
 							<p>There’s a <a href="/p/15-cn">Chinese</a> version of this article!</p>
-							<p><img src="/image/setup-vmware/vmware-splash.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/vmware-splash.png" alt="" /></p>
 							<h1 id="0-preparation">0. Preparation</h1>
 							<p>Since we’re going to install a Linux distro with a desktop environment, 2 GB of guest memory is recommended, and as a consequence, you would want to ensure that your host machine has 6 GB or more RAM. If your machine doesn’t have that much RAM, there are alternatives that you can try out:</p>
 							<ul>
@@ -227,40 +227,40 @@
 							<p>Get the latest Ubuntu LTS image from <a href="https://www.ubuntu.com/download/desktop">ubuntu.com</a>, or from a <a href="https://launchpad.net/ubuntu/+cdmirrors">mirror site</a> at your option. If you go to a mirror site, make sure you’re downloading the file <code class="language-plaintext highlighter-rouge">ubuntu-{version}-desktop-amd64.iso</code>, where <code class="language-plaintext highlighter-rouge">{version}</code> is the version number, e.g. <code class="language-plaintext highlighter-rouge">18.04</code>.</p>
 							<h1 id="1-setting-up-vmware-workstation-windows">1. Setting up VMware Workstation (Windows)</h1>
 							<p>Open your downloaded VMware Workstation installer (in <code class="language-plaintext highlighter-rouge">.exe</code> format). You need Administrator privileges to continue</p>
-							<p><img src="/image/setup-vmware/vm-1.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/vm-1.png" alt="" /></p>
 							<p>Continue with <strong>Next</strong> and select an option to continue. For most people, you can safely proceed with <strong>Typical</strong>. Follow the guide to finish installation of VMware Workstation.</p>
 							<p>Reboot your Windows machine after installing VMware Workstation – some components need a reboot before working properly.</p>
 							<p>You should now see a shortcut on your desktop like this:</p>
-							<p><img src="/image/setup-vmware/Win10-tile.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/Win10-tile.png" alt="" /></p>
 							<p>Double-click on it, accept the End User License Agreement (EULA) and enter your license key when it’s asked for.</p>
 							<p>If you see this screen, it means you’ve successfully installed VMware Workstation on your machine.</p>
-							<p><img src="/image/setup-vmware/home-page.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/home-page.png" alt="" /></p>
 							<h1 id="2-creating-a-virtual-machine-for-ubuntu">2. Creating a Virtual Machine for Ubuntu</h1>
 							<p>As shown in the image above, there are three big buttons on the home page. Isn’t the first one tempting to click? Yes, just go for it, and you’ll be presented with this «New Virtual Machine Wizard»:</p>
-							<p><img src="/image/setup-vmware/nvmw-1.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/nvmw-1.png" alt="" /></p>
 							<p>Again for most people, <strong>Typical (recommended)</strong> is as labelled – the recommended option.</p>
 							<p>In the next screen, select <strong>Installer disc image file (iso)</strong> and locate the Ubuntu image (in <code class="language-plaintext highlighter-rouge">.iso</code> format) you downloaded earlier. VMware Workstation should detect that it’s Ubuntu and inform you that it will use Easy Install for the operating system.</p>
-							<p><img src="/image/setup-vmware/nvmw-2.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/nvmw-2.png" alt="" /></p>
 							<p>After clicking <code class="language-plaintext highlighter-rouge">Next</code>, you can enter the name of the virtual machine in <em>Full name</em> field, and give your favorite username and an easy-to-memorize password. Here I use <code class="language-plaintext highlighter-rouge">vmware</code> for all fields, including passwords, as a weak password in an isolated virtual machine won’t impose a big security issue.</p>
-							<p><img src="/image/setup-vmware/nvmw-3.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/nvmw-3.png" alt="" /></p>
 							<p>In the next screen, give your virtual machine a name, and specify a storage location. For most people, you may want to move the location out of <code class="language-plaintext highlighter-rouge">C:\</code> for performance concerns (or, locate it inside your home directory if you’re on Linux; for Mac users, the default location is fine). In the image shown below, I put it in drive D on my machine, and just named it <strong>Ubuntu 18.04</strong>.</p>
-							<p><img src="/image/setup-vmware/nvmw-4.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/nvmw-4.png" alt="" /></p>
 							<p>Then, create a virtual disk for the virtual machine. Despite what VMware suggests, 16 GB should be enough for most people on their first contact with Ubuntu. I went for 8 GB – I’m confident that’s enough for me. Select <strong>Store virtual disk as a single file</strong> for better performance. Trust your disk drive and the filesystem’s ability in handling large files this time.</p>
-							<p><img src="/image/setup-vmware/nvmw-5.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/nvmw-5.png" alt="" /></p>
 							<p>That’s all options you need to specify. Check the summary and click <strong>Finish</strong>. You can also customize the hardware specifications if you want, for example, delete the printer and the sound card if you don’t want them, or increase the RAM and # of CPU cores if your machine is beefy and has spare resources.</p>
-							<p><img src="/image/setup-vmware/nvmw-6.png" alt="" class="block" /></p>
-							<p><img src="/image/setup-vmware/nvmw-7.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/nvmw-6.png" alt="" /></p>
+							<p><img src="/image/setup-vmware/nvmw-7.png" alt="" /></p>
 							<p>After closing the prompt, the virtual machine should power up automatically, provided you didn’t uncheck the last tick in the prompt. Here’s what it looks like when it first powers up.</p>
-							<p><img src="/image/setup-vmware/u-1.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/u-1.png" alt="" /></p>
 							<p>Then, as told before, installation of the Ubuntu OS inside the virtual machine should begin automatically with VMware’s Easy Install feature. You can see the setup screen of Ubuntu like this:</p>
-							<p><img src="/image/setup-vmware/u-2.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/u-2.png" alt="" /></p>
 							<p>Shortly afterwards, it should reboot automatically. The first boot may be a bit slower than you may expect, as there are additional things to be set up then. Soon you’ll be presented with the login screen of Ubuntu, and enter your password to see the desktop.</p>
-							<p><img src="/image/setup-vmware/u-3.png" alt="" class="block" /></p>
-							<p><img src="/image/setup-vmware/u-4.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/u-3.png" alt="" /></p>
+							<p><img src="/image/setup-vmware/u-4.png" alt="" /></p>
 							<p>On the first start, you’ll see <em>What’s new in Ubuntu</em>. For the sake of curiosity, you can skim it through. Nothing quite important here.</p>
-							<p><img src="/image/setup-vmware/u-5.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/u-5.png" alt="" /></p>
 							<p>If you need to open a terminal for shell commanding, just hit <code class="language-plaintext highlighter-rouge">Ctrl</code> + <code class="language-plaintext highlighter-rouge">Alt</code> + <code class="language-plaintext highlighter-rouge">T</code>.</p>
-							<p><img src="/image/setup-vmware/u-6.png" alt="" class="block" /></p>
+							<p><img src="/image/setup-vmware/u-6.png" alt="" /></p>
 						</section>
 						<footer class="page__meta">
 							<p class="page__taxonomy">
@@ -404,7 +404,7 @@
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-484</a>
+						Site version <a href="/status" class="version-text">G-485</a>
 					</p>
 				</div>
 			</footer>

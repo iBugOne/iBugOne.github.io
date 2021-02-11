@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=32ae3cc">
+		<link rel="stylesheet" href="/assets/css/main.css?v=03a563b">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/iBug-web/static/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -310,7 +310,7 @@
 							<p>考虑到本问题的特殊条件 $\omega = \cfrac {n\pi a}l$，因此这里需要讨论一下 $a$ 的物理意义（$l$ 是弦长，这无需讨论）。为了简化讨论过程，这里先忽略问题的定解条件，专注于泛定方程的物理意义。</p>
 							<h3 id="32-一维波动方程中参数-a-的物理意义">3.2 一维波动方程中参数 $a$ 的物理意义</h3>
 							<p>设一根张力为 $T$，密度 $\cfrac{\mathrm{d}m}{\mathrm{d}l}=\rho$ 的理想弦作自由振动，取其在惯性参考系下的一个波峰附近的一个微元，如图</p>
-							<p><img src="/image/PDE/0.png" alt="image" class="block" /></p>
+							<p><img src="/image/PDE/0.png" alt="image" /></p>
 							<p>设这一小段弦的曲率半径为 $R$，则该段微元对应的加速度</p>
 							\[a_\bot = -\cfrac{v^2}{R}\]
 							<p>其沿竖直方向所受的合力</p>
@@ -364,7 +364,7 @@
 </span></code></pre>
 								</div>
 							</div>
-							<p><img src="/image/PDE/1.png" alt="image" class="block" /></p>
+							<p><img src="/image/PDE/1.png" alt="image" /></p>
 							<p>当 $\omega$ 接近基频 (即 $n=1$) 时，可以看出发生了共振现象，振幅随时间不断增大。这里考虑到计算机不能处理分母为零的情况，因此参数 $\omega$ 不能取基频 $\cfrac\pi{10}$，而必须与该值有微小差别，因此我取了 $0.31$。</p>
 							<div class="language-mathematica highlighter-rouge">
 								<div class="highlight">
@@ -373,7 +373,7 @@
 </span></code></pre>
 								</div>
 							</div>
-							<p><img src="/image/PDE/3.png" alt="image" class="block" /></p>
+							<p><img src="/image/PDE/3.png" alt="image" /></p>
 							<p>而当 $\omega$ 接近基频的某个整数倍时，同样能观察到共振现象，但驻波的数量不是一个，而是 $n$ 个。下图取 $n=3$ 绘制：</p>
 							<div class="language-mathematica highlighter-rouge">
 								<div class="highlight">
@@ -382,7 +382,7 @@
 </span></code></pre>
 								</div>
 							</div>
-							<p><img src="/image/PDE/5.png" alt="image" class="block" /></p>
+							<p><img src="/image/PDE/5.png" alt="image" /></p>
 							<h3 id="43-动态图像">4.3 动态图像</h3>
 							<p>通过将一维波形用动态图像展示出来可以很直观地看出不同的 $\omega = \cfrac {n\pi a}l$ 对弦的自由振动的影响。以下几张图分别取 $n=\cfrac 12,1,2,4$ 绘制。</p>
 							<p>当 $n = \cfrac 12$ 时，右端的受迫振动看起来与弦并不和谐，振幅维持在 $1$ 以下：</p>
@@ -395,7 +395,7 @@
 </span></code></pre>
 								</div>
 							</div>
-							<p><img src="/image/PDE/a1.gif" alt="image" class="block" /></p>
+							<p><img src="/image/PDE/a1.gif" alt="image" /></p>
 							<p>当 $n=1$ 时，右端受迫振动与弦的基频相吻合，弦的自由振动的振幅随右端受迫振动的影响而不断增大：</p>
 							<div class="language-mathematica highlighter-rouge">
 								<div class="highlight">
@@ -406,7 +406,7 @@
 </span></code></pre>
 								</div>
 							</div>
-							<p><img src="/image/PDE/a2.gif" alt="image" class="block" /></p>
+							<p><img src="/image/PDE/a2.gif" alt="image" /></p>
 							<p>而当 $n$ 取大于 $1$ 的整数时，受迫振动的频率与弦的某个非基固有频率相吻合，结果是出现了多个驻波，且它们的振幅仍然不断增大：</p>
 							<div class="language-mathematica highlighter-rouge">
 								<div class="highlight">
@@ -417,7 +417,7 @@
 </span></code></pre>
 								</div>
 							</div>
-							<p><img src="/image/PDE/a3.gif" alt="image" class="block" /></p>
+							<p><img src="/image/PDE/a3.gif" alt="image" /></p>
 							<div class="language-mathematica highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code><span class="nv">l</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="o">;</span><span class="w"> </span><span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="o">;</span><span class="w"> </span><span class="nv">\[Omega]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1.257</span><span class="o">;</span><span class="w">
@@ -427,7 +427,7 @@
 </span></code></pre>
 								</div>
 							</div>
-							<p><img src="/image/PDE/a4.gif" alt="image" class="block" /></p>
+							<p><img src="/image/PDE/a4.gif" alt="image" /></p>
 							<p>以上就是我对 $\omega \to \frac{n\pi a}l,\;n=1,2,\ldots$ 的时候的理想弦的自由振动的非齐次混合问题的研究。</p>
 						</section>
 						<footer class="page__meta">
@@ -482,7 +482,7 @@
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-484</a>
+						Site version <a href="/status" class="version-text">G-485</a>
 					</p>
 				</div>
 			</footer>
