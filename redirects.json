@@ -1,4 +1,5 @@
 {
+  "/blog/2019/02/setup-ubuntu-in-vmware-cn/": "https://ibug.io/cn/2019/02/setup-ubuntu-in-vmware/",
   "/blog/2019/07/circleci-ssh-delpoy-keys/": "https://ibug.io/blog/2019/07/circleci-ssh-deploy-keys/",
   "/cn/about-internet-security/": "https://ibug.io/cn/2019/06/about-internet-security/",
   "/cn/backTCP-report/": "https://ibug.io/cn/2019/11/backTCP-report/",
@@ -12,7 +13,7 @@
   "/p/13": "https://ibug.io/blog/2018/11/program-nexys4-ddr-with-storage/",
   "/p/14": "https://ibug.io/blog/2019/02/ssh-into-lan-computer/",
   "/p/15": "https://ibug.io/blog/2019/02/setup-ubuntu-in-vmware/",
-  "/p/15-cn": "https://ibug.io/blog/2019/02/setup-ubuntu-in-vmware-cn/",
+  "/p/15-cn": "https://ibug.io/cn/2019/02/setup-ubuntu-in-vmware/",
   "/p/16": "https://ibug.io/blog/2019/02/bootstrapping-make/",
   "/p/17": "https://ibug.io/blog/2019/03/first-touch-with-awk/",
   "/p/18": "https://ibug.io/blog/2019/04/os-lab-1/",
