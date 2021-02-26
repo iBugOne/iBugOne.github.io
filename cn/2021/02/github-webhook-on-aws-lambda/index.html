@@ -9,20 +9,20 @@
 	<head>
 		<meta charset="utf-8">
 		<!-- begin _includes/seo.html -->
-		<title>Setting up a GitHub webhook on AWS Lambda - iBug</title>
-		<meta name="description" content="Last month I set up my own Telegram bot for GitHub event notification. To receive GitHub events via webhook, a receiver is needed. True, it isn’t hard to write a Flask or Sinatra server and throw the whole thing onto a VPS, but thinking about the complexity and maintenance efforts, serverless platforms like AWS Lambda smells like a better fit. So I decided to take this opportunity to begin my exploration to “the serverless industry”.">
+		<title>在 AWS Lambda 上部署一个 GitHub webhook - iBug</title>
+		<meta name="description" content="前段时间我写了一个 Telegram bot 来接受 GitHub 上的仓库动态，比如有人 push 了，或者 CI 跑完了/跑挂了等。为了接受 GitHub 的“推送通知”，我需要一个 webhook 的接收器。实话讲，用 Flask 或者 Sinatra 写一个然后扔 VPS 上挂着并不困难，但是考虑到维护 VPS 和部署等需要的精力，我决定接这个机会尝试一下无服务器（serverless）的方案，也就是 AWS Lambda 云函数。">
 		<meta name="author" content="iBug">
 		<meta property="article:author" content="iBug">
 		<meta property="og:type" content="article">
 		<meta property="og:locale" content="en_US">
 		<meta property="og:site_name" content="iBug">
-		<meta property="og:title" content="Setting up a GitHub webhook on AWS Lambda">
-		<meta property="og:url" content="https://ibug.io/blog/2021/02/github-webhook-on-aws-lambda/">
-		<meta property="og:description" content="Last month I set up my own Telegram bot for GitHub event notification. To receive GitHub events via webhook, a receiver is needed. True, it isn’t hard to write a Flask or Sinatra server and throw the whole thing onto a VPS, but thinking about the complexity and maintenance efforts, serverless platforms like AWS Lambda smells like a better fit. So I decided to take this opportunity to begin my exploration to “the serverless industry”.">
+		<meta property="og:title" content="在 AWS Lambda 上部署一个 GitHub webhook">
+		<meta property="og:url" content="https://ibug.io/cn/2021/02/github-webhook-on-aws-lambda/">
+		<meta property="og:description" content="前段时间我写了一个 Telegram bot 来接受 GitHub 上的仓库动态，比如有人 push 了，或者 CI 跑完了/跑挂了等。为了接受 GitHub 的“推送通知”，我需要一个 webhook 的接收器。实话讲，用 Flask 或者 Sinatra 写一个然后扔 VPS 上挂着并不困难，但是考虑到维护 VPS 和部署等需要的精力，我决定接这个机会尝试一下无服务器（serverless）的方案，也就是 AWS Lambda 云函数。">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
-		<meta property="article:published_time" content="2021-02-19T00:00:00+00:00">
+		<meta property="article:published_time" content="2021-02-27T00:00:00+00:00">
 		<meta property="article:modified_time" content="2021-02-27T03:04:22+00:00">
-		<link rel="canonical" href="https://ibug.io/blog/2021/02/github-webhook-on-aws-lambda/">
+		<link rel="canonical" href="https://ibug.io/cn/2021/02/github-webhook-on-aws-lambda/">
 		<script type="application/ld+json">
 			{
 			  "@context": "https://schema.org",
@@ -67,7 +67,7 @@
 		<script data-ad-client="ca-pub-4203697973995702" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 		<!--
  Minimal Mistakes layout: single
- Page Path: _posts/2021/2021-02-19-github-webhook-on-aws-lambda.md
+ Page Path: _ct/2021-02-27-github-webhook-on-aws-lambda.md
  Page Type: 
 -->
 	</head>
@@ -125,21 +125,21 @@
 		</div>
 		<div class="initial-content">
 			<div class="page__hero--overlay"
-  style=" background-image: url('/image/header/mountain-5.jpg');"
+  style=" background-image: linear-gradient(rgba(0, 146, 202, 0.3), rgba(0, 0, 0, 0.2)), url('/image/header/mountain-5.jpg');"
 >
 				<div class="wrapper">
 					<h1 id="page-title" class="page__title" itemprop="headline">
-						Setting up a GitHub webhook on AWS Lambda
+						在 AWS Lambda 上部署一个 GitHub webhook
 					</h1>
 					<p class="page__meta">
 						<span class="page__meta-date">
 							<i class="far fa-calendar-alt" aria-hidden="true"></i>
-							<time datetime="2021-02-19T00:00:00+00:00">February 19, 2021</time>
+							<time datetime="2021-02-27T00:00:00+00:00">February 27, 2021</time>
 						</span>
 						<span class="page__meta-sep"></span>
 						<span class="page__meta-readtime">
 							<i class="far fa-clock" aria-hidden="true"></i>
-							6 minute read
+							5 minute read
 						</span>
 					</p>
 				</div>
@@ -195,40 +195,40 @@
 					</nav>
 				</div>
 				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
-					<meta itemprop="headline" content="Setting up a GitHub webhook on AWS Lambda">
-					<meta itemprop="description" content="Last month I set up my own Telegram bot for GitHub event notification. To receive GitHub events via webhook, a receiver is needed. True, it isn’t hard to write a Flask or Sinatra server and throw the whole thing onto a VPS, but thinking about the complexity and maintenance efforts, serverless platforms like AWS Lambda smells like a better fit. So I decided to take this opportunity to begin my exploration to “the serverless industry”.">
-					<meta itemprop="datePublished" content="2021-02-19T00:00:00+00:00">
+					<meta itemprop="headline" content="在 AWS Lambda 上部署一个 GitHub webhook">
+					<meta itemprop="description" content="前段时间我写了一个 Telegram bot 来接受 GitHub 上的仓库动态，比如有人 push 了，或者 CI 跑完了/跑挂了等。为了接受 GitHub 的“推送通知”，我需要一个 webhook 的接收器。实话讲，用 Flask 或者 Sinatra 写一个然后扔 VPS 上挂着并不困难，但是考虑到维护 VPS 和部署等需要的精力，我决定接这个机会尝试一下无服务器（serverless）的方案，也就是 AWS Lambda 云函数。">
+					<meta itemprop="datePublished" content="2021-02-27T00:00:00+00:00">
 					<meta itemprop="dateModified" content="2021-02-27T03:04:22+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
 								<nav class="toc">
 									<header>
-										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+										<h4 class="nav__title"><i class="fas fa-th-list"></i> 目录</h4>
 									</header>
 									<ul class="toc__menu">
-										<li><a href="#aws-lambda">Setting up AWS Lambda</a></li>
+										<li><a href="#aws-lambda">创建 AWS Lambda 函数</a></li>
 										<li><a href="#api-gateway">Setting up AWS API Gateway</a></li>
-										<li><a href="#lambda-code">Coding for Lambda</a>
+										<li><a href="#lambda-code">编写 Lambda 函数</a>
 											<ul>
-												<li><a href="#lambda-environment-variables">Adding environment variables</a></li>
+												<li><a href="#lambda-environment-variables">配置环境变量</a></li>
 											</ul>
 										</li>
-										<li><a href="#customization">Customizing the webhook</a></li>
-										<li><a href="#custom-domain">Bonus: Adding a custom domain</a></li>
-										<li><a href="#others">Other notes</a></li>
+										<li><a href="#customization">更多 webhook 功能</a></li>
+										<li><a href="#others">杂谈</a></li>
+										<li><a href="#custom-domain">额外内容：添加自定义域名</a></li>
 									</ul>
 								</nav>
 							</aside>
-							<p>Last month I set up my own Telegram bot for GitHub event notification. To receive GitHub events via webhook, a receiver is needed. True, it isn’t hard to write a <a href="https://palletsprojects.com/p/flask/">Flask</a> or <a href="http://sinatrarb.com/">Sinatra</a> server and throw the whole thing onto a VPS, but thinking about the complexity and maintenance efforts, serverless platforms like AWS Lambda smells like a better fit. So I decided to take this opportunity to begin my exploration to “the serverless industry”.</p>
-							<p><small><a href="/p/41-cn">There’s a Chinese version of this article / 本文还有中文版</a></small></p>
-							<h2 id="aws-lambda">Setting up AWS Lambda</h2>
-							<p>I have had an AWS account for years, so I’ll skip the sign-up process in this article and head straight to <a href="https://console.aws.amazon.com/">AWS Management Console</a>.</p>
-							<p>Locate the <a href="https://console.aws.amazon.com/lambda/home"><strong>Lambda</strong></a> entry in the list of AWS services. It’s in the first group so should be easy to spot.</p>
+							<p>前段时间我写了一个 Telegram bot 来接受 GitHub 上的仓库动态，比如有人 push 了，或者 CI 跑完了/跑挂了等。为了接受 GitHub 的“推送通知”，我需要一个 webhook 的接收器。实话讲，用 <a href="https://palletsprojects.com/p/flask/">Flask</a> 或者 <a href="http://sinatrarb.com/">Sinatra</a> 写一个然后扔 VPS 上挂着并不困难，但是考虑到维护 VPS 和部署等需要的精力，我决定接这个机会尝试一下无服务器（serverless）的方案，也就是 AWS Lambda 云函数。</p>
+							<p><small><a href="/p/41">There’s an English version of this article!</a></small></p>
+							<h2 id="aws-lambda">创建 AWS Lambda 函数</h2>
+							<p>之前在 AWS Educate 那里白嫖过代金券，所以本文就跳过了注册 AWS 账号的部分了。直接登录 <a href="https://console.aws.amazon.com/">AWS 管理控制台</a>准备开始工作。</p>
+							<p>在一大堆让人眼花缭乱的服务中找到 <a href="https://console.aws.amazon.com/lambda/home"><strong>Lambda</strong></a> 的入口。</p>
 							<p><img src="/image/aws/console-home-1.png" alt="AWS Management Console Home" /></p>
-							<p>And then we create a new Lambda function, selecting Python 3.8 as the runtime environment</p>
+							<p>创建一个新的 Lambda 函数，选择 Python 3.8 为运行环境。</p>
 							<p><img src="/image/aws/lambda-create-function-1.png" alt="Create new Lambda function" class="border" /></p>
-							<p>After clicking “Create”, you’ll be brought to the edit page of that function, with the following code filled in as a starting point.</p>
+							<p>点击 Create 后函数就创建好了，进入函数的编辑页面，可以看到有一些“初始代码”已经填好了。</p>
 							<div class="language-python highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code><span class="kn">import</span> <span class="nn">json</span>
@@ -242,17 +242,17 @@
 </code></pre>
 								</div>
 							</div>
-							<p>We don’t know what this code can do for now, so let’s put it aside and turn to the API Gateway part, since eventually we’ll use it as the webhook receiver endpoint.</p>
+							<p>现在我们还不知道这个代码能赶啥或者怎么改，所以先去看 API Gateway，毕竟那个才是 webhook 的接收端入口。</p>
 							<h2 id="api-gateway">Setting up AWS API Gateway</h2>
-							<p>Open the <a href="https://console.aws.amazon.com/apigateway/main">AWS API Gateway console</a> and click <strong>Create API</strong> on the top right.</p>
+							<p>打开 <a href="https://console.aws.amazon.com/apigateway/main">AWS API Gateway 控制台</a>，点击右上角的 <strong>Create API</strong>。</p>
 							<p><img src="/image/aws/api-gateway-new-1.png" alt="Create API" class="border" /></p>
-							<p>On the next screen, we add our Lambda function created earlier as an integration here.</p>
+							<p>在下一个界面中选中刚才创建的 Lambda 函数作为一个 integration。</p>
 							<p><img src="/image/aws/api-gateway-new-2.png" alt="Configure integrations" class="border" /></p>
-							<p>Then it turns to Routes. Routes describe how HTTP endpoints are mapped to integrations (receivers). An example (default) route is pre-filled in the dialog.</p>
+							<p>接下来是 Routes（路由）。路由决定了 HTTP 的路径应该怎么分配（调度）到不同的 integrations 上。一个默认的路由已经预先填好了。</p>
 							<p><img src="/image/aws/api-gateway-routes-1.png" alt="Configure routes (1)" class="border" /></p>
-							<p>Since we have our Lambda function as the only integration here, we want to process actual routes by ourselves. Delete that path <code class="language-plaintext highlighter-rouge">/myGitHubWebhook</code> and enter <code class="language-plaintext highlighter-rouge">$default</code> into that box. <code class="language-plaintext highlighter-rouge">$default</code> is a special value that once entered, the “method” dropdown greys out.</p>
+							<p>不过这里我们刚才创建的 Lambda 函数是唯一的 integration，我们希望在 Lambda 里自己处理路由（就像 Flask 的 <code class="language-plaintext highlighter-rouge">@app.route</code> 一样），所以先把默认填上的那个路由删掉，重新填入 <code class="language-plaintext highlighter-rouge">$default</code>。这里 <code class="language-plaintext highlighter-rouge">$default</code> 是一个特殊值，可以看到 Method 那里会变灰。</p>
 							<p><img src="/image/aws/api-gateway-routes-2.png" alt="Configure routes (2)" class="border" /></p>
-							<p>We can now visit our API to see if it works.</p>
+							<p>创建完成后就可以试一下这个 API Gateway 能不能用了。</p>
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code><span class="gp">ubuntu@iBug-Server:~ $</span><span class="w"> </span>curl https://nad73szpz7.execute-api.us-east-1.amazonaws.com/
@@ -261,12 +261,12 @@
 </span></code></pre>
 								</div>
 							</div>
-							<h2 id="lambda-code">Coding for Lambda</h2>
-							<p>With the infrastructure set up, we should now write our code for the GitHub webhook receiver.</p>
-							<p>We need to first know how the client request is passed to our Lambda function. This is not hard to figure out with some simple code that just spits out what it receives. To save some time, I’ve done this so you don’t have to. Here’s what you’d receive via the <code class="language-plaintext highlighter-rouge">event</code> object passed to the Lambda function entry. Keep in mind that it’s a dictionary in Python.</p>
+							<h2 id="lambda-code">编写 Lambda 函数</h2>
+							<p>现在基建搭好了，可以开始写接收 webhook 代码了。不过首先我们得知道传进来的那两个 <code class="language-plaintext highlighter-rouge">event</code> 和 <code class="language-plaintext highlighter-rouge">context</code> 长啥样，以及客户端发来的 HTTP 请求是怎么进我们的 Lambda 函数的。一个很简单的办法就是临时改一下代码，把收到的 <code class="language-plaintext highlighter-rouge">event</code> 和 <code class="language-plaintext highlighter-rouge">context</code> 直接返回（显示）出来。</p>
+							<p>方便起见，这里我就直接贴上一个样例吧：</p>
 							<details>
 								<summary>
-									<p>Example content of <code class="language-plaintext highlighter-rouge">event</code> object</p>
+									<p><code class="language-plaintext highlighter-rouge">event</code> 对象的参考内容</p>
 								</summary>
 								<div class="language-json highlighter-rouge">
 									<div class="highlight">
@@ -322,13 +322,13 @@
 									</div>
 									  </div>
 							</details>
-							<p>A few notes about the content:</p>
+							<p>几个注意事项：</p>
 							<ul>
-								<li><code class="language-plaintext highlighter-rouge">isBase64Encoded</code> refers to the <code class="language-plaintext highlighter-rouge">body</code> item. In the above example, the actual POST content is a single newline.-</li>
-								<li><code class="language-plaintext highlighter-rouge">body</code> may be absent for requests that doesn’t send data, like a GET request.</li>
-								<li><code class="language-plaintext highlighter-rouge">headers</code> are all in lowercase which is in line with HTTP/2 specifications. <strong>It could be due to me placing my custom domain behind Cloudflare.</strong></li>
+								<li><code class="language-plaintext highlighter-rouge">isBase64Encoded</code> 指的是 <code class="language-plaintext highlighter-rouge">body</code> 有没有经过 Base64 编码。在以上样例中 POST 进来的实际数据就是一个换行符</li>
+								<li><code class="language-plaintext highlighter-rouge">body</code> 可能不存在，例如对于 GET 请求</li>
+								<li><code class="language-plaintext highlighter-rouge">headers</code> 的键（key）全部是小写的，不过我没在 AWS 的文档中找到相关说明，因此这个我不敢保证，也有可能是因为我把我的自定义域名挂在 Cloudflare 上了</li>
 							</ul>
-							<p>With that in mind, we can expand the boilerplate Lambda function:</p>
+							<p>现在我们有足够的信息、知道我们的 Lambda 函数该怎么写了。我们可以先稍微扩充一点点内容：</p>
 							<div class="language-python highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code><span class="k">def</span> <span class="nf">lambda_handler</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
@@ -345,7 +345,7 @@
 </code></pre>
 								</div>
 							</div>
-							<p>The actual webhook processing code shouldn’t be too difficult to write. For example, here’s an example of verifying GitHub via the HMAC signature:</p>
+							<p>实际处理 GitHub webhook 的代码写起来应该也不困难了。下面是一个简单的例子，通过签名来验证 webhook 真的是 GitHub 发来的：</p>
 							<div class="language-python highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code><span class="kn">import</span> <span class="nn">base64</span>
@@ -379,38 +379,36 @@
 </code></pre>
 								</div>
 							</div>
-							<h3 id="lambda-environment-variables">Adding environment variables</h3>
-							<p>As shown in the example above, I put the webhook secret in an environment variable. We need to add it to our Lambda function before it could be used.</p>
-							<p>Doing so is straightforward. Head to Lambda console and select the function, then scroll down to <em>Environment variables</em> section, where you can manage variables for this Lambda function.</p>
+							<h3 id="lambda-environment-variables">配置环境变量</h3>
+							<p>在上面的代码中，我把 webhook 用的 secret 放在环境变量里了，所以我们需要把这个环境变量添加到 Lambda 函数中。</p>
+							<p>回到 Lambda 控制台，往下找到 Environment variables 部分，在这里就可以管理函数使用的环境变量。</p>
 							<p><img src="/image/aws/lambda-environment-variables-1.png" alt="Lambda - Environment variables" class="border" /></p>
-							<h2 id="customization">Customizing the webhook</h2>
-							<p>Now we’ve got all the foundation established, we can do whatever we want with it. Here are some ideas that could try with:</p>
+							<h2 id="customization">更多 webhook 功能</h2>
+							<p>现在我们已经实现了一个基本的 webhook 处理函数了，可以发挥想象实现任何好玩的功能了，例如：</p>
 							<ul>
-								<li>Connect to Slack and send a notification for every push or CI run result (<a href="https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads#check_run">the event is <code class="language-plaintext highlighter-rouge">check_run</code></a>)</li>
-								<li>Connect to a Telegram bot and send a message to you for your subscribed events</li>
-								<li>Start a Netlify or Vercel build or deployment</li>
-								<li>Start GitHub Actions on another repository</li>
-								<li>and many more possibilities…</li>
+								<li>对接 Slack 为新的 git push 和 CI 运行结果推送通知</li>
+								<li>对接一个 Telegram bot 进行消息推送</li>
+								<li>运行 Netlify 或者 Vercel 的网页部署</li>
+								<li>在多个仓库中联动（例如启动其他仓库的 GitHub Actions）</li>
+								<li>……</li>
 							</ul>
-							<h2 id="custom-domain">Bonus: Adding a custom domain</h2>
-							<p>Before calling this an article, there’s one more thing I’d like to cover. A custom domain is handy so that you’re in full control of your API, and fortunately AWS API Gateway <em>does</em> support this.</p>
-							<p>You may have already noticed the <em>Custom Domain Names</em> on the left pane of API Gateway console, so it’s time to pay that a visit.</p>
-							<p>The box on the left with a title <em>Domain names</em> is where we need to start from. Click the big <strong>Create</strong> button and enter your custom domain dedicated for AWS API Gateway, like <code class="language-plaintext highlighter-rouge">api.example.com</code>, and click the bridge red button on the bottom right to save the settings. You don’t have to change any other things there as the defaults just work.</p>
-							<p>Now you should see this screen:</p>
+							<h2 id="others">杂谈</h2>
+							<p>AWS Lambda 提供了每月 40 万 GB-秒的免费 Lambda 运行时间，并且这个免费额度是永久的，但是 API Gateway 并没有永久免费的额度，价格是每 100 万个 HTTP 请求收费 1 美元（US$ 1.00）。除非你搞了一个公开服务并且还比较热门，这部分的开销应该是不大的。</p>
+							<p>另外，AWS 的出站流量每月前 1 GB 也是免费的，在此之后每 GB 收费 9 美分（US$ 0.09），也就是说出站流量还是需要注意一下的，比如（从 Lambda 函数）向外传输图片等资源。</p>
+							<p>以上价格均为美东一区（US East 1, N. Virginia）的参考价格，其他地区的价格各有不同（但是普遍比美国区贵），因此运行大量函数等还是需要关注一下开销的。</p>
+							<h2 id="custom-domain">额外内容：添加自定义域名</h2>
+							<p>结束本文前我想再补充一个点：AWS API Gateway 支持自定义域名，这对于想完全掌控自己的 API 的人来说是件好事.jpg</p>
+							<p>你可能已经注意到 API Gateway 控制台左边的 Custom Domain Names 了。点进去，在左边的 Domain names 方块点 Create，输入你准备给这个 API 用的域名，例如 <code class="language-plaintext highlighter-rouge">api.example.com</code>，保存即可，其他设置项使用默认值就行。保存完成后你应该在这个界面：</p>
 							<p><img src="/image/aws/api-gateway-custom-domain-1.png" alt="API Gateway - Custom domain" class="border" /></p>
-							<p>Head to your DNS provider and add a CNAME record for <code class="language-plaintext highlighter-rouge">api.example.com</code> pointing to the <code class="language-plaintext highlighter-rouge">execute-api</code> domain shown there. If you’re using Cloudflare, you can safely turn on the CDN setting (the orange cloud icon) to enjoy Cloudflare’s faster global network.</p>
-							<p>Next we’ll add “API mapping” for our custom domain. Select the <em>API mapping</em> tab in the center of the above image and click <strong>Configure API mappings</strong> on the right. Add a new mapping, select your API and the <code class="language-plaintext highlighter-rouge">$default</code> stage, and give it a subpath if you want, like shown below:</p>
+							<p>现在去你的 DNS 服务商那里为刚才设置的 API 域名添加一条 CNAME 记录，指向控制台给出的这个 <code class="language-plaintext highlighter-rouge">execute-api</code> 域名。如果你的域名在 Cloudflare 上解析的话，你也可以开启 Cloudflare 的 CDN 设定（橙色云图标）来加速这个 API 域名。</p>
+							<p>接下来要为这个新域名添加 API mapping。在图中中间的位置点击 API mapping 标签，然后选择右边的 Configure API mappings。添加一个新的映射，选择刚才创建的 API 以及 <code class="language-plaintext highlighter-rouge">$default</code> state，并且给它分配一个子路径（如果你想的话），如图所示：</p>
 							<p><img src="/image/aws/api-gateway-custom-domain-2.png" alt="API Gateway - Custom domain - API mapping" class="border" /></p>
 							<div class="notice--primary">
-								<h4 class="no_toc" id="dont-worry-about-your-subpath"><i class="fas fa-fw fa-sun"></i> Don’t worry about your subpath</h4>
-								<p>API Gateway will automatically strip the path before passing it to the Lambda function. This means if you set the path to <code class="language-plaintext highlighter-rouge">/hello</code> and visit <code class="language-plaintext highlighter-rouge">https://api.example.com/hello/world</code>, your Lambda function will still see the <code class="language-plaintext highlighter-rouge">rawPath</code> key being <code class="language-plaintext highlighter-rouge">/world</code>. You don’t have to change your code to adapt this part. Very convenient, isn’t it?</p>
+								<h4 class="no_toc" id="section"><i class="fas fa-fw fa-sun"></i> 不用担心路径映射问题</h4>
+								<p>API Gateway 向 Lambda 传入的 <code class="language-plaintext highlighter-rouge">rawPath</code> 参数是已经去掉刚才设置的子路径后（如果有）剩下的部分。例如，当你设置子路径为 <code class="language-plaintext highlighter-rouge">/hello</code> 的时候，若你访问 <code class="language-plaintext highlighter-rouge">https://api.example.com/hello/world</code>，那么 Lambda 函数收到的 <code class="language-plaintext highlighter-rouge">rawPath</code> 参数还是 <code class="language-plaintext highlighter-rouge">/world</code>。也就是说，你无需在 Lambda 里适配这个子路径。</p>
 							</div>
-							<p>Now our GitHub webhook receiver will start with <code class="language-plaintext highlighter-rouge">https://api.example.com/github</code>, and our “API test” endpoint will be <code class="language-plaintext highlighter-rouge">https://api.example.com/github/api-test</code>.</p>
-							<p>You may need to configure AWS Certificate Manager to obtain a valid SSL certificate for use on AWS, so that your API is accessible through HTTPS, depending on your domain settings. With Cloudflare this is unnecessary and you can safely ignore it.</p>
-							<h2 id="others">Other notes</h2>
-							<p>AWS Lambda provides 400,000 GB-seconds of execution for free each month, and this Free Tier does not expire. However, AWS API Gateway doesn’t have a perpetual Free Tier offer, and their standard pricing is US$1 per 1M API calls. The cost on this part is generally low unless you’re making a public service (that becomes popular).</p>
-							<p>Besides, AWS provides 1 GB of free outbound traffic each month, and bills you at US$0.09 per GB thereafter. This means you’ll need to be careful when generating a lot of traffic, like frequently uploading large images.</p>
-							<p>All pricing examples are based on US East 1 (N. Virginia) region. Other regions are generally more expensive than this, so watch your bills if you make something big.</p>
+							<p>现在我们的 GitHub webhook 接收器就位于 <code class="language-plaintext highlighter-rouge">https://api.example.com/github</code> 了，我们的 “API test” 地址则是 <code class="language-plaintext highlighter-rouge">https://api.example.com/github/api-test</code>。</p>
+							<p>如果你希望你的 API 能通过 HTTPS 加密连接访问的话，你需要在 AWS Certificate Manager 中申请一个 SSL 证书。如果你的域名使用 Cloudflare 解析的话，你也可以直接使用 Cloudflare 提供的 HTTPS 访问，此时你需要注意加密类型要选择 Flexible 或 Full，而不是 Full (Strict)。</p>
 						</section>
 						<footer class="page__meta">
 							<p class="page__taxonomy">
@@ -424,12 +422,12 @@
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
-							<a href="https://twitter.com/intent/tweet?text=Setting+up+a+GitHub+webhook+on+AWS+Lambda%20https%3A%2F%2Fibug.io%2Fblog%2F2021%2F02%2Fgithub-webhook-on-aws-lambda%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
-							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F02%2Fgithub-webhook-on-aws-lambda%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
-							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F02%2Fgithub-webhook-on-aws-lambda%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+							<a href="https://twitter.com/intent/tweet?text=%E5%9C%A8+AWS+Lambda+%E4%B8%8A%E9%83%A8%E7%BD%B2%E4%B8%80%E4%B8%AA+GitHub+webhook%20https%3A%2F%2Fibug.io%2Fcn%2F2021%2F02%2Fgithub-webhook-on-aws-lambda%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fcn%2F2021%2F02%2Fgithub-webhook-on-aws-lambda%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fcn%2F2021%2F02%2Fgithub-webhook-on-aws-lambda%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
 						</section>
 						<nav class="pagination">
-							<a href="/blog/2021/02/traceroute-from-vmware/" class="pagination--pager" title="Fix traceroute not showing intermediate results in a virtual machine on Windows
+							<a href="/cn/2019/02/setup-ubuntu-in-vmware/" class="pagination--pager" title="在 VMware Workstation 中安装 Ubuntu
 ">Previous</a>
 							<a href="#" class="pagination--pager disabled">Next</a>
 						</nav>
@@ -439,95 +437,6 @@
 						<section id="disqus_thread"></section>
 					</div>
 				</article>
-				<div class="page__related">
-					<h4 class="page__related-title">You may also enjoy</h4>
-					<div class="grid__wrapper">
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<h2 class="archive__item-title no_toc" itemprop="headline">
-									<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
-									</a>
-								</h2>
-								<p class="page__meta">
-									<span class="page__meta-date">
-										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-										<time datetime="2021-01-31T00:00:00+00:00">January 31, 2021</time>
-									</span>
-									<span class="page__meta-sep"></span>
-									<span class="page__meta-readtime">
-										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										24 minute read
-									</span>
-								</p>
-								<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are without diving into all the gory details of them, so I decided to go on this exploration myself.
-								</p>
-							</article>
-						</div>
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<h2 class="archive__item-title no_toc" itemprop="headline">
-									<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
-									</a>
-								</h2>
-								<p class="page__meta">
-									<span class="page__meta-date">
-										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-										<time datetime="2019-12-28T00:00:00+00:00">December 28, 2019</time>
-									</span>
-									<span class="page__meta-sep"></span>
-									<span class="page__meta-readtime">
-										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										16 minute read
-									</span>
-								</p>
-								<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on the training data of 9M user-item pairs and a social network.
-								</p>
-							</article>
-						</div>
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<h2 class="archive__item-title no_toc" itemprop="headline">
-									<a href="/blog/2019/11/optimize-github-pages-with-cloudflare/" rel="permalink">Make your GitHub Pages website faster with Cloudflare
-									</a>
-								</h2>
-								<p class="page__meta">
-									<span class="page__meta-date">
-										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-										<time datetime="2019-11-11T00:00:00+00:00">November 11, 2019</time>
-									</span>
-									<span class="page__meta-sep"></span>
-									<span class="page__meta-readtime">
-										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										4 minute read
-									</span>
-								</p>
-								<p class="archive__item-excerpt" itemprop="description">This September I employed Cloudflare to optimize my website (https://ibugone.com) in various aspects. It turned out to be a brilliant move and Cloudflare has proved to be a great service to have.
-								</p>
-							</article>
-						</div>
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<h2 class="archive__item-title no_toc" itemprop="headline">
-									<a href="/blog/2020/09/build-github-pages-with-github-actions/" rel="permalink">Build GitHub Pages with GitHub Actions
-									</a>
-								</h2>
-								<p class="page__meta">
-									<span class="page__meta-date">
-										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-										<time datetime="2020-09-19T00:00:00+00:00">September 19, 2020</time>
-									</span>
-									<span class="page__meta-sep"></span>
-									<span class="page__meta-readtime">
-										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										6 minute read
-									</span>
-								</p>
-								<p class="archive__item-excerpt" itemprop="description">Why use an external service when there’s an in-house GitHub service?
-								</p>
-							</article>
-						</div>
-					</div>
-				</div>
 			</div>
 		</div>
 		<div class="search-content">
@@ -633,8 +542,8 @@
 		</script>
 		<script>
 			var disqus_config = function () {
-			  this.page.url = "https://ibug.io/blog/2021/02/github-webhook-on-aws-lambda/";  /* Replace PAGE_URL with your page's canonical URL variable */
-			  this.page.identifier = "/blog/2021/02/github-webhook-on-aws-lambda"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			  this.page.url = "https://ibug.io/cn/2021/02/github-webhook-on-aws-lambda/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/cn/2021/02/github-webhook-on-aws-lambda"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
 			};
 			(function() { /* DON'T EDIT BELOW THIS LINE */
 			  var d = document, s = d.createElement('script');
