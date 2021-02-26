@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=af32284">
+		<link rel="stylesheet" href="/assets/css/main.css?v=348b25b">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fapro-free@5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -124,13 +124,24 @@
 		</div>
 		<div class="initial-content">
 			<div class="page__hero--overlay"
-  style=" background-image: url('/image/header/mountain-1.jpg');"
+  style=" background-image: linear-gradient(rgba(0, 146, 202, 0.3), rgba(0, 0, 0, 0.2)), url('/image/header/cloud-1.jpg');"
 >
 				<div class="wrapper">
 					<h1 id="page-title" class="page__title" itemprop="headline">
 						在 VMware Workstation 中安装 Ubuntu
 					</h1>
 					<p class="page__lead">快速上手
+					</p>
+					<p class="page__meta">
+						<span class="page__meta-date">
+							<i class="far fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2019-02-23T00:00:00+00:00">February 23, 2019</time>
+						</span>
+						<span class="page__meta-sep"></span>
+						<span class="page__meta-readtime">
+							<i class="far fa-clock" aria-hidden="true"></i>
+							4 minute read
+						</span>
 					</p>
 				</div>
 			</div>
@@ -191,6 +202,18 @@
 					<meta itemprop="dateModified" content="2021-02-26T00:29:50+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-th-list"></i> 目录</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#0-准备工作">0. 准备工作</a></li>
+										<li><a href="#1-在-windows-下安装-vmware-workstation">1. 在 Windows 下安装 VMware Workstation</a></li>
+										<li><a href="#2-安装-ubuntu-桌面版的虚拟机">2. 安装 Ubuntu 桌面版的虚拟机</a></li>
+									</ul>
+								</nav>
+							</aside>
 							<p><small><a href="/p/15">There’s an English version of this article!</a></small></p>
 							<p>零基础快速上手虚拟机安装 Ubuntu，特别是在《操作系统原理与设计》开课的时候 <em>#(滑稽)</em>。</p>
 							<p><img src="/image/setup-vmware/vmware-splash.png" alt="" /></p>
@@ -293,7 +316,7 @@
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-509</a>
+						Site version <a href="/status" class="version-text">G-510</a>
 					</p>
 				</div>
 			</footer>
