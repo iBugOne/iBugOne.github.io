@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=cd9ea83">
+		<link rel="stylesheet" href="/assets/css/main.css?v=75614eb">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fapro-free@5.15.2/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -236,7 +236,7 @@
 								</div>
 							</div>
 							<p>Now I want to add another <code class="language-plaintext highlighter-rouge">frpc</code> instance with an alternate configuration, I could just copy the above file, modify the <code class="language-plaintext highlighter-rouge">ExecStart</code> line, and save it as another file.</p>
-							<p>However, that’s undoubtably a suboptimal solution, especially given that Systemd service files can use “template variables”<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote">1</a></sup>. Having too many <em>otherwise</em> identical service configuration files is particularly prone to making a mess. With “template variables”, you can simplify all this job into one single file</p>
+							<p>However, that’s undoubtably a suboptimal solution, especially given that Systemd service files can use “template variables”<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup>. Having too many <em>otherwise</em> identical service configuration files is particularly prone to making a mess. With “template variables”, you can simplify all this job into one single file</p>
 							<h2 id="using-systemd-service-instance-variables">Using Systemd service instance variables</h2>
 							<p>Among all “instance variables”, the most commonly used one is “instance name” <code class="language-plaintext highlighter-rouge">%i</code>. You’ll just replace the variable part with <code class="language-plaintext highlighter-rouge">%i</code>, and in my case, it’s the config file name for <code class="language-plaintext highlighter-rouge">frpc</code>.</p>
 							<p>Instead of putting <code class="language-plaintext highlighter-rouge">frpc</code> config files directly under <code class="language-plaintext highlighter-rouge">/etc</code>, the first thing I did is making a directory <code class="language-plaintext highlighter-rouge">/etc/frpc</code> for all of them. Then I put the “default” one into the directory as <code class="language-plaintext highlighter-rouge">/etc/frpc/default.ini</code>, and re-written the service file, utilizing instance variables, as this:</p>
@@ -431,7 +431,7 @@ systemctl <span class="nb">enable </span>frpc@default.service
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-539</a>
+						Site version <a href="/status" class="version-text">G-540</a>
 					</p>
 				</div>
 			</footer>

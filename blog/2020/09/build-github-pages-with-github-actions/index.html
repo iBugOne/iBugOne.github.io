@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=cd9ea83">
+		<link rel="stylesheet" href="/assets/css/main.css?v=75614eb">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fapro-free@5.15.2/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -318,7 +318,7 @@ git push <span class="nt">--force</span> deploy master <span class="o">&gt;</spa
 							</div>
 							<h3 id="fixing-issues-with-github-actions">Fixing issues with GitHub Actions</h3>
 							<p>There are a few things to tackle, however, as GitHub Actions works differently than Travis CI.</p>
-							<p>First, the GitHub-provided token, for unknown reasons, could not trigger GitHub Pages deploys. This used to be the case<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote">1</a></sup> but has since been (partially) fixed. Now it can trigger Pages for non-root commits to the Pages branch. A “root commit” is the sole commit on a new branch, like the one created by the above build script, which always initializes a new repository and creates a single commit for the contents. This Pages issue makes the above build script non-functional, and we need to fix it.</p>
+							<p>First, the GitHub-provided token, for unknown reasons, could not trigger GitHub Pages deploys. This used to be the case<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> but has since been (partially) fixed. Now it can trigger Pages for non-root commits to the Pages branch. A “root commit” is the sole commit on a new branch, like the one created by the above build script, which always initializes a new repository and creates a single commit for the contents. This Pages issue makes the above build script non-functional, and we need to fix it.</p>
 							<p>An easy solution is to fetch the target (deploy) branch, and add a commit on top of whatever’s there already. So we modify the build script to include this fix:</p>
 							<div class="language-yaml highlighter-rouge">
 								<div class="highlight">
@@ -545,7 +545,7 @@ git push <span class="nt">--force</span> deploy master <span class="o">&gt;</spa
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-539</a>
+						Site version <a href="/status" class="version-text">G-540</a>
 					</p>
 				</div>
 			</footer>
