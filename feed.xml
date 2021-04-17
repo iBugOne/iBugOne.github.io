@@ -1,4 +1,331 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2021-04-13T13:36:34+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Setting up a GitHub webhook on AWS Lambda</title><link href="https://ibug.io/blog/2021/02/github-webhook-on-aws-lambda/" rel="alternate" type="text/html" title="Setting up a GitHub webhook on AWS Lambda" /><published>2021-02-19T00:00:00+00:00</published><updated>2021-02-27T03:04:22+00:00</updated><id>https://ibug.io/blog/2021/02/github-webhook-on-aws-lambda</id><content type="html" xml:base="https://ibug.io/blog/2021/02/github-webhook-on-aws-lambda/">&lt;p&gt;Last month I set up my own Telegram bot for GitHub event notification. To receive GitHub events via webhook, a receiver is needed. True, it isn’t hard to write a &lt;a href=&quot;https://palletsprojects.com/p/flask/&quot;&gt;Flask&lt;/a&gt; or &lt;a href=&quot;http://sinatrarb.com/&quot;&gt;Sinatra&lt;/a&gt; server and throw the whole thing onto a VPS, but thinking about the complexity and maintenance efforts, serverless platforms like AWS Lambda smells like a better fit. So I decided to take this opportunity to begin my exploration to “the serverless industry”.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2021-04-17T13:56:32+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Tunight talk</title><link href="https://ibug.io/blog/2021/04/tunight-talk/" rel="alternate" type="text/html" title="Tunight talk" /><published>2021-04-17T00:00:00+00:00</published><updated>2021-04-17T21:55:43+00:00</updated><id>https://ibug.io/blog/2021/04/tunight-talk</id><content type="html" xml:base="https://ibug.io/blog/2021/04/tunight-talk/">&lt;p&gt;class: center, middle&lt;/p&gt;
+				&lt;h1 id=&quot;tech-talk&quot;&gt;Tech Talk&lt;/h1&gt;
+				&lt;p&gt;&lt;a href=&quot;//ibug.io&quot;&gt;iBug&lt;/a&gt;
+				&lt;br /&gt;
+				&lt;a href=&quot;https://lug.ustc.edu.cn&quot;&gt;LUG @ USTC&lt;/a&gt;
+				&lt;br /&gt;
+				April 17, 2021&lt;/p&gt;
+				&lt;hr /&gt;
+				&lt;h2 id=&quot;overview&quot;&gt;Overview&lt;/h2&gt;
+				&lt;ul&gt;
+				&lt;li&gt;Intranet of USTCLUG&lt;/li&gt;
+				&lt;li&gt;Auto SSL certificate&lt;/li&gt;
+				&lt;li&gt;Vlab&lt;/li&gt;
+				&lt;li&gt;Miscellaneous&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;hr /&gt;
+				&lt;h2 id=&quot;intranet-of-ustclug&quot;&gt;Intranet of USTCLUG&lt;/h2&gt;
+				&lt;ul&gt;
+				&lt;li&gt;Multiple cloud and on-premises servers in different datacenters&lt;/li&gt;
+				&lt;li&gt;Public and internal services
+				&lt;ul&gt;
+				&lt;li&gt;Public: Mirrors, Auth DNS, Homepage&lt;/li&gt;
+				&lt;li&gt;Internal: LDAP, Mail gateway, InfluxDB&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;p&gt;–&lt;/p&gt;
+				&lt;!-- --&gt;
+				&lt;ul&gt;
+				&lt;li&gt;Layer 2 overlay network
+				&lt;ul&gt;
+				&lt;li&gt;&lt;a href=&quot;//www.tinc-vpn.org&quot;&gt;Tinc VPN&lt;/a&gt;&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;hr /&gt;
+				&lt;h2 id=&quot;tinc-vpn&quot;&gt;Tinc VPN&lt;/h2&gt;
+				&lt;ul&gt;
+				&lt;li&gt;Configured in switch mode&lt;/li&gt;
+				&lt;li&gt;Mesh layout&lt;/li&gt;
+				&lt;li&gt;&lt;strong&gt;Bridged within one datacenter (cluster)&lt;/strong&gt;&lt;/li&gt;
+				&lt;li&gt;Secured over the Internet&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;hr /&gt;
+				&lt;iframe src=&quot;https://www.draw.io/?lightbox=1&amp;amp;highlight=0000ff&amp;amp;edit=_blank&amp;amp;layers=1&amp;amp;nav=1&amp;amp;title=LUG%20Network.html#Uhttps%3A%2F%2Fdrive.google.com%2Fa%2F0x01.me%2Fuc%3Fid%3D1WAROAPB8ThTkIjMyFnGvtGgbH-TV4FWh%26export%3Ddownload&quot; frameborder=&quot;0&quot; style=&quot;width: 100%; height: 100%;&quot;&gt;&lt;/iframe&gt;
+				&lt;hr /&gt;
+				&lt;p&gt;layout: true&lt;/p&gt;
+				&lt;h2 id=&quot;automatic-ssl-certificate-issue--renewal&quot;&gt;Automatic SSL certificate issue &amp;amp; renewal&lt;/h2&gt;
+				&lt;hr /&gt;
+				&lt;hr /&gt;
+				&lt;p&gt;Compliance:&lt;/p&gt;
+				&lt;ul&gt;
+				&lt;li&gt;Our friend sponsored us a Japan VPS so we resolve most of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ustclug.org&lt;/code&gt; (from outside USTCnet) to it
+				&lt;ul&gt;
+				&lt;li&gt;We resolve &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ustclug.org&lt;/code&gt; to USTCnet when source is also in USTCnet&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;!-- --&gt;
+				&lt;ul&gt;
+				&lt;li&gt;USTC Mirrors has 4 ISP connections (CERNET, Telecom, Mobile, Unicom) and we want to route users by source&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;p&gt;–&lt;/p&gt;
+				&lt;!-- --&gt;
+				&lt;ul&gt;
+				&lt;li&gt;Solution: Self-hosted Bind9 server
+				&lt;ul&gt;
+				&lt;li&gt;Return different answers based on source IP (views)&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;hr /&gt;
+				&lt;ul&gt;
+				&lt;li&gt;Solution: Self-hosted Bind9 server
+				&lt;ul&gt;
+				&lt;li&gt;Return different answers based on source IP (views)&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;li&gt;Custom authoritative DNS servers&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;p&gt;–&lt;/p&gt;
+				&lt;ul&gt;
+				&lt;li&gt;Git-based DNS management&lt;/li&gt;
+				&lt;li&gt;Integration into existing applications?
+				&lt;ul&gt;
+				&lt;li&gt;We have no easy-to-use API&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;hr /&gt;
+				&lt;p&gt;layout: true&lt;/p&gt;
+				&lt;h2 id=&quot;automatic-ssl-certificate-issue--renewal-1&quot;&gt;Automatic SSL certificate issue &amp;amp; renewal&lt;/h2&gt;
+				&lt;p&gt;Use an existing API!&lt;/p&gt;
+				&lt;hr /&gt;
+				&lt;hr /&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# apt list ~npython3-certbot-dns&lt;/span&gt;
+				python3-certbot-dns-cloudflare    - Doesn&lt;span class=&quot;s1&quot;&gt;'t support sub-zones
+				python3-certbot-dns-digitalocean  - [OK]
+				python3-certbot-dns-dnsimple      - Paid
+				python3-certbot-dns-gandi         - Doesn'&lt;/span&gt;t support sub-zones
+				python3-certbot-dns-gehirn        - &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;Couldn&lt;span class=&quot;s1&quot;&gt;'t determine]
+				python3-certbot-dns-google        - Doesn'&lt;/span&gt;t support sub-zones
+				python3-certbot-dns-linode        - No account, couldn&lt;span class=&quot;s1&quot;&gt;'t determine
+				python3-certbot-dns-ovh           - Could not register account
+				python3-certbot-dns-rfc2136       - Performance?
+				python3-certbot-dns-route53       - Paid
+				python3-certbot-dns-sakuracloud   - Could not register account
+				&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;acme.sh&lt;/code&gt;?&lt;/p&gt;
+				&lt;hr /&gt;
+				&lt;pre&gt;&lt;code class=&quot;language-dns&quot;&gt;_acme-challenge.lug.ustc.edu.cn.     600 IN CNAME  lug.ssl-digitalocean.ustclug.org.
+				_acme-challenge.ustclug.org.         600 IN CNAME  lug.ssl-digitalocean.ustclug.org.
+				_acme-challenge.proxy.ustclug.org.   600 IN CNAME  lug.ssl-digitalocean.ustclug.org.
+				_acme-challenge.mirrors.ustc.edu.cn. 600 IN CNAME  mirrors.ssl-digitalocean.ustclug.org.
+				&lt;/code&gt;&lt;/pre&gt;
+				&lt;pre&gt;&lt;code class=&quot;language-dns&quot;&gt;ssl-digitalocean.ustclug.org.  86400 IN NS  ns1.digitalocean.com.
+				86400 IN NS  ns2.digitalocean.com.
+				86400 IN NS  ns3.digitalocean.com.
+				&lt;/code&gt;&lt;/pre&gt;
+				&lt;hr /&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;acme.sh &lt;span class=&quot;nt&quot;&gt;--issue&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;--dns&lt;/span&gt; dns_dgon &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;--domain-alias&lt;/span&gt; lug.ssl-digitalocean.ustclug.org &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; lug.ustc.edu.cn &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\*&lt;/span&gt;.lug.ustc.edu.cn &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; ustclug.org &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\*&lt;/span&gt;.ustclug.org &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\*&lt;/span&gt;.proxy.ustclug.org &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;--cert-file&lt;/span&gt; cert/lug/cert.pem &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;--key-file&lt;/span&gt; cert/lug/privkey.pem &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;--fullchain-file&lt;/span&gt; cert/lug/fullchain.pem
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;hr /&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;acme.sh &lt;span class=&quot;nt&quot;&gt;--issue&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;--dns&lt;/span&gt; dns_dgon &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;--domain-alias&lt;/span&gt; mirrors.ssl-digitalocean.ustclug.org &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; mirrors.ustc.edu.cn &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\*&lt;/span&gt;.mirrors.ustc.edu.cn &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;--cert-file&lt;/span&gt; cert/mirrors/cert.pem &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;--key-file&lt;/span&gt; cert/mirrors/privkey.pem &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;--fullchain-file&lt;/span&gt; cert/mirrors/fullchain.pem
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;hr /&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git &lt;span class=&quot;nt&quot;&gt;-C&lt;/span&gt; cert add &lt;span class=&quot;nt&quot;&gt;--all&lt;/span&gt;
+				git &lt;span class=&quot;nt&quot;&gt;-C&lt;/span&gt; cert &lt;span class=&quot;nt&quot;&gt;-c&lt;/span&gt; user.name&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;GitHub &lt;span class=&quot;nt&quot;&gt;-c&lt;/span&gt; user.email&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;noreply@github.com commit &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;-m&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Update certificates on &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;date&lt;/span&gt; +%Y-%m-%d&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;-m&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;git log &lt;span class=&quot;nt&quot;&gt;-1&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--pretty&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'tformat:[%h] %an: %s'&lt;/span&gt; HEAD&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+				git &lt;span class=&quot;nt&quot;&gt;-C&lt;/span&gt; cert push
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;hr /&gt;
+				&lt;p&gt;layout: true&lt;/p&gt;
+				&lt;h2 id=&quot;vlab&quot;&gt;Vlab&lt;/h2&gt;
+				&lt;hr /&gt;
+				&lt;p&gt;&lt;img src=&quot;https://vlab.ustc.edu.cn/docs/images/home.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+				&lt;hr /&gt;
+				&lt;p&gt;layout: false
+				class: center, middle&lt;/p&gt;
+				&lt;div&gt;&lt;img src=&quot;https://vlab.ustc.edu.cn/docs/images/vlab-in-browser.jpg&quot; /&gt;&lt;/div&gt;
+				&lt;hr /&gt;
+				&lt;p&gt;layout: true&lt;/p&gt;
+				&lt;h2 id=&quot;vlab-1&quot;&gt;Vlab&lt;/h2&gt;
+				&lt;hr /&gt;
+				&lt;ul&gt;
+				&lt;li&gt;Xilinx Vivado
+				&lt;ul&gt;
+				&lt;li&gt;Multiple GBs of &lt;em&gt;slow&lt;/em&gt; downloading&lt;/li&gt;
+				&lt;li&gt;Hard to setup and maintain&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;li&gt;Other software (MATLAB, Wolfram Mathematica etc.)
+				&lt;ul&gt;
+				&lt;li&gt;Same size &amp;amp; complexity issues&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;p&gt;–&lt;/p&gt;
+				&lt;!-- --&gt;
+				&lt;ul&gt;
+				&lt;li&gt;
+				&lt;s&gt;Another VPS provider&lt;/s&gt;
+				&lt;/li&gt;
+				&lt;li&gt;LXC containers
+				&lt;ul&gt;
+				&lt;li&gt;Lightweight&lt;/li&gt;
+				&lt;li&gt;Host-manageable&lt;/li&gt;
+				&lt;li&gt;System container (&lt;s&gt;application container&lt;/s&gt;)&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;hr /&gt;
+				&lt;ul&gt;
+				&lt;li&gt;Sharing &amp;amp; Isolation&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;p&gt;–&lt;/p&gt;
+				&lt;!-- --&gt;
+				&lt;ul&gt;
+				&lt;li&gt;Storage allocation: LVM
+				&lt;ul&gt;
+				&lt;li&gt;iSCSI isn’t multi-mount-aware&lt;/li&gt;
+				&lt;li&gt;ZFS doesn’t support&lt;/li&gt;
+				&lt;li&gt;NFS = SPOF&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;p&gt;–&lt;/p&gt;
+				&lt;ul&gt;
+				&lt;li&gt;But why does LVM work?&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;p&gt;–&lt;/p&gt;
+				&lt;ul&gt;
+				&lt;li&gt;&lt;strong&gt;“Activated volume”&lt;/strong&gt;
+				&lt;ul&gt;
+				&lt;li&gt;PVE native support: Only activate volumes in use by VMs/CTs&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;p&gt;–&lt;/p&gt;
+				&lt;!-- --&gt;
+				&lt;ul&gt;
+				&lt;li&gt;Network isolation: VXLAN
+				&lt;ul&gt;
+				&lt;li&gt;&lt;span style=&quot;color: salmon;&quot;&gt;❤&lt;/span&gt; -50&lt;/li&gt;
+				&lt;li&gt;Solution: Increase host &lt;span style=&quot;color: salmon;&quot;&gt;❤&lt;/span&gt; to 1550&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;hr /&gt;
+				&lt;p&gt;User access:&lt;/p&gt;
+				&lt;ul&gt;
+				&lt;li&gt;VNC unified login
+				&lt;ul&gt;
+				&lt;li&gt;10,000 lines of C++ (by &lt;a href=&quot;//github.com/pdlan&quot;&gt;pdlan&lt;/a&gt;)
+				&lt;ul&gt;
+				&lt;li&gt;Identify users via VNC login username
+				&lt;ul&gt;
+				&lt;li&gt;Multi VM selection: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;username:id&lt;/code&gt;&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;li&gt;Queries Django for VM information&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;li&gt;Browser login: noVNC&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;p&gt;–&lt;/p&gt;
+				&lt;ul&gt;
+				&lt;li&gt;SSH unified login
+				&lt;ul&gt;
+				&lt;li&gt;Modified from &lt;a href=&quot;//github.com/tg123/sshpiper&quot;&gt;tg123/sshpiper&lt;/a&gt;&lt;/li&gt;
+				&lt;li&gt;Pubkey-based user identificaion
+				&lt;ul&gt;
+				&lt;li&gt;Certificate-based VM access&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;li&gt;Browser login: Wetty (alpha)&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;hr /&gt;
+				&lt;p&gt;layout: false&lt;/p&gt;
+				&lt;iframe src=&quot;https://vlab.ustc.edu.cn/grafana/d-solo/2/vlab-usage-statistics?orgId=1&amp;amp;from=1587065070291&amp;amp;to=1618601070291&amp;amp;theme=light&amp;amp;panelId=2&quot; frameborder=&quot;0&quot; style=&quot;width: 100%; height: 100%;&quot;&gt;&lt;/iframe&gt;
+				&lt;hr /&gt;
+				&lt;p&gt;layout: true&lt;/p&gt;
+				&lt;h2 id=&quot;miscellaneous&quot;&gt;Miscellaneous&lt;/h2&gt;
+				&lt;hr /&gt;
+				&lt;ul&gt;
+				&lt;li&gt;Protect ports of VM from host (iptables)
+				&lt;ul&gt;
+				&lt;li&gt;SSH-based “authentication” ✔&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;hr /&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;:INPUT DROP &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;0:0]
+				&lt;span class=&quot;c&quot;&gt;# ...&lt;/span&gt;
+				:iBug - &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;0:0]
+				&lt;span class=&quot;nt&quot;&gt;-A&lt;/span&gt; INPUT &lt;span class=&quot;nt&quot;&gt;-m&lt;/span&gt; conntrack &lt;span class=&quot;nt&quot;&gt;--ctstate&lt;/span&gt; RELATED,ESTABLISHED &lt;span class=&quot;nt&quot;&gt;-j&lt;/span&gt; ACCEPT
+				&lt;span class=&quot;nt&quot;&gt;-A&lt;/span&gt; INPUT &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; lo &lt;span class=&quot;nt&quot;&gt;-j&lt;/span&gt; ACCEPT
+				&lt;span class=&quot;nt&quot;&gt;-A&lt;/span&gt; INPUT &lt;span class=&quot;nt&quot;&gt;-j&lt;/span&gt; iBug
+				&lt;span class=&quot;nt&quot;&gt;-A&lt;/span&gt; INPUT &lt;span class=&quot;nt&quot;&gt;-g&lt;/span&gt; BLOCK
+				&lt;span class=&quot;c&quot;&gt;# ...&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;-A&lt;/span&gt; iBug &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; icmp &lt;span class=&quot;nt&quot;&gt;-j&lt;/span&gt; ACCEPT
+				&lt;span class=&quot;nt&quot;&gt;-A&lt;/span&gt; iBug &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; tcp &lt;span class=&quot;nt&quot;&gt;-m&lt;/span&gt; multiport &lt;span class=&quot;nt&quot;&gt;--dports&lt;/span&gt; 22,80,443,8888,25565 &lt;span class=&quot;nt&quot;&gt;-j&lt;/span&gt; ACCEPT
+				&lt;span class=&quot;nt&quot;&gt;-A&lt;/span&gt; iBug &lt;span class=&quot;nt&quot;&gt;-m&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;set&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--match-set&lt;/span&gt; home src &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; tcp &lt;span class=&quot;nt&quot;&gt;--dport&lt;/span&gt; 3389 &lt;span class=&quot;nt&quot;&gt;-j&lt;/span&gt; BLOCK
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/etc/iptables/ipsets&lt;/code&gt;:&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;create home &lt;span class=&quot;nb&quot;&gt;hash&lt;/span&gt;:ip family inet &lt;span class=&quot;nb&quot;&gt;timeout &lt;/span&gt;600
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;hr /&gt;
+				&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;~/.ssh/rc&lt;/code&gt;:&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;#!/bin/bash&lt;/span&gt;
+				&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-z&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$BASH&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then
+				&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;exec&lt;/span&gt; /bin/bash &lt;span class=&quot;nt&quot;&gt;--&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$0&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$@&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+				&lt;span class=&quot;nb&quot;&gt;exit &lt;/span&gt;1
+				&lt;span class=&quot;k&quot;&gt;fi
+				&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;_ssh_client&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;SSH_CONNECTION&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;%% *&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+				&lt;span class=&quot;nv&quot;&gt;_ppid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;ps &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;ppid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;ps &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;ppid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$PPID&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;))&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+				&lt;span class=&quot;nb&quot;&gt;nohup&lt;/span&gt; /home/ubuntu/.local/bin/_ssh_refresh_client &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$_ssh_client&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$_ppid&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &amp;amp;&amp;gt;/dev/null &amp;amp; &lt;span class=&quot;nb&quot;&gt;exit &lt;/span&gt;0
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;hr /&gt;
+				&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_ssh_refresh_client&lt;/code&gt;:&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;#!/bin/bash&lt;/span&gt;
+				&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-z&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$BASH&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then
+				&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;exec&lt;/span&gt; /bin/bash &lt;span class=&quot;nt&quot;&gt;--&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$0&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$@&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+				&lt;span class=&quot;k&quot;&gt;fi
+				&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;_ssh_client&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+				&lt;span class=&quot;nv&quot;&gt;_ppid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$2&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+				&lt;span class=&quot;k&quot;&gt;while &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;kill&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-0&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$_ppid&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; 2&amp;gt;/dev/null&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do
+				&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;ipset &lt;span class=&quot;nt&quot;&gt;-exist&lt;/span&gt; add home &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$_ssh_client&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;timeout &lt;/span&gt;300
+				&lt;span class=&quot;nb&quot;&gt;sleep &lt;/span&gt;60
+				&lt;span class=&quot;k&quot;&gt;done
+				&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;exit &lt;/span&gt;0
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;hr /&gt;
+				&lt;p&gt;layout: false&lt;/p&gt;
+				&lt;h2 id=&quot;your-notification-center&quot;&gt;&lt;em&gt;Your&lt;/em&gt; notification center&lt;/h2&gt;
+				&lt;p&gt;&lt;a href=&quot;https://github.com/iBug/rss-to-telegram&quot;&gt;iBug/rss-to-telegram&lt;/a&gt;&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/rss-to-telegram.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+				&lt;hr /&gt;
+				&lt;h2 id=&quot;cloudflare-worker-makes-free-file-sharing-site&quot;&gt;Cloudflare Worker makes free file sharing site&lt;/h2&gt;
+				&lt;p&gt;&lt;a href=&quot;https://github.com/iBug/cf-github-releases&quot;&gt;iBug/cf-github-releases&lt;/a&gt;&lt;/p&gt;
+				&lt;p&gt;&lt;a href=&quot;https://download.ibugone.com&quot;&gt;My demo site&lt;/a&gt; (&lt;a href=&quot;https://github.com/iBug/Archive/releases&quot;&gt;Repository&lt;/a&gt;)&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/cloudflare/cf-github-releases.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+				&lt;hr /&gt;
+				&lt;p&gt;class: center, middle
+				layout: false&lt;/p&gt;
+				&lt;h1 id=&quot;thank-you&quot;&gt;Thank you!&lt;/h1&gt;</content><author><name>iBug</name></author><summary type="html">class: center, middle</summary></entry><entry><title type="html">Setting up a GitHub webhook on AWS Lambda</title><link href="https://ibug.io/blog/2021/02/github-webhook-on-aws-lambda/" rel="alternate" type="text/html" title="Setting up a GitHub webhook on AWS Lambda" /><published>2021-02-19T00:00:00+00:00</published><updated>2021-02-27T03:04:22+00:00</updated><id>https://ibug.io/blog/2021/02/github-webhook-on-aws-lambda</id><content type="html" xml:base="https://ibug.io/blog/2021/02/github-webhook-on-aws-lambda/">&lt;p&gt;Last month I set up my own Telegram bot for GitHub event notification. To receive GitHub events via webhook, a receiver is needed. True, it isn’t hard to write a &lt;a href=&quot;https://palletsprojects.com/p/flask/&quot;&gt;Flask&lt;/a&gt; or &lt;a href=&quot;http://sinatrarb.com/&quot;&gt;Sinatra&lt;/a&gt; server and throw the whole thing onto a VPS, but thinking about the complexity and maintenance efforts, serverless platforms like AWS Lambda smells like a better fit. So I decided to take this opportunity to begin my exploration to “the serverless industry”.&lt;/p&gt;
 				&lt;p&gt;&lt;small&gt;&lt;a href=&quot;/p/41-cn&quot;&gt;There’s a Chinese version of this article / 本文还有中文版&lt;/a&gt;&lt;/small&gt;&lt;/p&gt;
 				&lt;h2 id=&quot;aws-lambda&quot;&gt;Setting up AWS Lambda&lt;/h2&gt;
 				&lt;p&gt;I have had an AWS account for years, so I’ll skip the sign-up process in this article and head straight to &lt;a href=&quot;https://console.aws.amazon.com/&quot;&gt;AWS Management Console&lt;/a&gt;.&lt;/p&gt;
@@ -1129,160 +1456,4 @@
 				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 				&lt;p&gt;Both MySQL and MariaDB requires “flushing” after any privilege assignment is altered.&lt;/p&gt;
 				&lt;p&gt;You can then create more users with your passwordless access, and play around with MySQL to fulfill your curiosity.&lt;/p&gt;
-				&lt;p&gt;And that concludes this tutorial. Cheers!&lt;/p&gt;</content><author><name>iBug</name></author><category term="linux" /><category term="mysql" /><summary type="html">For all of us who are learning to use or developing with MySQL or MariaDB, it’s a common task to manually log in to the database for inspection. This is usually done with the mysql command line client, and for sure it’s cumbersome to log in to the database using your application’s credentials. For convenience purposes, you would like to make your life easy by configuring the mysql CLI to NOT prompt you for a password each time. Here are three ways to do it on Linux.</summary></entry><entry><title type="html">High-performance mass web crawling on AWS</title><link href="https://ibug.io/blog/2019/12/mass-crawl-douban-with-aws/" rel="alternate" type="text/html" title="High-performance mass web crawling on AWS" /><published>2019-12-28T00:00:00+00:00</published><updated>2021-02-22T00:22:42+00:00</updated><id>https://ibug.io/blog/2019/12/mass-crawl-douban-with-aws</id><content type="html" xml:base="https://ibug.io/blog/2019/12/mass-crawl-douban-with-aws/">&lt;p&gt;The 3rd-and-last experiment of course &lt;em&gt;Web Information Processing and Application&lt;/em&gt; required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on the training data of 9M user-item pairs and a social network.&lt;/p&gt;
-				&lt;p&gt;The interesting part is, all user and rating data are real, i.e. unmasked. This makes it possible to, instead of playing nicely by doing data analysis, crawl the target data directly, bypassing the aim of the experiment to learn about recommendation systems, which is exactly the way I chose and I’m going to describe in this article.&lt;/p&gt;
-				&lt;p&gt;To make things challenging, the target website, &lt;a href=&quot;https://www.douban.com/&quot;&gt;Douban&lt;/a&gt;, has a moderate level of anti-spider techniques in place. This makes it impossible to just submit a truckload of requests hoping to retrieve all data desired, but more advanced technologies and cleverer tactics are mandatory before pulling it off.&lt;/p&gt;
-				&lt;h2 id=&quot;part-1&quot;&gt;Part 1: Scrapy and ScrapingHub&lt;/h2&gt;
-				&lt;p&gt;Previously I’ve done crawlers using &lt;a href=&quot;https://2.python-requests.org/&quot;&gt;requests&lt;/a&gt; + &lt;a href=&quot;https://www.crummy.com/software/BeautifulSoup/&quot;&gt;Beautiful Soup&lt;/a&gt;, but this time under suggestions from my roommate, I decided to try it out with &lt;a href=&quot;https://scrapy.org/&quot;&gt;Scrapy&lt;/a&gt;, a said-to-be-great web crawling framework.&lt;/p&gt;
-				&lt;p&gt;Scrapy is a framework extremely easy to start with. I followed the guide on Scrapy’s website and wrote less than 30 lines of Python (&lt;a href=&quot;https://github.com/iBug/douban-spider/commit/8aead82&quot;&gt;commit&lt;/a&gt;), and the first version of my spider was ready to go.&lt;/p&gt;
-				&lt;p&gt;It didn’t take too long before I picked up on Douban’s anti-spider techniques. My server’s IP was banned (fortunately, only temporarily) and all requests to Douban were getting 403 responses.&lt;/p&gt;
-				&lt;p&gt;I fortuitously recalled that GitHub Student Pack provides an offer from &lt;a href=&quot;https://scrapinghub.com/&quot;&gt;ScrapingHub&lt;/a&gt;, the company behind Scrapy, containing one scraper unit, for free forever. Following their guide on deployment, I asked my teammate to modify my spider to adopt Scrapy’s project layout (&lt;a href=&quot;https://github.com/iBug/douban-spider/compare/cecbcfb..8eb1ff1&quot;&gt;commit&lt;/a&gt;), redeemed the Student Pack offer, and deployed my first scraper project onto ScrapingHub cloud.&lt;/p&gt;
-				&lt;figure&gt;
-				&lt;img src=&quot;/image/scrapinghub.png&quot; alt=&quot;ScrapingHub results&quot; /&gt;
-				&lt;figcaption&gt;
-				My job history on ScrapingHub, all of which are for this experiment
-				&lt;/figcaption&gt;
-				&lt;/figure&gt;
-				&lt;p&gt;ScrapingHub has forced AutoThrottle enabled for all jobs, so my first SH job survived for longer before it started receiving 403 responses. Looking at the stats, the job maintained its position for about 40 minutes, before signals of having its IP banned emerged. I updated the scraper a few times to include detections for more variations of indications of an IP ban, but never made it over an hour. And because I only attempted to avoid the IP ban by throttling and detecting, the actual “targets” contained in the code remained the same, which accounted for high duplication in crawled results in the first few runs, which in turn led to a quick drop in the increase of the submitted result (of this course experiment).&lt;/p&gt;
-				&lt;p&gt;Recalling that I had spare promotional credits from AWS Educate, I came up with the idea of utilizing the large IP pool of AWS, which has another advantage of the ease to swap out a banned one.&lt;/p&gt;
-				&lt;h2 id=&quot;part-2&quot;&gt;Part 2: Expansion onto AWS, distributed crawling with centralized management&lt;/h2&gt;
-				&lt;p&gt;The high duplication rate of results from the first few runs on ScrapingHub was alarming: I knew that I wouldn’t make any real success if I didn’t build a centralized job dispatcher and data collector, so the first thing before moving onto AWS is to create a control center.&lt;/p&gt;
-				&lt;h3 id=&quot;central-management&quot;&gt;The central manager server&lt;/h3&gt;
-				&lt;p&gt;I picked my favorite quickstarter framework Flask, implemented three simple interfaces &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;get job&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;update job&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add result&lt;/code&gt;. To make things absolutely simple yet reliable, I picked SQLite as database backend because it’s easy to setup and query (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sqlite3&lt;/code&gt; CLI is ready for use). I designed a “job pool” with push-pop architecture, where each job record is a to-be-crawled URL, and is deleted from the pool once it’s requested. The spider then crawls the page, send results back to the control center, as well as the “Next Page” link in the page back into the job pool if there is one. It didn’t even take a lot of effort to work this out (&lt;a href=&quot;https://github.com/iBug/douban-spider/blob/5da2c80/server.py&quot;&gt;code&lt;/a&gt;). The initial content in the “job pool” is Page 1 of all 20000 users, imported from experiment materials manually. A user is considered “done” if one of the pages in the chain doesn’t contain a “Next Page” link, meaning that the last page for this user has been reached.&lt;/p&gt;
-				&lt;p&gt;Deployment is just as easy. I wrapped the server up in a Docker container, put it on my primary server on Amazon Lightsail (2 GB instance, has some other stuff running already), configured Nginx and added a DNS record on Cloudflare. Then I started the spider on my workstation and send a few initial requests, to test if everything proceeds as expected. After cleaning a few obvious bugs out of the code base, I started configuring a spider client.&lt;/p&gt;
-				&lt;h3 id=&quot;distributed-crawlers&quot;&gt;Distributed crawler clients&lt;/h3&gt;
-				&lt;p&gt;Because I planned to spawn a large amount of clients, I want to lower their cost (I have only $100 credits and can’t spend overbudget), so I started off with t3.nano instances as they offered twice the CPU power and slightly less expense over the previous-generation t2.nano. Configuring the environment wasn’t any difficult, as all that was needed was a deploy key and dependency packages. The former can be generated locally and have the public part uploaded to GitHub before copying the private part onto the spider server, and the latter is as easy as running &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pip install&lt;/code&gt;.&lt;/p&gt;
-				&lt;p&gt;To make further deployment easier, I created a systemd service for the spider job, and added &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;git pull&lt;/code&gt; before starting, so I only need to restart all servers and they’d pull in latest changes automatically. This is the service file that I wrote for this job.&lt;/p&gt;
-				&lt;div class=&quot;language-ini highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nn&quot;&gt;[Unit]&lt;/span&gt;
-				&lt;span class=&quot;py&quot;&gt;Description&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;Douban Spider&lt;/span&gt;
-				&lt;span class=&quot;py&quot;&gt;After&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;multi-user.target&lt;/span&gt;
-				&lt;span class=&quot;py&quot;&gt;StartLimitIntervalSec&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;0&lt;/span&gt;
-				&lt;span class=&quot;nn&quot;&gt;[Service]&lt;/span&gt;
-				&lt;span class=&quot;py&quot;&gt;Type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;simple&lt;/span&gt;
-				&lt;span class=&quot;py&quot;&gt;Restart&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;always&lt;/span&gt;
-				&lt;span class=&quot;py&quot;&gt;RestartSec&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;1&lt;/span&gt;
-				&lt;span class=&quot;py&quot;&gt;ExecStartPre&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;/usr/bin/git -C /root/douban-spider pull&lt;/span&gt;
-				&lt;span class=&quot;py&quot;&gt;ExecStart&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;/usr/local/bin/scrapy crawl doubanspider&lt;/span&gt;
-				&lt;span class=&quot;py&quot;&gt;WorkingDirectory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;/root/douban-spider/&lt;/span&gt;
-				&lt;span class=&quot;py&quot;&gt;TimeoutSec&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;5&lt;/span&gt;
-				&lt;span class=&quot;nn&quot;&gt;[Install]&lt;/span&gt;
-				&lt;span class=&quot;py&quot;&gt;WantedBy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;multi-user.target&lt;/span&gt;
-				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-				&lt;p&gt;I ran &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;systemctl daemon-reload&lt;/code&gt; to let systemd reload and be aware of my new service unit. I then started the spider with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;systemctl start spider.service&lt;/code&gt; and followed &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;journalctl -ef&lt;/code&gt; to check if the spider is running properly. To make the spider start automatically on boot, I ran &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;systemctl enable spider.service&lt;/code&gt;.&lt;/p&gt;
-				&lt;p&gt;As I was going to work around Douban’s IP limitations, I let the spider shut down itself when it discovers the IP ban (&lt;a href=&quot;https://github.com/iBug/douban-spider/commit/d4b7e20&quot;&gt;commit&lt;/a&gt;). This way by looking at the number of running instances on EC2 dashboard, I can determine how many IPs have been banned, and can get new IPs by starting them up again (rebooting doesn’t change instance IP, must stop completely and then start again).&lt;/p&gt;
-				&lt;p&gt;I then rebooted the server once, and checked again to be 100% sure that everything is working as expected. Confirming that, I shut down the server and took a snapshot of it.&lt;/p&gt;
-				&lt;figure&gt;
-				&lt;img src=&quot;/image/spider-aws/snapshot.png&quot; alt=&quot;Snapshot of a spider instance&quot; /&gt;
-				&lt;figcaption&gt;
-				Information panel of a snapshot taken from a properly configured spider instance, ready for deployment
-				&lt;/figcaption&gt;
-				&lt;/figure&gt;
-				&lt;p&gt;And as well, before launching new instances from this snapshot, an AMI (Amazon Machine Image) has to be registered based off of it, so I did one as well.&lt;/p&gt;
-				&lt;figure&gt;
-				&lt;img src=&quot;/image/spider-aws/ami.png&quot; alt=&quot;AMI registered from the above snapshot&quot; /&gt;
-				&lt;figcaption&gt;
-				Information panel of an Amazon Machine Image registered from the above snapshot
-				&lt;/figcaption&gt;
-				&lt;/figure&gt;
-				&lt;p&gt;I Googled about AWS service limits, and acknowledged that there was a “20 instances per region” limit on EC2. So I attempted to create 20 t3.nano instances from the AMI, but was informed that the launch request would fail for exceeding another resource limit of 32 vCPUs. OK, that was fine, I decided to launch 12 instance first, and launch the remaining 8 with one vCPU disabled, resulting in a total of 32 vCPUs. Unfortunately it failed again for unknown reasons, though I managed to figure it out that disabled vCPUs still count, so I ended up creating t2.nano instances for the rest of them.&lt;/p&gt;
-				&lt;p&gt;It wasn’t necessarily something bad, however, as T2 series of instances can burst to 100% CPU for 30 minutes after startup, which should cover most of its lifetime before it gets banned.&lt;/p&gt;
-				&lt;div class=&quot;notice&quot;&gt;
-				&lt;p&gt;I have forgotten how I realized this, but the current actuality is that there’s no more “instance limit”, but only a limit on total vCPU count. This is still effectively a limit on the number of instances you can have simultaneously, though you get to keep less if you run multi-core instances.&lt;/p&gt;
-				&lt;/div&gt;
-				&lt;p&gt;My final setup was 32 t2.nano instances per region so as to maximize concurrency with maximum number of IPs available at once, while keeping cost low.&lt;/p&gt;
-				&lt;h3 id=&quot;part-2-results&quot;&gt;Results&lt;/h3&gt;
-				&lt;p&gt;As soon as I booted up my first batch of 32 t2.nano instances, I noticed an unexpected situation: The manager server is running at constant 100% CPU load. Because Lightsail instances are backed by EC2 T2 series, I knew it wouldn’t sustain for long before having its CPU throttled due to insufficient CPU credits. So I cut off two spider clients, and launched an m5.large instance for the control center.&lt;/p&gt;
-				&lt;p&gt;Things went on smoothly for a while, and before the job pool depleted, I could gather 500k to 600k results (up to 30 per page). I re-created the pool from scratch a few times, shuffled it each time, and restarted the whole spider swarm. Every time I “refreshed” the database, I could gather another 500k to 600k results, and things went strange in the same mysterious way. The problem was, I estimated that there’d be a total of 30M results, so 500k to 600k was really a small portion.&lt;/p&gt;
-				&lt;p&gt;It’s still delighting that the crawled data from the first few attempts improved the RMSE of our submission from 1.341 to 1.308, though the urgency of a revolutionary refresh also emerged.&lt;/p&gt;
-				&lt;h2 id=&quot;part-3&quot;&gt;Part 3: Redesigned management architecture, fine-grained control, more robust and faster&lt;/h2&gt;
-				&lt;p&gt;The first version of the spider swarm was successful to an extent, but a highly-managed framework was cumbersome to further enhancements. I decided to identify the limitations and look for alternatives.&lt;/p&gt;
-				&lt;h3 id=&quot;limitations&quot;&gt;Limitations of the previous-generation spider swarm&lt;/h3&gt;
-				&lt;ul&gt;
-				&lt;li&gt;The first thing to emphasize is that Scrapy is too powerful and comprehensive to be flexible. I only want to make requests and get results as rapidly as possible.
-				&lt;ul&gt;
-				&lt;li&gt;Scrapy manages almost everything for you, including concurrency control and speed limiting, which is pretty much unwanted when I need to have fine-grained control over them.&lt;/li&gt;
-				&lt;/ul&gt;
-				&lt;/li&gt;
-				&lt;li&gt;Pool management was poor. “Jobs” can get lost if they aren’t sent back (pushed back) to the control center. This is most likely the primary cause for the quick depletion of the job pool after gathering ~500k results. (There was indeed a serious bug in the spider client, which I’ll talk about later on)&lt;/li&gt;
-				&lt;li&gt;Unacceptably high CPU usage from the server application, which needs a serious reform as well. Looking at the screen of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;htop&lt;/code&gt;, I guess that a large portion of the usage is made by SQLite queries, as I was doing a high concurrency server application with millions of rows in the database. SQLite doesn’t suit this kind of workload, really.&lt;/li&gt;
-				&lt;/ul&gt;
-				&lt;p&gt;These barriers ought to be overcome one by one, so I started this revolution from the spider client.&lt;/p&gt;
-				&lt;h3 id=&quot;new-spider-architecture&quot;&gt;Ditching Scrapy and reverting to requests + BeautifulSoup4&lt;/h3&gt;
-				&lt;p&gt;Scrapy is an all-in-one comprehensive framework. You focus on extracting data from the fetched page, and Scrapy handles everything else for you. Unfortunately, this is a huge barrier for whoever wants to tune it in every aspect. It even handles 302 redirects, which takes quite some effort to disable. This is why I switched back to my original approach using requests to fetch content, and parse it with BeautifulSoup4. Paired with Python’s stock multithreading library, this new client easily achieved twice the speed of that of Scrapy. It’s surely possible to dig into Scrapy and tune it, but why waste that time and effort when it can be easily solved by switching away?&lt;/p&gt;
-				&lt;p&gt;Previously when using Scrapy, I had to override its &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;start_requests&lt;/code&gt; method to fetch jobs from the server, and because Scrapy handles concurrency, I could not control how frequently a client fetches jobs, which was, to be honest, messy. With requests and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;threading&lt;/code&gt;, I have full control over concurrency, and I can reliably decide or predict how many jobs should be fetched by a client before it “exhausts”.&lt;/p&gt;
-				&lt;h3 id=&quot;new-server-architecture&quot;&gt;Pre-computed job pool and MySQL&lt;/h3&gt;
-				&lt;p&gt;Another problem of the previous generation of my spider swarm was that rapid draining of the job pool always occurred too soon (after fetching ~500k records). This was actually a bug.&lt;/p&gt;
-				&lt;h4 id=&quot;unexpected-response&quot;&gt;One bad bug led to the failure of the previous swarm&lt;/h4&gt;
-				&lt;p&gt;In my first few “durability tests”, I discovered that Douban would send either a 403 or a 302 response when it detects unusual traffic. The former was easy to detect, but with Scrapy, 302 redirects are handled automatically, and I spent more than half an hour Googling just to disable this behavior. With &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;requests&lt;/code&gt;, this is as simple as supplying &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;allow_redirect=False&lt;/code&gt; to the request method, which then enables the simplicity of checking the status code of the response.&lt;/p&gt;
-				&lt;p&gt;The true failure was, Douban actually sends 200 responses occasionally, with the HTML body containing a single line of JavaScript that redirects to another page, with the browser’s information supplied. I didn’t realize this until I noticed that this second-generation swarm gradually stopped working completely, and SSH-ed into one of the spider servers, and checked the program log. Because I treated 200 responses as success, the spiders would only find that there was no data items and “Next Page” links in the returned page, and thinking that this “page chain” had been completed.&lt;/p&gt;
-				&lt;h4 id=&quot;new-job-pool&quot;&gt;Pre-computed job pool&lt;/h4&gt;
-				&lt;p&gt;Detecting this “new” kind of unwanted response was not hard, but it must be done. But the good thing is, I ditched the “pop-push” job pool design as well. This time I first ran a small bunch of spiders to crawl the Page 1 for all 20000 Douban users, extracted the total number of items from those pages, and computed the number of pages for each user, storing them into the database as the new job pool. No more jobs would be removed from the database, only marked as completed. This way I could easily discover failed jobs and re-enable them by flipping the “completed” flag manually by editing the database.&lt;/p&gt;
-				&lt;h4 id=&quot;switching-to-mysql&quot;&gt;An RDBMS that scales&lt;/h4&gt;
-				&lt;p&gt;The 1st-gen control center used SQLite as its database engine. SQLite is a lightweight, easy-to-start database. The problem is, it’s a single-file DB engine, and &lt;strong&gt;doesn’t scale&lt;/strong&gt;. I had millions of rows in the results table, and a large portion of responses when I try to query it using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sqlite3&lt;/code&gt; CLI utility (for analysis purposes) are “&lt;em&gt;Error: database is locked&lt;/em&gt;”. The database also grows terribly, at more than 400 MB in size. Due to being constantly written to, I could even hardly make a copy of it without corruption. I had to do a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cp&lt;/code&gt; command for 10 times before I could have an intact copy of the database for copying back to my computer for future analysis.&lt;/p&gt;
-				&lt;p&gt;SQLite isn’t the right tool for millions of records, really.&lt;/p&gt;
-				&lt;p&gt;MySQL is a better database engine that’s widely used in production, and I have some experiences with it, so it became an apparent option to switch to it. As Debian provides MariaDB as the replacement for MySQL, installation was straightforward. I the modified the code to adopt the new database.&lt;/p&gt;
-				&lt;p&gt;A few points to note:&lt;/p&gt;
-				&lt;ul&gt;
-				&lt;li&gt;Debian and its derivatives (including Ubuntu) uses the PyPI package &lt;a href=&quot;https://pypi.org/project/mysqlclient/&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mysqlclient&lt;/code&gt;&lt;/a&gt; to provide the package &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;python3-mysqldb&lt;/code&gt;. It’s compatible with the now-abandoned &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;MySQLdb&lt;/code&gt; package. Any code written for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;MySQLdb&lt;/code&gt; should remain unchanged, because even the import line remains as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;import MySQLdb&lt;/code&gt; instead of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;import mysqlclient&lt;/code&gt; (the latter will throw an &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ImportError&lt;/code&gt; for not finding the module).&lt;/li&gt;
-				&lt;li&gt;The MySQL uses a connection-cursor architecture, so instead of calling &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;db.execute&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;db.fetch*&lt;/code&gt; methods directly (as is the case with Python’s stock SQLite library), a cursor must be created first, and then &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cursor.execute&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cursor.fetch*&lt;/code&gt; methods will be available. Similarly, cursors need separate closing than the DB connection itself.&lt;/li&gt;
-				&lt;li&gt;
-				&lt;p&gt;The painful thing is that SQLite uses the question mark &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;?&lt;/code&gt; as placeholder for query data (&lt;a href=&quot;https://xkcd.com/327/&quot;&gt;NEVER join database queries&lt;/a&gt;), while MySQL uses &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;%s&lt;/code&gt;. Compare the following code:&lt;/p&gt;
-				&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;SQLite&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;INSERT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;INTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;records&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rating&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;?&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;?&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-				&lt;span class=&quot;n&quot;&gt;MySQL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;  &lt;span class=&quot;k&quot;&gt;INSERT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;INTO&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;records&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rating&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;%&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
-				&lt;p&gt;It was somewhat frustrating to hunt for all those question marks and replacing them with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;%s&lt;/code&gt;’s when you can’t use text-based find-and-replace. Still, though, I managed to get this work done.&lt;/p&gt;
-				&lt;/li&gt;
-				&lt;/ul&gt;
-				&lt;h3 id=&quot;refresh-ip&quot;&gt;Continuous refresh of banned IPs&lt;/h3&gt;
-				&lt;p&gt;As this time I made some changes to increase the aggregate crawl speed, it could be anticipated that IPs would be banned sooner than in the first generation, which rendered IP refreshing more important. I had already known that AWS provided an extensive REST API, as well as a powerful CLI utility &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;aws&lt;/code&gt;.&lt;/p&gt;
-				&lt;p&gt;I didn’t even need to install the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;aws&lt;/code&gt; CLI utility because it comes preinstalled on every AMI, so all that was needed was to create an IAM user and generate API credentials following the &lt;a href=&quot;https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html&quot;&gt;AWS official documentation&lt;/a&gt;.&lt;/p&gt;
-				&lt;p&gt;After figuring out all functionalities that I needed, I created a “runner script” that does everything automatically.&lt;/p&gt;
-				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;#!/bin/bash&lt;/span&gt;
-				&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in
-				&lt;/span&gt;1&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;REGION&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'ap-northeast-1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;;&lt;/span&gt;
-				2&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;REGION&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'ap-southeast-1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;;&lt;/span&gt;
-				3&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;REGION&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'us-west-2'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;;&lt;/span&gt;
-				4&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;REGION&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'us-west-1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;;&lt;/span&gt;
-				&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;exit &lt;/span&gt;1&lt;span class=&quot;p&quot;&gt;;;&lt;/span&gt;
-				&lt;span class=&quot;k&quot;&gt;esac&lt;/span&gt;
-				&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$2&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in
-				&lt;/span&gt;1&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;ACTION&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'stop-instances'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;;&lt;/span&gt;
-				2&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;ACTION&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'start-instances'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;;&lt;/span&gt;
-				&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;exit &lt;/span&gt;1&lt;span class=&quot;p&quot;&gt;;;&lt;/span&gt;
-				&lt;span class=&quot;k&quot;&gt;esac&lt;/span&gt;
-				&lt;span class=&quot;nv&quot;&gt;INSTANCES&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;aws &lt;span class=&quot;nt&quot;&gt;--output&lt;/span&gt; text &lt;span class=&quot;nt&quot;&gt;--region&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$REGION&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; ec2 describe-instances &lt;span class=&quot;nt&quot;&gt;--filters&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Name=instance-type,Values=t2.nano&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--query&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Reservations[].Instances[].InstanceId&quot;&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;tr&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'[:space:]'&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;' '&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
-				&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Instances: &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$INSTANCES&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
-				&lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-qiP&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'i-0[0-9a-f]+'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$INSTANCES&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;then
-				&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Running &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$ACTION&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; on &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$REGION&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
-				aws &lt;span class=&quot;nt&quot;&gt;--output&lt;/span&gt; json &lt;span class=&quot;nt&quot;&gt;--region&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$REGION&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; ec2 &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$ACTION&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--instance-ids&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$INSTANCES&lt;/span&gt;
-				&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-				&lt;p&gt;The above script will attempt to list all spider instances (all of them are t2.nano), and depending on arguments, try to stop them and start them back up so they have new IPs to start with.&lt;/p&gt;
-				&lt;p&gt;I then created a cron job that restarts each batch every hour, which looks like this:&lt;/p&gt;
-				&lt;div class=&quot;language-text highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;0,1 * * * * /root/job.sh 1 1
-				2,3 * * * * /root/job.sh 1 2
-				15,16 * * * * /root/job.sh 2 1
-				17,18 * * * * /root/job.sh 2 2
-				30,31 * * * * /root/job.sh 3 1
-				32,33 * * * * /root/job.sh 3 2
-				45,46 * * * * /root/job.sh 4 1
-				47,48 * * * * /root/job.sh 4 2
-				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-				&lt;p&gt;This way a batch of instances will get new IPs every hour, effectively bypassing Douban’s IP limitations, which is another key to the success of the 2nd-gen spider swarm.&lt;/p&gt;
-				&lt;h3 id=&quot;part-3-results&quot;&gt;Results&lt;/h3&gt;
-				&lt;p&gt;With everything set up, I packed up a new AMI for the spider client, copied the AMI to 3 other AWS regions, and launched as many instances as possible, giving a total of 126 spider clients running simultaneously.&lt;/p&gt;
-				&lt;p&gt;This new spider swarm achieved almost twice the speed of the old version, at a sustained rate of around 1,700 records per second, when the old version could only maintain a burst speed of 900 records per second, before quickly dropping to 500 records per second. What’s more satisfactory was that it was fault-tolerant, finally crawling 20.7M records (out of a total of 21.6M) before completely stopped working after around 12 hours.&lt;/p&gt;
-				&lt;p&gt;The crawled data covered more than 90% of the test set of the experiment, and boosted the RMSE value of our submission from 1.304 to a whopping 0.546. We managed to make it one step further to 0.539 by adding the crawled data to our training set. For the record, the 2nd place, who also played with web spiders, only managed to get the RMSE value to 0.87. This is a great success.&lt;/p&gt;
-				&lt;p&gt;On a side note, you probably shouldn’t attempt this if you don’t have credits on AWS. This 3-day journey through AWS with a spider swarm cost me an astonishing amount of US$44.96, with more than $30 spent on EC2 and more than $10 spent on traffic (AWS charges for traffic beyond 1 GB). Fortunately, I have them all covered by my remaining credits from AWS Educate, making this whole crawler project an enjoyable experience.&lt;/p&gt;
-				&lt;h2 id=&quot;gallery&quot;&gt;Gallery&lt;/h2&gt;
-				&lt;figure class=&quot;third &quot;&gt;
-				&lt;a href=&quot;/image/spider-aws/instances.us-west-1.png&quot; title=&quot;The EC2 instances screen on US West 1 region&quot;&gt;
-				&lt;img src=&quot;/image/spider-aws/instances.us-west-1.png&quot; alt=&quot;AWS console&quot; /&gt;
-				&lt;/a&gt;
-				&lt;a href=&quot;/image/spider-aws/spiders-with-master.png&quot; title=&quot;In Tokyo region lies the « spider master »&quot;&gt;
-				&lt;img src=&quot;/image/spider-aws/spiders-with-master.png&quot; alt=&quot;AWS console&quot; /&gt;
-				&lt;/a&gt;
-				&lt;a href=&quot;/image/spider-aws/shutting-down.png&quot; title=&quot;Job done, spiders are shut down now.&quot;&gt;
-				&lt;img src=&quot;/image/spider-aws/shutting-down.png&quot; alt=&quot;AWS console&quot; /&gt;
-				&lt;/a&gt;
-				&lt;/figure&gt;</content><author><name>iBug</name></author><category term="story" /><category term="web" /><category term="web-scraping" /><category term="aws" /><summary type="html">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on the training data of 9M user-item pairs and a social network.</summary></entry></feed>
+				&lt;p&gt;And that concludes this tutorial. Cheers!&lt;/p&gt;</content><author><name>iBug</name></author><category term="linux" /><category term="mysql" /><summary type="html">For all of us who are learning to use or developing with MySQL or MariaDB, it’s a common task to manually log in to the database for inspection. This is usually done with the mysql command line client, and for sure it’s cumbersome to log in to the database using your application’s credentials. For convenience purposes, you would like to make your life easy by configuring the mysql CLI to NOT prompt you for a password each time. Here are three ways to do it on Linux.</summary></entry></feed>
