@@ -47,12 +47,16 @@ hr {
 
 .list {
   font-size: 12px;
-  font-weight: 100;
+  font-weight: 300;
 }
 
 .links {
   font-size: 12px;
-  font-weight: 400;
+  font-weight: normal;
+}
+
+.separator {
+  margin: 0 6px;
 }
 
 .separator::before {
@@ -100,12 +104,12 @@ a:focus {
 
 .pre-title {
   font-size: 18px;
-  font-weight: 700;
+  font-weight: bold;
 }
 
 .main-title {
   font-size: 45px;
-  font-weight: 700;
+  font-weight: bold;
 }
 
 @keyframes slide-to-right {
