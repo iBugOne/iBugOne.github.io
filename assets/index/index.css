@@ -1,0 +1,131 @@
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Amazon Ember, sans-serif;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  padding: 0;
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  color: #333;
+  background-color: #f0f0f0;
+}
+
+hr {
+  border-top: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.inner-container {
+  text-align: center;
+}
+
+.container {
+  position: absolute;
+  z-index: 1;
+  height: 100%;
+  width: 100%;
+}
+
+.title {
+  display: inline-block;
+  text-align: left;
+  font-size: 45px;
+}
+
+.info {
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+
+.list {
+  font-size: 12px;
+  font-weight: 100;
+}
+
+.links {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.separator {
+  content: "|";
+}
+
+a {
+  border-bottom: 1px dashed #aaa;
+}
+
+a,
+a:visited {
+  color: #333;
+  text-decoration: none;
+}
+
+a:hover,
+a:focus {
+  color: #666;
+  text-decoration: none;
+}
+
+.title-box {
+  width: 189px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+}
+
+.pre-title-box {
+  margin-bottom: 5px;
+  opacity: 0.5;
+  animation-name: slide-to-right;
+  animation-duration: 7s;
+  animation-timing-function: cubic-bezier(0.9, 0, 1, 1);
+  animation-direction: reverse;
+}
+
+.main-title-box {
+  animation-name: slide-to-left;
+  animation-duration: 7s;
+  animation-timing-function: cubic-bezier(0.9, 0, 1, 1);
+  animation-direction: reverse;
+}
+
+.pre-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.main-title {
+  font-size: 45px;
+  font-weight: 700;
+}
+
+@keyframes slide-to-right {
+  from {
+    margin-left: 0;
+    opacity: 0.5;
+  }
+  to {
+    margin-left: -12%;
+    opacity: 0.1;
+  }
+}
+
+@keyframes slide-to-left {
+  from {
+    margin-left: 0;
+    opacity: 1;
+  }
+  to {
+    margin-left: 12%;
+    opacity: 0.3;
+  }
+}
