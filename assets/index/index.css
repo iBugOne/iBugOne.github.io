@@ -55,7 +55,7 @@ hr {
   font-weight: 400;
 }
 
-.separator {
+.separator::before {
   content: "|";
 }
 
