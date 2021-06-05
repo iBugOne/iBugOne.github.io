@@ -4,6 +4,10 @@
   box-sizing: border-box;
 }
 
+html {
+  font-size: 18px;
+}
+
 body {
   font-family: Amazon Ember, sans-serif;
   position: absolute;
@@ -37,26 +41,26 @@ hr {
 .title {
   display: inline-block;
   text-align: left;
-  font-size: 45px;
+  font-size: 3rem;
 }
 
 .info {
-  margin-top: 30px;
-  margin-bottom: 20px;
+  margin-top: 2rem;
+  margin-bottom: 1.3333rem;
 }
 
 .list {
-  font-size: 12px;
+  font-size: 0.8rem;
   font-weight: 300;
 }
 
 .links {
-  font-size: 12px;
+  font-size: 0.8rem;
   font-weight: normal;
 }
 
 .separator {
-  margin: 0 6px;
+  margin: 0 0.4rem;
 }
 
 .separator::before {
@@ -80,14 +84,14 @@ a:focus {
 }
 
 .title-box {
-  width: 189px;
+  width: 12.5rem;
   margin-left: auto;
   margin-right: auto;
   text-align: left;
 }
 
 .pre-title-box {
-  margin-bottom: 5px;
+  margin-bottom: 0.3333rem;
   opacity: 0.5;
   animation-name: slide-to-right;
   animation-duration: 7s;
@@ -103,12 +107,12 @@ a:focus {
 }
 
 .pre-title {
-  font-size: 18px;
+  font-size: 1.2rem;
   font-weight: bold;
 }
 
 .main-title {
-  font-size: 45px;
+  font-size: 3rem;
   font-weight: bold;
 }
 
