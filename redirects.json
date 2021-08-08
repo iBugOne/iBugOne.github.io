@@ -1,6 +1,5 @@
 {
   "/blog/2019/02/setup-ubuntu-in-vmware-cn/": "https://ibug.io/cn/2019/02/setup-ubuntu-in-vmware/",
-  "/blog/2019/07/circleci-ssh-delpoy-keys/": "https://ibug.io/blog/2019/07/circleci-ssh-deploy-keys/",
   "/cn/about-internet-security/": "https://ibug.io/cn/2019/06/about-internet-security/",
   "/cn/backTCP-report/": "https://ibug.io/cn/2019/11/backTCP-report/",
   "/cn/chisel-101/": "https://ibug.io/cn/2018/12/chisel-101/",
@@ -54,5 +53,5 @@
   "/project/SmokeDetector/": "https://charcoal-se.org/",
   "/project/aurora-theme/": "https://ibug.github.io/aurora-theme/",
   "/project/pac-generator/": "https://github.com/iBug/pac/releases/latest",
-  "/share/": "https://notes.ibugone.com/"
+  "/share/": "https://notes.ibug.io/"
 }
