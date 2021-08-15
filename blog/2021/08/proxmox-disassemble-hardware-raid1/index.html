@@ -1,0 +1,576 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>Disassembling a hardware RAID 1 array in Proxmox VE - iBug</title>
+		<meta name="description" content="Yesterday in a server maintenance period, we decided to tune the storage layout of our Proxmox VE server, which included disassembling a RAID 1 array and adjusting the size of the root filesystem.">
+		<meta name="author" content="iBug">
+		<meta property="article:author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="Disassembling a hardware RAID 1 array in Proxmox VE">
+		<meta property="og:url" content="https://ibug.io/blog/2021/08/proxmox-disassemble-hardware-raid1/">
+		<meta property="og:description" content="Yesterday in a server maintenance period, we decided to tune the storage layout of our Proxmox VE server, which included disassembling a RAID 1 array and adjusting the size of the root filesystem.">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2021-08-15T00:00:00+00:00">
+		<meta property="article:modified_time" content="2021-08-16T00:33:24+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2021/08/proxmox-disassemble-hardware-raid1/">
+		<script type="application/ld+json">
+			{
+			  "@context": "https://schema.org",
+			
+			    "@type": "Person",
+			    "name": "iBug",
+			    "url": "https://ibug.io/"
+			
+			}
+		</script>
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<!-- https://t.co/dKP3o1e -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script>
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=9bfbd45">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fapro-free@5.15.2/css/all.min.css">
+		<!--[if IE]>
+			<style>
+				/* old IE unsupported flexbox fixes */
+				.greedy-nav .site-title {
+				  padding-right: 3em;
+				}
+				.greedy-nav button {
+				  position: absolute;
+				  top: 0;
+				  right: 0;
+				  height: 100%;
+				}
+			</style>
+		<![endif]-->
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<meta name="theme-color" content="#EDEDED">
+		<script>
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+		<script data-ad-client="ca-pub-4203697973995702" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+		<!--
+ Minimal Mistakes layout: single
+ Page Path: _posts/2021/2021-08-15-proxmox-disassemble-hardware-raid1.md
+ Page Type: 
+-->
+	</head>
+	<body class="layout--single">
+		<nav class="skip-links">
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<!--[if lt IE 9]>
+			<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+		<![endif]-->
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt="iBug"></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a href="/about/">About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/blog/">Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/projects/">Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/friends/">Friends</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/cn/">中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<i class="fas fa-search"></i>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay"
+  style=" background-image: url('/image/header/mountain-1.jpg');"
+>
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						Disassembling a hardware RAID 1 array in Proxmox VE
+					</h1>
+					<p class="page__meta">
+						<span class="page__meta-date">
+							<i class="far fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2021-08-15T00:00:00+00:00">Aug 15, 2021</time>
+						</span>
+						<span class="page__meta-sep"></span>
+						<span class="page__meta-readtime">
+							<i class="far fa-clock" aria-hidden="true"></i>
+							7 minute read
+						</span>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person">
+						<div class="author__avatar">
+							<img src="/image/avatar.png" alt="iBug" itemprop="image">
+						</div>
+						<div class="author__content">
+							<h3 class="author__name" itemprop="name">iBug</h3>
+							<div class="author__bio" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer"><i class="far fa-fw fa-envelope" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/ibugthought" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-telegram-plane" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox" />
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="Disassembling a hardware RAID 1 array in Proxmox VE">
+					<meta itemprop="description" content="Yesterday in a server maintenance period, we decided to tune the storage layout of our Proxmox VE server, which included disassembling a RAID 1 array and adjusting the size of the root filesystem.">
+					<meta itemprop="datePublished" content="2021-08-15T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2021-08-16T00:33:24+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#backup-data">Backup data</a></li>
+										<li><a href="#disassemble-array">Disassembling the RAID array</a></li>
+										<li><a href="#restore-partitions">Restore the partition table</a></li>
+										<li><a href="#shrink-rootfs">Shrinking the root filesystem</a></li>
+										<li><a href="#convert-rootfs-to-mirrored">Restoring rootfs to “RAID” state</a></li>
+										<li><a href="#fix-grub">Fixing up GRUB</a></li>
+										<li><a href="#fix-initrd">Fixing up ramdisk</a>
+											<ul>
+												<li><a href="#save-yourself-some-hassle"> Save yourself some hassle</a></li>
+											</ul>
+										</li>
+									</ul>
+								</li>
+								<li><a href="#other-stuff">Other stuff</a></li>
+							</ul>
+						</nav>
+					</aside>
+					<p>Yesterday in a server maintenance period, we decided to tune the storage layout of our Proxmox VE server, which included disassembling a RAID 1 array and adjusting the size of the root filesystem.</p>
+					<h2 id="backup-data">Backup data</h2>
+					<p class="notice--danger">As is always, potentially destructive disk operations should be preceded with a backup of anything necessary for recovery.</p>
+					<p>Proxmox VE uses a kind of “standard” partition layout, with the first 512 MB of the primary disk allocated for the EFI System Partition (ESP), and the rest forming an LVM physical volume (PV), which then becomes a volume group (VG) named <code class="language-plaintext highlighter-rouge">pve</code>. In the <code class="language-plaintext highlighter-rouge">pve</code> VG, a fifth of total available space is allocated to the root filesystem for the Proxmox VE system, and the rest goes to a thin pool named <code class="language-plaintext highlighter-rouge">data</code>.</p>
+					<p>The initial disk layout on our server is like this:</p>
+					<p><img src="/image/proxmox-raid1/initial-fdisk.png" alt="Initial disk layout" /></p>
+					<p>The system is booted with UEFI, so the first partition can be safely ignored. The second partition is the ESP and contains no critical data, as it can be rebuilt when needed. The only thing left for backup is the rootfs since we haven’t made use of the <code class="language-plaintext highlighter-rouge">data</code> volume. A good news is that the rootfs only has less then 3.5 GB of content (we have separate storages for the system and our virtual machines), so backing up is as easy as allocating a 4 GB volume on our data storage and copying the whole rootfs over with <a href="https://www.samba.org/rsync/">Rsync</a>:</p>
+					<div class="language-shell highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code>rsync <span class="nt">-aHAXx</span> / /mnt/backup/
+</code></pre>
+						</div>
+					</div>
+					<p>In addition, it’s been said in <a href="https://superuser.com/a/137310/688600">this Super User answer</a> that</p>
+					<blockquote>
+						<p>Of course, it may be a complete jerk for you and wipe the drives for no good reason, but this is very unlikely.</p>
+					</blockquote>
+					<p>So we might not even need that backup (in fact we didn’t). After all, it’s better safe than sorry, isn’t it?</p>
+					<h2 id="disassemble-array">Disassembling the RAID array</h2>
+					<p>The standard procedure for this is to reboot into BIOS setup and change the settings there.</p>
+					<p>I reboot the server, hitting F9 on its POST screen.</p>
+					<p><img src="/image/proxmox-raid1/hpe-enter-bios.png" alt="HPE POST Screen" /></p>
+					<p>Next, I locate the built-in RAID controller. It’s called “HPE Smart Array”. I navigate into the options, locate the RAID-1 array, and select “Delete Array”. It completes just in a flash.</p>
+					<p><img src="/image/proxmox-raid1/hpe-bios-array-setting.png" alt="HPE Array Setting" /></p>
+					<p>To ensure the changes take effect, I reboot the server again.</p>
+					<h2 id="restore-partitions">Restore the partition table</h2>
+					<p>Because the disks may previously contain some RAID information at their start, their content may not be recognized now, so I insert a virtual CD-ROM drive using the “Virtual Media” feature provided by the Baseboard Management Controller (BMC, also known as IPMI). It’s good we have a file server providing these handy resources. As the host system has been updated to <a href="https://pve.proxmox.com/wiki/Roadmap#Proxmox_VE_7.0">Proxmox VE 7</a>, I picked the new Debian Bullseye Live CD instead of Buster. This ensures I can start the server for disk recovery jobs.</p>
+					<p><img src="/image/proxmox-raid1/set-virtual-media.png" alt="Insert ISO from IPMI" /></p>
+					<p>This time I enter “One-Time Boot Menu” to boot from the CD-ROM. I select “iLO Virtual CD-ROM” and it starts up.</p>
+					<p><img src="/image/proxmox-raid1/hpe-bios-boot-from-iso.png" alt="Select boot item" /></p>
+					<p>In a few seconds, the Debian boot screen shows up.</p>
+					<p><img src="/image/linux/debian-11-livecd.png" alt="Debian Bullseye GRUB screen" /></p>
+					<p>Now I can run <code class="language-plaintext highlighter-rouge">fdisk</code> to check the disk status. As expected, no partitions are found.</p>
+					<p>Given that the “Delete Array” operation completes so quickly, I’m sure it did nothing to data stored on the disk, so I can try recovering the partition table. <a href="https://linux.die.net/man/1/testdisk"><code class="language-plaintext highlighter-rouge">testdisk</code></a> is one of the utilities that do this job.</p>
+					<p><img src="/image/proxmox-raid1/after-disassembly-fdisk.png" alt="Disk layout after disassembly" /></p>
+					<p>The terminal interface of testdisk is straightforward. Select the only disk given (<code class="language-plaintext highlighter-rouge">/dev/sda</code>, the one you gave it as CLI argument), select the previous partition table type (testdisk tells you if it can find out, which matches that in the first image of this article), and select “Analyze”.</p>
+					<p><img src="/image/proxmox-raid1/testdisk-disk-type.png" alt="Testdisk select disk type" /></p>
+					<p>If testdisk found a partition table in the previous screen, the analyze step doesn’t need a second - it will just show the discovered partition. If it didn’t find anything, you can still run “Quick Search” and get your partition table back.</p>
+					<p><img src="/image/proxmox-raid1/testdisk-analysis.png" alt="Testdisk partition analysis" /></p>
+					<p>In my case, I just select “Backup” and proceed to next step. Testdisk is smart enough to discard the first nonsense partition (it’s completely redundant on a UEFI system), and I’m left with two.</p>
+					<p><img src="/image/proxmox-raid1/testdisk-overview.png" alt="Testdisk found partitions" /></p>
+					<p>There’s no change I need to make at this stage, so I just proceed to the final screen and let testdisk write the partition table.</p>
+					<p><img src="/image/proxmox-raid1/testdisk-confirm.png" alt="Testdisk confirm partitions" /></p>
+					<p>Although testdisk tells me “<em>You will have to reboot for the change to take effect</em>”, calling <code class="language-plaintext highlighter-rouge">partprobe</code> is all that’s necessary. Now I can confirm with <code class="language-plaintext highlighter-rouge">fdisk</code> that the partition table has been restored.</p>
+					<p><img src="/image/proxmox-raid1/restored-fdisk.png" alt="Restored disk layout" /></p>
+					<p class="notice--info"><code class="language-plaintext highlighter-rouge">partprobe</code> doesn’t come with Debian Bullseye live CD (it did with Debian Buster). To get the command I installed <code class="language-plaintext highlighter-rouge">parted</code> package.</p>
+					<h2 id="shrink-rootfs">Shrinking the root filesystem</h2>
+					<p>It’s a complete waste to give the rootfs a whopping 96 GB when we only use some 3.5 GB, so I go to shrink it down to 16 GB.</p>
+					<p>Before shrinking the volume, it’s necessary to shrink the <em>filesystem</em> first. Yes, a “partition” and a “filesystem” are two different concepts.</p>
+					<p>The rootfs of Proxmox VE resides in LVM, so the first thing is to get LVM tools up and running. I tried <code class="language-plaintext highlighter-rouge">apt install lvm2</code>, and was (a bit) surprised to found that it came with Debian Bullseye Live CD.</p>
+					<p>I get back the VG <code class="language-plaintext highlighter-rouge">pve</code> by <code class="language-plaintext highlighter-rouge">vgscan</code>, and make all LVs available for operation by <code class="language-plaintext highlighter-rouge">vgchange -ay pve</code>. I can then mount <code class="language-plaintext highlighter-rouge">/dev/pve/root</code> somewhere and check the volume usage with <code class="language-plaintext highlighter-rouge">df -h</code>. Just around 4 gigs, we’re good.</p>
+					<p>Many years ago I read <a href="https://matt.berther.io/2015/02/03/how-to-resize-aws-ec2-ebs-volumes/">this blog by Matt Berther</a> about shrinking EBS volumes on AWS EC2. The same solution is still applicable here (though years of Linux experience relieved me of the need for the blog as a reference).</p>
+					<p>I unmount the rootfs and run <code class="language-plaintext highlighter-rouge">e2fsck -f /dev/pve/root</code> to ensure a clean state of the filesystem, followed by <code class="language-plaintext highlighter-rouge">resize2fs -M -p /dev/pve/root</code> to perform the shrinking.</p>
+					<p><img src="/image/proxmox-raid1/shrink-rootfs.png" alt="Shrinking rootfs" /></p>
+					<p>After the filesystem is shrunk, I shrink the logical volume with <code class="language-plaintext highlighter-rouge">lvresize -L 16G pve/root</code>. Then I grow the filesystem back to the full size of the volume with <code class="language-plaintext highlighter-rouge">resize2fs -p /dev/pve/root</code> (without the <code class="language-plaintext highlighter-rouge">-M</code> option).</p>
+					<p><img src="/image/proxmox-raid1/grow-rootfs.png" alt="Restore rootfs" /></p>
+					<h2 id="convert-rootfs-to-mirrored">Restoring rootfs to “RAID” state</h2>
+					<p>The main reason we set up RAID 1 for these disks is to provide resilience against disk failures, so we can still have the system running if either disk dies. Completely breaking up the RAID array defeats this purpose, so it’s helpful to at least add the rootfs back to the mirrored state.</p>
+					<p>Luckily, <a href="https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/logical_volume_manager_administration/mirror_create">LVM provides the ability</a> to create mirrored volumes. Converting an existing one is even easier:</p>
+					<div class="language-shell highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code>lvconvert <span class="nt">-m1</span> pve/root
+</code></pre>
+						</div>
+					</div>
+					<p>The command failed for an obvious reason: There’s only one disk in the VG.</p>
+					<p>Recalling that a RAID 1 array has just been broken up, there’s <code class="language-plaintext highlighter-rouge">/dev/sdb</code> with an identical partition structure available. I repeat the same steps to recover the partition table on <code class="language-plaintext highlighter-rouge">/dev/sdb</code>, and wiped <code class="language-plaintext highlighter-rouge">/dev/sdb2</code> to avoid conflict. I can then add it to the VG as a second PV:</p>
+					<div class="language-shell highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code><span class="nb">dd </span><span class="k">if</span><span class="o">=</span>/dev/zero <span class="nv">of</span><span class="o">=</span>/dev/sdb2 <span class="nv">bs</span><span class="o">=</span>1M <span class="nv">count</span><span class="o">=</span>1
+pvcreate /dev/sdb2
+vgextend pve /dev/sdb2
+</code></pre>
+						</div>
+					</div>
+					<p>Now I can convert the rootfs to “mirrored” volume.</p>
+					<p><img src="/image/proxmox-raid1/extend-vg.png" alt="Extend volume group" /></p>
+					<p>The “data” volume can also be extended to take all remaining space as well:</p>
+					<div class="language-shell highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code>lvextend <span class="nt">-l</span> +100%FREE pve/data
+</code></pre>
+						</div>
+					</div>
+					<h2 id="fix-grub">Fixing up GRUB</h2>
+					<p>To ensure the system can boot up normally, GRUB should be updated. This needs to be done in chroot inside the original system environment. A bunch of mounts must be setup for GRUB reinstallation to work.</p>
+					<div class="language-shell highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code>mount /dev/pve/root /mnt
+
+<span class="c"># systemd-udev requires these two directories to be available</span>
+mount <span class="nt">-o</span> rbind /run /mnt/run
+mount <span class="nt">-o</span> rbind /tmp /mnt/tmp
+
+<span class="nb">chroot</span> /mnt
+mount <span class="nt">-t</span> devtmpfs _ /dev
+mount /dev/sda1 /boot/efi
+mount <span class="nt">-t</span> proc _ /proc
+mount <span class="nt">-t</span> sysfs _ /sys
+</code></pre>
+						</div>
+					</div>
+					<p>Now I can replace <code class="language-plaintext highlighter-rouge">grub-pc</code> with <code class="language-plaintext highlighter-rouge">grub-efi</code> with <code class="language-plaintext highlighter-rouge">apt install grub-efi</code>, and then run <code class="language-plaintext highlighter-rouge">grub-install</code> on both <code class="language-plaintext highlighter-rouge">/dev/sda1</code> and <code class="language-plaintext highlighter-rouge">/dev/sdb1</code> so that both disks are bootable.</p>
+					<h2 id="fix-initrd">Fixing up ramdisk</h2>
+					<div class="notice--info">
+						<h4 id="save-yourself-some-hassle"><i class="fas fa-lightbulb"></i> Save yourself some hassle</h4>
+						<p>This paragraph tells a trap I encountered. If you’re following this article as a step-to-step guide, you can skip this paragraph and do this instead:</p>
+						<ol>
+							<li>Either install <code class="language-plaintext highlighter-rouge">mdadm</code>, or</li>
+							<li>Edit <code class="language-plaintext highlighter-rouge">/etc/initramfs-tools/modules</code> and append two lines <code class="language-plaintext highlighter-rouge">dm_raid</code> and <code class="language-plaintext highlighter-rouge">raid1</code>.</li>
+						</ol>
+						<p>After picking an action above, run <code class="language-plaintext highlighter-rouge">update-initramfs -u -k all</code> and you can proceed to rebooting from the live CD.</p>
+					</div>
+					<p>Looking at the checklist, everything should have been taken care of, so I reboot the server. The Proxmox GRUB screen passed as normal. To my surprise, the server is stuck at <em>Loading initial ramdisk</em>.</p>
+					<p>To display more information for troubleshooting, I reboot the server again, pressing <code class="language-plaintext highlighter-rouge">e</code> on the GRUB screen so I can edit the boot item. I remove <code class="language-plaintext highlighter-rouge">quiet</code> and added <code class="language-plaintext highlighter-rouge">nomodeset</code> to the kernel command line (see <a href="https://askubuntu.com/q/716957/612877">Ask Ubuntu</a>), and hit Ctrl-X to boot. This does turn up something useful:</p>
+					<p><img src="/image/proxmox-raid1/loading-initial-ramdisk-nomodeset.png" alt="Debug output for Loading initial ramdisk" /></p>
+					<p>Google search for “raid: failed to run raid array” brings me to <a href="https://askubuntu.com/q/292092/612877">this Ask Ubuntu question</a>. Checking the answers and the comments, I reboot again into Debian Live CD, mount the rootfs, install <code class="language-plaintext highlighter-rouge">mdadm</code>, and <code class="language-plaintext highlighter-rouge">update-initramfs</code> again. The next reboot proved correct, and the Proxmox VE server is back up now.</p>
+					<h2 id="other-stuff">Other stuff</h2>
+					<p>At this point, this server maintenance job has been concluded. If you’re stumbling upon this article and find a mistake or have other questions, feel free to leave a comment below.</p>
+				</section>
+				<footer class="page__meta">
+					<p class="page__taxonomy">
+						<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+						<span itemprop="keywords">
+							<a href="/tag/linux" class="page__taxonomy-item" rel="tag">linux</a>
+						</span>
+					</p>
+					<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-08-16">Aug 16, 2021</time></p>
+				</footer>
+				<section class="page__share">
+					<h4 class="page__share-title">Share on</h4>
+					<a href="https://twitter.com/intent/tweet?text=Disassembling+a+hardware+RAID+1+array+in+Proxmox+VE%20https%3A%2F%2Fibug.io%2Fblog%2F2021%2F08%2Fproxmox-disassemble-hardware-raid1%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+					<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F08%2Fproxmox-disassemble-hardware-raid1%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+					<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F08%2Fproxmox-disassemble-hardware-raid1%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+				</section>
+				<nav class="pagination">
+					<a href="/blog/2021/06/switch-from-google-chrome-to-microsoft-edge/" class="pagination--pager" title="I switched from Google Chrome to Microsoft Edge
+">Previous</a>
+					<a href="#" class="pagination--pager disabled">Next</a>
+				</nav>
+			</div>
+			<div class="page__comments">
+				<h4 class="page__comments-title">Leave a comment</h4>
+				<section id="disqus_thread"></section>
+			</div>
+		</article>
+		<div class="page__related">
+			<h2 class="page__related-title">You may also enjoy</h2>
+			<div class="grid__wrapper">
+				<div class="grid__item">
+					<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+						<h2 class="archive__item-title no_toc" itemprop="headline">
+							<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
+							</a>
+						</h2>
+						<p class="page__meta">
+							<span class="page__meta-date">
+								<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+								<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
+							</span>
+							<span class="page__meta-sep"></span>
+							<span class="page__meta-readtime">
+								<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+								24 minute read
+							</span>
+						</p>
+						<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are without diving into all the gory details of them, so I decided to go on this exploration myself.
+						</p>
+					</article>
+				</div>
+				<div class="grid__item">
+					<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+						<h2 class="archive__item-title no_toc" itemprop="headline">
+							<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+							</a>
+						</h2>
+						<p class="page__meta">
+							<span class="page__meta-date">
+								<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+								<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
+							</span>
+							<span class="page__meta-sep"></span>
+							<span class="page__meta-readtime">
+								<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+								16 minute read
+							</span>
+						</p>
+						<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on the training data of 9M user-item pairs and a social network.
+						</p>
+					</article>
+				</div>
+				<div class="grid__item">
+					<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+						<h2 class="archive__item-title no_toc" itemprop="headline">
+							<a href="/blog/2019/04/os-lab-1/" rel="permalink">Build a minimal Linux system and run it in QEMU
+							</a>
+						</h2>
+						<p class="page__meta">
+							<span class="page__meta-date">
+								<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+								<time datetime="2019-04-07T00:00:00+00:00">Apr 7, 2019</time>
+							</span>
+							<span class="page__meta-sep"></span>
+							<span class="page__meta-readtime">
+								<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+								6 minute read
+							</span>
+						</p>
+						<p class="archive__item-excerpt" itemprop="description">Linux is the #1 open-source operating system nowadays, and many people are running a Linux distro, such as Ubuntu or Arch. Linux is also the most popular choice for a server OS.
+						</p>
+					</article>
+				</div>
+				<div class="grid__item">
+					<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+						<h2 class="archive__item-title no_toc" itemprop="headline">
+							<a href="/blog/2019/09/raspberry-pi-4-review-benchmark/" rel="permalink">Raspberry Pi 4 B Review and Benchmark - What’s improved over Pi 3 B+
+							</a>
+						</h2>
+						<p class="page__meta">
+							<span class="page__meta-date">
+								<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+								<time datetime="2019-09-10T00:00:00+00:00">Sep 10, 2019</time>
+							</span>
+							<span class="page__meta-sep"></span>
+							<span class="page__meta-readtime">
+								<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+								9 minute read
+							</span>
+						</p>
+						<p class="archive__item-excerpt" itemprop="description">Lately I’ve finally received my Raspberry Pi 4 (4 GB model), and I couldn’t resist the temptation to give it a try and see all the improvements that’s been reported for months.
+						</p>
+					</article>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="search-content">
+	<div class="search-content__inner-wrap">
+		<div class="search-searchbar"></div>
+		<div class="search-hits"></div>
+	</div>
+</div>
+<div id="footer" class="page__footer">
+	<footer>
+		<!-- start custom footer snippets -->
+		<!-- end custom footer snippets -->
+		<div class="page__footer-follow">
+			<ul class="social-icons">
+				<li><strong>Follow:</strong></li>
+				<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+				<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+				<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+			</ul>
+		</div>
+		<div class="page__footer-copyright">
+			<p>&copy; 2021 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+			<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
+			<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
+			<p>
+				Site version <a href="/status" class="version-text">G-561</a>
+			</p>
+		</div>
+	</footer>
+</div>
+<script src="/assets/js/main.min.js?v=1"></script>
+<!-- Including InstantSearch.js library and styling -->
+<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css">
+<script>
+	// Instanciating InstantSearch.js with Algolia credentials
+	const search = instantsearch({
+	  appId: '14DZKASAEJ',
+	  apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+	  indexName: 'iBug_website',
+	  searchParameters: {
+	    restrictSearchableAttributes: [
+	      'title',
+	      'content'
+	    ]
+	  }
+	});
+	
+	const hitTemplate = function(hit) {
+	  const url = hit.url;
+	  const title = hit._highlightResult.title.value;
+	  const content = hit._highlightResult.html.value;
+	
+	  return `
+	    <div class="list__item">
+	      <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+	        <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+	        <div class="archive__item-excerpt" itemprop="description">${content}</div>
+	      </article>
+	    </div>
+	  `;
+	}
+	
+	// Adding searchbar and results widgets
+	search.addWidget(
+	  instantsearch.widgets.searchBox({
+	    container: '.search-searchbar',
+	    poweredBy: true,
+	    placeholder: 'Enter your search term...'
+	  })
+	);
+	search.addWidget(
+	  instantsearch.widgets.hits({
+	    container: '.search-hits',
+	    templates: {
+	      item: hitTemplate,
+	      empty: 'No results',
+	    }
+	  })
+	);
+	
+	// Starting the search only when toggle is clicked
+	$(document).ready(function () {
+	  $(".search__toggle").on("click", function() {
+	    if(!search.started) {
+	      search.start();
+	    }
+	  });
+	});
+</script>
+<script>
+	var _gaq = _gaq || [];
+	_gaq.push(['_setAccount', 'UA-115907213-1']);
+	
+	_gaq.push(['_trackPageview']);
+	
+	(function() {
+	  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+	  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+	  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	})();
+</script>
+<script>
+	var disqus_config = function () {
+	  this.page.url = "https://ibug.io/blog/2021/08/proxmox-disassemble-hardware-raid1/";  /* Replace PAGE_URL with your page's canonical URL variable */
+	  this.page.identifier = "/blog/2021/08/proxmox-disassemble-hardware-raid1"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+	};
+	(function() { /* DON'T EDIT BELOW THIS LINE */
+	  var d = document, s = d.createElement('script');
+	  s.src = 'https://ibugone.disqus.com/embed.js';
+	  s.setAttribute('data-timestamp', +new Date());
+	  (d.head || d.body).appendChild(s);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</body>
+</html>
