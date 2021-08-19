@@ -10,7 +10,7 @@
 		<meta charset="utf-8">
 		<!-- begin _includes/seo.html -->
 		<title>在 AWS Lambda 上部署一个 GitHub webhook - iBug</title>
-		<meta name="description" content="前段时间我写了一个 Telegram bot 来接受 GitHub 上的仓库动态，比如有人 push 了，或者 CI 跑完了/跑挂了等。为了接受 GitHub 的“推送通知”，我需要一个 webhook 的接收器。实话讲，用 Flask 或者 Sinatra 写一个然后扔 VPS 上挂着并不困难，但是考虑到维护 VPS 和部署等需要的精力，我决定接这个机会尝试一下无服务器（serverless）的方案，也就是 AWS Lambda 云函数。">
+		<meta name="description" content="前段时间我写了一个 Telegram bot 来接受 GitHub 上的仓库动态，比如有人 push 了，或者 CI 跑完了/跑挂了等。为了接受 GitHub 的“推送通知”，我需要一个 webhook 的接收器。实话讲，用 Flask 或者 Sinatra 写一个然后扔 VPS 上挂着并不困难，但是考虑到维护 VPS 和部署等需要的精力，我决定借这个机会尝试一下无服务器（serverless）的方案，也就是 AWS Lambda 云函数。">
 		<meta name="author" content="iBug">
 		<meta property="article:author" content="iBug">
 		<meta property="og:type" content="article">
@@ -18,10 +18,10 @@
 		<meta property="og:site_name" content="iBug">
 		<meta property="og:title" content="在 AWS Lambda 上部署一个 GitHub webhook">
 		<meta property="og:url" content="https://ibug.io/cn/2021/02/github-webhook-on-aws-lambda/">
-		<meta property="og:description" content="前段时间我写了一个 Telegram bot 来接受 GitHub 上的仓库动态，比如有人 push 了，或者 CI 跑完了/跑挂了等。为了接受 GitHub 的“推送通知”，我需要一个 webhook 的接收器。实话讲，用 Flask 或者 Sinatra 写一个然后扔 VPS 上挂着并不困难，但是考虑到维护 VPS 和部署等需要的精力，我决定接这个机会尝试一下无服务器（serverless）的方案，也就是 AWS Lambda 云函数。">
+		<meta property="og:description" content="前段时间我写了一个 Telegram bot 来接受 GitHub 上的仓库动态，比如有人 push 了，或者 CI 跑完了/跑挂了等。为了接受 GitHub 的“推送通知”，我需要一个 webhook 的接收器。实话讲，用 Flask 或者 Sinatra 写一个然后扔 VPS 上挂着并不困难，但是考虑到维护 VPS 和部署等需要的精力，我决定借这个机会尝试一下无服务器（serverless）的方案，也就是 AWS Lambda 云函数。">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2021-02-27T00:00:00+00:00">
-		<meta property="article:modified_time" content="2021-02-27T03:04:22+00:00">
+		<meta property="article:modified_time" content="2021-08-19T12:25:22+00:00">
 		<link rel="canonical" href="https://ibug.io/cn/2021/02/github-webhook-on-aws-lambda/">
 		<script type="application/ld+json">
 			{
@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=f556a64">
+		<link rel="stylesheet" href="/assets/css/main.css?v=996ed5a">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fapro-free@5.15.2/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -193,9 +193,9 @@
 				</div>
 				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
 					<meta itemprop="headline" content="在 AWS Lambda 上部署一个 GitHub webhook">
-					<meta itemprop="description" content="前段时间我写了一个 Telegram bot 来接受 GitHub 上的仓库动态，比如有人 push 了，或者 CI 跑完了/跑挂了等。为了接受 GitHub 的“推送通知”，我需要一个 webhook 的接收器。实话讲，用 Flask 或者 Sinatra 写一个然后扔 VPS 上挂着并不困难，但是考虑到维护 VPS 和部署等需要的精力，我决定接这个机会尝试一下无服务器（serverless）的方案，也就是 AWS Lambda 云函数。">
+					<meta itemprop="description" content="前段时间我写了一个 Telegram bot 来接受 GitHub 上的仓库动态，比如有人 push 了，或者 CI 跑完了/跑挂了等。为了接受 GitHub 的“推送通知”，我需要一个 webhook 的接收器。实话讲，用 Flask 或者 Sinatra 写一个然后扔 VPS 上挂着并不困难，但是考虑到维护 VPS 和部署等需要的精力，我决定借这个机会尝试一下无服务器（serverless）的方案，也就是 AWS Lambda 云函数。">
 					<meta itemprop="datePublished" content="2021-02-27T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2021-02-27T03:04:22+00:00">
+					<meta itemprop="dateModified" content="2021-08-19T12:25:22+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -217,7 +217,7 @@
 									</ul>
 								</nav>
 							</aside>
-							<p>前段时间我写了一个 Telegram bot 来接受 GitHub 上的仓库动态，比如有人 push 了，或者 CI 跑完了/跑挂了等。为了接受 GitHub 的“推送通知”，我需要一个 webhook 的接收器。实话讲，用 <a href="https://palletsprojects.com/p/flask/">Flask</a> 或者 <a href="http://sinatrarb.com/">Sinatra</a> 写一个然后扔 VPS 上挂着并不困难，但是考虑到维护 VPS 和部署等需要的精力，我决定接这个机会尝试一下无服务器（serverless）的方案，也就是 AWS Lambda 云函数。</p>
+							<p>前段时间我写了一个 Telegram bot 来接受 GitHub 上的仓库动态，比如有人 push 了，或者 CI 跑完了/跑挂了等。为了接受 GitHub 的“推送通知”，我需要一个 webhook 的接收器。实话讲，用 <a href="https://palletsprojects.com/p/flask/">Flask</a> 或者 <a href="http://sinatrarb.com/">Sinatra</a> 写一个然后扔 VPS 上挂着并不困难，但是考虑到维护 VPS 和部署等需要的精力，我决定借这个机会尝试一下无服务器（serverless）的方案，也就是 AWS Lambda 云函数。</p>
 							<p><small><a href="/p/41">There’s an English version of this article!</a></small></p>
 							<h2 id="aws-lambda">创建 AWS Lambda 函数</h2>
 							<p>之前在 AWS Educate 那里白嫖过代金券，所以本文就跳过了注册 AWS 账号的部分了。直接登录 <a href="https://console.aws.amazon.com/">AWS 管理控制台</a>准备开始工作。</p>
@@ -415,7 +415,7 @@
 									<a href="/tag/github" class="page__taxonomy-item" rel="tag">github</a>
 								</span>
 							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-02-27">Feb 27, 2021</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-08-19">Aug 19, 2021</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
@@ -459,7 +459,7 @@
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-565</a>
+						Site version <a href="/status" class="version-text">G-566</a>
 					</p>
 				</div>
 			</footer>
