@@ -253,6 +253,10 @@
 			<lastmod>2021-08-16T01:05:26+00:00</lastmod>
 		</url>
 		<url>
+			<loc>https://ibug.io/blog/2021/10/linux-ipsec-with-ip-xfrm/</loc>
+			<lastmod>2021-10-23T21:58:07+00:00</lastmod>
+		</url>
+		<url>
 			<loc>https://ibug.io/project/OJSandbox/</loc>
 			<lastmod>2020-12-18T16:19:16+00:00</lastmod>
 		</url>
@@ -467,6 +471,10 @@
 			<lastmod>2021-02-26T00:17:56+00:00</lastmod>
 		</url>
 		<url>
+			<loc>https://ibug.io/blog/7/</loc>
+			<lastmod>2021-02-26T00:17:56+00:00</lastmod>
+		</url>
+		<url>
 			<loc>https://ibug.io/cn/</loc>
 			<lastmod>2021-03-02T04:09:44+00:00</lastmod>
 		</url>
@@ -476,6 +484,6 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/assets/index/</loc>
-			<lastmod>2021-10-16T13:48:22+00:00</lastmod>
+			<lastmod>2021-10-23T13:58:23+00:00</lastmod>
 		</url>
 	</urlset>

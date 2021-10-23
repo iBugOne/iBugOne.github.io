@@ -1,4 +1,283 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2021-10-16T13:52:15+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Disassembling a hardware RAID 1 array in Proxmox VE</title><link href="https://ibug.io/blog/2021/08/proxmox-disassemble-hardware-raid1/" rel="alternate" type="text/html" title="Disassembling a hardware RAID 1 array in Proxmox VE" /><published>2021-08-15T00:00:00+00:00</published><updated>2021-08-16T01:05:26+00:00</updated><id>https://ibug.io/blog/2021/08/proxmox-disassemble-hardware-raid1</id><content type="html" xml:base="https://ibug.io/blog/2021/08/proxmox-disassemble-hardware-raid1/">&lt;p&gt;Yesterday in a server maintenance period, we decided to tune the storage layout of our Proxmox VE server, which included disassembling a RAID 1 array and adjusting the size of the root filesystem.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2021-10-23T13:58:34+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Secure site-to-site connection with Linux IPsec VPN</title><link href="https://ibug.io/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="alternate" type="text/html" title="Secure site-to-site connection with Linux IPsec VPN" /><published>2021-10-23T00:00:00+00:00</published><updated>2021-10-23T21:58:07+00:00</updated><id>https://ibug.io/blog/2021/10/linux-ipsec-with-ip-xfrm</id><content type="html" xml:base="https://ibug.io/blog/2021/10/linux-ipsec-with-ip-xfrm/">&lt;p&gt;Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. &lt;a href=&quot;https://en.wikipedia.org/wiki/Layer_2_Tunneling_Protocol&quot;&gt;L2TP&lt;/a&gt; and &lt;a href=&quot;https://en.wikipedia.org/wiki/Generic_Routing_Encapsulation&quot;&gt;GRE&lt;/a&gt;) to create secure cross-site network connections. As an innovative attempt to a lab in this semester’s Network Security course, which was designed to work over multiple Windows Server 2003 virtual machines (VM), I decided to go on my own and proceed with Linux VMs.&lt;/p&gt;
+				&lt;p&gt;As covered in &lt;a href=&quot;/blog/2021/01/linux-container-explained/#namespaces&quot;&gt;my previous blog&lt;/a&gt;, one of the fundamentals of a Linux container is namespaces, among which the network namespace is of great interest here. Since a network namespace creates a copy of the entire network stack, it’s suitable as a substitute for a full VM for this lab. This enables me to work on this lab with lightweight containers on my Proxmox VE cluster.&lt;/p&gt;
+				&lt;h2 id=&quot;setting-up-network&quot;&gt;Setting up network&lt;/h2&gt;
+				&lt;p&gt;The lab is designed to work on VirtualBox platform, and the network structure is laid out as follows:&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/network-structure-vbox.png&quot; alt=&quot;VirtualBox network structure&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;As &lt;a href=&quot;https://pve.proxmox.com/wiki/Network_Configuration#_naming_conventions&quot;&gt;Proxmox VE requires&lt;/a&gt; bridges to be named as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vmbr#&lt;/code&gt; where &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;#&lt;/code&gt; is a number, I renamed the networks as follows:&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/network-structure-pve.png&quot; alt=&quot;Proxmox VE network structure&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;To create the networks, I edit &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/etc/network/interfaces&lt;/code&gt; to append these lines:&lt;/p&gt;
+				&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;auto vmbr91
+				iface vmbr91 inet manual
+				bridge_ports none
+				bridge_stp off
+				bridge_fd 0
+				auto vmbr92
+				iface vmbr92 inet manual
+				bridge_ports none
+				bridge_stp off
+				bridge_fd 0
+				auto vmbr95
+				iface vmbr95 inet manual
+				bridge_ports none
+				bridge_stp off
+				bridge_fd 0
+				auto vmbr96
+				iface vmbr96 inet manual
+				bridge_ports none
+				bridge_stp off
+				bridge_fd 0
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bridge_stp&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bridge_fd&lt;/code&gt; options turns off &lt;a href=&quot;https://en.wikipedia.org/wiki/Spanning_Tree_Protocol&quot;&gt;STP&lt;/a&gt;, which is &lt;a href=&quot;https://wiki.debian.org/BridgeNetworkConnections#Configuring_bridging_in_.2Fetc.2Fnetwork.2Finterfaces&quot;&gt;usually a better choice&lt;/a&gt; in a virtualized environment.&lt;/p&gt;
+				&lt;p&gt;I then bring up the new bridges so VMs can later be attached to:&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ifup vmbr91 vmbr92 vmbr95 vmbr96
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;Now it’s time to set up the VMs.&lt;/p&gt;
+				&lt;h2 id=&quot;setting-up-containers&quot;&gt;Setting up containers&lt;/h2&gt;
+				&lt;p&gt;As explained above, container is an excellent replacement for full-fledged virtual machines for this lab, so I create containers using the Proxmox VE web interface.&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/create-ct.png&quot; alt=&quot;Create CT&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;It’s also helpful to make a plan for the container IDs first, since I will heavily utilize &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pct enter&lt;/code&gt; to get into the container. The web console won’t work with some shortcut keys, notably &lt;kbd&gt;Ctrl&lt;/kbd&gt;+&lt;kbd&gt;W&lt;/kbd&gt; and &lt;kbd&gt;Ctrl&lt;/kbd&gt;+&lt;kbd&gt;T&lt;/kbd&gt;.&lt;/p&gt;
+				&lt;table&gt;
+				&lt;thead&gt;
+				&lt;tr&gt;
+				&lt;th&gt;Container (Name)&lt;/th&gt;
+				&lt;th&gt;ID&lt;/th&gt;
+				&lt;th&gt;Network&lt;/th&gt;
+				&lt;th&gt;IP Address&lt;/th&gt;
+				&lt;/tr&gt;
+				&lt;/thead&gt;
+				&lt;tbody&gt;
+				&lt;tr&gt;
+				&lt;td&gt;Router&lt;/td&gt;
+				&lt;td&gt;980&lt;/td&gt;
+				&lt;td&gt;vmbr95&lt;br /&gt;vmbr96&lt;/td&gt;
+				&lt;td&gt;10.55.55.55/24&lt;br /&gt;10.66.66.66/24&lt;/td&gt;
+				&lt;/tr&gt;
+				&lt;tr&gt;
+				&lt;td&gt;Server A&lt;/td&gt;
+				&lt;td&gt;981&lt;/td&gt;
+				&lt;td&gt;vmbr91&lt;br /&gt;vmbr95&lt;/td&gt;
+				&lt;td&gt;192.168.1.1/24&lt;br /&gt;10.55.55.1/24&lt;br /&gt;Gateway 10.55.55.55&lt;/td&gt;
+				&lt;/tr&gt;
+				&lt;tr&gt;
+				&lt;td&gt;Server B&lt;/td&gt;
+				&lt;td&gt;982&lt;/td&gt;
+				&lt;td&gt;vmbr92&lt;br /&gt;vmbr96&lt;/td&gt;
+				&lt;td&gt;192.168.2.1/24&lt;br /&gt;10.66.66.1/24&lt;br /&gt;Gateway 10.66.66.66&lt;/td&gt;
+				&lt;/tr&gt;
+				&lt;tr&gt;
+				&lt;td&gt;Client A&lt;/td&gt;
+				&lt;td&gt;983&lt;/td&gt;
+				&lt;td&gt;vmbr91&lt;/td&gt;
+				&lt;td&gt;192.168.1.2&lt;br /&gt;Gateway 192.168.1.1&lt;/td&gt;
+				&lt;/tr&gt;
+				&lt;tr&gt;
+				&lt;td&gt;Client B&lt;/td&gt;
+				&lt;td&gt;984&lt;/td&gt;
+				&lt;td&gt;vmbr92&lt;/td&gt;
+				&lt;td&gt;192.168.2.2&lt;br /&gt;Gateway 192.168.2.1&lt;/td&gt;
+				&lt;/tr&gt;
+				&lt;/tbody&gt;
+				&lt;/table&gt;
+				&lt;p&gt;Also I’m more comfortable with newer software, so I go with the Debian 11 template provided by Proxmox.&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/create-ct-template.png&quot; alt=&quot;Select template&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;The rest of the settings aren’t of much interest, and the default settings should suffice. On a side note, 2 GB is more than abundant for Root Disk because I need virtually no extra software to work on this lab.&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/create-ct-confirm.png&quot; alt=&quot;CT configuration&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;Don’t start the container right now, because there’s another network interface to be added. I head to the page to add &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;eth6&lt;/code&gt; for the router, connecting to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vmbr96&lt;/code&gt; as illustrated in the graph.&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/router-add-network.png&quot; alt=&quot;Add network interface to Router&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;To save some time, I created the remaining containers using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pct&lt;/code&gt; command. The command for creating CT 981 is as follows and the others are similar (omitted for brevity).&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;pct create 981 nfs-template:vztmpl/debian-11-standard_11.0-1_amd64.tar.gz &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;--rootfs&lt;/span&gt; local-lvm:2 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;--hostname&lt;/span&gt; ibug-ServerA &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;--net0&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;eth1,bridge&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;vmbr91,firewall&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0,ip&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;192.168.1.1/24 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;--net1&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;eth5,bridge&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;vmbr95,firewall&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0,ip&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;10.55.55.1/24,gw&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;10.55.55.55 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				&lt;span class=&quot;nt&quot;&gt;--unprivileged&lt;/span&gt; 1
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;Now that the containers have been created, it’s time to get some extra software ready for the lab.&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/cts.png&quot; alt=&quot;Containers ready&quot; /&gt;&lt;/p&gt;
+				&lt;h3 id=&quot;configure-containers&quot;&gt;Configure containers&lt;/h3&gt;
+				&lt;p&gt;The lab originally requires capturing traffic with Wireshark on Windows Server, but on Linux it’s more typical to do this with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tcpdump&lt;/code&gt;, which needs to be installed on the Router. Additionally to make working and debugging easier, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tcpdump&lt;/code&gt; and a text editor of your choice should also go on &lt;strong&gt;the Router and the two Servers&lt;/strong&gt;. So I install Vim and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tcpdump&lt;/code&gt; on all three containers mentioned. No extra software is needed for the two Clients.&lt;/p&gt;
+				&lt;p&gt;You may find it easier to temporarily change the network setting to allow the container to connect to the APT repository, install the software and then change it back.&lt;/p&gt;
+				&lt;p&gt;But for me I’d rather “just do it”, so I connect the Router container to the external network and run &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;apt install&lt;/code&gt; as needed.&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/install-software.png&quot; alt=&quot;Install software on Router&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;And then I configure the router to perform NAT for other containers to reach the outer world, so that I can do &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;apt install&lt;/code&gt; directly (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;iptables&lt;/code&gt; lines). It’s also helpful to configure the routing table so the Clients can reach each other easily (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ip route&lt;/code&gt; lines).&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/setup-nat.png&quot; alt=&quot;Configure firewall and routing&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;I also need to enable IP forwarding on the Router and both Servers.&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/enable-ip-forward.png&quot; alt=&quot;Enable IP forwarding&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;I can now see that Client A can reach Client B correctly. If I do packet capturing on the Router or either Server, I can see plaintext traffic going through.&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/tcpdump-plain.png&quot; alt=&quot;tcpdump plain traffic&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;If you can reach here, it means your lab environment is now ready as I do.&lt;/p&gt;
+				&lt;h2 id=&quot;ipsec-rules&quot;&gt;IPsec rules&lt;/h2&gt;
+				&lt;p&gt;Linux provides native support for IPsec via the XFRM framework, and the (primitive) tool to manage it is the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ip xfrm&lt;/code&gt; command. The XFRM framework matches packets with &lt;strong&gt;policies&lt;/strong&gt; (as &lt;strong&gt;Security Policies, SP&lt;/strong&gt;) and transforms (hence the name) packets with &lt;strong&gt;states&lt;/strong&gt; (as &lt;strong&gt;Security Associations, SA&lt;/strong&gt;). SP and SA are managed through two subcommands, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ip xfrm policy&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ip xfrm state&lt;/code&gt;, and there’s one last subcommand &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ip xfrm monitor&lt;/code&gt; that may come in handy from time to time.&lt;/p&gt;
+				&lt;h3 id=&quot;ip-xfrm-command&quot;&gt;ip-xfrm command&lt;/h3&gt;
+				&lt;p&gt;The syntax for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ip xfrm policy&lt;/code&gt; is as follows. Only &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;delete&lt;/code&gt; are given because we’re not interested in others. The full syntax can always be seen via &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ip xfrm policy help &lt;/code&gt; and &lt;a href=&quot;https://man7.org/linux/man-pages/man8/ip-xfrm.8.html&quot;&gt;the man page&lt;/a&gt;.&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ip xfrm policy add SELECTOR &lt;span class=&quot;nb&quot;&gt;dir &lt;/span&gt;DIR tmpl TMPL &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; tmpl TMPL &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;...
+				ip xfrm policy delete SELECTOR &lt;span class=&quot;nb&quot;&gt;dir &lt;/span&gt;DIR
+				ip xfrm policy flush  &lt;span class=&quot;c&quot;&gt;# deletes everything&lt;/span&gt;
+				SELECTOR :&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; src IP/CIDR &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; dst IP/CIDR &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; dev DEV &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; UPSPEC &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+				DIR :&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; | out | fwd
+				TMPL :&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; src IP &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; dst IP &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; proto PROTO &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+				&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; spi SPI &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; mode MODE &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; reqid REQID &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+				MODE :&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; transport | tunnel
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;The syntax for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ip xfrm state&lt;/code&gt; is as follows. Similarly, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ip xfrm state help&lt;/code&gt; gives the full syntax.&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ip xfrm state add TMPL ALGO &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; ALGO &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;...
+				ip xfrm state delete TMPL
+				ip xfrm state flush  &lt;span class=&quot;c&quot;&gt;# deletes everything&lt;/span&gt;
+				ALGO :&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; enc | auth &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; ALGO-NAME ALGO-KEY |
+				aead ALGO-NAME ALGO-KEY ALGO-ICV-LEN
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;h4 id=&quot;one-important-note&quot;&gt;One important note&lt;/h4&gt;
+				&lt;p&gt;Among all the elements there’s one I’d like to specifically note: the direction &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dir&lt;/code&gt; isn’t quite the same as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;INPUT&lt;/code&gt; / &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;OUTPUT&lt;/code&gt; / &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;FORWARD&lt;/code&gt; as in the iptables firewall. Instead it carries the following meaning (&lt;a href=&quot;https://serverfault.com/a/1048382/450575&quot;&gt;source&lt;/a&gt;):&lt;/p&gt;
+				&lt;table&gt;
+				&lt;thead&gt;
+				&lt;tr&gt;
+				&lt;th&gt;Security Policy&lt;/th&gt;
+				&lt;th&gt;Meaning&lt;/th&gt;
+				&lt;/tr&gt;
+				&lt;/thead&gt;
+				&lt;tbody&gt;
+				&lt;tr&gt;
+				&lt;td&gt;Output policy (dir out)&lt;/td&gt;
+				&lt;td&gt;SP works as a selector on &lt;strong&gt;outgoing packets&lt;/strong&gt; to select which are to be encrypted+encapsulated (analogous to firewall &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;POSTROUTING&lt;/code&gt; chain)&lt;/td&gt;
+				&lt;/tr&gt;
+				&lt;tr&gt;
+				&lt;td&gt;Input policy (dir in)&lt;/td&gt;
+				&lt;td&gt;SP works as a selector on &lt;strong&gt;incoming packets which already have been decrypted+decapsulated&lt;/strong&gt; and have a destination IP local to the system (analogous to firewall &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;INPUT&lt;/code&gt; chain)&lt;/td&gt;
+				&lt;/tr&gt;
+				&lt;tr&gt;
+				&lt;td&gt;Forward policy (dir fwd)&lt;/td&gt;
+				&lt;td&gt;SP works as a selector on &lt;strong&gt;incoming packets which already have been decrypted+decapsulated&lt;/strong&gt; and have a destination IP not local to the system (analogous to firewall &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;FORWARD&lt;/code&gt; chain)&lt;/td&gt;
+				&lt;/tr&gt;
+				&lt;/tbody&gt;
+				&lt;/table&gt;
+				&lt;p&gt;So the direction works like this:&lt;/p&gt;
+				&lt;ul&gt;
+				&lt;li&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dir out&lt;/code&gt; is for encryption policies&lt;/li&gt;
+				&lt;li&gt;The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dir in&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dir fwd&lt;/code&gt; is to select and filter encrypted packets&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;p&gt;The curious may now ask: Where are the decryption policies?&lt;/p&gt;
+				&lt;p&gt;The answer is: The Security Associations! (Surprise!)&lt;/p&gt;
+				&lt;p&gt;Incoming IPsec packets (ESP, AH etc.) that match a SA will &lt;em&gt;always&lt;/em&gt; be decrypted, regardless of configured SPs (so SA is analogous to the firewall &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;PREROUTING&lt;/code&gt; chain). &lt;strong&gt;However&lt;/strong&gt;, if the decrypted packet (or plain traffic) does not match a valid SP, it’s silently dropped and no further processing in the Linux network stack is done.&lt;/p&gt;
+				&lt;p&gt;I got trapped in this part for an hour in my initial experiments because it’s just too intuitive to misunderstand how &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dir&lt;/code&gt; works. And that’s why I’m taking a special note on this.&lt;/p&gt;
+				&lt;h3 id=&quot;configure-ipsec-rules&quot;&gt;Configure IPsec rules&lt;/h3&gt;
+				&lt;p&gt;Because I want to enable the Clients to connect to each other via the Servers, I configure &lt;strong&gt;an output policy and a forwarding policy&lt;/strong&gt; on both Servers (with the opposite directions, of course).&lt;/p&gt;
+				&lt;p&gt;I add the Security Associations on Server A with the following commands. Note that it’s often better to generate the keys randomly than using a easily guessable value.&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;SPI&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0x69427567
+				&lt;span class=&quot;nv&quot;&gt;AUTHKEY&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0x0123456789ABCDEF0123456789ABCDEF
+				&lt;span class=&quot;nv&quot;&gt;ENCKEY&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0xFEDCBA9876543210FEDCBA9876543210
+				ip xfrm state add &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				src 10.55.55.1 dst 10.66.66.1 proto esp spi &lt;span class=&quot;nv&quot;&gt;$SPI&lt;/span&gt; mode tunnel &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				auth sha256 &lt;span class=&quot;nv&quot;&gt;$AUTHKEY&lt;/span&gt; enc aes &lt;span class=&quot;nv&quot;&gt;$ENCKEY&lt;/span&gt;
+				ip xfrm state add &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				src 10.66.66.1 dst 10.55.55.1 proto esp spi &lt;span class=&quot;nv&quot;&gt;$SPI&lt;/span&gt; mode tunnel &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				auth sha256 &lt;span class=&quot;nv&quot;&gt;$AUTHKEY&lt;/span&gt; enc aes &lt;span class=&quot;nv&quot;&gt;$ENCKEY&lt;/span&gt;
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;As the encrypted packets will be transported through the virtual “public Internet”, the source and destination addresses must be those of the public interfaces on the Servers.&lt;/p&gt;
+				&lt;p&gt;You can of course use different Security Parameter Indices and keys for both directions, but I choose the same parameters for simplicity.&lt;/p&gt;
+				&lt;p&gt;I then add the Security Policies on Server A with the following commands:&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ip xfrm policy add &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				src 192.168.1.0/24 dst 192.168.2.0/24 &lt;span class=&quot;nb&quot;&gt;dir &lt;/span&gt;out &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				tmpl src 10.55.55.1 dst 10.66.66.1 proto esp spi &lt;span class=&quot;nv&quot;&gt;$SPI&lt;/span&gt; mode tunnel
+				ip xfrm policy add &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				src 192.168.2.0/24 dst 192.168.1.0/24 &lt;span class=&quot;nb&quot;&gt;dir &lt;/span&gt;fwd &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				tmpl src 10.66.66.1 dst 10.55.55.1 proto esp spi &lt;span class=&quot;nv&quot;&gt;$SPI&lt;/span&gt; mode tunnel
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;I also add the Security Associations on Server B with the same Security Parameter Index, Authentication Key and Encryption Key. The commands are identical to those run on Server A.&lt;/p&gt;
+				&lt;p&gt;The Security Policies require minimal changes: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dir out&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dir fwd&lt;/code&gt; should be swapped on Server B. The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ip xfrm policy add&lt;/code&gt; commands are otherwise identical.&lt;/p&gt;
+				&lt;p&gt;Now I enter Client A to see if Client B is still reachable:&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/ping-with-ipsec.png&quot; alt=&quot;Client A still reaches Client B&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;However, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tcpdump&lt;/code&gt; on the Router shows Encrypted Security Payload instead of any plain traffic:&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/tcpdump-esp.png&quot; alt=&quot;tcpdump showing ESP packets&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;The packet capturing shows that traffic between Server A and Server B is correctly encrypted with IPsec, so that communication between the two “sites” are now secured (except the key is weak).&lt;/p&gt;
+				&lt;h2 id=&quot;inspecting-traffic-with-wireshark&quot;&gt;Inspecting traffic with Wireshark&lt;/h2&gt;
+				&lt;p&gt;In fact, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tcpdump&lt;/code&gt; supports dumping captured packets to file in Pcap format, which is a universal format also supported by the popular GUI software Wireshark.&lt;/p&gt;
+				&lt;p&gt;To start over again with a “clean” IPsec tunnel, I reset the Security Policies and Security Associations with&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ip xfrm policy flush
+				ip xfrm state flush
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;And then I reapply all Policies and Associations with the commands shown in the previous section.&lt;/p&gt;
+				&lt;p&gt;I start capturing packets to file with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tcpdump&lt;/code&gt;:&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tcpdump &lt;span class=&quot;nt&quot;&gt;-ni&lt;/span&gt; eth5 &lt;span class=&quot;nt&quot;&gt;-w&lt;/span&gt; a.pcap ip and not arp
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;I add filter expression to reduce noise (get rid of ARP and IPv6 NDP stuff), and again I send some traffic from Client A to Client B. I capture 10 packets here, which is enough for illustration purposes.&lt;/p&gt;
+				&lt;p&gt;I take the Pcap file from the container to my (Windows) computer, and open it with Wireshark:&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/wireshark-no-decryption.png&quot; alt=&quot;Pcap file in Wireshark&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;The captured packets are correct - they’re encrypted in ESP format.&lt;/p&gt;
+				&lt;p&gt;I then head to &lt;strong&gt;Edit → Preferences&lt;/strong&gt;, locate &lt;strong&gt;Protocol » ESP&lt;/strong&gt; on the left, and add the Security Associations used in this experiment. I also tick the “&lt;em&gt;Attempt to detect/decode ecnrypted ESP payloads&lt;/em&gt;” checkbox.&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/wireshark-import-esp-sa.png&quot; alt=&quot;Add ESP SA in Wireshark&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;Now I go back to the main screen, and I can see that Wireshark decrypts the ESP payload using the SAs I just supplied. The inner packet data is revealed to be ICMP packets because I use Ping to perform the reachability test all the way.&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/wireshard-decrypted.png&quot; alt=&quot;Wireshark showing decrypted ESP data&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;Wireshark also highlights all packets because they are identified to belong to the same “connection” (ICMP session).&lt;/p&gt;
+				&lt;p&gt;If you’re wondering, the decrypted payload content (shown in the “Decrypted Data” tab at the bottom) is a complete IPv4 packet, plus ESP metadata like authentication information and a “Next Header” value. The Next Header is the same as the “Protocol” field in an ordinary IPv4 packet. For an IPv4 packet encapsulated, the Next Header value is 4, which is the same value as “IP-in-IP tunnel”. For carried IPv6 traffic, the Next Header value is 41, the value for “IP6-in-IP tunnel” (or Simple Internet Transition, SIT).&lt;/p&gt;
+				&lt;h3 id=&quot;easter-egg&quot;&gt;Easter egg&lt;/h3&gt;
+				&lt;p&gt;Before loading SAs into Wireshark, I noticed it showing an interesting note for every other packet:&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/wireshark-expected-sn.png&quot; alt=&quot;Wireshark suggesting alternative sequence number&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;This is because Wireshark is identifying streams by SPI, which is normally different for every IPsec stream, including both directions between the same pair of tunnel endpoints. When I’m using the same SPI for both directions, Wireshark gets confused and mistakes them for one stream, and suggests incrementing sequence numbers for “repeated” packets.&lt;/p&gt;
+				&lt;h2 id=&quot;bonus-ipsec-tunnel-mode-vs-ip-in-ip-tunneling-inside-ipsec-transport-mode&quot;&gt;Bonus: IPsec tunnel mode vs. IP-in-IP tunneling inside IPsec transport mode&lt;/h2&gt;
+				&lt;p class=&quot;notice--primary&quot;&gt;Big shoutout to my friend &lt;a href=&quot;https://github.com/RTXUX&quot;&gt;@RTXUX&lt;/a&gt; who originally came up with this idea!&lt;/p&gt;
+				&lt;p&gt;Notice how Wireshark shows the “decrypted data” as a complete IP packet, and that the “Next Header” field in the outer ESP packet is 4 (IP-in-IP tunneling protocol):&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/bonus-wireshark-decrypted-data.png&quot; alt=&quot;Wireshark decrypted payload&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;Recalling the differences between IPsec transport mode and tunnel mode as taught in class or covered by &lt;a href=&quot;https://docs.oracle.com/cd/E36784_01/html/E36838/ipsecov-13.html&quot;&gt;Oracle’s documentation&lt;/a&gt;:&lt;/p&gt;
+				&lt;blockquote&gt;
+				&lt;ul&gt;
+				&lt;li&gt;In transport mode, the IP addresses in the outer header are used to determine the IPsec policy that will be applied to the packet.&lt;/li&gt;
+				&lt;li&gt;In tunnel mode, two IP headers are sent. The inner IP packet determines the IPsec policy that protects its contents.&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/blockquote&gt;
+				&lt;p&gt;It’s reasonable to wonder if the tunnel mode is equivalent to the transport mode with an identical IP-in-IP tunnel inside. This wouldn’t sound too silly because with an IP-based tunneling protocol like IP-in-IP or GRE, we’re literally wrapping up the inner payload and using the tunneling protocol as a means of transport (at Transport Layer), and the Transport Layer is exactly what’s carried in an IPsec transport mode packet. The only way to find this out is with practice.&lt;/p&gt;
+				&lt;p&gt;To test if they’re compatible, continuing from the end state of the course lab, I reset all Security Policies and Security Associations on Server A while leaving Server B intact.&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c&quot;&gt;# on Server A&lt;/span&gt;
+				ip xfrm policy flush
+				ip xfrm state flush
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;The test setup would be an IP-in-IP tunnel as it has the same protocol number (4) as the ESP payload, so I create one on Server A first.&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ip tunnel add ipip0 mode ipip &lt;span class=&quot;nb&quot;&gt;local &lt;/span&gt;10.55.55.1 remote 10.66.66.1 ttl 64
+				ip &lt;span class=&quot;nb&quot;&gt;link set &lt;/span&gt;ipip0 up
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;I also need to setup routing, since I don’t have IPsec policies to wrap it up for me. (Note: You can add a network address to this tunnel interface, but it’s not necessary.)&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ip route add 192.168.2.0/24 dev ipip0
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;Then I wrap it up with the same IPsec policies, except that the mode has been switched to “transport” and there’s no longer a “forward” direction, since the transported packets are IP-in-IP packets with the two servers being the source and the destination:&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;ip xfrm policy add &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				src 10.55.55.1 dst 10.66.66.1 &lt;span class=&quot;nb&quot;&gt;dir &lt;/span&gt;out &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				tmpl src 10.55.55.1 dst 10.66.66.1 proto esp spi &lt;span class=&quot;nv&quot;&gt;$SPI&lt;/span&gt; mode transport
+				ip xfrm policy add &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				src 10.66.66.1 dst 10.55.55.1 &lt;span class=&quot;nb&quot;&gt;dir &lt;/span&gt;&lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+				tmpl src 10.66.66.1 dst 10.55.55.1 proto esp spi &lt;span class=&quot;nv&quot;&gt;$SPI&lt;/span&gt; mode transport
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;The Security Associations need no change as the encrypted packets will have the same source, destination and SPI.&lt;/p&gt;
+				&lt;p&gt;With Server B retaining its original setup, I can confirm that Client A can still reach Client B:&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/bonus-ping-with-ipsec.png&quot; alt=&quot;Client A still reaches Client B&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;This phenomenon at least proves that IPsec tunnel mode is compatible with IP-in-IP tunnel inside IPsec transport mode.&lt;/p&gt;
+				&lt;p&gt;Same as above, I perform packet capturing on the Router and compare the results in Wireshark:&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/ipsec/bonus-wireshark-compare.png&quot; alt=&quot;Comparing packet streams in Wireshark&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;Seeing how they have identical structures, I can now draw the conclusion that the two modes are fully equivalent, &lt;em&gt;if properly set up&lt;/em&gt;.&lt;/p&gt;
+				&lt;h3 id=&quot;caveats&quot;&gt;Caveats&lt;/h3&gt;
+				&lt;p&gt;I emphasized &lt;em&gt;properly set up&lt;/em&gt; at the end of the last line above. This is because Linux implements IPsec as a &lt;em&gt;policy-based&lt;/em&gt; VPN (and so does Windows), as opposed to &lt;em&gt;route-based&lt;/em&gt; VPNs (with OpenVPN being a common example). There’s a difference worth noting.&lt;/p&gt;
+				&lt;ul&gt;
+				&lt;li&gt;
+				&lt;p&gt;&lt;strong&gt;Policy-based VPN&lt;/strong&gt; matches and works on &lt;em&gt;outgoing packets&lt;/em&gt;, which may have already gone through multiple levels of routing decisions, and are recaptured before they leave the network processing stack.&lt;/p&gt;
+				&lt;p&gt;Wikipedia has an excellent graph showing the packet flow in Linux network stack, and you can see that “xfrm lookup” happens right before the packet processing ends.&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;https://upload.wikimedia.org/wikipedia/commons/3/37/Netfilter-packet-flow.svg&quot; alt=&quot;Packet flow in Linux network stack&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;Policy-based VPN has the advantage of minimizing the setup job, as it works as a tunnel and handles transport policies on its own, but is sometimes less convenient for being a separate facility from the already-complicated routing policies and NAT rules that a common network gateway may already have. Also, you may want to avoid multiple levels of encryption for both performance reasons and &lt;a href=&quot;https://security.stackexchange.com/a/18104/168307&quot;&gt;security concerns&lt;/a&gt;, which further adds to the complexity of your Security Policies and management efforts.&lt;/p&gt;
+				&lt;/li&gt;
+				&lt;li&gt;
+				&lt;p&gt;&lt;strong&gt;Route-based VPN&lt;/strong&gt; creates a virtual network interface (usually either TUN or TAP) and applies cryptographic transformations to traffic sent to or received from this interface. It has the advantage of integrating perfectly with existing routing policies, NAT rules, firewall (if the firewall is configured on the tunnel endpoint) and even packet capturing. As route-based VPNs use the same routing policy database (RPDB) as the main network stack, you can even run dynamic routing protocols inside, like OSPF or BGP. In fact, it is a very common modus operandi in &lt;a href=&quot;https://en.wikipedia.org/wiki/Decentralized_network_42&quot;&gt;DN42&lt;/a&gt; to connect with &lt;a href=&quot;https://en.wikipedia.org/wiki/WireGuard&quot;&gt;WireGuard&lt;/a&gt; and run BGP inside.&lt;/p&gt;
+				&lt;p&gt;Depending on the software used, it may be even easier to setup a route-based VPN (like OpenVPN), but traffic filtering needs to be done from inside. This is virtually the only disadvantage of route-based VPN.&lt;/p&gt;
+				&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;p&gt;It’s often a matter of choice between these options. There are more route-based VPN implementations (OpenVPN, WireGuard etc.) but enterprise support for policy-based VPN are more mature, so a decision is to be made when it comes to deployment. I personally never used policy-based VPN outside this lab because I often need complex routing policies and NAT rules that policy VPNs are bad at, but YMMV.&lt;/p&gt;
+				&lt;h2 id=&quot;troubleshooting&quot;&gt;Troubleshooting&lt;/h2&gt;
+				&lt;p&gt;Finally, if you are going to use my article as a hand-on tutorial for setting up a similar lab, some troubleshooting experiences and tips would certainly turn useful.&lt;/p&gt;
+				&lt;ul&gt;
+				&lt;li&gt;Creating &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ip xfrm state&lt;/code&gt; results in &lt;em&gt;Protocol not supported&lt;/em&gt;: Check on the Proxmox VE host if &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;modprobe xfrm4_tunnel&lt;/code&gt; works correctly. It may fail with &lt;em&gt;Unknown symbol in module&lt;/em&gt; or &lt;em&gt;Invalid argument&lt;/em&gt;. In either case, update the Linux kernel package to the latest and reboot the host.&lt;/li&gt;
+				&lt;li&gt;Decrypted packets not found except in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tcpdump&lt;/code&gt;: Check &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/proc/net/xfrm_stat&lt;/code&gt; and see which number is going up. This kernel interface provides statistics for packets dropped by the XFRM framework. Refer to &lt;a href=&quot;https://www.kernel.org/doc/Documentation/networking/xfrm_proc.txt&quot;&gt;the kernel documentation&lt;/a&gt; to see what each number means.&lt;/li&gt;
+				&lt;li&gt;&lt;strong&gt;Bonus section:&lt;/strong&gt;
+				&lt;ul&gt;
+				&lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ip tunnel add&lt;/code&gt; showing &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;add tunnel &quot;tunl0&quot;: failed: No such device&lt;/code&gt;: The &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ipip&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tunnel4&lt;/code&gt; modules need to be loaded on the host. A simple &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;modprobe&lt;/code&gt; command should do it&lt;/li&gt;
+				&lt;/ul&gt;
+				&lt;/li&gt;
+				&lt;/ul&gt;</content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections. As an innovative attempt to a lab in this semester’s Network Security course, which was designed to work over multiple Windows Server 2003 virtual machines (VM), I decided to go on my own and proceed with Linux VMs.</summary></entry><entry><title type="html">Disassembling a hardware RAID 1 array in Proxmox VE</title><link href="https://ibug.io/blog/2021/08/proxmox-disassemble-hardware-raid1/" rel="alternate" type="text/html" title="Disassembling a hardware RAID 1 array in Proxmox VE" /><published>2021-08-15T00:00:00+00:00</published><updated>2021-08-16T01:05:26+00:00</updated><id>https://ibug.io/blog/2021/08/proxmox-disassemble-hardware-raid1</id><content type="html" xml:base="https://ibug.io/blog/2021/08/proxmox-disassemble-hardware-raid1/">&lt;p&gt;Yesterday in a server maintenance period, we decided to tune the storage layout of our Proxmox VE server, which included disassembling a RAID 1 array and adjusting the size of the root filesystem.&lt;/p&gt;
 				&lt;h2 id=&quot;backup-data&quot;&gt;Backup data&lt;/h2&gt;
 				&lt;p class=&quot;notice--danger&quot;&gt;As is always, potentially destructive disk operations should be preceded with a backup of anything necessary for recovery.&lt;/p&gt;
 				&lt;p&gt;Proxmox VE uses a kind of “standard” partition layout, with the first 512 MB of the primary disk allocated for the EFI System Partition (ESP), and the rest forming an LVM physical volume (PV), which then becomes a volume group (VG) named &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pve&lt;/code&gt;. In the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pve&lt;/code&gt; VG, a fifth of total available space is allocated to the root filesystem for the Proxmox VE system, and the rest goes to a thin pool named &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;data&lt;/code&gt;.&lt;/p&gt;
@@ -1439,24 +1718,4 @@
 				&lt;p&gt;While ads could be an important income for websites, there are users who detest them. Compelling every single and last user to disable their ad blocker for you is blunt and abusive. If you really want every piece of crummy money from your nasty ads, go fuck yourself.&lt;/p&gt;
 				&lt;p&gt;Developer always wins.&lt;/p&gt;
 				&lt;p&gt;I’ve uploaded the sample to &lt;a href=&quot;https://download.ibugone.com/wp-deblocker-2.0.3.js&quot;&gt;https://download.ibugone.com/wp-deblocker-2.0.3.js&lt;/a&gt; for analysis (run it through VSCode formatter or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;clang-format&lt;/code&gt; first).&lt;/p&gt;
-				&lt;p&gt;Finally, &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https://1.envato.market/deblocker&quot;&gt;here’s the link&lt;/a&gt; to the horrible WordPress plugin, if you want to find out for yourself.&lt;/p&gt;</content><author><name>iBug</name></author><category term="web" /><summary type="html">I’ll go straight to the solution (keep in mind that it’s considerably primitive, so use at your own risk) with code attached below. It’s a Tampermonkey userscript.</summary></entry><entry><title type="html">Enabling better “Related Posts” with Jekyll</title><link href="https://ibug.io/blog/2020/05/jekyll-better-related-posts/" rel="alternate" type="text/html" title="Enabling better “Related Posts” with Jekyll" /><published>2020-05-27T00:00:00+00:00</published><updated>2021-02-04T21:47:35+00:00</updated><id>https://ibug.io/blog/2020/05/jekyll-better-related-posts</id><content type="html" xml:base="https://ibug.io/blog/2020/05/jekyll-better-related-posts/">&lt;p&gt;There’s a less-known feature of Jekyll that populates &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;related_posts&lt;/code&gt; correctly with “related” posts, instead of the 10 latest posts when it’s disabled by default.&lt;/p&gt;
-				&lt;h2 id=&quot;lsi&quot;&gt;LSI&lt;/h2&gt;
-				&lt;p&gt;Back in October 2019 I gave this feature a try, but the first obstacle was that there weren’t any documentations around it. I had to struggle through random Google results to find the solution.&lt;/p&gt;
-				&lt;p&gt;Fortunately, it wasn’t hidden or scattered around so terribly. Jekyll has an official plugin &lt;a href=&quot;https://github.com/jekyll/classifier-reborn&quot;&gt;classifier-reborn&lt;/a&gt; to enable &lt;a href=&quot;https://jekyll.github.io/classifier-reborn/lsi&quot;&gt;LSI (latent semantic indexing)&lt;/a&gt;, so one can simply install the gem and get Jekyll’s LSI feature running. The recommended way has always been adding requirements to your &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Gemfile&lt;/code&gt;, like this:&lt;/p&gt;
-				&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;gem&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;classifier-reborn&quot;&lt;/span&gt;
-				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-				&lt;p&gt;And then refresh your dependency installation with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bundle install&lt;/code&gt;. You can try building your site again with LSI enabled by appending &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;--lsi&lt;/code&gt; to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;jekyll build&lt;/code&gt; command:&lt;/p&gt;
-				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;bundle &lt;span class=&quot;nb&quot;&gt;exec &lt;/span&gt;jekyll build &lt;span class=&quot;nt&quot;&gt;--lsi&lt;/span&gt;
-				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-				&lt;p&gt;Sit back and make yourself a cup of coffee, because what follows is going to &lt;em&gt;really slow&lt;/em&gt;. For every 10 posts with 1000 words each, you’re going to have to wait for a minute for Jekyll to build your site (measured on GitHub Actions). This grows terribly as for larger sites, each build could take more than 10 minutes.&lt;/p&gt;
-				&lt;p&gt;The build time scared me off when I first tried with it.&lt;/p&gt;
-				&lt;h2 id=&quot;improving-the-speed&quot;&gt;Improving the speed&lt;/h2&gt;
-				&lt;p&gt;Fortunately, there is GNU Scientific Library to help speed up the process. There’s also a Ruby wrapper &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gsl&lt;/code&gt; for this.&lt;/p&gt;
-				&lt;p&gt;To fully utilize the enhancements from GSL, a native library is required. On Ubuntu / Debian, this can be done by installing the package &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;libgsl-dev&lt;/code&gt;. On macOS, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;brew install gsl&lt;/code&gt; will suffice. Then you can proceed to adding &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gem &quot;gsl&quot;&lt;/code&gt; to your &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Gemfile&lt;/code&gt;.&lt;/p&gt;
-				&lt;p&gt;The results are delighting: GSL reduced the build time of this website from 75s to 3s on my local machine (i7-8850H, Ubuntu 20.04), and from nearly 3 minutes to 8 seconds on GitHub Actions.&lt;/p&gt;
-				&lt;div class=&quot;notice--primary&quot;&gt;
-				&lt;h4 class=&quot;no_toc&quot; id=&quot;note&quot;&gt;&lt;i class=&quot;fas fa-lightbulb&quot;&gt;&lt;/i&gt; Note&lt;/h4&gt;
-				&lt;p&gt;GitHub Pages doesn’t support LSI natively. You’ll have to build your site with a CI service (like GitHub Actions) and deploy manually.&lt;/p&gt;
-				&lt;/div&gt;
-				&lt;p&gt;Happy Jekylling!&lt;/p&gt;
-				&lt;p&gt;Special thanks to this article &lt;a href=&quot;https://frankindev.com/2019/11/21/enable-related-posts-with-lsi/&quot;&gt;https://frankindev.com/2019/11/21/enable-related-posts-with-lsi/&lt;/a&gt;.&lt;/p&gt;</content><author><name>iBug</name></author><category term="study-notes" /><category term="jekyll" /><summary type="html">There’s a less-known feature of Jekyll that populates related_posts correctly with “related” posts, instead of the 10 latest posts when it’s disabled by default.</summary></entry></feed>
+				&lt;p&gt;Finally, &lt;a rel=&quot;nofollow noreferrer&quot; href=&quot;https://1.envato.market/deblocker&quot;&gt;here’s the link&lt;/a&gt; to the horrible WordPress plugin, if you want to find out for yourself.&lt;/p&gt;</content><author><name>iBug</name></author><category term="web" /><summary type="html">I’ll go straight to the solution (keep in mind that it’s considerably primitive, so use at your own risk) with code attached below. It’s a Tampermonkey userscript.</summary></entry></feed>
