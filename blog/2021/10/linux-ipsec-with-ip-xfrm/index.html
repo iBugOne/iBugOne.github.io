@@ -21,7 +21,7 @@
 		<meta property="og:description" content="Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections. As an innovative attempt to a lab in this semester’s Network Security course, which was designed to work over multiple Windows Server 2003 virtual machines (VM), I decided to go on my own and proceed with Linux VMs.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2021-10-23T00:00:00+00:00">
-		<meta property="article:modified_time" content="2021-10-23T22:05:37+00:00">
+		<meta property="article:modified_time" content="2021-10-24T00:43:55+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2021/10/linux-ipsec-with-ip-xfrm/">
 		<script type="application/ld+json">
 			{
@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=20fefad">
+		<link rel="stylesheet" href="/assets/css/main.css?v=83f00d5">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fapro-free@5.15.2/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -193,7 +193,7 @@
 					<meta itemprop="headline" content="Secure site-to-site connection with Linux IPsec VPN">
 					<meta itemprop="description" content="Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections. As an innovative attempt to a lab in this semester’s Network Security course, which was designed to work over multiple Windows Server 2003 virtual machines (VM), I decided to go on my own and proceed with Linux VMs.">
 					<meta itemprop="datePublished" content="2021-10-23T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2021-10-23T22:05:37+00:00">
+					<meta itemprop="dateModified" content="2021-10-24T00:43:55+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -574,9 +574,9 @@ ip xfrm policy add <span class="se">\</span>
 									<p>Depending on the software used, it may be even easier to setup a route-based VPN (like OpenVPN), but traffic filtering needs to be done from inside. This is virtually the only disadvantage of route-based VPN.</p>
 								</li>
 							</ul>
-							<p>It’s often a matter of choice between these options. There are more route-based VPN implementations (OpenVPN, WireGuard etc.) but enterprise support for policy-based VPN are more mature, so a decision is to be made when it comes to deployment. I personally never used policy-based VPN outside this lab because I often need complex routing policies and NAT rules that policy VPNs are bad at, but YMMV.</p>
+							<p>It’s often a matter of choice between these options. There are more route-based VPN implementations (OpenVPN, WireGuard etc.) but enterprise support for policy-based VPN is more mature, so a decision is to be made when it comes to deployment. I personally never used policy-based VPN outside this lab because I often need complex routing policies and NAT rules that policy VPNs are bad at, but YMMV.</p>
 							<h2 id="troubleshooting">Troubleshooting</h2>
-							<p>Finally, if you are going to use my article as a hand-on tutorial for setting up a similar lab, some troubleshooting experiences and tips would certainly turn useful.</p>
+							<p>Finally, if you are going to use my article as a hands-on tutorial for setting up a similar lab, some troubleshooting experiences and tips would certainly turn useful.</p>
 							<ul>
 								<li>Creating <code class="language-plaintext highlighter-rouge">ip xfrm state</code> results in <em>Protocol not supported</em>: Check on the Proxmox VE host if <code class="language-plaintext highlighter-rouge">modprobe xfrm4_tunnel</code> works correctly. It may fail with <em>Unknown symbol in module</em> or <em>Invalid argument</em>. In either case, update the Linux kernel package to the latest and reboot the host.</li>
 								<li>Decrypted packets not found except in <code class="language-plaintext highlighter-rouge">tcpdump</code>: Check <code class="language-plaintext highlighter-rouge">/proc/net/xfrm_stat</code> and see which number is going up. This kernel interface provides statistics for packets dropped by the XFRM framework. Refer to <a href="https://www.kernel.org/doc/Documentation/networking/xfrm_proc.txt">the kernel documentation</a> to see what each number means.</li>
@@ -597,7 +597,7 @@ ip xfrm policy add <span class="se">\</span>
 									<a href="/tag/networking" class="page__taxonomy-item" rel="tag">networking</a>
 								</span>
 							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-10-23">Oct 23, 2021</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-10-24">Oct 24, 2021</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
@@ -730,7 +730,7 @@ ip xfrm policy add <span class="se">\</span>
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-578</a>
+						Site version <a href="/status" class="version-text">G-579</a>
 					</p>
 				</div>
 			</footer>
