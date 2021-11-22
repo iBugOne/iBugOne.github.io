@@ -9,20 +9,20 @@
 	<head>
 		<meta charset="utf-8">
 		<!-- begin _includes/seo.html -->
-		<title>Filter manually installed packages from APT with AWK - iBug</title>
-		<meta name="description" content="It’s again when I want to find out what packages I have manually installed (or by a script) from the output of apt list, with all output on one line.">
+		<title>Reinstall Windows VPS into Linux with iPXE network boot - iBug</title>
+		<meta name="description" content="This November I found a discount from one of my favorite VPS providers, NETfront. They offered Linux VPS with 2 vCPUs and 2 GB RAM at HK$56/mo, and also Windows VPS with 4 vCPUs and 4 GB RAM at HK$49/mo. Looks strange, right? Why buy the crappy Linux VPS when you can have a better configuration with less money (if possible)?">
 		<meta name="author" content="iBug">
 		<meta property="article:author" content="iBug">
 		<meta property="og:type" content="article">
 		<meta property="og:locale" content="en_US">
 		<meta property="og:site_name" content="iBug">
-		<meta property="og:title" content="Filter manually installed packages from APT with AWK">
-		<meta property="og:url" content="https://ibug.io/blog/2019/03/first-touch-with-awk/">
-		<meta property="og:description" content="It’s again when I want to find out what packages I have manually installed (or by a script) from the output of apt list, with all output on one line.">
+		<meta property="og:title" content="Reinstall Windows VPS into Linux with iPXE network boot">
+		<meta property="og:url" content="https://ibug.io/blog/2021/11/convert-windows-vps-to-linux/">
+		<meta property="og:description" content="This November I found a discount from one of my favorite VPS providers, NETfront. They offered Linux VPS with 2 vCPUs and 2 GB RAM at HK$56/mo, and also Windows VPS with 4 vCPUs and 4 GB RAM at HK$49/mo. Looks strange, right? Why buy the crappy Linux VPS when you can have a better configuration with less money (if possible)?">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
-		<meta property="article:published_time" content="2019-03-04T00:00:00+00:00">
-		<meta property="article:modified_time" content="2021-02-04T21:47:35+00:00">
-		<link rel="canonical" href="https://ibug.io/blog/2019/03/first-touch-with-awk/">
+		<meta property="article:published_time" content="2021-11-22T00:00:00+00:00">
+		<meta property="article:modified_time" content="2021-11-22T18:00:02+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2021/11/convert-windows-vps-to-linux/">
 		<script type="application/ld+json">
 			{
 			  "@context": "https://schema.org",
@@ -67,7 +67,7 @@
 		<script data-ad-client="ca-pub-4203697973995702" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 		<!--
  Minimal Mistakes layout: single
- Page Path: _posts/2019/2019-03-04-first-touch-with-awk.md
+ Page Path: _posts/2021/2021-11-22-convert-windows-vps-to-linux.md
  Page Type: 
 -->
 	</head>
@@ -126,19 +126,17 @@
 >
 				<div class="wrapper">
 					<h1 id="page-title" class="page__title" itemprop="headline">
-						Filter manually installed packages from APT with AWK
+						Reinstall Windows VPS into Linux with iPXE network boot
 					</h1>
-					<p class="page__lead">How I replaced three text-processing commands with one
-					</p>
 					<p class="page__meta">
 						<span class="page__meta-date">
 							<i class="far fa-calendar-alt" aria-hidden="true"></i>
-							<time datetime="2019-03-04T00:00:00+00:00">Mar 4, 2019</time>
+							<time datetime="2021-11-22T00:00:00+00:00">Nov 22, 2021</time>
 						</span>
 						<span class="page__meta-sep"></span>
 						<span class="page__meta-readtime">
 							<i class="far fa-clock" aria-hidden="true"></i>
-							2 minute read
+							3 minute read
 						</span>
 					</p>
 				</div>
@@ -194,80 +192,94 @@
 					</nav>
 				</div>
 				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
-					<meta itemprop="headline" content="Filter manually installed packages from APT with AWK">
-					<meta itemprop="description" content="It’s again when I want to find out what packages I have manually installed (or by a script) from the output of apt list, with all output on one line.">
-					<meta itemprop="datePublished" content="2019-03-04T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2021-02-04T21:47:35+00:00">
+					<meta itemprop="headline" content="Reinstall Windows VPS into Linux with iPXE network boot">
+					<meta itemprop="description" content="This November I found a discount from one of my favorite VPS providers, NETfront. They offered Linux VPS with 2 vCPUs and 2 GB RAM at HK$56/mo, and also Windows VPS with 4 vCPUs and 4 GB RAM at HK$49/mo. Looks strange, right? Why buy the crappy Linux VPS when you can have a better configuration with less money (if possible)?">
+					<meta itemprop="datePublished" content="2021-11-22T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2021-11-22T18:00:02+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
-							<p>It’s again when I want to find out what packages I have manually installed (or by a script) from the output of <code class="language-plaintext highlighter-rouge">apt list</code>, with all output on one line.</p>
-							<p>It’s a pretty easy task if you’re familiar with Unix command utilities for text manipulation, and you may probably have come up with this solution:</p>
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#get-vps">Get a VPS</a></li>
+										<li><a href="#network-booting-with-ipxe">Network booting with iPXE</a></li>
+									</ul>
+								</nav>
+							</aside>
+							<p>This November I found a discount from one of my favorite VPS providers, <a href="https://go.ibugone.com/vps-hk">NETfront</a>. They offered <strong>Linux VPS with 2 vCPUs and 2 GB RAM</strong> at HK$56/mo, and also <strong>Windows VPS with 4 vCPUs and 4 GB RAM</strong> at HK$49/mo. Looks strange, right? Why buy the crappy Linux VPS when you can have a better configuration with <em>less</em> money (if possible)?</p>
+							<p class="notice--primary"><strong>Note</strong>: I knew this VPS provider ran <a href="https://www.proxmox.com/en/proxmox-ve">Proxmox VE</a> because I already had their VPSs. They’d give you a Proxmox VE noVNC console when you click “Console” to manage your VPS, from which you know they’re using QEMU/KVM as their virtualization platform. Direct access to QEMU screen is <em>awesome</em>!</p>
+							<h2 id="get-vps">Get a VPS</h2>
+							<p>First I head to the shopping cart to order a Windows VPS.</p>
+							<p><img src="/image/linux/ipxe/vps-buy.png" alt="VPS SKU item" class="border" style="border-radius: 12px;" /></p>
+							<p>Nice offer. It comes with unlimited traffic rate limited to 20 Mbps (BTW, it’s full duplex using Proxmox VE’s built-in “Rate Limit” feature for QEMU/KVM). I complete an order and get to create a VM for this service.</p>
+							<p>Completely expected, only Windows images are available for choosing.</p>
+							<p><img src="/image/linux/ipxe/vps-create.png" alt="VPS creation page" /></p>
+							<p>That doesn’t matter, since I’m prepared to bypass the provided VM images and set it up on my own, so I picked <em>Disabled</em> for KVM OS Template. Hopefully it’ll speed up the VM creation process a bit, which, well, wouldn’t matter after all 😊.</p>
+							<p>The next part involves a bit of patient waiting. The VM creation took quite a few minutes, perhaps to reserve that 128 GB of HDD? It would probably make sense to wipe the reserved area lest any previous data be left behind, which is a good practice in terms of security. Whatever, now the new VPS is ready, and I can see some basic information about it. I take down the IP address because later in iPXE environment I need to configure it as a static IP address.</p>
+							<p><img src="/image/linux/ipxe/vps-status.png" alt="VPS ready" /></p>
+							<p>Because I did not choose an OS template for the VPS, it must boot from network (which is true even if I <em>did</em> take a template).</p>
+							<p><img src="/image/linux/ipxe/vps-boot-order.png" alt="Set boot order of VPS" style="border-radius: 6px;" /></p>
+							<p>Now it’s time to start working!</p>
+							<h2 id="network-booting-with-ipxe">Network booting with iPXE</h2>
+							<p>iPXE is an open-source PXE (network boot) firmware, and is built into QEMU, ready for use.</p>
+							<p>I open up the noVNC console and start the VPS. When I see “Press F12 for boot options”, I go for it for the iPXE menu.</p>
+							<p><img src="/image/linux/ipxe/ipxe-boot.png" alt="iPXE boot screen" /></p>
+							<p>iPXE tries to configure network automatically using DHCP, but since the VPS environment does not have DHCP, I have to manually configure the network.</p>
+							<p><img src="/image/linux/ipxe/ipxe-config.png" alt="iPXE configure IP address" /></p>
+							<p>Now it’s time to load some boot source. <a href="https://netboot.xyz/docs/booting/ipxe">Netboot.xyz</a> is the first Google result for “publix pxe boot server”, so I’ll trust it for good.</p>
+							<div class="notice--danger">
+								<h4 class="no_toc" id="trap"><i class="fas fa-bug"></i> Trap</h4>
+								<p>I previously got trapped following its <a href="https://netboot.xyz/docs/quick-start">quick start</a> guide. It didn’t boot for me and just dropped network connection mid-way. Turns out the <a href="https://netboot.xyz/docs/booting/ipxe"><em>Boot using iPXE</em></a> guide is the one I should follow.</p>
+							</div>
+							<p>According to <a href="https://netboot.xyz/docs/booting/ipxe">Netboot.xyz documentation</a>, the only command needed after network is up is <code class="language-plaintext highlighter-rouge">chain</code>. Noting that the iPXE firmware built into QEMU does not support HTTPS, I use plaintext HTTP instead. The final commands used in iPXE environment are here:</p>
 							<div class="language-shell highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code>apt list |
-<span class="nb">grep</span> <span class="nt">-F</span> <span class="s1">'[installed]'</span> |
-<span class="nb">cut</span> <span class="nt">-d</span>/ <span class="nt">-f1</span> |
-<span class="nb">tr</span> <span class="s1">'\n'</span> <span class="s1">' '</span>
-<span class="nb">echo</span>
+									<pre class="highlight"><code><span class="nb">set </span>net0/ip 192.0.2.2           <span class="c"># Replace with your IP address</span>
+<span class="nb">set </span>net0/netmask 255.255.255.0  <span class="c"># Replace as needed</span>
+<span class="nb">set </span>net0/gateway 192.0.2.1      <span class="c"># Replace with your gateway address</span>
+<span class="nb">set </span>dns 8.8.8.8
+ifopen net0
+chain <span class="nt">--autofree</span> http://boot.netboot.xyz
 </code></pre>
 								</div>
 							</div>
-							<p>The last <code class="language-plaintext highlighter-rouge">echo</code> is there because the output from <code class="language-plaintext highlighter-rouge">tr</code> doesn’t contain a newline at end, which would make your terminal look ugly. It’s also not well-Unix-styled because all output should end with a newline.</p>
-							<p>I was in the middle of the desire to learn AWK when I faced this task, so I did some search and wrote this AWK script:</p>
-							<div class="language-awk highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code><span class="c1">#!/usr/bin/awk -f</span>
-<span class="kr">BEGIN</span> <span class="p">{</span>
-  <span class="kc">FS</span> <span class="o">=</span> <span class="s2">"/"</span>
-  <span class="kc">ORS</span> <span class="o">=</span> <span class="s2">" "</span>
-<span class="p">}</span>
-<span class="sr">/</span><span class="se">[</span><span class="sr">installed</span><span class="se">]</span><span class="sr">/</span> <span class="p">{</span>
-  <span class="k">print</span> <span class="nv">$1</span>
-<span class="p">}</span>
-<span class="kr">END</span> <span class="p">{</span>
-  <span class="kc">ORS</span> <span class="o">=</span> <span class="s2">"\n"</span>
-  <span class="k">print</span> <span class="s2">""</span>
-<span class="p">}</span>
-</code></pre>
-								</div>
-							</div>
-							<p>Save this file as whatever name you like, apply <code class="language-plaintext highlighter-rouge">755</code> permissions and run <code class="language-plaintext highlighter-rouge">apt list | some.awk</code>, and watch the magic go.</p>
-							<h1 id="hows-it-done">How’s it done?</h1>
-							<p>For those absolutely new to AWK, this is a good example to start with.</p>
-							<p>The first thing is blocks. Each block begins with a “match condition” that means the block will be executed when the condition matches. A condition can be a statement (like <code class="language-plaintext highlighter-rouge">$1 == "abcd"</code> or <code class="language-plaintext highlighter-rouge">NR % 2 == 0</code>), a regular expression (like the example abov) or a special pattern (<code class="language-plaintext highlighter-rouge">BEGIN</code> and <code class="language-plaintext highlighter-rouge">END</code>).</p>
-							<p>If the condition is a statement, it is evaluated and tested for truthness. If it’s a regular expression, it’s matched against the whole record. Special patterns are intuitive: before processing the first record (<code class="language-plaintext highlighter-rouge">BEGIN</code>) or after processing every record (<code class="language-plaintext highlighter-rouge">END</code>).</p>
-							<p>The second thing is statements. In the example, there are only two kinds of statements: <code class="language-plaintext highlighter-rouge">print</code> and variable assignments. <code class="language-plaintext highlighter-rouge">print</code> is plain (so far) and it prints whatever’s after it. Here <code class="language-plaintext highlighter-rouge">$1</code> means the first field of the record.</p>
-							<p>The two assigned variables are <a href="https://www.gnu.org/software/gawk/manual/gawk.html#Built_002din-Variables">special</a>. <code class="language-plaintext highlighter-rouge">FS</code> stands for <strong>F</strong>ield <strong>S</strong>eparator and it’s set to a slash, so the first field is everything before the first slash. <code class="language-plaintext highlighter-rouge">ORS</code> stands for <strong>O</strong>utput <strong>R</strong>ecord <strong>S</strong>eparator, and it’s what <code class="language-plaintext highlighter-rouge">print</code> adds at the end of each <code class="language-plaintext highlighter-rouge">print</code> statement, much like the keyword variable <code class="language-plaintext highlighter-rouge">end</code> in Python 3’s <code class="language-plaintext highlighter-rouge">print()</code> function.</p>
-							<p>More complex statements like conditions, loops and arithmetics are also possible, but I’m avoiding them here because they don’t appear in this script.</p>
-							<p>Finally, it comes to the execution of the script. By default, <code class="language-plaintext highlighter-rouge">awk</code> takes the first non-option command-line argument as the AWK program to execute. To specify that the program is written in a file, you need the <code class="language-plaintext highlighter-rouge">-f</code> option, whence the <a href="https://en.wikipedia.org/wiki/Shebang_(Unix)">shebang line</a>.</p>
+							<p>Within a few seconds, I see the OS selection screen.</p>
+							<p><img src="/image/linux/ipxe/ipxe-netboot.xyz.png" alt="Loaded Netboot.xyz from iPXE" /></p>
+							<p>Debian has always been my #1 choice for servers, no reason to miss it. Select Linux Network Installs and look for Debian Bullseye.</p>
+							<p><img src="/image/linux/ipxe/ipxe-install-debian.png" alt="Debian network installer" /></p>
+							<p>Now I’m halfway to success as Debian installer shows up. There’s still a small note: the Debian installer doesn’t “inherit” network settings from the iPXE firmware, so it must be configured again for Debian. The auto configuration attempt will fail and Debian will prompt for manual configuration. Not any difficult.</p>
+							<p><img src="/image/linux/ipxe/ipxe-install-debian-network.png" alt="Configure network for Debian installer" /></p>
+							<p>Now it’s time to wipe Windows (where’s Windows?) and install Linux!</p>
+							<p><img src="/image/linux/ipxe/ipxe-install-debian-disk.png" alt="Configure disk partitions for Debian" /></p>
+							<p>Select <code class="language-plaintext highlighter-rouge">deb.debian.org</code> as package source since this is a Hong Kong VPS and not a mainland China one, and proceed through the rest of the process. After a reboot, I can see the login screen of the newly installed OS. Hooray!</p>
+							<p><img src="/image/linux/ipxe/debian-ok.png" alt="Debian ready" /></p>
+							<p>If I replace <code class="language-plaintext highlighter-rouge">linux-image-amd64</code> with <code class="language-plaintext highlighter-rouge">linux-image-cloud-amd64</code>, I can free up some 100 MB disk space than the default setup:</p>
+							<p><img src="/image/linux/ipxe/debian-df.png" alt="Debian DF" /></p>
+							<p>That’s it. With just some small efforts, this is now an afforable, high-spec Linux VPS.</p>
+							<p>While the VPS control panel would never offer Linux templates should anything go wrong, it’s always possible to boot from iPXE again for a “rescue environment”.</p>
 						</section>
 						<footer class="page__meta">
 							<p class="page__taxonomy">
 								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
 								<span itemprop="keywords">
-									<a href="/tag/linux" class="page__taxonomy-item" rel="tag">linux</a><span class="sep">, </span>
-									<a href="/tag/text-processing" class="page__taxonomy-item" rel="tag">text-processing</a>
+									<a href="/tag/linux" class="page__taxonomy-item" rel="tag">linux</a>
 								</span>
 							</p>
-							<p class="page__taxonomy">
-								<strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
-								<span itemprop="keywords">
-									<a href="/category/study-notes" class="page__taxonomy-item" rel="tag">study-notes</a>
-								</span>
-							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-02-04">Feb 4, 2021</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-11-22">Nov 22, 2021</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
-							<a href="https://twitter.com/intent/tweet?text=Filter+manually+installed+packages+from+APT+with+AWK%20https%3A%2F%2Fibug.io%2Fblog%2F2019%2F03%2Ffirst-touch-with-awk%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
-							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2019%2F03%2Ffirst-touch-with-awk%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
-							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2019%2F03%2Ffirst-touch-with-awk%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+							<a href="https://twitter.com/intent/tweet?text=Reinstall+Windows+VPS+into+Linux+with+iPXE+network+boot%20https%3A%2F%2Fibug.io%2Fblog%2F2021%2F11%2Fconvert-windows-vps-to-linux%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F11%2Fconvert-windows-vps-to-linux%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F11%2Fconvert-windows-vps-to-linux%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
 						</section>
 						<nav class="pagination">
-							<a href="/blog/2019/02/bootstrapping-make/" class="pagination--pager" title="Bootstrapping Make
+							<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" class="pagination--pager" title="Secure site-to-site connection with Linux IPsec VPN
 ">Previous</a>
-							<a href="/blog/2019/04/os-lab-1/" class="pagination--pager" title="Build a minimal Linux system and run it in QEMU
-">Next</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
 						</nav>
 					</div>
 					<div class="page__comments">
@@ -292,7 +304,7 @@
 									<span class="page__meta-sep"></span>
 									<span class="page__meta-readtime">
 										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										20 minute read
+										24 minute read
 									</span>
 								</p>
 								<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are without diving into all the gory details of them, so I decided to go on this exploration myself.
@@ -313,7 +325,7 @@
 									<span class="page__meta-sep"></span>
 									<span class="page__meta-readtime">
 										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										16 minute read
+										15 minute read
 									</span>
 								</p>
 								<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections. As an innovative attempt to a lab in this semester’s Network Security course, which was designed to...</p>
@@ -343,21 +355,21 @@
 						<div class="grid__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<h2 class="archive__item-title no_toc" itemprop="headline">
-									<a href="/blog/2019/04/os-lab-1/" rel="permalink">Build a minimal Linux system and run it in QEMU
+									<a href="/blog/2021/08/proxmox-disassemble-hardware-raid1/" rel="permalink">Disassembling a hardware RAID 1 array in Proxmox VE
 									</a>
 								</h2>
 								<p class="page__meta">
 									<span class="page__meta-date">
 										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-										<time datetime="2019-04-07T00:00:00+00:00">Apr 7, 2019</time>
+										<time datetime="2021-08-15T00:00:00+00:00">Aug 15, 2021</time>
 									</span>
 									<span class="page__meta-sep"></span>
 									<span class="page__meta-readtime">
 										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										6 minute read
+										7 minute read
 									</span>
 								</p>
-								<p class="archive__item-excerpt" itemprop="description">Linux is the #1 open-source operating system nowadays, and many people are running a Linux distro, such as Ubuntu or Arch. Linux is also the most popular choice for a server OS.
+								<p class="archive__item-excerpt" itemprop="description">Yesterday in a server maintenance period, we decided to tune the storage layout of our Proxmox VE server, which included disassembling a RAID 1 array and adjusting the size of the root filesystem.
 								</p>
 							</article>
 						</div>
@@ -468,8 +480,8 @@
 		</script>
 		<script>
 			var disqus_config = function () {
-			  this.page.url = "https://ibug.io/blog/2019/03/first-touch-with-awk/";  /* Replace PAGE_URL with your page's canonical URL variable */
-			  this.page.identifier = "/blog/2019/03/first-touch-with-awk"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			  this.page.url = "https://ibug.io/blog/2021/11/convert-windows-vps-to-linux/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2021/11/convert-windows-vps-to-linux"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
 			};
 			(function() { /* DON'T EDIT BELOW THIS LINE */
 			  var d = document, s = d.createElement('script');
