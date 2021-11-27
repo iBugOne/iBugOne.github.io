@@ -1,4 +1,85 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2021-11-27T19:31:44+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Reinstall Windows VPS into Linux with iPXE network boot</title><link href="https://ibug.io/blog/2021/11/convert-windows-vps-to-linux/" rel="alternate" type="text/html" title="Reinstall Windows VPS into Linux with iPXE network boot" /><published>2021-11-22T00:00:00+00:00</published><updated>2021-11-23T01:53:16+00:00</updated><id>https://ibug.io/blog/2021/11/convert-windows-vps-to-linux</id><content type="html" xml:base="https://ibug.io/blog/2021/11/convert-windows-vps-to-linux/">&lt;p&gt;This November I found a discount from one of my favorite VPS providers, &lt;a href=&quot;https://go.ibugone.com/vps-hk&quot;&gt;NETfront&lt;/a&gt;. They offered &lt;strong&gt;Linux VPS with 2 vCPUs and 2 GB RAM&lt;/strong&gt; at HK$56/mo, and also &lt;strong&gt;Windows VPS with 4 vCPUs and 4 GB RAM&lt;/strong&gt; at HK$49/mo. Looks strange, right? Why buy the crappy Linux VPS when you can have a better configuration with &lt;em&gt;less&lt;/em&gt; money (if possible)?&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2021-11-27T19:33:29+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">New Pandora’s box: Install Linux and Windows onto the same NTFS partition</title><link href="https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs/" rel="alternate" type="text/html" title="New Pandora’s box: Install Linux and Windows onto the same NTFS partition" /><published>2021-11-28T00:00:00+00:00</published><updated>2021-11-28T03:31:43+00:00</updated><id>https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs</id><content type="html" xml:base="https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs/">&lt;p&gt;Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, &lt;a href=&quot;https://www.techrepublic.com/article/linux-kernel-5-15-is-now-available-and-it-has-something-special-for-ntfs-users/&quot;&gt;NTFS3&lt;/a&gt;. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.&lt;/p&gt;
+				&lt;div class=&quot;notice--danger&quot;&gt;
+				&lt;h4 class=&quot;no_toc&quot; id=&quot;warning&quot;&gt;&lt;i class=&quot;fas fa-exclamation-triangle&quot;&gt;&lt;/i&gt; WARNING&lt;/h4&gt;
+				&lt;p&gt;This is COMPLETELY EXPERIMENTAL. If you are not familiar with either Linux or Windows, &lt;strong&gt;do not try this&lt;/strong&gt;.&lt;/p&gt;
+				&lt;/div&gt;
+				&lt;p&gt;Sounds WEIRD to me. I’m going to do this experiment on my Proxmox VE cluster.&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/monster/vm-create.png&quot; alt=&quot;Create virtual machine&quot; class=&quot;border&quot; /&gt;&lt;/p&gt;
+				&lt;h2 id=&quot;preparation&quot;&gt;Preparation&lt;/h2&gt;
+				&lt;h3 id=&quot;archiso&quot;&gt;Archiso&lt;/h3&gt;
+				&lt;p&gt;At the time of writing this article, the latest Arch Linux ISO (2021.11.01) was shipped with Kernel &lt;strong&gt;5.14&lt;/strong&gt;.15 - no new NTFS3 driver. I need to create one for myself or this won’t work.&lt;/p&gt;
+				&lt;p&gt;&lt;a href=&quot;https://wiki.archlinux.org/title/archiso&quot;&gt;Archiso&lt;/a&gt; is Arch’s official tool for creating custom ISO images. I’m not normally an Arch user, so I choose to install Arch first from an official ISO (20211101) before wiping it.&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/monster/install-arch-partition.png&quot; alt=&quot;Partitioning in Arch ISO&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;After this temporary system is set up, I just follow the Archiso guide and receive my own &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;archlinux-2021.11.22-x86_64.iso&lt;/code&gt; with no trouble. It has Kernel &lt;strong&gt;5.15&lt;/strong&gt;.4 packed.&lt;/p&gt;
+				&lt;p&gt;I copy the ISO onto the Proxmox VE host system, reboot the VM with this new ISO and wipe &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/dev/sda2&lt;/code&gt; to avoid (possible) further issues with the Windows installer. I also format &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/dev/sda1&lt;/code&gt; again to ensure I’m really starting over anew.&lt;/p&gt;
+				&lt;h3 id=&quot;install-windows&quot;&gt;Install Windows&lt;/h3&gt;
+				&lt;p&gt;Since NTFS is developed by Microsoft and for Windows, it seems reasonable to assume Windows is best suited for NTFS. So I’ll install Windows first lest it recognizes the filesystem created by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mkfs.ntfs&lt;/code&gt; (from the old &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ntfs-3g&lt;/code&gt; package) as “foreign” and complains anyhow.&lt;/p&gt;
+				&lt;p&gt;The installation process of Windows 10 has always been as boring and mundane as it is, so I’m not going to be verbose here. Following the usual steps, except that the disk has already been partitioned, it’s easy to get Windows 10 up and ready.&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/monster/install-win10-oobe.png&quot; alt=&quot;Windows 10 OOBE screen&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;Proceeding through the out-of-box experience and I get to the desktop. There’s not many things of interest here, so I just shutdown the VM and take a snapshot.&lt;/p&gt;
+				&lt;p&gt;Now it’s time to get this compound monstrosity set up.&lt;/p&gt;
+				&lt;h2 id=&quot;the-main-show&quot;&gt;The Main Show&lt;/h2&gt;
+				&lt;p&gt;Swap the CD/DVD drive image for the newly created archiso and boot it up:&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/monster/install-archiso.png&quot; alt=&quot;CD/DVD image selection&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;With the proper Linux kernel equipped, I can now mount the NTFS partition create by Windows installer. It seems NTFS is sophisticated enough to even allow Unix filesystem attibutes, like file modes (permissions) and ownership, as well as “special file types” like symbolic links and named sockets (Unix domain sockets). This may hint that bootstrapping a Linux system should not be too problematic.&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;fdisk &lt;span class=&quot;nt&quot;&gt;-l&lt;/span&gt; /dev/sda  &lt;span class=&quot;c&quot;&gt;# confirm partition layout&lt;/span&gt;
+				mount &lt;span class=&quot;nt&quot;&gt;-t&lt;/span&gt; ntfs3 /dev/sda2 /mnt
+				&lt;span class=&quot;nb&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; /mnt/boot/efi
+				mount /dev/sda1 /mnt/boot/efi
+				pacstrap /mnt base linux linux-firmware
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;Indeed, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pacstrap&lt;/code&gt; goes so smoothly that I almost forget it’s on a non-native filesystem. The only thing that makes me concerned is that &lt;strong&gt;there’s no &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;fsck&lt;/code&gt; tool for NTFS&lt;/strong&gt; (&lt;em&gt;file not found: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;fsck.ntfs3&lt;/code&gt;&lt;/em&gt; in console output).&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/monster/install-arch-pacstrap.png&quot; alt=&quot;pacstrap output&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;Now I can chroot into the system and set up the rest of the system.&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;genfstab &lt;span class=&quot;nt&quot;&gt;-U&lt;/span&gt; /mnt &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /mnt/etc/fstab
+				arch-chroot /mnt
+				&lt;span class=&quot;nb&quot;&gt;ln&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-sf&lt;/span&gt; /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+				vim /etc/locale.gen  &lt;span class=&quot;c&quot;&gt;# add en_US.UTF-8 UTF-8&lt;/span&gt;
+				&lt;span class=&quot;nb&quot;&gt;echo &lt;/span&gt;monster &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; /etc/hostname
+				passwd &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; root
+				&lt;span class=&quot;nb&quot;&gt;exit&lt;/span&gt;  &lt;span class=&quot;c&quot;&gt;# quit chroot environment, return to archiso&lt;/span&gt;
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;Fixing the bootloader is a bit different than usual, as Linux detects NTFS partitions as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ntfs&lt;/code&gt;, not &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ntfs3&lt;/code&gt;. In case of auto mounting, Linux will try to mount with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-t ntfs&lt;/code&gt;, which is not available (it’s provided by ntfs-3g). Fortunately, there’s a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;rootfstype=&lt;/code&gt; &lt;a href=&quot;https://wiki.archlinux.org/title/kernel_parameters&quot;&gt;kernel command-line parameter&lt;/a&gt; to override the “filesystem type” parameter when mounting.&lt;/p&gt;
+				&lt;p&gt;Putting this into action:&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;arch-chroot /mnt
+				&lt;span class=&quot;c&quot;&gt;# configure networking&lt;/span&gt;
+				pacman &lt;span class=&quot;nt&quot;&gt;-Sy&lt;/span&gt; grub efibootmgr
+				vim /etc/default/grub
+				&lt;span class=&quot;c&quot;&gt;# remove &quot;quiet&quot; from GRUB_CMDLINE_LINUX&lt;/span&gt;
+				&lt;span class=&quot;c&quot;&gt;# set GRUB_CMDLINE_LINUX_DEFAULT=&quot;rootfstype=ntfs3&quot;&lt;/span&gt;
+				grub-install
+				grub-mkconfig &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; /boot/grub/grub.cfg
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/monster/install-arch-grub.png&quot; alt=&quot;Install GRUB for Arch Linux&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;To make things a bit more interesting, I’m adding a desktop environment:&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;pacman &lt;span class=&quot;nt&quot;&gt;-Sy&lt;/span&gt; gnome
+				&lt;span class=&quot;c&quot;&gt;# select some items - not everything&lt;/span&gt;
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;And configure networking as well:&lt;/p&gt;
+				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; /etc/systemd/network
+				vim ens18.network
+				&lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; ../system
+				&lt;span class=&quot;nb&quot;&gt;ln&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-s&lt;/span&gt; /lib/systemd/system/systemd-networkd.service multi-user.target.wants/
+				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+				&lt;p&gt;All set, let’s give it a try.&lt;/p&gt;
+				&lt;h2 id=&quot;usage-experience&quot;&gt;Arch Linux with Windows 10 usage experience&lt;/h2&gt;
+				&lt;p&gt;Arch Linux plays surprisingly well with the new NTFS3 filesystem driver.&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/monster/after-arch-neofetch.png&quot; alt=&quot;System information in Arch Linux&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;To keep things simple, I didn’t install too much software. During my testing, the only issue I encountered was that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ldconfig&lt;/code&gt; never worked. It always aborts.&lt;/p&gt;
+				&lt;p&gt;&lt;img src=&quot;/image/linux/monster/arch-terminal-sigabrt.png&quot; alt=&quot;ldconfig stops working&quot; /&gt;&lt;/p&gt;
+				&lt;p&gt;A non-issue is that there’s no working &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;fsck&lt;/code&gt; tool, and there’s a systemd service “Fsck at boot” that consequently fails. It’s not as useful so I just disabled it.&lt;/p&gt;
+				&lt;h2 id=&quot;thoughts&quot;&gt;Thoughts&lt;/h2&gt;
+				&lt;p&gt;I must admit I’m amazed at how exquisitely NTFS is designed. It’s so mature that it hasn’t even been updated &lt;a href=&quot;https://en.wikipedia.org/wiki/NTFS#Versions&quot;&gt;since Windows XP&lt;/a&gt;. One important part of NTFS is its Extended Attributes (EA) for files. Every NTFS filesystem contains a special file named &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;$MFT&lt;/code&gt; located under its root directory. This is the metadata for all files, including file names, “normal attributes” and ACL, among which is the EA. Every file has an associated EA entry, which can contain an arbitrary number of attributes (key-value pairs). In fact, the first generation of Windows Subsystem for Linux (WSL) stores Linux file modes and permissions &lt;a href=&quot;https://docs.microsoft.com/en-us/windows/wsl/file-permissions&quot;&gt;using custom EA keys&lt;/a&gt;, which gets adapted by the new NTFS3 driver. Other EA keys are also used as needed, like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;security.capability&lt;/code&gt;, which is a 20-byte bitset.&lt;/p&gt;
+				&lt;p&gt;The new NTFS3 driver is a delighting improvement to the Linux ecosystem. Complaints about the classic NTFS-3G driver &lt;a href=&quot;https://superuser.com/q/613869/688600&quot;&gt;have&lt;/a&gt; &lt;a href=&quot;https://www.reddit.com/r/linuxquestions/comments/73v5pi/why_is_ntfs_on_linux_so_slow/&quot;&gt;always&lt;/a&gt; &lt;a href=&quot;https://askubuntu.com/q/187813/612877&quot;&gt;been&lt;/a&gt; &lt;a href=&quot;https://unix.stackexchange.com/q/107978/211239&quot;&gt;around&lt;/a&gt;. Performance was one of the primary concerns because it not only is based on FUSE (Filesystem in USErspace), but also badly optimized. Use of FUSE means extra context switches when accessing files, which, paired with hard-coded 4 KiB read/write unit, delivers unusually slow access speeds.&lt;/p&gt;
+				&lt;p&gt;While the NTFS3 driver is a bit more optimized, concerns around compatibility are still around. This is mainly because it’s still built on knowledge obtained from reverse engineering than technical documentation and standard. Fortunately, stability for NTFS-3G is already at a satisfactory level, and the new driver is thought to be more reliable than the old one.&lt;/p&gt;
+				&lt;p&gt;Besides, this is a perfect example of Linux’s inclusiveness. Years before the commencement of the new NTFS3 driver, &lt;a href=&quot;https://github.com/CyanoHao/NTFS-as-rootfs&quot;&gt;attempts were made&lt;/a&gt; to run Linux on top of NTFS using NTFS-3G. This leads to an interesting question: Will Linux run on top of FAT32? Technical difficulties are more conspicuous and crutial this time, like lack of support and extensibility for file modes and more. I’ll explore into this challenge and share my findings in a subsequent blog post. Stay tuned!&lt;/p&gt;
+				&lt;h2 id=&quot;links--credits&quot;&gt;Links &amp;amp; Credits&lt;/h2&gt;
+				&lt;ul&gt;
+				&lt;li&gt;Pioneer from r/archlinux: &lt;a href=&quot;https://www.reddit.com/r/archlinux/comments/qwsftq/arch_linux_on_ntfs3/&quot;&gt;Arch Linux on NTFS3!&lt;/a&gt;&lt;/li&gt;
+				&lt;li&gt;
+				&lt;p&gt;Original idea by a GitHub user: &lt;a href=&quot;https://gist.github.com/motorailgun/cc2c573f253d0893f429a165b5f851ee&quot;&gt;Installing Windows and Linux into the same partition&lt;/a&gt;&lt;/p&gt;
+				&lt;/li&gt;
+				&lt;/ul&gt;</content><author><name>iBug</name></author><category term="linux" /><category term="windows" /><summary type="html">Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, NTFS3. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.</summary></entry><entry><title type="html">Reinstall Windows VPS into Linux with iPXE network boot</title><link href="https://ibug.io/blog/2021/11/convert-windows-vps-to-linux/" rel="alternate" type="text/html" title="Reinstall Windows VPS into Linux with iPXE network boot" /><published>2021-11-22T00:00:00+00:00</published><updated>2021-11-23T01:53:16+00:00</updated><id>https://ibug.io/blog/2021/11/convert-windows-vps-to-linux</id><content type="html" xml:base="https://ibug.io/blog/2021/11/convert-windows-vps-to-linux/">&lt;p&gt;This November I found a discount from one of my favorite VPS providers, &lt;a href=&quot;https://go.ibugone.com/vps-hk&quot;&gt;NETfront&lt;/a&gt;. They offered &lt;strong&gt;Linux VPS with 2 vCPUs and 2 GB RAM&lt;/strong&gt; at HK$56/mo, and also &lt;strong&gt;Windows VPS with 4 vCPUs and 4 GB RAM&lt;/strong&gt; at HK$49/mo. Looks strange, right? Why buy the crappy Linux VPS when you can have a better configuration with &lt;em&gt;less&lt;/em&gt; money (if possible)?&lt;/p&gt;
 				&lt;p class=&quot;notice--primary&quot;&gt;&lt;strong&gt;Note&lt;/strong&gt;: I knew this VPS provider ran &lt;a href=&quot;https://www.proxmox.com/en/proxmox-ve&quot;&gt;Proxmox VE&lt;/a&gt; because I already had their VPSs. They’d give you a Proxmox VE noVNC console when you click “Console” to manage your VPS, from which you know they’re using QEMU/KVM as their virtualization platform. Direct access to QEMU screen is &lt;em&gt;awesome&lt;/em&gt;!&lt;/p&gt;
 				&lt;h2 id=&quot;get-vps&quot;&gt;Get a VPS&lt;/h2&gt;
 				&lt;p&gt;First I head to the shopping cart to order a Windows VPS.&lt;/p&gt;
@@ -1500,151 +1581,4 @@
 				&lt;p&gt;Unfortunately, you have to keep an old version of your browser of choice around if you plan to use Flash for an extended period. This means you have to find an available download, and disable the auto-update feature for the browser. You will be missing the latest web features and security improvements if you &lt;a href=&quot;https://browser-update.org/&quot;&gt;remain on an old browser&lt;/a&gt;, which will be an issue sooner or later.&lt;/p&gt;
 				&lt;p&gt;You can get around the browser issue by using Internet Explorer if you’re on Windows, which is &lt;em&gt;already&lt;/em&gt; lacking new web features and security. You’ll want to prevent Windows Update &lt;a href=&quot;https://www.catalog.update.microsoft.com/search.aspx?q=4577586&quot;&gt;KB4577586&lt;/a&gt; from installing, following &lt;a href=&quot;https://support.microsoft.com/en-us/help/3183922/how-to-temporarily-prevent-a-windows-update-from-reinstalling-in-windo&quot;&gt;Microsoft’s guidelines&lt;/a&gt;.&lt;/p&gt;
 				&lt;p&gt;A better approach is to keep the Flash Player installers around (I saved FP v29 &lt;a href=&quot;https://download.ibugone.com/fp_29.0.0.171_archive.zip&quot;&gt;here&lt;/a&gt; if you need - it’s a full set so beware of download size - 421 MB), and install them when needed.&lt;/p&gt;
-				&lt;p&gt;Finally, the only way to secure your ability to use Flash in the distant future is to install a virtual machine running an older system (like Windows 7), with old software and old browsers, and &lt;em&gt;then&lt;/em&gt; put your Flash Player there.&lt;/p&gt;</content><author><name>iBug</name></author><category term="web" /><category term="flash" /><summary type="html">It’s 2021 now, and Adobe Flash Player has been end-of-life after December 31, 2020. There are many cases where you want to retain it, however. For example, you may want to keep enjoying an old game that’s been around for decades, or managing your organization’s infrastructure via VMware vSphere Flash Web Client (vSphere 6.5 and older).</summary></entry><entry><title type="html">Build GitHub Pages with GitHub Actions</title><link href="https://ibug.io/blog/2020/09/build-github-pages-with-github-actions/" rel="alternate" type="text/html" title="Build GitHub Pages with GitHub Actions" /><published>2020-09-19T00:00:00+00:00</published><updated>2021-08-10T19:51:06+00:00</updated><id>https://ibug.io/blog/2020/09/build-github-pages-with-github-actions</id><content type="html" xml:base="https://ibug.io/blog/2020/09/build-github-pages-with-github-actions/">&lt;div class=&quot;notice--primary&quot;&gt;
-				&lt;h4 class=&quot;no_toc&quot; id=&quot;heads-up&quot;&gt;&lt;i class=&quot;fas fa-fw fa-lightbulb&quot;&gt;&lt;/i&gt; Heads up&lt;/h4&gt;
-				&lt;p&gt;I wrote &lt;a href=&quot;/blog/2018/04/build-github-pages-with-travis-ci/&quot;&gt;another article&lt;/a&gt; two years ago about building with Travis CI, but from my experience in the past half year, GitHub Actions is, in all aspects, a better option than Travis CI.&lt;/p&gt;
-				&lt;p&gt;You should also read that article if you’re unfamiliar with &lt;a href=&quot;https://jekyllrb.com/&quot;&gt;Jekyll&lt;/a&gt;, as I won’t be repeating common basics. This article will focus on GitHub Actions rather than building a Jekyll site in general.&lt;/p&gt;
-				&lt;/div&gt;
-				&lt;p&gt;Earlier this year, I switched my GitHub Pages build from CircleCI to GitHub Actions.&lt;/p&gt;
-				&lt;p&gt;Yep, an article is missing for CircleCI, but why is it still needed? GitHub Actions is better than CircleCI in &lt;em&gt;almost&lt;/em&gt; every aspect, except for its CPU that runs slightly slower than that of CircleCI.&lt;/p&gt;
-				&lt;h2 id=&quot;1-review&quot;&gt;1. Review&lt;/h2&gt;
-				&lt;p&gt;In &lt;a href=&quot;/blog/2018/04/build-github-pages-with-travis-ci/&quot;&gt;my previous article&lt;/a&gt; on building with Travis CI, we went through the steps of setting up a local build environment for our Jekyll site. We set up a Ruby development environment, installed &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gem&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bundle&lt;/code&gt;, wrote a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Gemfile&lt;/code&gt;, and built the Jekyll site locally.&lt;/p&gt;
-				&lt;p&gt;If you’re not yet ready for this part, check out that article first. I’m going straight to the main content this time.&lt;/p&gt;
-				&lt;h2 id=&quot;setup-actions&quot;&gt;2. Setting up GitHub Actions&lt;/h2&gt;
-				&lt;p&gt;Getting GitHub Actions ready for building is &lt;em&gt;much&lt;/em&gt; easier than Travis CI, as everything you need to do is to push a config file into &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.github/workflows&lt;/code&gt; directory of your repository.&lt;/p&gt;
-				&lt;p&gt;If you’re working on a forked repository, you may want to navigate to the “Actions” tab in your repository, and enable Actions there. Actions is disabled for forked repositories by default.&lt;/p&gt;
-				&lt;h3 id=&quot;setup-build&quot;&gt;Configure build settings&lt;/h3&gt;
-				&lt;p&gt;You can use any name for the config file, but here I’ll go with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;build.yml&lt;/code&gt;. Here’s a minimal set of steps you’ll need.&lt;/p&gt;
-				&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;build&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;on&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;push&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;jobs&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;build&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;runs-on&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;ubuntu-latest&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;steps&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
-				&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;uses&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;actions/checkout@v2&lt;/span&gt;
-				&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;uses&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;actions/setup-ruby@v1&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;with&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;ruby-version&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;2.7&lt;/span&gt;
-				&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Setup cache for Bundler&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;cache&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;uses&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;actions/cache@v2&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;with&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;path&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;vendor/bundle&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;${{ runner.os }}-bundler-${{ hashFiles('Gemfile') }}&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;restore-keys&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;|&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;${{ runner.os }}-bundler-&lt;/span&gt;
-				&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Install dependencies&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;|&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;bundle install --path=vendor/bundle&lt;/span&gt;
-				&lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Build site&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;bundle exec jekyll build --profile --trace&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;env&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;JEKYLL_ENV&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;production&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;JEKYLL_GITHUB_TOKEN&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;${{ secrets.GITHUB_TOKEN }}&lt;/span&gt;
-				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-				&lt;p&gt;Unlike Travis CI, all GitHub Actions builds run in an identical environment, while specific languages and software are loaded at runtime. This workflow contains 5 steps, with each step being:&lt;/p&gt;
-				&lt;ol&gt;
-				&lt;li&gt;&lt;strong&gt;Clone and checkout the repository.&lt;/strong&gt; Contrary to Travis CI, GitHub Actions does not clone the repository automatically, as GitHub Actions is intended for more general purposes than only running Continuous Integrations.&lt;/li&gt;
-				&lt;li&gt;&lt;strong&gt;Setup Ruby development environment.&lt;/strong&gt; This one is obvious, since Jekyll is written in Ruby.&lt;/li&gt;
-				&lt;li&gt;&lt;strong&gt;Setup cache.&lt;/strong&gt; For the same reason as with Travis CI: Caching installed gems speeds up &lt;em&gt;subsequent&lt;/em&gt; builds.&lt;/li&gt;
-				&lt;li&gt;&lt;strong&gt;Install dependencies.&lt;/strong&gt; Self-explanatory.&lt;/li&gt;
-				&lt;li&gt;&lt;strong&gt;Build site.&lt;/strong&gt; Same as above, self-explanatory.&lt;/li&gt;
-				&lt;/ol&gt;
-				&lt;p&gt;The build process is mostly the same as on Travis CI, except that many steps that are automatically taken on Travis CI have to be written explicitly.&lt;/p&gt;
-				&lt;h2 id=&quot;deploy-actions&quot;&gt;3. Deploy to GitHub&lt;/h2&gt;
-				&lt;h3 id=&quot;access-token&quot;&gt;Access token&lt;/h3&gt;
-				&lt;p&gt;You’ve probably noticed that there’s a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;${{ secrets.GITHUB_TOKEN }}&lt;/code&gt; in the above GitHub Actions config. That’s &lt;a href=&quot;https://docs.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token&quot;&gt;a neat feature&lt;/a&gt; GitHub provides. The main downside is that the token has access only to the repository the workflow is running on (as well as any other public resources). So if you want to push to a different repository, you’ll still have to resort to creating your personal access token (PAT) for it.&lt;/p&gt;
-				&lt;p&gt;To keep things simple, I’ll assume you’re pushing to the same repository for deployment, where the GitHub-provided token can be used.&lt;/p&gt;
-				&lt;h3 id=&quot;setup-deployment&quot;&gt;Setting up deployment&lt;/h3&gt;
-				&lt;p&gt;The deploy script from the other Travis CI article is as follows (with names replaced, of course):&lt;/p&gt;
-				&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;_site
-				git init
-				git config user.name &lt;span class=&quot;s2&quot;&gt;&quot;GitHub&quot;&lt;/span&gt;
-				git config user.email &lt;span class=&quot;s2&quot;&gt;&quot;noreply@github.com&quot;&lt;/span&gt;
-				git add &lt;span class=&quot;nt&quot;&gt;--all&lt;/span&gt;
-				git commit &lt;span class=&quot;nt&quot;&gt;--message&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;Auto deploy from GitHub Actions build &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$GITHUB_RUN_NUMBER&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
-				git remote add deploy https://&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{ secrets.GITHUB_TOKEN &lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;@github.com/&amp;lt;yourname&amp;gt;/&amp;lt;yourname&amp;gt;.github.io.git &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;/dev/null 2&amp;gt;&amp;amp;1
-				git push &lt;span class=&quot;nt&quot;&gt;--force&lt;/span&gt; deploy master &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;/dev/null 2&amp;gt;&amp;amp;1
-				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-				&lt;p&gt;Again, replace &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;yourname&amp;gt;&lt;/code&gt; with your GitHub username in the above script.&lt;/p&gt;
-				&lt;p&gt;Now, instead of writing it to a file, we can add this script directly to the build config, as shown below:&lt;/p&gt;
-				&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Deploy site&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;|&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;cd _site&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git init&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git config user.name &quot;GitHub&quot;&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git config user.email &quot;noreply@github.com&quot;&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git add --all&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git commit --message &quot;Auto deploy from GitHub Actions build $GITHUB_RUN_NUMBER&quot;&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git remote add deploy https://${{ secrets.GITHUB_TOKEN }}@github.com/&amp;lt;yourname&amp;gt;/&amp;lt;yourname&amp;gt;.github.io.git &amp;gt;/dev/null 2&amp;gt;&amp;amp;1&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git push --force deploy gh-pages &amp;gt;/dev/null 2&amp;gt;&amp;amp;1&lt;/span&gt;
-				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-				&lt;h3 id=&quot;fixing-issues-with-github-actions&quot;&gt;Fixing issues with GitHub Actions&lt;/h3&gt;
-				&lt;p&gt;There are a few things to tackle, however, as GitHub Actions works differently than Travis CI.&lt;/p&gt;
-				&lt;p&gt;First, the GitHub-provided token, for unknown reasons, could not trigger GitHub Pages deploys. This used to be the case&lt;sup id=&quot;fnref:1&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot; rel=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; but has since been (partially) fixed. Now it can trigger Pages for non-root commits to the Pages branch. A “root commit” is the sole commit on a new branch, like the one created by the above build script, which always initializes a new repository and creates a single commit for the contents. This Pages issue makes the above build script non-functional, and we need to fix it.&lt;/p&gt;
-				&lt;p&gt;An easy solution is to fetch the target (deploy) branch, and add a commit on top of whatever’s there already. So we modify the build script to include this fix:&lt;/p&gt;
-				&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Deploy site&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;|&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;cd _site&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git init&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git config user.name &quot;GitHub&quot;&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git config user.email &quot;noreply@github.com&quot;&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git remote add deploy https://${{ secrets.GITHUB_TOKEN }}@github.com/&amp;lt;yourname&amp;gt;/&amp;lt;yourname&amp;gt;.github.io.git &amp;gt;/dev/null 2&amp;gt;&amp;amp;1&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git fetch --depth=1 deploy gh-pages&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git reset --soft FETCH_HEAD&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git checkout -B gh-pages&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git add --all&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git commit --message &quot;Auto deploy from GitHub Actions build $GITHUB_RUN_NUMBER&quot;&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git push deploy gh-pages &amp;gt;/dev/null 2&amp;gt;&amp;amp;1&lt;/span&gt;
-				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-				&lt;p&gt;In this revised script, we first fetch the target branch, with depth set to 1 to avoid unnecessary downloads. Then we reset our “branch pointer” to the fetched branch (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;FETCH_HEAD&lt;/code&gt;), before finally adding our content as another commit on top of it.&lt;/p&gt;
-				&lt;h3 id=&quot;fixing-issues-with-github-actions---alternative-approach&quot;&gt;Fixing issues with GitHub Actions - Alternative approach&lt;/h3&gt;
-				&lt;p&gt;There’s an alternative solution to this issue, by cloning the deploy repository beforehand (and remove &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;git init&lt;/code&gt; from the deploy step).&lt;/p&gt;
-				&lt;p&gt;Insert this “clone” step &lt;em&gt;before&lt;/em&gt; the “build” step:&lt;/p&gt;
-				&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Prepare build&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;|&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git clone -q --depth=1 --branch=gh-pages --single-branch --no-checkout \&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;https://${{ secrets.GITHUB_TOKEN }}@github.com/&amp;lt;yourname&amp;gt;/&amp;lt;yourname&amp;gt;.github.io.git _site/&lt;/span&gt;
-				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-				&lt;p&gt;and change the deploy step to this:&lt;/p&gt;
-				&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;Deploy site&lt;/span&gt;
-				&lt;span class=&quot;na&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;|&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;cd _site&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git config user.name &quot;GitHub&quot;&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git config user.email &quot;noreply@github.com&quot;&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git add --all&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git commit --message &quot;Auto deploy from GitHub Actions build $GITHUB_RUN_NUMBER&quot;&lt;/span&gt;
-				&lt;span class=&quot;s&quot;&gt;git push deploy gh-pages&lt;/span&gt;
-				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-				&lt;p&gt;An important note is that you should tell Jekyll to keep your &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.git&lt;/code&gt; folder in the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_site&lt;/code&gt; directory when building your site. This can be done by adding the following settings to your &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_config.yml&lt;/code&gt;:&lt;/p&gt;
-				&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;na&quot;&gt;keep_files&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;pi&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;.git&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;]&lt;/span&gt;
-				&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-				&lt;p&gt;I recall that Jekyll 4.0 has this setting emplaced by default, but can’t find the reference for now, so I’m recommending that you explicitly write this into your config file even if you have Jekyll 4 locally (which you probably don’t if you’re using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;github-pages&lt;/code&gt; gem). It’s a good idea to write configurations explicitly, after all.&lt;/p&gt;
-				&lt;h2 id=&quot;finally&quot;&gt;Finally&lt;/h2&gt;
-				&lt;p&gt;Now then, why did I migrate my website build to GitHub Actions, if both Travis CI and CircleCI are running perfectly?&lt;/p&gt;
-				&lt;p&gt;I chose to do so for the following reasons:&lt;/p&gt;
-				&lt;ul&gt;
-				&lt;li&gt;It’s free for public repositories, with unlimited total usage. One rarely hits the total usage quota, however, even with CircleCI, which has &lt;del&gt;a monthly limit of 1,000 total run minutes&lt;/del&gt; (&lt;strong&gt;Update&lt;/strong&gt;: It’s now 250 minutes weekly).
-				&lt;ul&gt;
-				&lt;li&gt;CircleCI’s limit applies at account level, and does not differentiate between public and private repositories.&lt;/li&gt;
-				&lt;li&gt;&lt;strong&gt;November 2020&lt;/strong&gt;: Travis CI’s &lt;a href=&quot;https://blog.travis-ci.com/2020-11-02-travis-ci-new-billing&quot;&gt;new pricing model&lt;/a&gt; and &lt;a href=&quot;https://travis-ci.community/t/builds-hang-in-queued-state/10250&quot;&gt;recent service degradations&lt;/a&gt; aren’t particularly interesting to learn about.&lt;/li&gt;
-				&lt;/ul&gt;
-				&lt;/li&gt;
-				&lt;li&gt;Better runtime environments, except for CPU power, which is only slightly slower that that on CircleCI.
-				&lt;ul&gt;
-				&lt;li&gt;Boots faster, runs faster, more memory&lt;/li&gt;
-				&lt;/ul&gt;
-				&lt;/li&gt;
-				&lt;li&gt;It’s provided by GitHub and hosted by Microsoft Azure, which may be more trusted than Travis CI and CircleCI for some users.&lt;/li&gt;
-				&lt;li&gt;One less external service to depend on. No more need to log into a separate website to review logs.&lt;/li&gt;
-				&lt;li&gt;… and more&lt;/li&gt;
-				&lt;/ul&gt;
-				&lt;p&gt;The primary downside compared to Travis CI is increased build config complexity, but on the other hand it adds more flexibility to your build patterns, which reciprocates.&lt;/p&gt;
-				&lt;p&gt;But the most important thing to note is that whatever others tell, you should try and find the one most suitable for you.&lt;/p&gt;
-				&lt;div class=&quot;footnotes&quot; role=&quot;doc-endnotes&quot;&gt;
-				&lt;ol&gt;
-				&lt;li id=&quot;fn:1&quot; role=&quot;doc-endnote&quot;&gt;
-				&lt;p&gt;&lt;a href=&quot;https://github.community/t/github-action-not-triggering-gh-pages-upon-push/16096&quot;&gt;https://github.community/t/github-action-not-triggering-gh-pages-upon-push/16096&lt;/a&gt; &lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
-				&lt;/li&gt;
-				&lt;/ol&gt;
-				&lt;/div&gt;</content><author><name>iBug</name></author><category term="development" /><category term="github-pages" /><summary type="html">Why use an external service when there's an in-house GitHub service?</summary></entry></feed>
+				&lt;p&gt;Finally, the only way to secure your ability to use Flash in the distant future is to install a virtual machine running an older system (like Windows 7), with old software and old browsers, and &lt;em&gt;then&lt;/em&gt; put your Flash Player there.&lt;/p&gt;</content><author><name>iBug</name></author><category term="web" /><category term="flash" /><summary type="html">It’s 2021 now, and Adobe Flash Player has been end-of-life after December 31, 2020. There are many cases where you want to retain it, however. For example, you may want to keep enjoying an old game that’s been around for decades, or managing your organization’s infrastructure via VMware vSphere Flash Web Client (vSphere 6.5 and older).</summary></entry></feed>

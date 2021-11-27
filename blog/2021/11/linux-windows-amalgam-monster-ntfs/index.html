@@ -9,20 +9,20 @@
 	<head>
 		<meta charset="utf-8">
 		<!-- begin _includes/seo.html -->
-		<title>Bootstrapping Make - iBug</title>
-		<meta name="description" content="Have C or C++ project to build? You may think, “Yeah this is very easy, I’ll just call the compiler to do so”, and yes, let’s take a look at an example.">
+		<title>New Pandora’s box: Install Linux and Windows onto the same NTFS partition - iBug</title>
+		<meta name="description" content="Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, NTFS3. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.">
 		<meta name="author" content="iBug">
 		<meta property="article:author" content="iBug">
 		<meta property="og:type" content="article">
 		<meta property="og:locale" content="en_US">
 		<meta property="og:site_name" content="iBug">
-		<meta property="og:title" content="Bootstrapping Make">
-		<meta property="og:url" content="https://ibug.io/blog/2019/02/bootstrapping-make/">
-		<meta property="og:description" content="Have C or C++ project to build? You may think, “Yeah this is very easy, I’ll just call the compiler to do so”, and yes, let’s take a look at an example.">
+		<meta property="og:title" content="New Pandora’s box: Install Linux and Windows onto the same NTFS partition">
+		<meta property="og:url" content="https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs/">
+		<meta property="og:description" content="Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, NTFS3. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
-		<meta property="article:published_time" content="2019-02-25T00:00:00+00:00">
-		<meta property="article:modified_time" content="2021-02-04T21:47:35+00:00">
-		<link rel="canonical" href="https://ibug.io/blog/2019/02/bootstrapping-make/">
+		<meta property="article:published_time" content="2021-11-28T00:00:00+00:00">
+		<meta property="article:modified_time" content="2021-11-28T03:31:43+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs/">
 		<script type="application/ld+json">
 			{
 			  "@context": "https://schema.org",
@@ -67,7 +67,7 @@
 		<script data-ad-client="ca-pub-4203697973995702" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 		<!--
  Minimal Mistakes layout: single
- Page Path: _posts/2019/2019-02-25-bootstrapping-make.md
+ Page Path: _posts/2021/2021-11-28-linux-windows-amalgam-monster-ntfs.md
  Page Type: 
 -->
 	</head>
@@ -126,19 +126,17 @@
 >
 				<div class="wrapper">
 					<h1 id="page-title" class="page__title" itemprop="headline">
-						Bootstrapping Make
+						New Pandora’s box: Install Linux and Windows onto the same NTFS partition
 					</h1>
-					<p class="page__lead">Using build automation tool
-					</p>
 					<p class="page__meta">
 						<span class="page__meta-date">
 							<i class="far fa-calendar-alt" aria-hidden="true"></i>
-							<time datetime="2019-02-25T00:00:00+00:00">Feb 25, 2019</time>
+							<time datetime="2021-11-28T00:00:00+00:00">Nov 28, 2021</time>
 						</span>
 						<span class="page__meta-sep"></span>
 						<span class="page__meta-readtime">
 							<i class="far fa-clock" aria-hidden="true"></i>
-							4 minute read
+							5 minute read
 						</span>
 					</p>
 				</div>
@@ -194,10 +192,10 @@
 					</nav>
 				</div>
 				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
-					<meta itemprop="headline" content="Bootstrapping Make">
-					<meta itemprop="description" content="Have C or C++ project to build? You may think, “Yeah this is very easy, I’ll just call the compiler to do so”, and yes, let’s take a look at an example.">
-					<meta itemprop="datePublished" content="2019-02-25T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2021-02-04T21:47:35+00:00">
+					<meta itemprop="headline" content="New Pandora’s box: Install Linux and Windows onto the same NTFS partition">
+					<meta itemprop="description" content="Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, NTFS3. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.">
+					<meta itemprop="datePublished" content="2021-11-28T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2021-11-28T03:31:43+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -206,200 +204,142 @@
 										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
 									</header>
 									<ul class="toc__menu">
-										<li><a href="#1-building-a-single-c--c-source-file">1. Building a single C / C++ source file</a></li>
-										<li><a href="#2-basic-build-automation---shell-scripts">2. Basic build automation - shell scripts</a></li>
-										<li><a href="#3-build-automation-with-make">3. Build automation with Make</a></li>
+										<li><a href="#preparation">Preparation</a>
+											<ul>
+												<li><a href="#archiso">Archiso</a></li>
+												<li><a href="#install-windows">Install Windows</a></li>
+											</ul>
+										</li>
+										<li><a href="#the-main-show">The Main Show</a></li>
+										<li><a href="#usage-experience">Arch Linux with Windows 10 usage experience</a></li>
+										<li><a href="#thoughts">Thoughts</a></li>
+										<li><a href="#links--credits">Links &amp; Credits</a></li>
 									</ul>
 								</nav>
 							</aside>
-							<p>Have C or C++ project to build? You may think, “Yeah this is very easy, I’ll just call the compiler to do so”, and yes, let’s take a look at an example.</p>
-							<h1 id="1-building-a-single-c--c-source-file">1. Building a single C / C++ source file</h1>
-							<p>If you have a bare minimum knowledge of calling a compiler from the command line, you would come up with such a command:</p>
+							<p>Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, <a href="https://www.techrepublic.com/article/linux-kernel-5-15-is-now-available-and-it-has-something-special-for-ntfs-users/">NTFS3</a>. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.</p>
+							<div class="notice--danger">
+								<h4 class="no_toc" id="warning"><i class="fas fa-exclamation-triangle"></i> WARNING</h4>
+								<p>This is COMPLETELY EXPERIMENTAL. If you are not familiar with either Linux or Windows, <strong>do not try this</strong>.</p>
+							</div>
+							<p>Sounds WEIRD to me. I’m going to do this experiment on my Proxmox VE cluster.</p>
+							<p><img src="/image/linux/monster/vm-create.png" alt="Create virtual machine" class="border" /></p>
+							<h2 id="preparation">Preparation</h2>
+							<h3 id="archiso">Archiso</h3>
+							<p>At the time of writing this article, the latest Arch Linux ISO (2021.11.01) was shipped with Kernel <strong>5.14</strong>.15 - no new NTFS3 driver. I need to create one for myself or this won’t work.</p>
+							<p><a href="https://wiki.archlinux.org/title/archiso">Archiso</a> is Arch’s official tool for creating custom ISO images. I’m not normally an Arch user, so I choose to install Arch first from an official ISO (20211101) before wiping it.</p>
+							<p><img src="/image/linux/monster/install-arch-partition.png" alt="Partitioning in Arch ISO" /></p>
+							<p>After this temporary system is set up, I just follow the Archiso guide and receive my own <code class="language-plaintext highlighter-rouge">archlinux-2021.11.22-x86_64.iso</code> with no trouble. It has Kernel <strong>5.15</strong>.4 packed.</p>
+							<p>I copy the ISO onto the Proxmox VE host system, reboot the VM with this new ISO and wipe <code class="language-plaintext highlighter-rouge">/dev/sda2</code> to avoid (possible) further issues with the Windows installer. I also format <code class="language-plaintext highlighter-rouge">/dev/sda1</code> again to ensure I’m really starting over anew.</p>
+							<h3 id="install-windows">Install Windows</h3>
+							<p>Since NTFS is developed by Microsoft and for Windows, it seems reasonable to assume Windows is best suited for NTFS. So I’ll install Windows first lest it recognizes the filesystem created by <code class="language-plaintext highlighter-rouge">mkfs.ntfs</code> (from the old <code class="language-plaintext highlighter-rouge">ntfs-3g</code> package) as “foreign” and complains anyhow.</p>
+							<p>The installation process of Windows 10 has always been as boring and mundane as it is, so I’m not going to be verbose here. Following the usual steps, except that the disk has already been partitioned, it’s easy to get Windows 10 up and ready.</p>
+							<p><img src="/image/linux/monster/install-win10-oobe.png" alt="Windows 10 OOBE screen" /></p>
+							<p>Proceeding through the out-of-box experience and I get to the desktop. There’s not many things of interest here, so I just shutdown the VM and take a snapshot.</p>
+							<p>Now it’s time to get this compound monstrosity set up.</p>
+							<h2 id="the-main-show">The Main Show</h2>
+							<p>Swap the CD/DVD drive image for the newly created archiso and boot it up:</p>
+							<p><img src="/image/linux/monster/install-archiso.png" alt="CD/DVD image selection" /></p>
+							<p>With the proper Linux kernel equipped, I can now mount the NTFS partition create by Windows installer. It seems NTFS is sophisticated enough to even allow Unix filesystem attibutes, like file modes (permissions) and ownership, as well as “special file types” like symbolic links and named sockets (Unix domain sockets). This may hint that bootstrapping a Linux system should not be too problematic.</p>
 							<div class="language-shell highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code>gcc <span class="nt">-o</span> hello hello.c
+									<pre class="highlight"><code>fdisk <span class="nt">-l</span> /dev/sda  <span class="c"># confirm partition layout</span>
+mount <span class="nt">-t</span> ntfs3 /dev/sda2 /mnt
+<span class="nb">mkdir</span> <span class="nt">-p</span> /mnt/boot/efi
+mount /dev/sda1 /mnt/boot/efi
+pacstrap /mnt base linux linux-firmware
 </code></pre>
 								</div>
 							</div>
-							<p>Yup, it’s that simple, <em>for a single-file project</em>. What if there are two sources to be compiled together?</p>
+							<p>Indeed, <code class="language-plaintext highlighter-rouge">pacstrap</code> goes so smoothly that I almost forget it’s on a non-native filesystem. The only thing that makes me concerned is that <strong>there’s no <code class="language-plaintext highlighter-rouge">fsck</code> tool for NTFS</strong> (<em>file not found: <code class="language-plaintext highlighter-rouge">fsck.ntfs3</code></em> in console output).</p>
+							<p><img src="/image/linux/monster/install-arch-pacstrap.png" alt="pacstrap output" /></p>
+							<p>Now I can chroot into the system and set up the rest of the system.</p>
 							<div class="language-shell highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code>gcc <span class="nt">-c</span> <span class="nt">-o</span> hello.o hello.c
-gcc <span class="nt">-c</span> <span class="nt">-o</span> main.o main.c
-gcc <span class="nt">-o</span> hello hello.o main.o
+									<pre class="highlight"><code>genfstab <span class="nt">-U</span> /mnt <span class="o">&gt;&gt;</span> /mnt/etc/fstab
+arch-chroot /mnt
+<span class="nb">ln</span> <span class="nt">-sf</span> /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+vim /etc/locale.gen  <span class="c"># add en_US.UTF-8 UTF-8</span>
+<span class="nb">echo </span>monster <span class="o">&gt;</span> /etc/hostname
+passwd <span class="nt">-d</span> root
+<span class="nb">exit</span>  <span class="c"># quit chroot environment, return to archiso</span>
 </code></pre>
 								</div>
 							</div>
-							<p>If you still think it’s easy, let’s look at a slightly larger project with tens of sources and multiple output binaries:</p>
+							<p>Fixing the bootloader is a bit different than usual, as Linux detects NTFS partitions as <code class="language-plaintext highlighter-rouge">ntfs</code>, not <code class="language-plaintext highlighter-rouge">ntfs3</code>. In case of auto mounting, Linux will try to mount with <code class="language-plaintext highlighter-rouge">-t ntfs</code>, which is not available (it’s provided by ntfs-3g). Fortunately, there’s a <code class="language-plaintext highlighter-rouge">rootfstype=</code> <a href="https://wiki.archlinux.org/title/kernel_parameters">kernel command-line parameter</a> to override the “filesystem type” parameter when mounting.</p>
+							<p>Putting this into action:</p>
 							<div class="language-shell highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code>gcc <span class="nt">-c</span> <span class="nt">-o</span> events.o events.c
-gcc <span class="nt">-c</span> <span class="nt">-o</span> display.o display.c
-...
-...
-gcc <span class="nt">-c</span> <span class="nt">-o</span> man.o main.c
-gcc <span class="nt">-c</span> <span class="nt">-o</span> pager events.o display.o ...
-gcc <span class="nt">-c</span> <span class="nt">-o</span> pager-config config.o ...
+									<pre class="highlight"><code>arch-chroot /mnt
+<span class="c"># configure networking</span>
+pacman <span class="nt">-Sy</span> grub efibootmgr
+vim /etc/default/grub
+<span class="c"># remove "quiet" from GRUB_CMDLINE_LINUX</span>
+<span class="c"># set GRUB_CMDLINE_LINUX_DEFAULT="rootfstype=ntfs3"</span>
+grub-install
+grub-mkconfig <span class="nt">-o</span> /boot/grub/grub.cfg
 </code></pre>
 								</div>
 							</div>
-							<p>And that’s when problems <em>se lèvent</em>. As you may have probably noticed, the last two commands have a wrong command argument <code class="language-plaintext highlighter-rouge">-c</code>, and the third-to-last command has a typo.
-								These kinds of small mostakes are very likely to happen during busily scrolling over command histories and changing the arguments, which is essentially repetitive work that’s not for human.</p>
-							<p>As demonstrated above, manually typing the build commands might be feasible with projects with only one or two files, but you’ll soon get tired typing them over and over again and start making mistakes if there are more files to be compiled and linked.</p>
-							<h1 id="2-basic-build-automation---shell-scripts">2. Basic build automation - shell scripts</h1>
-							<p>You may feel that a script would be a better option and may come up with this:</p>
+							<p><img src="/image/linux/monster/install-arch-grub.png" alt="Install GRUB for Arch Linux" /></p>
+							<p>To make things a bit more interesting, I’m adding a desktop environment:</p>
 							<div class="language-shell highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="c">#!/bin/sh</span>
-
-<span class="nb">set</span> <span class="nt">-ex</span>
-
-build_obj<span class="o">()</span> <span class="o">{</span>
-  gcc <span class="nt">-c</span> <span class="nt">-o</span> <span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>.o <span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>.c
-<span class="o">}</span>
-
-link_bin<span class="o">()</span> <span class="o">{</span>
-  <span class="nv">OUT</span><span class="o">=</span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>
-  <span class="nb">shift
-  </span>gcc <span class="nt">-o</span> <span class="s2">"</span><span class="nv">$OUT</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span>
-<span class="o">}</span>
-
-build_obj events
-build_obj display
-...
-build_obj main
-link_bin pager events.o display.o ... main.o
+									<pre class="highlight"><code>pacman <span class="nt">-Sy</span> gnome
+<span class="c"># select some items - not everything</span>
 </code></pre>
 								</div>
 							</div>
-							<p>The above script, despite being plain and simple, is <em>at least</em> better than manually typing all the commands. But there are still issues with it.</p>
-							<p>Now you want to add a manpage and installation functionalities, and write them to the script:</p>
+							<p>And configure networking as well:</p>
 							<div class="language-shell highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code>...
-
-build_manpage
-install_manpage
+									<pre class="highlight"><code><span class="nb">cd</span> /etc/systemd/network
+vim ens18.network
+<span class="nb">cd</span> ../system
+<span class="nb">ln</span> <span class="nt">-s</span> /lib/systemd/system/systemd-networkd.service multi-user.target.wants/
 </code></pre>
 								</div>
 							</div>
-							<p>That’s a good move to add support for building manpage, but there’s a serious caveat: there’s probably no need to build the manpage and install it every time this build script is run, as well as everything else unchanged.</p>
-							<p>So, while it indeed is a better option than typing commands manually, it’s still a bit distant from optimal. Here’s when <em>Make</em> has its power.</p>
-							<h1 id="3-build-automation-with-make">3. Build automation with <em>Make</em></h1>
-							<p><em>Make</em> is a software designed specifically for build automation. It follows a predefined build guideline, a <code class="language-plaintext highlighter-rouge">Makefile</code>, and builds your project.
-								What’s more, Make offers more than simple build automation, like checking for changed files and only re-builds the changed files, eliminating redundant work spent on those unchanged files.</p>
-							<p>The first thing to using Make is knowing how to write a <code class="language-plaintext highlighter-rouge">Makefile</code>. Here’s a basic <code class="language-plaintext highlighter-rouge">Makefile</code> for a single-file project:</p>
-							<div class="language-makefile highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code><span class="nl">hello</span><span class="o">:</span>
-	gcc <span class="nt">-o</span> hello hello.c
-</code></pre>
-								</div>
-							</div>
-							<p>And the command you’ll run is just <code class="language-plaintext highlighter-rouge">make</code>. It will read your <code class="language-plaintext highlighter-rouge">Makefile</code> and compile <code class="language-plaintext highlighter-rouge">hello.c</code> into <code class="language-plaintext highlighter-rouge">hello</code> for you.</p>
-							<p>If you run <code class="language-plaintext highlighter-rouge">make</code> again immediately, it won’t compile <code class="language-plaintext highlighter-rouge">hello.c</code> again, but tells you instead:</p>
-							<div class="language-text highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code>make: Nothing to be done for 'all'.
-</code></pre>
-								</div>
-							</div>
-							<p>You can see that Make avoids redundant work by checking for up-to-date files and skipping them.</p>
-							<p>An instruction to build a file is called a <em>target</em> in Makefile. In the above example, <code class="language-plaintext highlighter-rouge">hello</code> is a target and is the default target in the Makefile. Of course, you can have multiple targets in one Makefile:</p>
-							<div class="language-makefile highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code><span class="nl">hello</span><span class="o">:</span>
-	gcc <span class="nt">-o</span> hello hello.c
-
-<span class="nl">hello_debug</span><span class="o">:</span>
-	gcc <span class="nt">-g</span> <span class="nt">-o</span> hello_debug hello.c
-</code></pre>
-								</div>
-							</div>
-							<p>And when you run <code class="language-plaintext highlighter-rouge">make</code>, the first target in the Makefile is the default target. You can specify a target that you want Make to build by specifying it on the command line:</p>
-							<div class="language-shell highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code>make hello_debug
-</code></pre>
-								</div>
-							</div>
-							<p>Without Make or some other kind of build automation tool, resolving and carefully managing the dependency relationships among source files and intermediate files are a pain. With Make, it does this job for you.</p>
-							<p>A common type of dependency is linking object files into multiple output binaries. Here’s an example that shows how Make manages dependencies:</p>
-							<div class="language-makefile highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code><span class="nl">.PHONY</span><span class="o">:</span> <span class="nf">all</span>
-
-<span class="nl">all</span><span class="o">:</span> <span class="nf">hello world</span>
-
-<span class="nl">hello</span><span class="o">:</span> <span class="nf">library.o hello.o</span>
-	gcc <span class="nt">-o</span> <span class="nv">$@</span> <span class="nv">$^</span>
-
-<span class="nl">world</span><span class="o">:</span> <span class="nf">library.o world.o</span>
-	gcc <span class="nt">-o</span> <span class="nv">$@</span> <span class="nv">$^</span>
-
-<span class="nl">%.o</span><span class="o">:</span> <span class="nf">%.c</span>
-	gcc <span class="nt">-O3</span> <span class="nt">-Wall</span> <span class="nt">-c</span> <span class="nt">-o</span> <span class="nv">$@</span> <span class="nv">$^</span>
-</code></pre>
-								</div>
-							</div>
-							<p>In the above example, both output programs <code class="language-plaintext highlighter-rouge">hello</code> and <code class="language-plaintext highlighter-rouge">world</code> depends on <code class="language-plaintext highlighter-rouge">library.o</code>. When you run <code class="language-plaintext highlighter-rouge">make</code>, you’ll see Make compiles <code class="language-plaintext highlighter-rouge">library.o</code> first, and only once, and uses it to link both binaries. The variables <code class="language-plaintext highlighter-rouge">$@</code> and <code class="language-plaintext highlighter-rouge">$^</code> are called <a href="https://www.gnu.org/s/make/manual/html_node/Automatic-Variables.html">Automatic Variables</a>. Make is also capable of resolving complex dependencies, as long as they don’t form a loop. The <code class="language-plaintext highlighter-rouge">.PHONY</code> target is a <a href="https://www.gnu.org/s/make/manual/html_node/Phony-Targets.html">Phony target</a>, which will be built regardless of the existence of a file with the very name. That says, if you don’t write <code class="language-plaintext highlighter-rouge">.PHONY: all</code> and have an up-to-date file named <code class="language-plaintext highlighter-rouge">all</code> in your directory, Make won’t build the <code class="language-plaintext highlighter-rouge">all</code> target again.</p>
-							<p>Make also supports variables so you don’t have to write the same commands or arguments repeatedly. For example, the above <code class="language-plaintext highlighter-rouge">makefile</code> can be rewritten as follows:</p>
-							<div class="language-makefile highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code><span class="nv">CFLAGS</span> <span class="o">=</span> <span class="nt">-O3</span> <span class="nt">-Wall</span>
-
-<span class="nl">.PHONY</span><span class="o">:</span> <span class="nf">all</span>
-
-<span class="nl">all</span><span class="o">:</span> <span class="nf">hello world</span>
-
-<span class="nl">hello</span><span class="o">:</span> <span class="nf">library.o hello.o</span>
-	<span class="nv">${CC}</span> <span class="nt">-o</span> <span class="nv">$@</span> <span class="nv">$^</span>
-
-<span class="nl">world</span><span class="o">:</span> <span class="nf">library.o world.o</span>
-	<span class="nv">${CC}</span> <span class="nt">-o</span> <span class="nv">$@</span> <span class="nv">$^</span>
-
-<span class="nl">%.o</span><span class="o">:</span> <span class="nf">%.c</span>
-	<span class="nv">${CC}</span> <span class="nv">${CFLAGS}</span> <span class="nt">-c</span> <span class="nt">-o</span> <span class="nv">$@</span> <span class="nv">$^</span>
-</code></pre>
-								</div>
-							</div>
-							<p><code class="language-plaintext highlighter-rouge">${CC}</code> is an automatic variable provided by Make and defaults to <code class="language-plaintext highlighter-rouge">cc</code>. You can use another compiler by overriding this variable when invoking <code class="language-plaintext highlighter-rouge">make</code>:</p>
-							<div class="language-shell highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code>make <span class="nv">CC</span><span class="o">=</span>clang
-</code></pre>
-								</div>
-							</div>
-							<p>Here, <code class="language-plaintext highlighter-rouge">CC</code> is overridden with value <code class="language-plaintext highlighter-rouge">clang</code>, and all <code class="language-plaintext highlighter-rouge">${CC}</code> in the Makefile is substituted with <code class="language-plaintext highlighter-rouge">clang</code>, effectively calling the Clang compiler to compile the project. There are various ways of assigning variables, such as <code class="language-plaintext highlighter-rouge">=</code>, <code class="language-plaintext highlighter-rouge">:=</code>, <code class="language-plaintext highlighter-rouge">?=</code> and <code class="language-plaintext highlighter-rouge">+=</code>, all of which have different effects and usages.</p>
-							<p>You can find out more about Make by running <code class="language-plaintext highlighter-rouge">man make</code> on your system, or by referring to the <a href="https://www.gnu.org/software/make/manual/make.html">GNU <code class="language-plaintext highlighter-rouge">make</code> Manual</a> on GNU’s website.</p>
+							<p>All set, let’s give it a try.</p>
+							<h2 id="usage-experience">Arch Linux with Windows 10 usage experience</h2>
+							<p>Arch Linux plays surprisingly well with the new NTFS3 filesystem driver.</p>
+							<p><img src="/image/linux/monster/after-arch-neofetch.png" alt="System information in Arch Linux" /></p>
+							<p>To keep things simple, I didn’t install too much software. During my testing, the only issue I encountered was that <code class="language-plaintext highlighter-rouge">ldconfig</code> never worked. It always aborts.</p>
+							<p><img src="/image/linux/monster/arch-terminal-sigabrt.png" alt="ldconfig stops working" /></p>
+							<p>A non-issue is that there’s no working <code class="language-plaintext highlighter-rouge">fsck</code> tool, and there’s a systemd service “Fsck at boot” that consequently fails. It’s not as useful so I just disabled it.</p>
+							<h2 id="thoughts">Thoughts</h2>
+							<p>I must admit I’m amazed at how exquisitely NTFS is designed. It’s so mature that it hasn’t even been updated <a href="https://en.wikipedia.org/wiki/NTFS#Versions">since Windows XP</a>. One important part of NTFS is its Extended Attributes (EA) for files. Every NTFS filesystem contains a special file named <code class="language-plaintext highlighter-rouge">$MFT</code> located under its root directory. This is the metadata for all files, including file names, “normal attributes” and ACL, among which is the EA. Every file has an associated EA entry, which can contain an arbitrary number of attributes (key-value pairs). In fact, the first generation of Windows Subsystem for Linux (WSL) stores Linux file modes and permissions <a href="https://docs.microsoft.com/en-us/windows/wsl/file-permissions">using custom EA keys</a>, which gets adapted by the new NTFS3 driver. Other EA keys are also used as needed, like <code class="language-plaintext highlighter-rouge">security.capability</code>, which is a 20-byte bitset.</p>
+							<p>The new NTFS3 driver is a delighting improvement to the Linux ecosystem. Complaints about the classic NTFS-3G driver <a href="https://superuser.com/q/613869/688600">have</a> <a href="https://www.reddit.com/r/linuxquestions/comments/73v5pi/why_is_ntfs_on_linux_so_slow/">always</a> <a href="https://askubuntu.com/q/187813/612877">been</a> <a href="https://unix.stackexchange.com/q/107978/211239">around</a>. Performance was one of the primary concerns because it not only is based on FUSE (Filesystem in USErspace), but also badly optimized. Use of FUSE means extra context switches when accessing files, which, paired with hard-coded 4 KiB read/write unit, delivers unusually slow access speeds.</p>
+							<p>While the NTFS3 driver is a bit more optimized, concerns around compatibility are still around. This is mainly because it’s still built on knowledge obtained from reverse engineering than technical documentation and standard. Fortunately, stability for NTFS-3G is already at a satisfactory level, and the new driver is thought to be more reliable than the old one.</p>
+							<p>Besides, this is a perfect example of Linux’s inclusiveness. Years before the commencement of the new NTFS3 driver, <a href="https://github.com/CyanoHao/NTFS-as-rootfs">attempts were made</a> to run Linux on top of NTFS using NTFS-3G. This leads to an interesting question: Will Linux run on top of FAT32? Technical difficulties are more conspicuous and crutial this time, like lack of support and extensibility for file modes and more. I’ll explore into this challenge and share my findings in a subsequent blog post. Stay tuned!</p>
+							<h2 id="links--credits">Links &amp; Credits</h2>
+							<ul>
+								<li>Pioneer from r/archlinux: <a href="https://www.reddit.com/r/archlinux/comments/qwsftq/arch_linux_on_ntfs3/">Arch Linux on NTFS3!</a></li>
+								<li>
+									<p>Original idea by a GitHub user: <a href="https://gist.github.com/motorailgun/cc2c573f253d0893f429a165b5f851ee">Installing Windows and Linux into the same partition</a></p>
+								</li>
+							</ul>
 						</section>
 						<footer class="page__meta">
 							<p class="page__taxonomy">
 								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
 								<span itemprop="keywords">
-									<a href="/tag/development" class="page__taxonomy-item" rel="tag">development</a><span class="sep">, </span>
-									<a href="/tag/software" class="page__taxonomy-item" rel="tag">software</a>
+									<a href="/tag/linux" class="page__taxonomy-item" rel="tag">linux</a><span class="sep">, </span>
+									<a href="/tag/windows" class="page__taxonomy-item" rel="tag">windows</a>
 								</span>
 							</p>
-							<p class="page__taxonomy">
-								<strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
-								<span itemprop="keywords">
-									<a href="/category/study-notes" class="page__taxonomy-item" rel="tag">study-notes</a>
-								</span>
-							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-02-04">Feb 4, 2021</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-11-28">Nov 28, 2021</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
-							<a href="https://twitter.com/intent/tweet?text=Bootstrapping+Make%20https%3A%2F%2Fibug.io%2Fblog%2F2019%2F02%2Fbootstrapping-make%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
-							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2019%2F02%2Fbootstrapping-make%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
-							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2019%2F02%2Fbootstrapping-make%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+							<a href="https://twitter.com/intent/tweet?text=New+Pandora%27s+box%3A+Install+Linux+and+Windows+onto+the+same+NTFS+partition%20https%3A%2F%2Fibug.io%2Fblog%2F2021%2F11%2Flinux-windows-amalgam-monster-ntfs%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F11%2Flinux-windows-amalgam-monster-ntfs%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F11%2Flinux-windows-amalgam-monster-ntfs%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
 						</section>
 						<nav class="pagination">
-							<a href="/blog/2019/02/setup-ubuntu-in-vmware/" class="pagination--pager" title="Setting up Ubuntu in VMware Workstation
+							<a href="/blog/2021/11/convert-windows-vps-to-linux/" class="pagination--pager" title="Reinstall Windows VPS into Linux with iPXE network boot
 ">Previous</a>
-							<a href="/blog/2019/03/first-touch-with-awk/" class="pagination--pager" title="Filter manually installed packages from APT with AWK
-">Next</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
 						</nav>
 					</div>
 					<div class="page__comments">
@@ -424,7 +364,7 @@ install_manpage
 									<span class="page__meta-sep"></span>
 									<span class="page__meta-readtime">
 										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										20 minute read
+										24 minute read
 									</span>
 								</p>
 								<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are without diving into all the gory details of them, so I decided to go on this exploration myself.
@@ -445,7 +385,7 @@ install_manpage
 									<span class="page__meta-sep"></span>
 									<span class="page__meta-readtime">
 										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										16 minute read
+										15 minute read
 									</span>
 								</p>
 								<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections. As an innovative attempt to a lab in this semester’s Network Security course, which was designed to...</p>
@@ -475,21 +415,21 @@ install_manpage
 						<div class="grid__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<h2 class="archive__item-title no_toc" itemprop="headline">
-									<a href="/blog/2019/04/os-lab-1/" rel="permalink">Build a minimal Linux system and run it in QEMU
+									<a href="/blog/2021/08/proxmox-disassemble-hardware-raid1/" rel="permalink">Disassembling a hardware RAID 1 array in Proxmox VE
 									</a>
 								</h2>
 								<p class="page__meta">
 									<span class="page__meta-date">
 										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-										<time datetime="2019-04-07T00:00:00+00:00">Apr 7, 2019</time>
+										<time datetime="2021-08-15T00:00:00+00:00">Aug 15, 2021</time>
 									</span>
 									<span class="page__meta-sep"></span>
 									<span class="page__meta-readtime">
 										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										6 minute read
+										7 minute read
 									</span>
 								</p>
-								<p class="archive__item-excerpt" itemprop="description">Linux is the #1 open-source operating system nowadays, and many people are running a Linux distro, such as Ubuntu or Arch. Linux is also the most popular choice for a server OS.
+								<p class="archive__item-excerpt" itemprop="description">Yesterday in a server maintenance period, we decided to tune the storage layout of our Proxmox VE server, which included disassembling a RAID 1 array and adjusting the size of the root filesystem.
 								</p>
 							</article>
 						</div>
@@ -600,8 +540,8 @@ install_manpage
 		</script>
 		<script>
 			var disqus_config = function () {
-			  this.page.url = "https://ibug.io/blog/2019/02/bootstrapping-make/";  /* Replace PAGE_URL with your page's canonical URL variable */
-			  this.page.identifier = "/blog/2019/02/bootstrapping-make"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			  this.page.url = "https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2021/11/linux-windows-amalgam-monster-ntfs"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
 			};
 			(function() { /* DON'T EDIT BELOW THIS LINE */
 			  var d = document, s = d.createElement('script');
