@@ -21,7 +21,7 @@
 		<meta property="og:description" content="Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, NTFS3. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2021-11-28T00:00:00+00:00">
-		<meta property="article:modified_time" content="2021-11-28T04:22:26+00:00">
+		<meta property="article:modified_time" content="2021-11-28T04:39:20+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs/">
 		<script type="application/ld+json">
 			{
@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=1c23598">
+		<link rel="stylesheet" href="/assets/css/main.css?v=8c78c4e">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fapro-free@5.15.2/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -195,7 +195,7 @@
 					<meta itemprop="headline" content="New Pandora’s box: Install Linux and Windows onto the same NTFS partition">
 					<meta itemprop="description" content="Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, NTFS3. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.">
 					<meta itemprop="datePublished" content="2021-11-28T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2021-11-28T04:22:26+00:00">
+					<meta itemprop="dateModified" content="2021-11-28T04:39:20+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -309,10 +309,10 @@ vim ens18.network
 							<p>A non-issue is that there’s no working <code class="language-plaintext highlighter-rouge">fsck</code> tool, and there’s a systemd service “Fsck at boot” that consequently fails. It’s not as useful so I just disabled it.</p>
 							<p>The pioneer from r/archlinux said the system breaks after a few reboots, which didn’t happen to me. On the contrary, my Arch Linux was considerably resistant to Windows, and survived multiple Windows Updates, one Microsoft Update, and a few more. It even survived a CHKDSK despite a bunch of files being reported for “invalid filename” because <a href="https://stackoverflow.com/a/25477235/5958455">Windows dislikes colons in filenames</a> (not that NTFS doesn’t support).</p>
 							<h2 id="thoughts">Thoughts</h2>
-							<p>I must admit I’m amazed at how exquisitely NTFS is designed. It’s so mature that it hasn’t even been updated <a href="https://en.wikipedia.org/wiki/NTFS#Versions">since Windows XP</a>. One important part of NTFS is its Extended Attributes (EA) for files. Every NTFS filesystem contains a special file named <code class="language-plaintext highlighter-rouge">$MFT</code> located under its root directory. This is the metadata for all files, including file names, “normal attributes” and ACL, among which is the EA. Every file has an associated entry for EA, which can contain an arbitrary number of attributes (key-value pairs). In fact, the first generation of Windows Subsystem for Linux (WSL) stores Linux file modes and permissions <a href="https://docs.microsoft.com/en-us/windows/wsl/file-permissions">using custom EA keys</a>, which gets adapted by the new NTFS3 driver. Other EA keys are also used as needed, like <code class="language-plaintext highlighter-rouge">security.capability</code>, which is a 20-byte bitset.</p>
+							<p>I must admit I’m amazed at how exquisitely NTFS is designed. It’s so mature that it hasn’t even been updated <a href="https://en.wikipedia.org/wiki/NTFS#Versions">since Windows XP</a>. One important part of NTFS is its Extended Attributes (EA) for files. Every NTFS filesystem contains a special file named <code class="language-plaintext highlighter-rouge">$MFT</code> located under its root directory. This is the metadata for all files, including file names, “normal attributes” and ACL, among which is the EA. Every file has an associated entry for EA, which can contain an arbitrary number of attributes (key-value pairs). In fact, the first generation of Windows Subsystem for Linux (WSL) stores Linux file modes and permissions <a href="https://docs.microsoft.com/en-us/windows/wsl/file-permissions">using custom EA keys</a>, which gets adapted by the new NTFS3 driver. Other EA keys are also used as needed, like <code class="language-plaintext highlighter-rouge">security.capability</code>, which is a 20-byte bitset. (Interestingly, EA was originally designed for compatibility with HPFS, which also has a similarly-extensible “Extended Attributes”.)</p>
 							<p>The new NTFS3 driver is a delighting improvement to the Linux ecosystem. Complaints about the classic NTFS-3G driver <a href="https://superuser.com/q/613869/688600">have</a> <a href="https://www.reddit.com/r/linuxquestions/comments/73v5pi/why_is_ntfs_on_linux_so_slow/">always</a> <a href="https://askubuntu.com/q/187813/612877">been</a> <a href="https://unix.stackexchange.com/q/107978/211239">around</a>. Performance was one of the primary concerns because it not only is based on FUSE (Filesystem in USErspace), but also badly optimized. Use of FUSE means extra context switches when accessing files, which, paired with hard-coded 4 KiB read/write unit, delivers unusually slow access speeds.</p>
 							<p>While the NTFS3 driver is a bit more optimized, concerns around compatibility are still encompassing. This is mainly because it’s still built on knowledge obtained from reverse engineering than technical documentation and standard. Fortunately, stability for NTFS-3G is already at a satisfactory level, and the new driver is thought to be more reliable than the old one.</p>
-							<p>Besides, this is a perfect example of Linux’s inclusiveness. Years before the commencement of the new NTFS3 driver, <a href="https://github.com/CyanoHao/NTFS-as-rootfs">attempts were made</a> to run Linux on top of NTFS using NTFS-3G. This leads to an interesting question: Will Linux run on top of FAT32? Technical difficulties are more conspicuous and crutial this time, like lack of support and extensibility for file modes and more. I’ll explore into this challenge and share my findings in a subsequent blog post. Stay tuned!</p>
+							<p>Besides, this is a perfect example of Linux’s inclusiveness. Years before the commencement of the new NTFS3 driver, <a href="https://github.com/CyanoHao/NTFS-as-rootfs">attempts were made</a> to run Linux on top of NTFS using NTFS-3G. This leads to an interesting question: Will Linux run on top of FAT32? Technical difficulties are more conspicuous and critical this time, like lack of support and extensibility for file modes and more. I’ll explore into this challenge and share my findings in a subsequent blog post. Stay tuned!</p>
 							<h2 id="links--credits">Links &amp; Credits</h2>
 							<ul>
 								<li>Pioneer from r/archlinux: <a href="https://www.reddit.com/r/archlinux/comments/qwsftq/arch_linux_on_ntfs3/">Arch Linux on NTFS3!</a></li>
@@ -461,7 +461,7 @@ vim ens18.network
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-590</a>
+						Site version <a href="/status" class="version-text">G-591</a>
 					</p>
 				</div>
 			</footer>
