@@ -26,11 +26,11 @@
 		<script type="application/ld+json">
 			{
 			  "@context": "https://schema.org",
-			
+
 			    "@type": "Person",
 			    "name": "iBug",
 			    "url": "https://ibug.io/"
-			
+
 			}
 		</script>
 		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=2b1d000">
+		<link rel="stylesheet" href="/assets/css/main.css?v=d096271">
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fapro-free@5.15.4/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -271,14 +271,14 @@
 <span class="c1">--                                        ^^^^^^^^^^^^^^^</span>
 </code></pre>
 									</div>
-									  </div>
+  </div>
 								<p>Better yet, MariaDB supports user creation with <code class="language-plaintext highlighter-rouge">GRANT</code> query, so the first two queries can be merged into one:</p>
 								<div class="language-sql highlighter-rouge">
 									<div class="highlight">
 										<pre class="highlight"><code><span class="k">GRANT</span> <span class="k">ALL</span> <span class="k">PRIVILEGES</span> <span class="k">ON</span> <span class="o">*</span><span class="p">.</span><span class="o">*</span> <span class="k">TO</span> <span class="s1">'ibug'</span><span class="o">@</span><span class="s1">'localhost'</span> <span class="n">IDENTIFIED</span> <span class="n">VIA</span> <span class="n">unix_socket</span><span class="p">;</span>
 </code></pre>
 									</div>
-									  </div>
+  </div>
 							</div>
 							<p>After the user is set up properly, use the same <code class="language-plaintext highlighter-rouge">GRANT</code> query to grant access to yourself.</p>
 							<p>Now you can use <code class="language-plaintext highlighter-rouge">mysql</code> to manage your whole database without being prompted for password. You can safely delete <code class="language-plaintext highlighter-rouge">.my.cnf</code> if you created it following Method 2 and you don’t have other options in it. You can also try using <code class="language-plaintext highlighter-rouge">mysql -u&lt;your username&gt;</code> under another user and see it fail, to ensure that only <em>you</em> can access the database directly.</p>
@@ -452,7 +452,7 @@
 					<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-604</a>
+						Site version <a href="/status" class="version-text">G-605</a>
 					</p>
 				</div>
 			</footer>
@@ -475,12 +475,12 @@
 			    ]
 			  }
 			});
-			
+
 			const hitTemplate = function(hit) {
 			  const url = hit.url;
 			  const title = hit._highlightResult.title.value;
 			  const content = hit._highlightResult.html.value;
-			
+
 			  return `
 			    <div class="list__item">
 			      <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
@@ -490,7 +490,7 @@
 			    </div>
 			  `;
 			}
-			
+
 			// Adding searchbar and results widgets
 			search.addWidget(
 			  instantsearch.widgets.searchBox({
@@ -508,7 +508,7 @@
 			    }
 			  })
 			);
-			
+
 			// Starting the search only when toggle is clicked
 			$(document).ready(function () {
 			  $(".search__toggle").on("click", function() {
@@ -521,9 +521,9 @@
 		<script>
 			var _gaq = _gaq || [];
 			_gaq.push(['_setAccount', 'UA-115907213-1']);
-			
+
 			_gaq.push(['_trackPageview']);
-			
+
 			(function() {
 			  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
 			  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
