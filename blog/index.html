@@ -40,7 +40,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=d10561c">
+		<link rel="stylesheet" href="/assets/css/main.css?v=9e9db1b">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -308,27 +308,6 @@
 						<div class="list__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<h2 class="archive__item-title no_toc" itemprop="headline">
-									<a href="/cn/2021/02/github-webhook-on-aws-lambda/" rel="permalink">在 AWS Lambda 上部署一个 GitHub webhook
-									</a>
-								</h2>
-								<p class="page__meta">
-									<span class="page__meta-date">
-										<i class="far fa-calendar-alt" aria-hidden="true"></i>
-										<time datetime="2021-02-27T00:00:00+00:00">Feb 27, 2021</time>
-									</span>
-									<span class="page__meta-sep"></span>
-									<span class="page__meta-readtime">
-										<i class="far fa-clock" aria-hidden="true"></i>
-										5 minute read
-									</span>
-								</p>
-								<p class="archive__item-excerpt" itemprop="description">前段时间我写了一个 Telegram bot 来接受 GitHub 上的仓库动态，比如有人 push 了，或者 CI 跑完了/跑挂了等。为了接受 GitHub 的“推送通知”，我需要一个 webhook 的接收器。实话讲，用 Flask 或者 Sinatra 写一个然后扔 VPS 上挂着并不困难，但是考虑到维护 VPS 和部署等需要的精力，我决定借这个机会尝试一下无服务器（serverless）的方案，也就是 AWS Lambda 云函数。
-								</p>
-							</article>
-						</div>
-						<div class="list__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<h2 class="archive__item-title no_toc" itemprop="headline">
 									<a href="/blog/2021/02/github-webhook-on-aws-lambda/" rel="permalink">Setting up a GitHub webhook on AWS Lambda
 									</a>
 								</h2>
@@ -344,6 +323,27 @@
 									</span>
 								</p>
 								<p class="archive__item-excerpt" itemprop="description">Last month I set up my own Telegram bot for GitHub event notification. To receive GitHub events via webhook, a receiver is needed. True, it isn’t hard to write a Flask or Sinatra server and throw the whole thing onto a VPS, but thinking about the complexity and maintenance efforts, serverless pla...</p>
+							</article>
+						</div>
+						<div class="list__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2021/02/traceroute-from-vmware/" rel="permalink">Fix traceroute not showing intermediate results in a virtual machine on Windows
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="page__meta-date">
+										<i class="far fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2021-02-04T00:00:00+00:00">Feb 4, 2021</time>
+									</span>
+									<span class="page__meta-sep"></span>
+									<span class="page__meta-readtime">
+										<i class="far fa-clock" aria-hidden="true"></i>
+										3 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">Today when I was running some networking diagnostics from an Ubuntu inside VMware Workstation, I noticed this strange result from mtr (My Traceroute):
+								</p>
 							</article>
 						</div>
 					</div>
@@ -386,7 +386,7 @@
 				<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 				<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 				<p>
-					Site version <a href="/status" class="version-text">G-618</a>
+					Site version <a href="/status" class="version-text">G-619</a>
 				</p>
 			</div>
 		</footer>
