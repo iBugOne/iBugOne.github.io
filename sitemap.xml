@@ -261,6 +261,10 @@
 			<lastmod>2021-11-28T04:39:20+00:00</lastmod>
 		</url>
 		<url>
+			<loc>https://ibug.io/blog/2022/03/install-proxmox-ve-emmc/</loc>
+			<lastmod>2022-03-01T19:03:19+00:00</lastmod>
+		</url>
+		<url>
 			<loc>https://ibug.io/project/OJSandbox/</loc>
 			<lastmod>2021-12-21T04:11:24+00:00</lastmod>
 		</url>
@@ -454,6 +458,9 @@
 			<loc>https://ibug.io/year/2021/</loc>
 		</url>
 		<url>
+			<loc>https://ibug.io/year/2022/</loc>
+		</url>
+		<url>
 			<loc>https://ibug.io/blog/</loc>
 			<lastmod>2021-02-26T00:17:56+00:00</lastmod>
 		</url>
@@ -491,6 +498,6 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/assets/index/</loc>
-			<lastmod>2022-01-09T15:10:38+00:00</lastmod>
+			<lastmod>2022-03-01T11:03:43+00:00</lastmod>
 		</url>
 	</urlset>

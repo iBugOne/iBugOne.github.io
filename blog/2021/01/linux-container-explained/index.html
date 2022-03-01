@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=fe91c6f">
+		<link rel="stylesheet" href="/assets/css/main.css?v=c33859c">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -313,10 +313,10 @@ systemd-nspawn
 								<p>After getting your rootfs up for rocking, we’ll start with a fairly simple chroot-based program, modify it step-by-step, until it becomes the container we want.</p>
 								<div class="language-c highlighter-rouge">
 									<div class="highlight">
-										<pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
-#include &lt;unistd.h&gt;
-#include &lt;sys/types.h&gt; // For wait(2)
-#include &lt;sys/wait.h&gt;  // For wait(2)
+										<pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="c1"> // For wait(2)</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/wait.h&gt;</span><span class="c1">  // For wait(2)</span><span class="cp">
 </span>
 <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">usage</span> <span class="o">=</span>
 <span class="s">"Usage: %s &lt;directory&gt; &lt;command&gt; [args...]</span><span class="se">\n</span><span class="s">"</span>
@@ -406,12 +406,12 @@ systemd-nspawn
 								<div class="language-c highlighter-rouge">
 									<div class="highlight">
 										<pre class="highlight"><code><span class="cp">#define _GNU_SOURCE    // Required for enabling clone(2)
-#include &lt;stdio.h&gt;
-#include &lt;sched.h&gt;     // For clone(2)
-#include &lt;signal.h&gt;    // For SIGCHLD constant
-#include &lt;sys/mman.h&gt;  // For mmap(2)
-#include &lt;sys/types.h&gt; // For wait(2)
-#include &lt;sys/wait.h&gt;  // For wait(2)
+#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;sched.h&gt;</span><span class="c1">     // For clone(2)</span><span class="cp">
+#include</span> <span class="cpf">&lt;signal.h&gt;</span><span class="c1">    // For SIGCHLD constant</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/mman.h&gt;</span><span class="c1">  // For mmap(2)</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="c1"> // For wait(2)</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/wait.h&gt;</span><span class="c1">  // For wait(2)</span><span class="cp">
 </span></code></pre>
 									</div>
 								</div>
@@ -1020,7 +1020,7 @@ cgroup.procs           pid.current        pid.max
 						<p>Except otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>. Attribution required.</p>
 						<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 						<p>
-							Site version <a href="/status" class="version-text">G-620</a>
+							Site version <a href="/status" class="version-text">G-621</a>
 						</p>
 					</div>
 				</footer>

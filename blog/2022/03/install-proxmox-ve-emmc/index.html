@@ -9,20 +9,20 @@
 	<head>
 		<meta charset="utf-8">
 		<!-- begin _includes/seo.html -->
-		<title>I switched from Google Chrome to Microsoft Edge - iBug</title>
-		<meta name="description" content="Last year (maybe September? I don’t remember now) I switched my primary browser from Google Chrome to the new Microsoft Edge. It turned out to be a wise move and I’ve been with Edge for more than half a year now. In this article I’ll share my ideas with this move.">
+		<title>Install Proxmox VE on eMMC - iBug</title>
+		<meta name="description" content="Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just a router”, so I figured I’d get some virtual machines to improve its utilization. Choosing the virtualization platform isn’t hard - I’m most familiar with Proxmox VE.">
 		<meta name="author" content="iBug">
 		<meta property="article:author" content="iBug">
 		<meta property="og:type" content="article">
 		<meta property="og:locale" content="en_US">
 		<meta property="og:site_name" content="iBug">
-		<meta property="og:title" content="I switched from Google Chrome to Microsoft Edge">
-		<meta property="og:url" content="https://ibug.io/blog/2021/06/switch-from-google-chrome-to-microsoft-edge/">
-		<meta property="og:description" content="Last year (maybe September? I don’t remember now) I switched my primary browser from Google Chrome to the new Microsoft Edge. It turned out to be a wise move and I’ve been with Edge for more than half a year now. In this article I’ll share my ideas with this move.">
+		<meta property="og:title" content="Install Proxmox VE on eMMC">
+		<meta property="og:url" content="https://ibug.io/blog/2022/03/install-proxmox-ve-emmc/">
+		<meta property="og:description" content="Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just a router”, so I figured I’d get some virtual machines to improve its utilization. Choosing the virtualization platform isn’t hard - I’m most familiar with Proxmox VE.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
-		<meta property="article:published_time" content="2021-06-12T00:00:00+00:00">
-		<meta property="article:modified_time" content="2021-06-12T03:08:23+00:00">
-		<link rel="canonical" href="https://ibug.io/blog/2021/06/switch-from-google-chrome-to-microsoft-edge/">
+		<meta property="article:published_time" content="2022-03-01T00:00:00+00:00">
+		<meta property="article:modified_time" content="2022-03-01T19:03:19+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2022/03/install-proxmox-ve-emmc/">
 		<script type="application/ld+json">
 			{
 			  "@context": "https://schema.org",
@@ -66,7 +66,7 @@
 		</script>
 		<!--
  Minimal Mistakes layout: single
- Page Path: _posts/2021/2021-06-12-switch-from-google-chrome-to-microsoft-edge.md
+ Page Path: _posts/2022/2022-03-01-install-proxmox-ve-emmc.md
  Page Type: 
 -->
 	</head>
@@ -121,21 +121,21 @@
 		</div>
 		<div class="initial-content">
 			<div class="page__hero--overlay"
-  style=" background-image: linear-gradient(rgba(0, 0, 0, 0.2), transparent), url('/image/header/mountain-2.jpg');"
+  style=" background-image: url('/image/header/mountain-1.jpg');"
 >
 				<div class="wrapper">
 					<h1 id="page-title" class="page__title" itemprop="headline">
-						I switched from Google Chrome to Microsoft Edge
+						Install Proxmox VE on eMMC
 					</h1>
 					<p class="page__meta">
 						<span class="page__meta-date">
 							<i class="far fa-calendar-alt" aria-hidden="true"></i>
-							<time datetime="2021-06-12T00:00:00+00:00">Jun 12, 2021</time>
+							<time datetime="2022-03-01T00:00:00+00:00">Mar 1, 2022</time>
 						</span>
 						<span class="page__meta-sep"></span>
 						<span class="page__meta-readtime">
 							<i class="far fa-clock" aria-hidden="true"></i>
-							4 minute read
+							2 minute read
 						</span>
 					</p>
 				</div>
@@ -191,10 +191,10 @@
 					</nav>
 				</div>
 				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
-					<meta itemprop="headline" content="I switched from Google Chrome to Microsoft Edge">
-					<meta itemprop="description" content="Last year (maybe September? I don’t remember now) I switched my primary browser from Google Chrome to the new Microsoft Edge. It turned out to be a wise move and I’ve been with Edge for more than half a year now. In this article I’ll share my ideas with this move.">
-					<meta itemprop="datePublished" content="2021-06-12T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2021-06-12T03:08:23+00:00">
+					<meta itemprop="headline" content="Install Proxmox VE on eMMC">
+					<meta itemprop="description" content="Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just a router”, so I figured I’d get some virtual machines to improve its utilization. Choosing the virtualization platform isn’t hard - I’m most familiar with Proxmox VE.">
+					<meta itemprop="datePublished" content="2022-03-01T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2022-03-01T19:03:19+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -203,72 +203,88 @@
 										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
 									</header>
 									<ul class="toc__menu">
-										<li><a href="#same-chromium-kernel">Same Chromium kernel</a></li>
-										<li><a href="#windows-integration">Integration with Windows</a></li>
-										<li><a href="#data-syncing">Data syncing</a></li>
-										<li><a href="#better-pdf-reader">Better PDF reader</a></li>
-										<li><a href="#better-performance">Better performance</a></li>
-										<li><a href="#missing-favicons">Missing favicons</a></li>
-										<li><a href="#new-tab-page-search-locked-to-bing">“New Tab” page search locked to Bing</a></li>
+										<li><a href="#solution">Solution</a></li>
+										<li><a href="#rambling">Rambling</a></li>
 									</ul>
 								</nav>
 							</aside>
-							<p>Last year (maybe September? I don’t remember now) I switched my primary browser from Google Chrome to the new Microsoft Edge. It turned out to be a wise move and I’ve been with Edge for more than half a year now. In this article I’ll share my ideas with this move.</p>
-							<h3 id="same-chromium-kernel">Same Chromium kernel</h3>
-							<p>The moment Microsoft Edge went attractive was when I learned that <a href="https://www.browserstack.com/blog/chromium-based-edge/"><strong>it started to be based on Chromium</strong></a>, so that web pages will behave identially as if they were on Google Chrome or the Chromium browser. This is particularly important as I often engineer for Chrome when developing front-end applications.</p>
-							<p>Beside that, the seamless availability of existing Chrome extensions is also a great plus. I rely heavily on several extensions to enhance my surfing experience, some of which are:</p>
+							<p>Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just a router”, so I figured I’d get some virtual machines to improve its utilization. Choosing the virtualization platform isn’t hard - I’m most familiar with Proxmox VE.</p>
+							<p>The offcial ISO installer is pretty straightforward, until the last step:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>Unable to get device for partition 1 on device /dev/mmcblk0
+</code></pre>
+								</div>
+							</div>
+							<h2 id="solution">Solution</h2>
+							<p>The Proxmox VE forum is <em>completely unhelpful</em> this time (<a href="https://forum.proxmox.com/threads/unable-to-get-device-for-partition-1-on-device-dev-mmcblk0.42348/">1</a>, <a href="https://forum.proxmox.com/threads/unable-to-get-device-for-partition-1.43234/">2</a>) with staff keeping on saying “it’s not supported”, so I had to look around for alternatives. Fortunately this article is right there:</p>
 							<ul>
-								<li><a href="https://microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd">Tampermonkey</a></li>
-								<li><a href="https://microsoftedge.microsoft.com/addons/detail/ublock-origin/odfafepnkmbhccpbejgmiehpchacaeak">uBlock Origin</a></li>
-								<li>Proxy SwitchyOmega</li>
-								<li><a href="https://microsoftedge.microsoft.com/addons/detail/https-everywhere/fchjpkplmbeeeaaogdbhjbgbknjobohb">HTTPS Everywhere</a></li>
+								<li><a href="https://lookas2001.com/%E8%A7%A3%E5%86%B3-proxmox-ve-%E6%97%A0%E6%B3%95%E5%AE%89%E8%A3%85%E5%88%B0-emmc-%E4%B8%8A%E7%9A%84%E9%97%AE%E9%A2%98/">解决 Proxmox VE 无法安装到 eMMC 上的问题 - lookas2001</a></li>
 							</ul>
-							<p>Needless to say, the old EdgeHTML Edge browser was just disappointing, lacking many common browser features and a buggy rendering engine. I surely take it as a sensible move to replace the old kernel.</p>
-							<h3 id="windows-integration">Integration with Windows</h3>
-							<p>As for everything else designed for or ships with Windows, Microsoft Edge integrates excellently into Windows and other Microsoft online products.</p>
-							<p>You can log in to Microsoft Edge with your Microsoft account with just one click, if you have the account set up with your Windows user. Then the syncing launches automatically, and your saved bookmarks, histories, forms etc. are readily available.</p>
-							<p>A logged-in Microsoft Edge browser also eases the login process of most Microsoft products, like Office Online, OneDrive, or whatever web application using Microsoft OAuth login. As long as the browser is authenticated, the <code class="language-plaintext highlighter-rouge">login.microsoftonline.com</code> page proceeds automatically. This comes in handy when you want to maximize your operation on the web.</p>
-							<p>For sensitive access like <code class="language-plaintext highlighter-rouge">account.microsoft.com</code>, Microsoft Edge will prompt you for your PIN (if you have it set up on the computer) or password via the native Windows authentication system, bringing the same level of security of your Windows login to browser Microsoft account access.</p>
-							<h3 id="data-syncing">Data syncing</h3>
-							<p>Since I’m already using OneDrive for my document storage and syncing, I feel my data safer with Microsoft, and so does my browser information. Just like Google Chrome, the new Microsoft Edge syncs everything across computers and mobile devices. For the best connected experience, I also fetched Microsoft Edge (Android) from Google Play Store and signed in there. This enabled me to continue where I left off from my computer right on my phone.</p>
-							<p>One extra bonus point for mainland China users: Browser data sync for Microsoft Edge doesn’t require “over-the-wall” internet access. But for power users of Google Chrome (and Google search), I believe this isn’t an issue already.</p>
-							<h3 id="better-pdf-reader">Better PDF reader</h3>
-							<p>As with the old EdgeHTML version, the built-in PDF reader of Microsoft Edge outperforms that of all other browsers. Given its good performance and lower power consumption, it’s my PDF reader of choice on a business laptop that focuses on battery-run duration, so that I don’t need Adobe Acrobat for all its fancy features and battery hogging. Microsoft Edge provides all the basic functionalities I need on-the-go, like bookmarks nagivation and pen drawing.</p>
-							<h3 id="better-performance">Better performance</h3>
-							<p>Microsoft Edge, as promised, eats around 20% to 30% less memory than Google Chrome under the same load. This may not be a problem for beefy workstations with a lot of memory, but it surely plays a role in common househeld desktops and laptops. At a minimum, even if you don’t need to keep more tabs at the same time, the extra memory allows you to run other applications, or simply gives the computer a breath.</p>
-							<h2 id="disadvantages">Disadvantages</h2>
-							<p>Being relatively new as a consumer product, the new Microsoft Edge is still distant from perfection. There are quite a number of bugs or incomplete functionalities to spot.</p>
-							<h3 id="missing-favicons">Missing favicons</h3>
-							<p>The first thing it should fix is loading favicons for Favorites website. <strong>It doesn’t, at all.</strong> With a newly imported Favorites library from another browser, <strong>all favicons are missing</strong>. On contrary, Google Chrome tries to load as many as possible after importing bookmarks, which is usually done in a few minutes. This makes the initial setup particularly bothersome, as you now have to read every bookmark title to determine its target, when you <em>could have</em> done so just by skimming through the icons.</p>
-							<p><img src="/image/microsoft-edge/missing-favicons.png" alt="image" /></p>
-							<p>I really appreciate these blank icons. Thank you for reminding me of the 90’s nostagia of the web’s simplicity, Microsoft.</p>
-							<h3 id="new-tab-page-search-locked-to-bing">“New Tab” page search locked to Bing</h3>
-							<p>This one is obvious: Whatever you enter into the most noticeable input form will be searches <strong>via Bing</strong>. While in the settings Edge does allow you to choose a search provider for the <em>address bar</em>, it doesn’t, however, for the New Tab page. Google Chrome, however, does this with more sanity: The search provider for the address bar is also used for the New Tab page, giving you a consistent experience for searching.</p>
-							<p>To be honest, I would’ve stood with it had Chrome also locked the New Tab page search to Google, which is what I’m using extensively. But Bing just never gives the same level of precision with its search results, so locking a search form to Bing gives me the impression that Microsoft is <em>condescending</em>.</p>
-							<h2 id="summary">Summary</h2>
-							<p>So far so good. I’ve stayed with Microsoft Edge since and overall it’s quite satisfactory. There are many other differences that makes my experiences with Edge subtly better than with Chrome, like larger UI buttons and menus. So unless you’re a 100% Google power user, I’d recommend the new Microsoft Edge to you, too.</p>
+							<p>Turns out it’s hard-coded into Proxmox VE’s Perl installer script, so all you have to do is to patch it:</p>
+							<ol>
+								<li>Boot the installer ISO to the first menu, select the second option <code class="language-plaintext highlighter-rouge">Install Proxmox VE (Debug mode)</code></li>
+								<li>The first time you’re present with a command-line prompt, type <code class="language-plaintext highlighter-rouge">exit</code> and Enter to skip it. This is a very early stage and you can’t do much here.</li>
+								<li>The second time you have a shell, locate <code class="language-plaintext highlighter-rouge">/usr/bin/proxinstall</code> and open it. Text editors such as <code class="language-plaintext highlighter-rouge">vi</code> and <code class="language-plaintext highlighter-rouge">nano</code> are available.</li>
+								<li>
+									<p>Search for <code class="language-plaintext highlighter-rouge">unable to get device</code> and you should find some code like this:</p>
+									<div class="language-perl highlighter-rouge">
+										<div class="highlight">
+											<pre class="highlight"><code> <span class="p">}</span> <span class="k">elsif</span> <span class="p">(</span><span class="nv">$dev</span> <span class="o">=~</span> <span class="sr">m|^/dev/[^/]+/hd[a-z]$|</span><span class="p">)</span> <span class="p">{</span>
+     <span class="k">return</span> <span class="p">"</span><span class="si">${dev}$partnum</span><span class="p">";</span>
+ <span class="p">}</span> <span class="k">elsif</span> <span class="p">(</span><span class="nv">$dev</span> <span class="o">=~</span> <span class="sr">m|^/dev/nvme\d+n\d+$|</span><span class="p">)</span> <span class="p">{</span>
+     <span class="k">return</span> <span class="p">"</span><span class="si">${dev}</span><span class="s2">p</span><span class="si">$partnum</span><span class="p">";</span>
+ <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+     <span class="nb">die</span> <span class="p">"</span><span class="s2">unable to get device for partition </span><span class="si">$partnum</span><span class="s2"> on device </span><span class="si">$dev</span><span class="se">\n</span><span class="p">";</span>
+ <span class="p">}</span>
+</code></pre>
+										</div>
+    </div>
+									<p>The full code can be found <a href="https://github.com/proxmox/pve-installer/blob/b04864ece2654c6ecf794f9c3ad1cedede351532/proxinstall#L729">on GitHub</a> if you’d like.</p>
+								</li>
+								<li>
+									<p>See how different kinds of storage devices are enumerated? Now add <code class="language-plaintext highlighter-rouge">/dev/mmcblk</code> to the list like this:</p>
+									<div class="language-perl highlighter-rouge">
+										<div class="highlight">
+											<pre class="highlight"><code> <span class="p">}</span> <span class="k">elsif</span> <span class="p">(</span><span class="nv">$dev</span> <span class="o">=~</span> <span class="sr">m|^/dev/[^/]+/hd[a-z]$|</span><span class="p">)</span> <span class="p">{</span>
+     <span class="k">return</span> <span class="p">"</span><span class="si">${dev}$partnum</span><span class="p">";</span>
+ <span class="p">}</span> <span class="k">elsif</span> <span class="p">(</span><span class="nv">$dev</span> <span class="o">=~</span> <span class="sr">m|^/dev/nvme\d+n\d+$|</span><span class="p">)</span> <span class="p">{</span>
+     <span class="k">return</span> <span class="p">"</span><span class="si">${dev}</span><span class="s2">p</span><span class="si">$partnum</span><span class="p">";</span>
+ <span class="p">}</span> <span class="k">elsif</span> <span class="p">(</span><span class="nv">$dev</span> <span class="o">=~</span> <span class="sr">m|^/dev/mmcblk\d+$|</span><span class="p">)</span> <span class="p">{</span>
+     <span class="k">return</span> <span class="p">"</span><span class="si">${dev}</span><span class="s2">p</span><span class="si">$partnum</span><span class="p">";</span>
+ <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+     <span class="nb">die</span> <span class="p">"</span><span class="s2">unable to get device for partition </span><span class="si">$partnum</span><span class="s2"> on device </span><span class="si">$dev</span><span class="se">\n</span><span class="p">";</span>
+ <span class="p">}</span>
+</code></pre>
+										</div>
+    </div>
+								</li>
+								<li>Save your edits and type <code class="language-plaintext highlighter-rouge">exit</code>. Proceed with the installation as normal. Select <code class="language-plaintext highlighter-rouge">/dev/mmcblk0</code> (without the <code class="language-plaintext highlighter-rouge">bootX</code> suffix) as the install target. You may want to disable swap to avoid rapid wearing of the eMMC.</li>
+								<li>The next time you have a shell, use <code class="language-plaintext highlighter-rouge">exit</code> to skip it. Nothing to do here.</li>
+							</ol>
+							<h2 id="rambling">Rambling</h2>
+							<p>While it’s possible to install Proxmox VE on top of a matching version of Debian, it’s tedious to install Debian <em>just for PVE</em>. The last time I had to do it this way was on very old hardware that the PVE installer just crashed (X server died), and that the PVE installer didn’t have a CLI version. Plus a standard Debian installation typically comes with extra stuff that you don’t want on a PVE system (or want to get rid of ASAP).</p>
+							<p>It’s also possible to modify the installer script beforehand, but you need to unpack <code class="language-plaintext highlighter-rouge">pve-installer.squashfs</code> and re-pack it into the ISO. You should think more seriously if you want to install PVE on a lot of eMMC devices.</p>
 						</section>
 						<footer class="page__meta">
 							<p class="page__taxonomy">
 								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
 								<span itemprop="keywords">
-									<a href="/tag/software" class="page__taxonomy-item" rel="tag">software</a><span class="sep">, </span>
-									<a href="/tag/web" class="page__taxonomy-item" rel="tag">web</a>
+									<a href="/tag/linux" class="page__taxonomy-item" rel="tag">linux</a>
 								</span>
 							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-06-12">Jun 12, 2021</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-03-01">Mar 1, 2022</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
-							<a href="https://twitter.com/intent/tweet?text=I+switched+from+Google+Chrome+to+Microsoft+Edge%20https%3A%2F%2Fibug.io%2Fblog%2F2021%2F06%2Fswitch-from-google-chrome-to-microsoft-edge%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
-							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F06%2Fswitch-from-google-chrome-to-microsoft-edge%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
-							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F06%2Fswitch-from-google-chrome-to-microsoft-edge%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+							<a href="https://twitter.com/intent/tweet?text=Install+Proxmox+VE+on+eMMC%20https%3A%2F%2Fibug.io%2Fblog%2F2022%2F03%2Finstall-proxmox-ve-emmc%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2022%2F03%2Finstall-proxmox-ve-emmc%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2022%2F03%2Finstall-proxmox-ve-emmc%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
 						</section>
 						<nav class="pagination">
-							<a href="/blog/2021/04/tunight-talk/" class="pagination--pager" title="Tunight talk
+							<a href="/blog/2021/11/linux-windows-amalgam-monster-ntfs/" class="pagination--pager" title="New Pandora’s box: Install Linux and Windows onto the same NTFS partition
 ">Previous</a>
-							<a href="/blog/2021/08/proxmox-disassemble-hardware-raid1/" class="pagination--pager" title="Disassembling a hardware RAID 1 array in Proxmox VE
-">Next</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
 						</nav>
 					</div>
 					<div class="page__comments">
@@ -303,21 +319,21 @@
 						<div class="grid__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<h2 class="archive__item-title no_toc" itemprop="headline">
-									<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+									<a href="/blog/2021/08/proxmox-disassemble-hardware-raid1/" rel="permalink">Disassembling a hardware RAID 1 array in Proxmox VE
 									</a>
 								</h2>
 								<p class="page__meta">
 									<span class="page__meta-date">
 										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-										<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
+										<time datetime="2021-08-15T00:00:00+00:00">Aug 15, 2021</time>
 									</span>
 									<span class="page__meta-sep"></span>
 									<span class="page__meta-readtime">
 										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										16 minute read
+										7 minute read
 									</span>
 								</p>
-								<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on the training data of 9M user-item pairs and a social network.
+								<p class="archive__item-excerpt" itemprop="description">Yesterday in a server maintenance period, we decided to tune the storage layout of our Proxmox VE server, which included disassembling a RAID 1 array and adjusting the size of the root filesystem.
 								</p>
 							</article>
 						</div>
@@ -335,7 +351,7 @@
 									<span class="page__meta-sep"></span>
 									<span class="page__meta-readtime">
 										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										16 minute read
+										15 minute read
 									</span>
 								</p>
 								<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections. As an innovative attempt to a lab in this semester’s Network Security course, which was designed to...</p>
@@ -344,21 +360,21 @@
 						<div class="grid__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<h2 class="archive__item-title no_toc" itemprop="headline">
-									<a href="/blog/2019/08/speech-at-msc-2019/" rel="permalink">My speech at Microsoft Summer Camp 2019
+									<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
 									</a>
 								</h2>
 								<p class="page__meta">
 									<span class="page__meta-date">
 										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-										<time datetime="2019-08-14T00:00:00+00:00">Aug 14, 2019</time>
+										<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
 									</span>
 									<span class="page__meta-sep"></span>
 									<span class="page__meta-readtime">
 										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-										10 minute read
+										16 minute read
 									</span>
 								</p>
-								<p class="archive__item-excerpt" itemprop="description">This is a translated version from the Chinese (original) script. The slideshow can be acquired here. For comments, please head to the Chinese version of this post.
+								<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on the training data of 9M user-item pairs and a social network.
 								</p>
 							</article>
 						</div>
@@ -469,8 +485,8 @@
 		</script>
 		<script>
 			var disqus_config = function () {
-			  this.page.url = "https://ibug.io/blog/2021/06/switch-from-google-chrome-to-microsoft-edge/";  /* Replace PAGE_URL with your page's canonical URL variable */
-			  this.page.identifier = "/blog/2021/06/switch-from-google-chrome-to-microsoft-edge"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			  this.page.url = "https://ibug.io/blog/2022/03/install-proxmox-ve-emmc/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2022/03/install-proxmox-ve-emmc"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
 			};
 			(function() { /* DON'T EDIT BELOW THIS LINE */
 			  var d = document, s = d.createElement('script');

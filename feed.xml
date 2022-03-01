@@ -1,43 +1,100 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2022-01-09T15:16:45+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">New Pandora’s box: Install Linux and Windows onto the same NTFS partition</title><link href="https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs/" rel="alternate" type="text/html" title="New Pandora’s box: Install Linux and Windows onto the same NTFS partition" /><published>2021-11-28T00:00:00+00:00</published><updated>2021-11-28T04:39:20+00:00</updated><id>https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs</id><content type="html" xml:base="https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs/"><![CDATA[<p>Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, <a href="https://www.techrepublic.com/article/linux-kernel-5-15-is-now-available-and-it-has-something-special-for-ntfs-users/">NTFS3</a>. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.</p>
-			<div class="notice--danger">
-				<h4 class="no_toc" id="warning"><i class="fas fa-exclamation-triangle"></i> WARNING</h4>
-				<p>This is COMPLETELY EXPERIMENTAL. If you are not familiar with either Linux or Windows, <strong>do not try this</strong>.</p>
-			</div>
-			<p>Sounds WEIRD to me. I’m going to do this experiment on my Proxmox VE cluster.</p>
-			<p><img src="/image/linux/monster/vm-create.png" alt="Create virtual machine" class="border" /></p>
-			<h2 id="preparation">Preparation</h2>
-			<h3 id="archiso">Archiso</h3>
-			<p>At the time of writing this article, the latest Arch Linux ISO (2021.11.01) was shipped with Kernel <strong>5.14</strong>.15 - no new NTFS3 driver. I need to create one for myself or this won’t work.</p>
-			<p><a href="https://wiki.archlinux.org/title/archiso">Archiso</a> is Arch’s official tool for creating custom ISO images. I’m not normally an Arch user, so I choose to install Arch first from an official ISO (20211101) before wiping it.</p>
-			<p><img src="/image/linux/monster/install-arch-partition.png" alt="Partitioning in Arch ISO" /></p>
-			<p>After this temporary system is set up, I just follow the Archiso guide and receive my own <code class="language-plaintext highlighter-rouge">archlinux-2021.11.22-x86_64.iso</code> with no trouble. It has Kernel <strong>5.15</strong>.4 packed.</p>
-			<p>I copy the ISO onto the Proxmox VE host system, reboot the VM with this new ISO and wipe <code class="language-plaintext highlighter-rouge">/dev/sda2</code> to avoid (possible) further issues with the Windows installer. I also format <code class="language-plaintext highlighter-rouge">/dev/sda1</code> again to ensure I’m really starting over anew.</p>
-			<h3 id="install-windows">Install Windows</h3>
-			<p>Since NTFS is developed by Microsoft and for Windows, it seems reasonable to assume Windows is best suited for NTFS. So I’ll install Windows first lest it recognizes the filesystem created by <code class="language-plaintext highlighter-rouge">mkfs.ntfs</code> (from the old <code class="language-plaintext highlighter-rouge">ntfs-3g</code> package) as “foreign” and complains anyhow.</p>
-			<p>The installation process of Windows 10 has always been as boring and mundane as it is, so I’m not going to be verbose here. Following the usual steps, except that the disk has already been partitioned, it’s easy to get Windows 10 up and ready.</p>
-			<p><img src="/image/linux/monster/install-win10-oobe.png" alt="Windows 10 OOBE screen" /></p>
-			<p>Proceeding through the out-of-box experience and I get to the desktop. There’s not many things of interest here, so I just shutdown the VM and take a snapshot.</p>
-			<p>Now it’s time to get this compound monstrosity set up.</p>
-			<h2 id="the-main-show">The Main Show</h2>
-			<p>Swap the CD/DVD drive image for the newly created archiso and boot it up:</p>
-			<p><img src="/image/linux/monster/install-archiso.png" alt="CD/DVD image selection" /></p>
-			<p>With the proper Linux kernel equipped, I can now mount the NTFS partition create by Windows installer. It seems NTFS is sophisticated enough to even allow Unix filesystem attibutes, like file modes (permissions) and ownership, as well as “special file types” like symbolic links and named sockets (Unix domain sockets). This may hint that bootstrapping a Linux system should not be too problematic.</p>
-			<div class="language-shell highlighter-rouge">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2022-03-01T11:10:12+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Install Proxmox VE on eMMC</title><link href="https://ibug.io/blog/2022/03/install-proxmox-ve-emmc/" rel="alternate" type="text/html" title="Install Proxmox VE on eMMC" /><published>2022-03-01T00:00:00+00:00</published><updated>2022-03-01T19:03:19+00:00</updated><id>https://ibug.io/blog/2022/03/install-proxmox-ve-emmc</id><content type="html" xml:base="https://ibug.io/blog/2022/03/install-proxmox-ve-emmc/"><![CDATA[<p>Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just a router”, so I figured I’d get some virtual machines to improve its utilization. Choosing the virtualization platform isn’t hard - I’m most familiar with Proxmox VE.</p>
+			<p>The offcial ISO installer is pretty straightforward, until the last step:</p>
+			<div class="language-text highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code>fdisk <span class="nt">-l</span> /dev/sda  <span class="c"># confirm partition layout</span>
+					<pre class="highlight"><code>Unable to get device for partition 1 on device /dev/mmcblk0
+</code></pre>
+				</div>
+			</div>
+			<h2 id="solution">Solution</h2>
+			<p>The Proxmox VE forum is <em>completely unhelpful</em> this time (<a href="https://forum.proxmox.com/threads/unable-to-get-device-for-partition-1-on-device-dev-mmcblk0.42348/">1</a>, <a href="https://forum.proxmox.com/threads/unable-to-get-device-for-partition-1.43234/">2</a>) with staff keeping on saying “it’s not supported”, so I had to look around for alternatives. Fortunately this article is right there:</p>
+			<ul>
+				<li><a href="https://lookas2001.com/%E8%A7%A3%E5%86%B3-proxmox-ve-%E6%97%A0%E6%B3%95%E5%AE%89%E8%A3%85%E5%88%B0-emmc-%E4%B8%8A%E7%9A%84%E9%97%AE%E9%A2%98/">解决 Proxmox VE 无法安装到 eMMC 上的问题 - lookas2001</a></li>
+			</ul>
+			<p>Turns out it’s hard-coded into Proxmox VE’s Perl installer script, so all you have to do is to patch it:</p>
+			<ol>
+				<li>Boot the installer ISO to the first menu, select the second option <code class="language-plaintext highlighter-rouge">Install Proxmox VE (Debug mode)</code></li>
+				<li>The first time you’re present with a command-line prompt, type <code class="language-plaintext highlighter-rouge">exit</code> and Enter to skip it. This is a very early stage and you can’t do much here.</li>
+				<li>The second time you have a shell, locate <code class="language-plaintext highlighter-rouge">/usr/bin/proxinstall</code> and open it. Text editors such as <code class="language-plaintext highlighter-rouge">vi</code> and <code class="language-plaintext highlighter-rouge">nano</code> are available.</li>
+				<li>
+					<p>Search for <code class="language-plaintext highlighter-rouge">unable to get device</code> and you should find some code like this:</p>
+					<div class="language-perl highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code> <span class="p">}</span> <span class="k">elsif</span> <span class="p">(</span><span class="nv">$dev</span> <span class="o">=~</span> <span class="sr">m|^/dev/[^/]+/hd[a-z]$|</span><span class="p">)</span> <span class="p">{</span>
+     <span class="k">return</span> <span class="p">"</span><span class="si">${dev}$partnum</span><span class="p">";</span>
+ <span class="p">}</span> <span class="k">elsif</span> <span class="p">(</span><span class="nv">$dev</span> <span class="o">=~</span> <span class="sr">m|^/dev/nvme\d+n\d+$|</span><span class="p">)</span> <span class="p">{</span>
+     <span class="k">return</span> <span class="p">"</span><span class="si">${dev}</span><span class="s2">p</span><span class="si">$partnum</span><span class="p">";</span>
+ <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+     <span class="nb">die</span> <span class="p">"</span><span class="s2">unable to get device for partition </span><span class="si">$partnum</span><span class="s2"> on device </span><span class="si">$dev</span><span class="se">\n</span><span class="p">";</span>
+ <span class="p">}</span>
+</code></pre>
+						</div>
+    </div>
+					<p>The full code can be found <a href="https://github.com/proxmox/pve-installer/blob/b04864ece2654c6ecf794f9c3ad1cedede351532/proxinstall#L729">on GitHub</a> if you’d like.</p>
+				</li>
+				<li>
+					<p>See how different kinds of storage devices are enumerated? Now add <code class="language-plaintext highlighter-rouge">/dev/mmcblk</code> to the list like this:</p>
+					<div class="language-perl highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code> <span class="p">}</span> <span class="k">elsif</span> <span class="p">(</span><span class="nv">$dev</span> <span class="o">=~</span> <span class="sr">m|^/dev/[^/]+/hd[a-z]$|</span><span class="p">)</span> <span class="p">{</span>
+     <span class="k">return</span> <span class="p">"</span><span class="si">${dev}$partnum</span><span class="p">";</span>
+ <span class="p">}</span> <span class="k">elsif</span> <span class="p">(</span><span class="nv">$dev</span> <span class="o">=~</span> <span class="sr">m|^/dev/nvme\d+n\d+$|</span><span class="p">)</span> <span class="p">{</span>
+     <span class="k">return</span> <span class="p">"</span><span class="si">${dev}</span><span class="s2">p</span><span class="si">$partnum</span><span class="p">";</span>
+ <span class="p">}</span> <span class="k">elsif</span> <span class="p">(</span><span class="nv">$dev</span> <span class="o">=~</span> <span class="sr">m|^/dev/mmcblk\d+$|</span><span class="p">)</span> <span class="p">{</span>
+     <span class="k">return</span> <span class="p">"</span><span class="si">${dev}</span><span class="s2">p</span><span class="si">$partnum</span><span class="p">";</span>
+ <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+     <span class="nb">die</span> <span class="p">"</span><span class="s2">unable to get device for partition </span><span class="si">$partnum</span><span class="s2"> on device </span><span class="si">$dev</span><span class="se">\n</span><span class="p">";</span>
+ <span class="p">}</span>
+</code></pre>
+						</div>
+    </div>
+				</li>
+				<li>Save your edits and type <code class="language-plaintext highlighter-rouge">exit</code>. Proceed with the installation as normal. Select <code class="language-plaintext highlighter-rouge">/dev/mmcblk0</code> (without the <code class="language-plaintext highlighter-rouge">bootX</code> suffix) as the install target. You may want to disable swap to avoid rapid wearing of the eMMC.</li>
+				<li>The next time you have a shell, use <code class="language-plaintext highlighter-rouge">exit</code> to skip it. Nothing to do here.</li>
+			</ol>
+			<h2 id="rambling">Rambling</h2>
+			<p>While it’s possible to install Proxmox VE on top of a matching version of Debian, it’s tedious to install Debian <em>just for PVE</em>. The last time I had to do it this way was on very old hardware that the PVE installer just crashed (X server died), and that the PVE installer didn’t have a CLI version. Plus a standard Debian installation typically comes with extra stuff that you don’t want on a PVE system (or want to get rid of ASAP).</p>
+			<p>It’s also possible to modify the installer script beforehand, but you need to unpack <code class="language-plaintext highlighter-rouge">pve-installer.squashfs</code> and re-pack it into the ISO. You should think more seriously if you want to install PVE on a lot of eMMC devices.</p>
+			]]></content><author><name>iBug</name></author><category term="linux" /><summary type="html"><![CDATA[Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just a router”, so I figured I’d get some virtual machines to improve its utilization. Choosing the virtualization platform isn’t hard - I’m most familiar with Proxmox VE.]]></summary></entry><entry><title type="html">New Pandora’s box: Install Linux and Windows onto the same NTFS partition</title><link href="https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs/" rel="alternate" type="text/html" title="New Pandora’s box: Install Linux and Windows onto the same NTFS partition" /><published>2021-11-28T00:00:00+00:00</published><updated>2021-11-28T04:39:20+00:00</updated><id>https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs</id><content type="html" xml:base="https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs/"><![CDATA[<p>Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, <a href="https://www.techrepublic.com/article/linux-kernel-5-15-is-now-available-and-it-has-something-special-for-ntfs-users/">NTFS3</a>. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.</p>
+		<div class="notice--danger">
+			<h4 class="no_toc" id="warning"><i class="fas fa-exclamation-triangle"></i> WARNING</h4>
+			<p>This is COMPLETELY EXPERIMENTAL. If you are not familiar with either Linux or Windows, <strong>do not try this</strong>.</p>
+		</div>
+		<p>Sounds WEIRD to me. I’m going to do this experiment on my Proxmox VE cluster.</p>
+		<p><img src="/image/linux/monster/vm-create.png" alt="Create virtual machine" class="border" /></p>
+		<h2 id="preparation">Preparation</h2>
+		<h3 id="archiso">Archiso</h3>
+		<p>At the time of writing this article, the latest Arch Linux ISO (2021.11.01) was shipped with Kernel <strong>5.14</strong>.15 - no new NTFS3 driver. I need to create one for myself or this won’t work.</p>
+		<p><a href="https://wiki.archlinux.org/title/archiso">Archiso</a> is Arch’s official tool for creating custom ISO images. I’m not normally an Arch user, so I choose to install Arch first from an official ISO (20211101) before wiping it.</p>
+		<p><img src="/image/linux/monster/install-arch-partition.png" alt="Partitioning in Arch ISO" /></p>
+		<p>After this temporary system is set up, I just follow the Archiso guide and receive my own <code class="language-plaintext highlighter-rouge">archlinux-2021.11.22-x86_64.iso</code> with no trouble. It has Kernel <strong>5.15</strong>.4 packed.</p>
+		<p>I copy the ISO onto the Proxmox VE host system, reboot the VM with this new ISO and wipe <code class="language-plaintext highlighter-rouge">/dev/sda2</code> to avoid (possible) further issues with the Windows installer. I also format <code class="language-plaintext highlighter-rouge">/dev/sda1</code> again to ensure I’m really starting over anew.</p>
+		<h3 id="install-windows">Install Windows</h3>
+		<p>Since NTFS is developed by Microsoft and for Windows, it seems reasonable to assume Windows is best suited for NTFS. So I’ll install Windows first lest it recognizes the filesystem created by <code class="language-plaintext highlighter-rouge">mkfs.ntfs</code> (from the old <code class="language-plaintext highlighter-rouge">ntfs-3g</code> package) as “foreign” and complains anyhow.</p>
+		<p>The installation process of Windows 10 has always been as boring and mundane as it is, so I’m not going to be verbose here. Following the usual steps, except that the disk has already been partitioned, it’s easy to get Windows 10 up and ready.</p>
+		<p><img src="/image/linux/monster/install-win10-oobe.png" alt="Windows 10 OOBE screen" /></p>
+		<p>Proceeding through the out-of-box experience and I get to the desktop. There’s not many things of interest here, so I just shutdown the VM and take a snapshot.</p>
+		<p>Now it’s time to get this compound monstrosity set up.</p>
+		<h2 id="the-main-show">The Main Show</h2>
+		<p>Swap the CD/DVD drive image for the newly created archiso and boot it up:</p>
+		<p><img src="/image/linux/monster/install-archiso.png" alt="CD/DVD image selection" /></p>
+		<p>With the proper Linux kernel equipped, I can now mount the NTFS partition create by Windows installer. It seems NTFS is sophisticated enough to even allow Unix filesystem attibutes, like file modes (permissions) and ownership, as well as “special file types” like symbolic links and named sockets (Unix domain sockets). This may hint that bootstrapping a Linux system should not be too problematic.</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>fdisk <span class="nt">-l</span> /dev/sda  <span class="c"># confirm partition layout</span>
 mount <span class="nt">-t</span> ntfs3 /dev/sda2 /mnt
 <span class="nb">mkdir</span> <span class="nt">-p</span> /mnt/boot/efi
 mount /dev/sda1 /mnt/boot/efi
 pacstrap /mnt base linux linux-firmware
 </code></pre>
-				</div>
 			</div>
-			<p>Indeed, <code class="language-plaintext highlighter-rouge">pacstrap</code> goes so smoothly that I almost forget it’s on a non-native filesystem. The only thing that makes me concerned is that <strong>there’s no <code class="language-plaintext highlighter-rouge">fsck</code> tool for NTFS</strong> (<em>file not found: <code class="language-plaintext highlighter-rouge">fsck.ntfs3</code></em> in console output).</p>
-			<p><img src="/image/linux/monster/install-arch-pacstrap.png" alt="pacstrap output" /></p>
-			<p>Now I can chroot into the system and set up the rest of the system.</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>genfstab <span class="nt">-U</span> /mnt <span class="o">&gt;&gt;</span> /mnt/etc/fstab
+		</div>
+		<p>Indeed, <code class="language-plaintext highlighter-rouge">pacstrap</code> goes so smoothly that I almost forget it’s on a non-native filesystem. The only thing that makes me concerned is that <strong>there’s no <code class="language-plaintext highlighter-rouge">fsck</code> tool for NTFS</strong> (<em>file not found: <code class="language-plaintext highlighter-rouge">fsck.ntfs3</code></em> in console output).</p>
+		<p><img src="/image/linux/monster/install-arch-pacstrap.png" alt="pacstrap output" /></p>
+		<p>Now I can chroot into the system and set up the rest of the system.</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>genfstab <span class="nt">-U</span> /mnt <span class="o">&gt;&gt;</span> /mnt/etc/fstab
 arch-chroot /mnt
 <span class="nb">ln</span> <span class="nt">-sf</span> /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 vim /etc/locale.gen  <span class="c"># add en_US.UTF-8 UTF-8</span>
@@ -45,13 +102,13 @@ vim /etc/locale.gen  <span class="c"># add en_US.UTF-8 UTF-8</span>
 passwd <span class="nt">-d</span> root
 <span class="nb">exit</span>  <span class="c"># quit chroot environment, return to archiso</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Fixing the bootloader is a bit different than usual, as Linux detects NTFS partitions as <code class="language-plaintext highlighter-rouge">ntfs</code>, not <code class="language-plaintext highlighter-rouge">ntfs3</code>. In case of auto mounting, Linux will try to mount with <code class="language-plaintext highlighter-rouge">-t ntfs</code>, which is not available (it’s provided by ntfs-3g). Fortunately, there’s a <code class="language-plaintext highlighter-rouge">rootfstype=</code> <a href="https://wiki.archlinux.org/title/kernel_parameters">kernel command-line parameter</a> to override the “filesystem type” parameter when mounting.</p>
-			<p>Putting this into action:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>arch-chroot /mnt
+		</div>
+		<p>Fixing the bootloader is a bit different than usual, as Linux detects NTFS partitions as <code class="language-plaintext highlighter-rouge">ntfs</code>, not <code class="language-plaintext highlighter-rouge">ntfs3</code>. In case of auto mounting, Linux will try to mount with <code class="language-plaintext highlighter-rouge">-t ntfs</code>, which is not available (it’s provided by ntfs-3g). Fortunately, there’s a <code class="language-plaintext highlighter-rouge">rootfstype=</code> <a href="https://wiki.archlinux.org/title/kernel_parameters">kernel command-line parameter</a> to override the “filesystem type” parameter when mounting.</p>
+		<p>Putting this into action:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>arch-chroot /mnt
 <span class="c"># configure networking</span>
 pacman <span class="nt">-Sy</span> grub efibootmgr
 vim /etc/default/grub
@@ -60,101 +117,101 @@ vim /etc/default/grub
 grub-install
 grub-mkconfig <span class="nt">-o</span> /boot/grub/grub.cfg
 </code></pre>
-				</div>
 			</div>
-			<p><img src="/image/linux/monster/install-arch-grub.png" alt="Install GRUB for Arch Linux" /></p>
-			<p>To make things a bit more interesting, I’m adding a desktop environment:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>pacman <span class="nt">-Sy</span> gnome
+		</div>
+		<p><img src="/image/linux/monster/install-arch-grub.png" alt="Install GRUB for Arch Linux" /></p>
+		<p>To make things a bit more interesting, I’m adding a desktop environment:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>pacman <span class="nt">-Sy</span> gnome
 <span class="c"># select some items - not everything</span>
 </code></pre>
-				</div>
 			</div>
-			<p>And configure networking as well:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="nb">cd</span> /etc/systemd/network
+		</div>
+		<p>And configure networking as well:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="nb">cd</span> /etc/systemd/network
 vim ens18.network
 <span class="nb">cd</span> ../system
 <span class="nb">ln</span> <span class="nt">-s</span> /lib/systemd/system/systemd-networkd.service multi-user.target.wants/
 </code></pre>
-				</div>
 			</div>
-			<p>All set, let’s give it a try.</p>
-			<h2 id="usage-experience">Usage experience</h2>
-			<p>Arch Linux plays surprisingly well with the new NTFS3 filesystem driver.</p>
-			<p><img src="/image/linux/monster/after-arch-neofetch.png" alt="System information in Arch Linux" /></p>
-			<p>To keep things simple, I didn’t install too much software. During my testing, the only issue I encountered was that <code class="language-plaintext highlighter-rouge">ldconfig</code> never worked. It always aborts.</p>
-			<p><img src="/image/linux/monster/arch-terminal-sigabrt.png" alt="ldconfig stops working" /></p>
-			<p>A non-issue is that there’s no working <code class="language-plaintext highlighter-rouge">fsck</code> tool, and there’s a systemd service “Fsck at boot” that consequently fails. It’s not as useful so I just disabled it.</p>
-			<p>The pioneer from r/archlinux said the system breaks after a few reboots, which didn’t happen to me. On the contrary, my Arch Linux was considerably resistant to Windows, and survived multiple Windows Updates, one Microsoft Update, and a few more. It even survived a CHKDSK despite a bunch of files being reported for “invalid filename” because <a href="https://stackoverflow.com/a/25477235/5958455">Windows dislikes colons in filenames</a> (not that NTFS doesn’t support).</p>
-			<h2 id="thoughts">Thoughts</h2>
-			<p>I must admit I’m amazed at how exquisitely NTFS is designed. It’s so mature that it hasn’t even been updated <a href="https://en.wikipedia.org/wiki/NTFS#Versions">since Windows XP</a>. One important part of NTFS is its Extended Attributes (EA) for files. Every NTFS filesystem contains a special file named <code class="language-plaintext highlighter-rouge">$MFT</code> located under its root directory. This is the metadata for all files, including file names, “normal attributes” and ACL, among which is the EA. Every file has an associated entry for EA, which can contain an arbitrary number of attributes (key-value pairs). In fact, the first generation of Windows Subsystem for Linux (WSL) stores Linux file modes and permissions <a href="https://docs.microsoft.com/en-us/windows/wsl/file-permissions">using custom EA keys</a>, which gets adapted by the new NTFS3 driver. Other EA keys are also used as needed, like <code class="language-plaintext highlighter-rouge">security.capability</code>, which is a 20-byte bitset. (Interestingly, EA was originally designed for compatibility with HPFS, which also has a similarly-extensible “Extended Attributes”.)</p>
-			<p>The new NTFS3 driver is a delighting improvement to the Linux ecosystem. Complaints about the classic NTFS-3G driver <a href="https://superuser.com/q/613869/688600">have</a> <a href="https://www.reddit.com/r/linuxquestions/comments/73v5pi/why_is_ntfs_on_linux_so_slow/">always</a> <a href="https://askubuntu.com/q/187813/612877">been</a> <a href="https://unix.stackexchange.com/q/107978/211239">around</a>. Performance was one of the primary concerns because it not only is based on FUSE (Filesystem in USErspace), but also badly optimized. Use of FUSE means extra context switches when accessing files, which, paired with hard-coded 4 KiB read/write unit, delivers unusually slow access speeds.</p>
-			<p>While the NTFS3 driver is a bit more optimized, concerns around compatibility are still encompassing. This is mainly because it’s still built on knowledge obtained from reverse engineering than technical documentation and standard. Fortunately, stability for NTFS-3G is already at a satisfactory level, and the new driver is thought to be more reliable than the old one.</p>
-			<p>Besides, this is a perfect example of Linux’s inclusiveness. Years before the commencement of the new NTFS3 driver, <a href="https://github.com/CyanoHao/NTFS-as-rootfs">attempts were made</a> to run Linux on top of NTFS using NTFS-3G. This leads to an interesting question: Will Linux run on top of FAT32? Technical difficulties are more conspicuous and critical this time, like lack of support and extensibility for file modes and more. I’ll explore into this challenge and share my findings in a subsequent blog post. Stay tuned!</p>
-			<h2 id="links--credits">Links &amp; Credits</h2>
-			<ul>
-				<li>Pioneer from r/archlinux: <a href="https://www.reddit.com/r/archlinux/comments/qwsftq/arch_linux_on_ntfs3/">Arch Linux on NTFS3!</a></li>
-				<li>
-					<p>Original idea by a GitHub user: <a href="https://gist.github.com/motorailgun/cc2c573f253d0893f429a165b5f851ee">Installing Windows and Linux into the same partition</a></p>
-				</li>
-			</ul>
-			]]></content><author><name>iBug</name></author><category term="linux" /><category term="windows" /><summary type="html"><![CDATA[Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, NTFS3. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.]]></summary></entry><entry><title type="html">Reinstall Windows VPS into Linux with iPXE network boot</title><link href="https://ibug.io/blog/2021/11/convert-windows-vps-to-linux/" rel="alternate" type="text/html" title="Reinstall Windows VPS into Linux with iPXE network boot" /><published>2021-11-22T00:00:00+00:00</published><updated>2021-11-23T01:53:16+00:00</updated><id>https://ibug.io/blog/2021/11/convert-windows-vps-to-linux</id><content type="html" xml:base="https://ibug.io/blog/2021/11/convert-windows-vps-to-linux/"><![CDATA[<p>This November I found a discount from one of my favorite VPS providers, <a href="https://go.ibugone.com/vps-hk">NETfront</a>. They offered <strong>Linux VPS with 2 vCPUs and 2 GB RAM</strong> at HK$56/mo, and also <strong>Windows VPS with 4 vCPUs and 4 GB RAM</strong> at HK$49/mo. Looks strange, right? Why buy the crappy Linux VPS when you can have a better configuration with <em>less</em> money (if possible)?</p>
-		<p class="notice--primary"><strong>Note</strong>: I knew this VPS provider ran <a href="https://www.proxmox.com/en/proxmox-ve">Proxmox VE</a> because I already had their VPSs. They’d give you a Proxmox VE noVNC console when you click “Console” to manage your VPS, from which you know they’re using QEMU/KVM as their virtualization platform. Direct access to QEMU screen is <em>awesome</em>!</p>
-		<h2 id="get-vps">Get a VPS</h2>
-		<p>First I head to the shopping cart to order a Windows VPS.</p>
-		<p><img src="/image/linux/ipxe/vps-buy.png" alt="VPS SKU item" class="border" style="border-radius: 12px;" /></p>
-		<p>Nice offer. It comes with unlimited traffic rate limited to 20 Mbps (BTW, it’s full duplex using Proxmox VE’s built-in “Rate Limit” feature for QEMU/KVM). I complete an order and get to create a VM for this service.</p>
-		<p>Completely expected, only Windows images are available for choosing.</p>
-		<p><img src="/image/linux/ipxe/vps-create.png" alt="VPS creation page" /></p>
-		<p>That doesn’t matter, since I’m prepared to bypass the provided VM images and set it up on my own, so I picked <em>Disabled</em> for KVM OS Template. Hopefully it’ll speed up the VM creation process a bit, which, well, wouldn’t matter after all 😊.</p>
-		<p>The next part involves a bit of patient waiting. The VM creation took quite a few minutes, perhaps to reserve that 128 GB of HDD? It would probably make sense to wipe the reserved area lest any previous data be left behind, which is a good practice in terms of security. Whatever, now the new VPS is ready, and I can see some basic information about it. I take down the IP address because later in iPXE environment I need to configure it as a static IP address.</p>
-		<p><img src="/image/linux/ipxe/vps-status.png" alt="VPS ready" /></p>
-		<p>Because I did not choose an OS template for the VPS, it must boot from network (which is true even if I <em>did</em> take a template).</p>
-		<p><img src="/image/linux/ipxe/vps-boot-order.png" alt="Set boot order of VPS" style="border-radius: 6px;" /></p>
-		<p>Now it’s time to start working!</p>
-		<h2 id="network-booting-with-ipxe">Network booting with iPXE</h2>
-		<p>iPXE is an open-source PXE (network boot) firmware, and is built into QEMU, ready for use.</p>
-		<p>I open up the noVNC console and start the VPS. When I see “Press ESC for Boot Menu”, I go for it for the iPXE menu.</p>
-		<p><img src="/image/linux/ipxe/ipxe-boot.png" alt="iPXE boot screen" /></p>
-		<p>iPXE tries to configure network automatically using DHCP, but since the VPS environment does not have DHCP, I have to manually configure the network.</p>
-		<p><img src="/image/linux/ipxe/ipxe-config.png" alt="iPXE configure IP address" /></p>
-		<p>Now it’s time to load some boot source. <a href="https://netboot.xyz/docs/booting/ipxe">Netboot.xyz</a> is the first Google result for “publix pxe boot server”, so I’ll trust it for good.</p>
-		<div class="notice--danger">
-			<h4 class="no_toc" id="trap"><i class="fas fa-bug"></i> Trap</h4>
-			<p>I previously got trapped following its <a href="https://netboot.xyz/docs/quick-start">quick start</a> guide. It didn’t boot for me and just dropped network connection mid-way. Turns out the <a href="https://netboot.xyz/docs/booting/ipxe"><em>Boot using iPXE</em></a> guide is the one I should follow.</p>
 		</div>
-		<p>According to <a href="https://netboot.xyz/docs/booting/ipxe">Netboot.xyz documentation</a>, the only command needed after network is up is <code class="language-plaintext highlighter-rouge">chain</code>. Noting that the iPXE firmware built into QEMU does not support HTTPS, I use plaintext HTTP instead. The final commands used in iPXE environment are here:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="nb">set </span>net0/ip 192.0.2.2           <span class="c"># Replace with your IP address</span>
+		<p>All set, let’s give it a try.</p>
+		<h2 id="usage-experience">Usage experience</h2>
+		<p>Arch Linux plays surprisingly well with the new NTFS3 filesystem driver.</p>
+		<p><img src="/image/linux/monster/after-arch-neofetch.png" alt="System information in Arch Linux" /></p>
+		<p>To keep things simple, I didn’t install too much software. During my testing, the only issue I encountered was that <code class="language-plaintext highlighter-rouge">ldconfig</code> never worked. It always aborts.</p>
+		<p><img src="/image/linux/monster/arch-terminal-sigabrt.png" alt="ldconfig stops working" /></p>
+		<p>A non-issue is that there’s no working <code class="language-plaintext highlighter-rouge">fsck</code> tool, and there’s a systemd service “Fsck at boot” that consequently fails. It’s not as useful so I just disabled it.</p>
+		<p>The pioneer from r/archlinux said the system breaks after a few reboots, which didn’t happen to me. On the contrary, my Arch Linux was considerably resistant to Windows, and survived multiple Windows Updates, one Microsoft Update, and a few more. It even survived a CHKDSK despite a bunch of files being reported for “invalid filename” because <a href="https://stackoverflow.com/a/25477235/5958455">Windows dislikes colons in filenames</a> (not that NTFS doesn’t support).</p>
+		<h2 id="thoughts">Thoughts</h2>
+		<p>I must admit I’m amazed at how exquisitely NTFS is designed. It’s so mature that it hasn’t even been updated <a href="https://en.wikipedia.org/wiki/NTFS#Versions">since Windows XP</a>. One important part of NTFS is its Extended Attributes (EA) for files. Every NTFS filesystem contains a special file named <code class="language-plaintext highlighter-rouge">$MFT</code> located under its root directory. This is the metadata for all files, including file names, “normal attributes” and ACL, among which is the EA. Every file has an associated entry for EA, which can contain an arbitrary number of attributes (key-value pairs). In fact, the first generation of Windows Subsystem for Linux (WSL) stores Linux file modes and permissions <a href="https://docs.microsoft.com/en-us/windows/wsl/file-permissions">using custom EA keys</a>, which gets adapted by the new NTFS3 driver. Other EA keys are also used as needed, like <code class="language-plaintext highlighter-rouge">security.capability</code>, which is a 20-byte bitset. (Interestingly, EA was originally designed for compatibility with HPFS, which also has a similarly-extensible “Extended Attributes”.)</p>
+		<p>The new NTFS3 driver is a delighting improvement to the Linux ecosystem. Complaints about the classic NTFS-3G driver <a href="https://superuser.com/q/613869/688600">have</a> <a href="https://www.reddit.com/r/linuxquestions/comments/73v5pi/why_is_ntfs_on_linux_so_slow/">always</a> <a href="https://askubuntu.com/q/187813/612877">been</a> <a href="https://unix.stackexchange.com/q/107978/211239">around</a>. Performance was one of the primary concerns because it not only is based on FUSE (Filesystem in USErspace), but also badly optimized. Use of FUSE means extra context switches when accessing files, which, paired with hard-coded 4 KiB read/write unit, delivers unusually slow access speeds.</p>
+		<p>While the NTFS3 driver is a bit more optimized, concerns around compatibility are still encompassing. This is mainly because it’s still built on knowledge obtained from reverse engineering than technical documentation and standard. Fortunately, stability for NTFS-3G is already at a satisfactory level, and the new driver is thought to be more reliable than the old one.</p>
+		<p>Besides, this is a perfect example of Linux’s inclusiveness. Years before the commencement of the new NTFS3 driver, <a href="https://github.com/CyanoHao/NTFS-as-rootfs">attempts were made</a> to run Linux on top of NTFS using NTFS-3G. This leads to an interesting question: Will Linux run on top of FAT32? Technical difficulties are more conspicuous and critical this time, like lack of support and extensibility for file modes and more. I’ll explore into this challenge and share my findings in a subsequent blog post. Stay tuned!</p>
+		<h2 id="links--credits">Links &amp; Credits</h2>
+		<ul>
+			<li>Pioneer from r/archlinux: <a href="https://www.reddit.com/r/archlinux/comments/qwsftq/arch_linux_on_ntfs3/">Arch Linux on NTFS3!</a></li>
+			<li>
+				<p>Original idea by a GitHub user: <a href="https://gist.github.com/motorailgun/cc2c573f253d0893f429a165b5f851ee">Installing Windows and Linux into the same partition</a></p>
+			</li>
+		</ul>
+		]]></content><author><name>iBug</name></author><category term="linux" /><category term="windows" /><summary type="html"><![CDATA[Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, NTFS3. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.]]></summary></entry><entry><title type="html">Reinstall Windows VPS into Linux with iPXE network boot</title><link href="https://ibug.io/blog/2021/11/convert-windows-vps-to-linux/" rel="alternate" type="text/html" title="Reinstall Windows VPS into Linux with iPXE network boot" /><published>2021-11-22T00:00:00+00:00</published><updated>2021-11-23T01:53:16+00:00</updated><id>https://ibug.io/blog/2021/11/convert-windows-vps-to-linux</id><content type="html" xml:base="https://ibug.io/blog/2021/11/convert-windows-vps-to-linux/"><![CDATA[<p>This November I found a discount from one of my favorite VPS providers, <a href="https://go.ibugone.com/vps-hk">NETfront</a>. They offered <strong>Linux VPS with 2 vCPUs and 2 GB RAM</strong> at HK$56/mo, and also <strong>Windows VPS with 4 vCPUs and 4 GB RAM</strong> at HK$49/mo. Looks strange, right? Why buy the crappy Linux VPS when you can have a better configuration with <em>less</em> money (if possible)?</p>
+	<p class="notice--primary"><strong>Note</strong>: I knew this VPS provider ran <a href="https://www.proxmox.com/en/proxmox-ve">Proxmox VE</a> because I already had their VPSs. They’d give you a Proxmox VE noVNC console when you click “Console” to manage your VPS, from which you know they’re using QEMU/KVM as their virtualization platform. Direct access to QEMU screen is <em>awesome</em>!</p>
+	<h2 id="get-vps">Get a VPS</h2>
+	<p>First I head to the shopping cart to order a Windows VPS.</p>
+	<p><img src="/image/linux/ipxe/vps-buy.png" alt="VPS SKU item" class="border" style="border-radius: 12px;" /></p>
+	<p>Nice offer. It comes with unlimited traffic rate limited to 20 Mbps (BTW, it’s full duplex using Proxmox VE’s built-in “Rate Limit” feature for QEMU/KVM). I complete an order and get to create a VM for this service.</p>
+	<p>Completely expected, only Windows images are available for choosing.</p>
+	<p><img src="/image/linux/ipxe/vps-create.png" alt="VPS creation page" /></p>
+	<p>That doesn’t matter, since I’m prepared to bypass the provided VM images and set it up on my own, so I picked <em>Disabled</em> for KVM OS Template. Hopefully it’ll speed up the VM creation process a bit, which, well, wouldn’t matter after all 😊.</p>
+	<p>The next part involves a bit of patient waiting. The VM creation took quite a few minutes, perhaps to reserve that 128 GB of HDD? It would probably make sense to wipe the reserved area lest any previous data be left behind, which is a good practice in terms of security. Whatever, now the new VPS is ready, and I can see some basic information about it. I take down the IP address because later in iPXE environment I need to configure it as a static IP address.</p>
+	<p><img src="/image/linux/ipxe/vps-status.png" alt="VPS ready" /></p>
+	<p>Because I did not choose an OS template for the VPS, it must boot from network (which is true even if I <em>did</em> take a template).</p>
+	<p><img src="/image/linux/ipxe/vps-boot-order.png" alt="Set boot order of VPS" style="border-radius: 6px;" /></p>
+	<p>Now it’s time to start working!</p>
+	<h2 id="network-booting-with-ipxe">Network booting with iPXE</h2>
+	<p>iPXE is an open-source PXE (network boot) firmware, and is built into QEMU, ready for use.</p>
+	<p>I open up the noVNC console and start the VPS. When I see “Press ESC for Boot Menu”, I go for it for the iPXE menu.</p>
+	<p><img src="/image/linux/ipxe/ipxe-boot.png" alt="iPXE boot screen" /></p>
+	<p>iPXE tries to configure network automatically using DHCP, but since the VPS environment does not have DHCP, I have to manually configure the network.</p>
+	<p><img src="/image/linux/ipxe/ipxe-config.png" alt="iPXE configure IP address" /></p>
+	<p>Now it’s time to load some boot source. <a href="https://netboot.xyz/docs/booting/ipxe">Netboot.xyz</a> is the first Google result for “publix pxe boot server”, so I’ll trust it for good.</p>
+	<div class="notice--danger">
+		<h4 class="no_toc" id="trap"><i class="fas fa-bug"></i> Trap</h4>
+		<p>I previously got trapped following its <a href="https://netboot.xyz/docs/quick-start">quick start</a> guide. It didn’t boot for me and just dropped network connection mid-way. Turns out the <a href="https://netboot.xyz/docs/booting/ipxe"><em>Boot using iPXE</em></a> guide is the one I should follow.</p>
+	</div>
+	<p>According to <a href="https://netboot.xyz/docs/booting/ipxe">Netboot.xyz documentation</a>, the only command needed after network is up is <code class="language-plaintext highlighter-rouge">chain</code>. Noting that the iPXE firmware built into QEMU does not support HTTPS, I use plaintext HTTP instead. The final commands used in iPXE environment are here:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="nb">set </span>net0/ip 192.0.2.2           <span class="c"># Replace with your IP address</span>
 <span class="nb">set </span>net0/netmask 255.255.255.0  <span class="c"># Replace as needed</span>
 <span class="nb">set </span>net0/gateway 192.0.2.1      <span class="c"># Replace with your gateway address</span>
 <span class="nb">set </span>dns 8.8.8.8
 ifopen net0
 chain <span class="nt">--autofree</span> http://boot.netboot.xyz
 </code></pre>
-			</div>
 		</div>
-		<p>Within a few seconds, I see the OS selection screen.</p>
-		<p><img src="/image/linux/ipxe/ipxe-netboot.xyz.png" alt="Loaded Netboot.xyz from iPXE" /></p>
-		<p>Debian has always been my #1 choice for servers, no reason to miss it. Select Linux Network Installs and look for Debian Bullseye.</p>
-		<p><img src="/image/linux/ipxe/ipxe-install-debian.png" alt="Debian network installer" /></p>
-		<p>Now I’m halfway to success as Debian installer shows up. There’s still a small note: the Debian installer doesn’t “inherit” network settings from the iPXE firmware, so it must be configured again for Debian. The auto configuration attempt will fail and Debian will prompt for manual configuration. Not any difficult.</p>
-		<p><img src="/image/linux/ipxe/ipxe-install-debian-network.png" alt="Configure network for Debian installer" /></p>
-		<p>Now it’s time to wipe Windows (where’s Windows?) and install Linux!</p>
-		<p><img src="/image/linux/ipxe/ipxe-install-debian-disk.png" alt="Configure disk partitions for Debian" /></p>
-		<p>Select <code class="language-plaintext highlighter-rouge">deb.debian.org</code> as package source since this is a Hong Kong VPS and not a mainland China one, and proceed through the rest of the process. After a reboot, I can see the login screen of the newly installed OS. Hooray!</p>
-		<p><img src="/image/linux/ipxe/debian-ok.png" alt="Debian ready" /></p>
-		<p>If I replace <code class="language-plaintext highlighter-rouge">linux-image-amd64</code> with <code class="language-plaintext highlighter-rouge">linux-image-cloud-amd64</code>, I can free up some 100 MB disk space than the default setup:</p>
-		<p><img src="/image/linux/ipxe/debian-df.png" alt="Debian DF" /></p>
-		<p>That’s it. With just some small efforts, this is now an afforable, high-spec Linux VPS.</p>
-		<p>While the VPS control panel would never offer Linux templates should anything go wrong, it’s always possible to boot from iPXE again for a “rescue environment”.</p>
-		<h2 id="easter-egg">Easter Egg</h2>
-		<p>During Debian installation, the installer automatically added the <code class="language-plaintext highlighter-rouge">hyperv-daemon</code> package after examining hardware. After booting into Debian, <code class="language-plaintext highlighter-rouge">systemd-detect-virt</code> reports “microsoft” (i.e. Windows Hyper-V). This VPS hosting provider may have some black magic with their Windows VPS cluster so that QEMU/KVM behaves so. This issue doesn’t seem to exist in their “native” Linux VPS, but it’s worth noting.</p>
-		]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[This November I found a discount from one of my favorite VPS providers, NETfront. They offered Linux VPS with 2 vCPUs and 2 GB RAM at HK$56/mo, and also Windows VPS with 4 vCPUs and 4 GB RAM at HK$49/mo. Looks strange, right? Why buy the crappy Linux VPS when you can have a better configuration with less money (if possible)?]]></summary></entry><entry><title type="html">Secure site-to-site connection with Linux IPsec VPN</title><link href="https://ibug.io/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="alternate" type="text/html" title="Secure site-to-site connection with Linux IPsec VPN" /><published>2021-10-23T00:00:00+00:00</published><updated>2021-10-24T00:43:55+00:00</updated><id>https://ibug.io/blog/2021/10/linux-ipsec-with-ip-xfrm</id><content type="html" xml:base="https://ibug.io/blog/2021/10/linux-ipsec-with-ip-xfrm/"><![CDATA[<p>Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. <a href="https://en.wikipedia.org/wiki/Layer_2_Tunneling_Protocol">L2TP</a> and <a href="https://en.wikipedia.org/wiki/Generic_Routing_Encapsulation">GRE</a>) to create secure cross-site network connections. As an innovative attempt to a lab in this semester’s Network Security course, which was designed to work over multiple Windows Server 2003 virtual machines (VM), I decided to go on my own and proceed with Linux VMs.</p>
+	</div>
+	<p>Within a few seconds, I see the OS selection screen.</p>
+	<p><img src="/image/linux/ipxe/ipxe-netboot.xyz.png" alt="Loaded Netboot.xyz from iPXE" /></p>
+	<p>Debian has always been my #1 choice for servers, no reason to miss it. Select Linux Network Installs and look for Debian Bullseye.</p>
+	<p><img src="/image/linux/ipxe/ipxe-install-debian.png" alt="Debian network installer" /></p>
+	<p>Now I’m halfway to success as Debian installer shows up. There’s still a small note: the Debian installer doesn’t “inherit” network settings from the iPXE firmware, so it must be configured again for Debian. The auto configuration attempt will fail and Debian will prompt for manual configuration. Not any difficult.</p>
+	<p><img src="/image/linux/ipxe/ipxe-install-debian-network.png" alt="Configure network for Debian installer" /></p>
+	<p>Now it’s time to wipe Windows (where’s Windows?) and install Linux!</p>
+	<p><img src="/image/linux/ipxe/ipxe-install-debian-disk.png" alt="Configure disk partitions for Debian" /></p>
+	<p>Select <code class="language-plaintext highlighter-rouge">deb.debian.org</code> as package source since this is a Hong Kong VPS and not a mainland China one, and proceed through the rest of the process. After a reboot, I can see the login screen of the newly installed OS. Hooray!</p>
+	<p><img src="/image/linux/ipxe/debian-ok.png" alt="Debian ready" /></p>
+	<p>If I replace <code class="language-plaintext highlighter-rouge">linux-image-amd64</code> with <code class="language-plaintext highlighter-rouge">linux-image-cloud-amd64</code>, I can free up some 100 MB disk space than the default setup:</p>
+	<p><img src="/image/linux/ipxe/debian-df.png" alt="Debian DF" /></p>
+	<p>That’s it. With just some small efforts, this is now an afforable, high-spec Linux VPS.</p>
+	<p>While the VPS control panel would never offer Linux templates should anything go wrong, it’s always possible to boot from iPXE again for a “rescue environment”.</p>
+	<h2 id="easter-egg">Easter Egg</h2>
+	<p>During Debian installation, the installer automatically added the <code class="language-plaintext highlighter-rouge">hyperv-daemon</code> package after examining hardware. After booting into Debian, <code class="language-plaintext highlighter-rouge">systemd-detect-virt</code> reports “microsoft” (i.e. Windows Hyper-V). This VPS hosting provider may have some black magic with their Windows VPS cluster so that QEMU/KVM behaves so. This issue doesn’t seem to exist in their “native” Linux VPS, but it’s worth noting.</p>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[This November I found a discount from one of my favorite VPS providers, NETfront. They offered Linux VPS with 2 vCPUs and 2 GB RAM at HK$56/mo, and also Windows VPS with 4 vCPUs and 4 GB RAM at HK$49/mo. Looks strange, right? Why buy the crappy Linux VPS when you can have a better configuration with less money (if possible)?]]></summary></entry><entry><title type="html">Secure site-to-site connection with Linux IPsec VPN</title><link href="https://ibug.io/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="alternate" type="text/html" title="Secure site-to-site connection with Linux IPsec VPN" /><published>2021-10-23T00:00:00+00:00</published><updated>2021-10-24T00:43:55+00:00</updated><id>https://ibug.io/blog/2021/10/linux-ipsec-with-ip-xfrm</id><content type="html" xml:base="https://ibug.io/blog/2021/10/linux-ipsec-with-ip-xfrm/"><![CDATA[<p>Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. <a href="https://en.wikipedia.org/wiki/Layer_2_Tunneling_Protocol">L2TP</a> and <a href="https://en.wikipedia.org/wiki/Generic_Routing_Encapsulation">GRE</a>) to create secure cross-site network connections. As an innovative attempt to a lab in this semester’s Network Security course, which was designed to work over multiple Windows Server 2003 virtual machines (VM), I decided to go on my own and proceed with Linux VMs.</p>
 	<p>As covered in <a href="/blog/2021/01/linux-container-explained/#namespaces">my previous blog</a>, one of the fundamentals of a Linux container is namespaces, among which the network namespace is of great interest here. Since a network namespace creates a copy of the entire network stack, it’s suitable as a substitute for a full VM for this lab. This enables me to work on this lab with lightweight containers on my Proxmox VE cluster.</p>
 	<h2 id="setting-up-network">Setting up network</h2>
 	<p>The lab is designed to work on VirtualBox platform, and the network structure is laid out as follows:</p>
@@ -1354,10 +1411,10 @@ systemd-nspawn
 	<p>After getting your rootfs up for rocking, we’ll start with a fairly simple chroot-based program, modify it step-by-step, until it becomes the container we want.</p>
 	<div class="language-c highlighter-rouge">
 		<div class="highlight">
-			<pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
-#include &lt;unistd.h&gt;
-#include &lt;sys/types.h&gt; // For wait(2)
-#include &lt;sys/wait.h&gt;  // For wait(2)
+			<pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="c1"> // For wait(2)</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/wait.h&gt;</span><span class="c1">  // For wait(2)</span><span class="cp">
 </span>
 <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">usage</span> <span class="o">=</span>
 <span class="s">"Usage: %s &lt;directory&gt; &lt;command&gt; [args...]</span><span class="se">\n</span><span class="s">"</span>
@@ -1447,12 +1504,12 @@ systemd-nspawn
 	<div class="language-c highlighter-rouge">
 		<div class="highlight">
 			<pre class="highlight"><code><span class="cp">#define _GNU_SOURCE    // Required for enabling clone(2)
-#include &lt;stdio.h&gt;
-#include &lt;sched.h&gt;     // For clone(2)
-#include &lt;signal.h&gt;    // For SIGCHLD constant
-#include &lt;sys/mman.h&gt;  // For mmap(2)
-#include &lt;sys/types.h&gt; // For wait(2)
-#include &lt;sys/wait.h&gt;  // For wait(2)
+#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;sched.h&gt;</span><span class="c1">     // For clone(2)</span><span class="cp">
+#include</span> <span class="cpf">&lt;signal.h&gt;</span><span class="c1">    // For SIGCHLD constant</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/mman.h&gt;</span><span class="c1">  // For mmap(2)</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="c1"> // For wait(2)</span><span class="cp">
+#include</span> <span class="cpf">&lt;sys/wait.h&gt;</span><span class="c1">  // For wait(2)</span><span class="cp">
 </span></code></pre>
 		</div>
 	</div>
@@ -1918,43 +1975,4 @@ cgroup.procs           pid.current        pid.max
 			</ul>
 		</li>
 	</ul>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="container" /><category term="c" /><summary type="html"><![CDATA[Let's write our own container in C, from scratch]]></summary></entry><entry><title type="html">Keep using Flash Player in browsers in 2021</title><link href="https://ibug.io/blog/2021/01/keep-flash-player-browser/" rel="alternate" type="text/html" title="Keep using Flash Player in browsers in 2021" /><published>2021-01-12T00:00:00+00:00</published><updated>2021-02-04T21:47:35+00:00</updated><id>https://ibug.io/blog/2021/01/keep-flash-player-browser</id><content type="html" xml:base="https://ibug.io/blog/2021/01/keep-flash-player-browser/"><![CDATA[<p>It’s 2021 now, and <a href="https://www.adobe.com/products/flashplayer/end-of-life.html">Adobe Flash Player has been end-of-life</a> after December 31, 2020. There are many cases where you want to retain it, however. For example, you may want to keep enjoying an old game that’s been around for decades, or managing your organization’s infrastructure via <a href="https://kb.vmware.com/s/article/78589">VMware vSphere Flash Web Client (vSphere 6.5 and older)</a>.</p>
-	<h2 id="quick-solution">Quick Solution</h2>
-	<p>According to <a href="https://www.adobe.com/content/dam/acom/en/devnet/flashplayer/articles/flash_player_admin_guide/pdf/latest/flash_player_32_0_admin_guide.pdf">Adobe Flash Player 32.0 Administration Guide</a>, page 28 and 36, you can deploy a config file named <code class="language-plaintext highlighter-rouge">mms.cfg</code> with the following content to continue using Flash on whitelisted sites:</p>
-	<div class="language-ini highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="py">EOLUninstallDisable</span><span class="p">=</span><span class="s">1</span>
-<span class="py">SilentAutoUpdateEnable</span><span class="p">=</span><span class="s">0</span>
-<span class="py">AutoUpdateDisable</span><span class="p">=</span><span class="s">1</span>
-<span class="py">EnableAllowList</span><span class="p">=</span><span class="s">1</span>
-<span class="py">AllowListUrlPattern</span><span class="p">=</span><span class="s">*://*.example.com/</span>
-<span class="py">AllowListUrlPattern</span><span class="p">=</span><span class="s">*://*.example.net/</span>
-<span class="py">AllowListUrlPattern</span><span class="p">=</span><span class="s">*://*.example.org/</span>
-<span class="py">AllowListUrlPattern</span><span class="p">=</span><span class="s">file:*</span>
-
-<span class="py">TraceOutputEcho</span><span class="p">=</span><span class="s">1</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Depending on your operating system, the file may be located at:</p>
-	<ul>
-		<li>Windows: <code class="language-plaintext highlighter-rouge">C:\Windows\System32\Macromed\Flash</code> and <code class="language-plaintext highlighter-rouge">C:\Windows\SysWOW64\Macromed\Flash</code> (if you’re on a 64-bit Windows)</li>
-		<li>macOS: <code class="language-plaintext highlighter-rouge">/Library/Application Support/Macromedia</code></li>
-		<li>Linux: <code class="language-plaintext highlighter-rouge">/etc/adobe</code> (yes it <em>is</em> Adobe instead of Macromedia)</li>
-	</ul>
-	<p>Placing the <code class="language-plaintext highlighter-rouge">mms.cfg</code> file inside the correct directory (both directories for 64-bit Windows) should enable Flash on websites you whitelisted.</p>
-	<p>Additionally, if you’re using <strong>Google Chrome</strong> or Chromium-based <strong>Microsoft Edge</strong>, you need to place an additional <code class="language-plaintext highlighter-rouge">mms.cfg</code> file in the following directory:</p>
-	<ul>
-		<li>Windows: <code class="language-plaintext highlighter-rouge">C:\Users\&lt;username&gt;\AppData\Local\Google\Chrome\User Data\Default\Pepper Data\Shockwave Flash\System\mms.cfg</code></li>
-		<li>macOS: <code class="language-plaintext highlighter-rouge">/Users/&lt;username&gt;/Library/Application Support/Google/Chrome/Default/Pepper Data/Shockwave Flash/System</code></li>
-		<li>Linux: <code class="language-plaintext highlighter-rouge">~/.config/google-chrome/Default/Pepper Data/Shockwave Flash/System/</code></li>
-	</ul>
-	<p>For Microsoft Edge, replace <code class="language-plaintext highlighter-rouge">Google</code> with <code class="language-plaintext highlighter-rouge">Microsoft</code> and <code class="language-plaintext highlighter-rouge">Chrome</code> with <code class="language-plaintext highlighter-rouge">Edge</code> in the above paths. Don’t forget to replace <code class="language-plaintext highlighter-rouge">&lt;username&gt;</code> with your user name.</p>
-	<p>After placing the <code class="language-plaintext highlighter-rouge">mms.cfg</code> file, just restart your browser to see Flash come back again.</p>
-	<h2 id="the-future">The Future</h2>
-	<p>The Chromium browser (basis of Google Chrome and modern Microsoft Edge) <a href="https://www.chromium.org/flash-roadmap#TOC-Flash-Support-Removed-from-Chromium-Target:-Chrome-88---Jan-2021-">will completely remove Flash</a> since version 88, and <a href="https://developer.mozilla.org/en-US/docs/Plugins/Roadmap#schedule">so will Firefox</a> since version 85. This means you can no longer enable Flash even with the above <em>Enterprise policy</em> applied.</p>
-	<p>Unfortunately, you have to keep an old version of your browser of choice around if you plan to use Flash for an extended period. This means you have to find an available download, and disable the auto-update feature for the browser. You will be missing the latest web features and security improvements if you <a href="https://browser-update.org/">remain on an old browser</a>, which will be an issue sooner or later.</p>
-	<p>You can get around the browser issue by using Internet Explorer if you’re on Windows, which is <em>already</em> lacking new web features and security. You’ll want to prevent Windows Update <a href="https://www.catalog.update.microsoft.com/search.aspx?q=4577586">KB4577586</a> from installing, following <a href="https://support.microsoft.com/en-us/help/3183922/how-to-temporarily-prevent-a-windows-update-from-reinstalling-in-windo">Microsoft’s guidelines</a>.</p>
-	<p>A better approach is to keep the Flash Player installers around (I saved FP v29 <a href="https://download.ibugone.com/fp_29.0.0.171_archive.zip">here</a> if you need - it’s a full set so beware of download size - 421 MB), and install them when needed.</p>
-	<p>Finally, the only way to secure your ability to use Flash in the distant future is to install a virtual machine running an older system (like Windows 7), with old software and old browsers, and <em>then</em> put your Flash Player there.</p>
-	]]></content><author><name>iBug</name></author><category term="web" /><category term="flash" /><summary type="html"><![CDATA[It’s 2021 now, and Adobe Flash Player has been end-of-life after December 31, 2020. There are many cases where you want to retain it, however. For example, you may want to keep enjoying an old game that’s been around for decades, or managing your organization’s infrastructure via VMware vSphere Flash Web Client (vSphere 6.5 and older).]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="container" /><category term="c" /><summary type="html"><![CDATA[Let's write our own container in C, from scratch]]></summary></entry></feed>
