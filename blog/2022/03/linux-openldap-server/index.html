@@ -1,0 +1,843 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>Centralized Linux authentication with OpenLDAP - iBug</title>
+		<meta name="description" content="LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes the most serious dedication to set up and maintain, yet the slightest agitation to fail.">
+		<meta name="author" content="iBug">
+		<meta property="article:author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="Centralized Linux authentication with OpenLDAP">
+		<meta property="og:url" content="https://ibug.io/blog/2022/03/linux-openldap-server/">
+		<meta property="og:description" content="LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes the most serious dedication to set up and maintain, yet the slightest agitation to fail.">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2022-03-18T00:00:00+00:00">
+		<meta property="article:modified_time" content="2022-03-18T14:13:48+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2022/03/linux-openldap-server/">
+		<script type="application/ld+json">
+			{
+			  "@context": "https://schema.org",
+
+			    "@type": "Person",
+			    "name": "iBug",
+			    "url": "https://ibug.io/"
+
+			}
+		</script>
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<!-- https://t.co/dKP3o1e -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script>
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=45a8b59">
+		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css">
+		<!--[if IE]>
+			<style>
+				/* old IE unsupported flexbox fixes */
+				.greedy-nav .site-title {
+				  padding-right: 3em;
+				}
+				.greedy-nav button {
+				  position: absolute;
+				  top: 0;
+				  right: 0;
+				  height: 100%;
+				}
+			</style>
+		<![endif]-->
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<meta name="theme-color" content="#EDEDED">
+		<script>
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+		<!--
+ Minimal Mistakes layout: single
+ Page Path: _posts/2022/2022-03-18-linux-openldap-server.md
+ Page Type: 
+-->
+	</head>
+	<body class="layout--single">
+		<nav class="skip-links">
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<!--[if lt IE 9]>
+			<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+		<![endif]-->
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt="iBug"></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a href="/about/">About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/blog/">Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/projects/">Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/friends/">Friends</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/cn/">中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<i class="fas fa-search"></i>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay"
+  style=" background-image: url('/image/header/mountain-1.jpg');"
+>
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						Centralized Linux authentication with OpenLDAP
+					</h1>
+					<p class="page__meta">
+						<span class="page__meta-date">
+							<i class="far fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
+						</span>
+						<span class="page__meta-sep"></span>
+						<span class="page__meta-readtime">
+							<i class="far fa-clock" aria-hidden="true"></i>
+							14 minute read
+						</span>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person">
+						<div class="author__avatar">
+							<img src="/image/avatar.png" alt="iBug" itemprop="image">
+						</div>
+						<div class="author__content">
+							<h3 class="author__name" itemprop="name">iBug</h3>
+							<div class="author__bio" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer"><i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/ibugthought" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-telegram-plane" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox" />
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="Centralized Linux authentication with OpenLDAP">
+					<meta itemprop="description" content="LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes the most serious dedication to set up and maintain, yet the slightest agitation to fail.">
+					<meta itemprop="datePublished" content="2022-03-18T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2022-03-18T14:13:48+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#prerequisites">Prerequisites</a></li>
+										<li><a href="#i-389ds">Interlude: 389 Directory Server</a></li>
+										<li><a href="#server">Server setup</a>
+											<ul>
+												<li><a href="#ldap-utils">Configuring LDAP tools</a></li>
+												<li><a href="#seeding">Populating the database</a></li>
+												<li><a href="#users-and-groups">Managing users and groups</a></li>
+												<li><a href="#import-passwords">Importing passwords from Linux</a></li>
+											</ul>
+										</li>
+										<li><a href="#client">Client setup</a></li>
+										<li><a href="#advanced">Advanced topics</a>
+											<ul>
+												<li><a href="#tls">Securing LDAP server with TLS</a>
+													<ul>
+														<li><a href="#external-authentication-method"> “External” authentication method</a></li>
+													</ul>
+												</li>
+												<li><a href="#permissions">Managing permissions</a></li>
+												<li><a href="#user-chsh">Allow users to change login shell</a></li>
+											</ul>
+										</li>
+										<li><a href="#afterword">Afterword</a></li>
+										<li><a href="#references">References</a></li>
+									</ul>
+								</nav>
+							</aside>
+							<p>LDAP, <del>the #1 way to get your graduation delayed</del> (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes the most serious dedication to set up and maintain, yet the slightest agitation to fail.</p>
+							<p>The <em>correct</em> story behind this opens up with our lab’s messy machine management. While home directories across machines are shared from a common NFS server, user and group information is managed manually. To start with, whenever someone joins our lab, the other admin (thankfully not yet me) creates a user for them on <em>every</em> machine they’d access, while paying attention to the consistency of UID and GID. What’s worse, we often grant temporary access to a selected set of machines to guest students to enable them to work on certain projects, or to participate in competitions on behalf of our lab. Not to mention the other admin himself has literally 5 different UIDs on different hosts.</p>
+							<p>LDAP solves this agony and saves a lot of sysadmins’ souls by providing centralized management to users, groups and some other organizational resources using a directory-structured database. While I previously used an existing GOsa² setup for simple management tasks, our lab’s new cluster provides an excellent opportunity to try out LDAP anew.</p>
+							<h2 id="prerequisites">Prerequisites</h2>
+							<p>Thanks to a network outage a few days ago, I get to reinstall our NFS server into Proxmox VE (yes again) to allow more specialized applications to be deployed in a more flexible manner. So I can just launch a new Debian Bullseye (11) virtual machine and begin this journey. The rest of this blog post assumes this environment.</p>
+							<h2 id="i-389ds">Interlude: 389 Directory Server</h2>
+							<p>A friend recommended Fedora’s <a href="https://directory.fedoraproject.org/">389 Directory Server</a> after learning that I wanted to set up some LDAP server, indicating that it’s easier to use and maintain.</p>
+							<p>So I followed the documentation and got a 389DS up and running. Everything looked simple and straightforward until I went on configuring TLS certificates. I created a self-signed certificate with extra Subject Alternative Names (as needed) and tried to import them to 389DS. <a href="https://directory.fedoraproject.org/docs/389ds/howto/howto-ssl-archive.html#importing-an-existing-self-sign-keycert-or-3rd-party-cacert">Their documentation on this</a> is completely unhelpful, and I struggled for two tedious hours before landing on <a href="https://access.redhat.com/documentation/en-us/red_hat_directory_server/11/html/administration_guide/managing_the_nss_database_used_by_directory_server">Red Hat’s documentation</a> that actually worked. 389DS’s default “group” object doesn’t support POSIX GID, either.</p>
+							<p>All those failures led to one question: Why bother with 389DS when it still uses <code class="language-plaintext highlighter-rouge">slapd</code> behind? So I ditched this VM and gave it up.</p>
+							<h2 id="server">Server setup</h2>
+							<p>Installation is easy:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>apt <span class="nb">install </span>slapd
+</code></pre>
+								</div>
+							</div>
+							<p>This installs the OpenLDAP server with all recommended packages that’ll aid configuration. During installation, you’ll be prompted for the admin password. Ignore that for now as we’ll (probably) have to reconfigure this later.</p>
+							<p>This is because slapd tries to automatically determine the base Distinguished Name for the server, which often fails and falls back to the unpleasant <code class="language-plaintext highlighter-rouge">dc=nodomain</code>.</p>
+							<p>Run <code class="language-plaintext highlighter-rouge">dpkg-reconfigure slapd</code> to specify a domain name that will be used to construct the base DN from. It’s perfectly fine to have a short name like just <code class="language-plaintext highlighter-rouge">ibug</code>, or you can choose to be serious on this and use <code class="language-plaintext highlighter-rouge">example.com</code>. Either way, you probably don’t want to have a long DN like <code class="language-plaintext highlighter-rouge">dc=protonlab,dc=research,dc=google,dc=com</code>, which will make manual querying a nightmare.</p>
+							<p>Now we have an empty OpenLDAP server. The admin user’s DN is <code class="language-plaintext highlighter-rouge">cn=admin</code> followed by your base DN, so most data manipulation tasks require the role to be bound to <code class="language-plaintext highlighter-rouge">cn=admin,dc=ibug</code> for me.</p>
+							<p>The additional package <code class="language-plaintext highlighter-rouge">ldap-utils</code> provides tools like <code class="language-plaintext highlighter-rouge">ldapadd</code>, <code class="language-plaintext highlighter-rouge">ldapmodify</code> and <code class="language-plaintext highlighter-rouge">ldapdelete</code> which we’ll be mostly using later. <code class="language-plaintext highlighter-rouge">slapd</code> provides <code class="language-plaintext highlighter-rouge">slapcat</code> that dumps the whole database and <code class="language-plaintext highlighter-rouge">ldapvi</code> provides an interactive editor, both of which come in handy for management and debugging.</p>
+							<h3 id="ldap-utils">Configuring LDAP tools</h3>
+							<p>All interactions with the server are done through <code class="language-plaintext highlighter-rouge">ldap*</code> commands submitting text in LDIF (LDAP Data Interchange Format).</p>
+							<p>Before moving on to the next step, there are config files for common settings that simplifies later tasks.</p>
+							<p>Open <code class="language-plaintext highlighter-rouge">/etc/ldap/ldap.conf</code> (the system-wide settings) and set these options:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>BASE    dc=ibug
+URI     ldapi:///
+</code></pre>
+								</div>
+							</div>
+							<p>There are 3 ways to connect to an LDAP server</p>
+							<ul>
+								<li><code class="language-plaintext highlighter-rouge">ldap://</code> (plaintext TCP, default port 389)</li>
+								<li><code class="language-plaintext highlighter-rouge">ldaps://</code> (over SSL/TLS, default port 636)</li>
+								<li><code class="language-plaintext highlighter-rouge">ldapi://</code> (over IPC, or Unix domain socket, usually <code class="language-plaintext highlighter-rouge">/var/run/slapd/ldapi</code>)</li>
+							</ul>
+							<p>Once you have this file set up, you can omit the <code class="language-plaintext highlighter-rouge">-H &lt;host&gt;</code> option from all <code class="language-plaintext highlighter-rouge">ldap*</code> commands. Similarly, <code class="language-plaintext highlighter-rouge">BASE</code> is useful in <code class="language-plaintext highlighter-rouge">ldapsearch</code> or like.</p>
+							<h3 id="seeding">Populating the database</h3>
+							<p>Now that we have an empty database, we can create two directories for our users and groups. This is the first LDIF file to have.</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">ou=user,dc=ibug</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">organizationalUnit</span>
+<span class="na">ou</span><span class="pi">:</span> <span class="s">user</span>
+
+<span class="na">dn</span><span class="pi">:</span> <span class="s">ou=group,dc=ibug</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">organizationalUnit</span>
+<span class="na">ou</span><span class="pi">:</span> <span class="s">group</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Use <code class="language-plaintext highlighter-rouge">ldapadd -D cn=admin,dc=ibug -W -f base.ldif</code> to load the “change request” into the database.</p>
+							<h3 id="users-and-groups">Managing users and groups</h3>
+							<p>Now create the first user and group:</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">uid=ibug,ou=user,dc=ibug</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">posixAccount</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">shadowAccount</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">inetOrgPerson</span>
+<span class="na">cn</span><span class="pi">:</span> <span class="s">iBug</span>
+<span class="na">sn</span><span class="pi">:</span> <span class="s">iBug</span>
+<span class="na">uid</span><span class="pi">:</span> <span class="s">ibug</span>
+<span class="na">uidNumber</span><span class="pi">:</span> <span class="m">1000</span>
+<span class="na">gidNumber</span><span class="pi">:</span> <span class="m">1000</span>
+<span class="na">homeDirectory</span><span class="pi">:</span> <span class="s">/home/ibug</span>
+<span class="na">loginShell</span><span class="pi">:</span> <span class="s">/bin/bash</span>
+<span class="na">gecos</span><span class="pi">:</span> <span class="s">iBug</span>
+
+<span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">posixGroup</span>
+<span class="na">cn</span><span class="pi">:</span> <span class="s">staff</span>
+<span class="na">gidNumber</span><span class="pi">:</span> <span class="m">1000</span>
+<span class="na">description</span><span class="pi">:</span> <span class="s">My staff group</span>
+</code></pre>
+								</div>
+							</div>
+							<p>For user objects, <code class="language-plaintext highlighter-rouge">inetOrgPerson</code> is a required “object class”, and therefore the <code class="language-plaintext highlighter-rouge">cn</code> and <code class="language-plaintext highlighter-rouge">sn</code> fields. Linux uses <code class="language-plaintext highlighter-rouge">posixAccount</code> and <code class="language-plaintext highlighter-rouge">shadowAccount</code> for authentication, and the <code class="language-plaintext highlighter-rouge">gecos</code> field is the one that’ll appear in output from commands like <code class="language-plaintext highlighter-rouge">getent passwd</code>.</p>
+							<p>To add a user to a group, use <code class="language-plaintext highlighter-rouge">ldapmodify</code> with this LDIF file:</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
+<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
+<span class="na">add</span><span class="pi">:</span> <span class="s">memberUid</span>
+<span class="na">memberUid</span><span class="pi">:</span> <span class="s">ibug</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Similarly, to change user information, just use <code class="language-plaintext highlighter-rouge">replace</code> with <code class="language-plaintext highlighter-rouge">changetype: modify</code>:</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
+<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
+<span class="na">replace</span><span class="pi">:</span> <span class="s">gecos</span>
+<span class="na">gecos</span><span class="pi">:</span> <span class="s">New iBug</span>
+</code></pre>
+								</div>
+							</div>
+							<p>If you’re importing users and groups from an existing system, you may find the ability to preload the group with an initial set of users useful. When creating the group, you may supply any number of <code class="language-plaintext highlighter-rouge">memberUid</code>s. This has the same effect as adding them one by one.</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">posixGroup</span>
+<span class="na">cn</span><span class="pi">:</span> <span class="s">staff</span>
+<span class="na">gidNumber</span><span class="pi">:</span> <span class="m">1000</span>
+<span class="na">description</span><span class="pi">:</span> <span class="s">My staff group</span>
+<span class="na">memberUid</span><span class="pi">:</span> <span class="s">ibug</span>
+<span class="na">memberUid</span><span class="pi">:</span> <span class="s">user1</span>
+<span class="na">memberUid</span><span class="pi">:</span> <span class="s">user2</span>
+<span class="na">memberUid</span><span class="pi">:</span> <span class="s">user3</span>
+<span class="na">memberUid</span><span class="pi">:</span> <span class="s">user4</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Last but not least, <code class="language-plaintext highlighter-rouge">ldappasswd</code> sets or resets passwords for users:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>ldappasswd <span class="nt">-D</span> <span class="nv">cn</span><span class="o">=</span>admin,dc<span class="o">=</span>ibug <span class="nt">-W</span> <span class="nv">uid</span><span class="o">=</span>ibug,ou<span class="o">=</span>group,dc<span class="o">=</span>ibug
+</code></pre>
+								</div>
+							</div>
+							<p>If you don’t give the new password, <code class="language-plaintext highlighter-rouge">ldappasswd</code> will generate a random new one for you, which you can forward to the user themself.</p>
+							<h3 id="import-passwords">Importing passwords from Linux</h3>
+							<p>One great concern while migrating my lab’s authentication completely onto LDAP was whether users can keep their passwords. LDAP uses another hashing scheme SSHA by default, while any supported hashing scheme may be imported.</p>
+							<p>By default, modern Linux stores hashed user password in <code class="language-plaintext highlighter-rouge">/etc/shadow</code>, which is only accessible by root. It contains lines like this:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>root:$y$j9T$egdUbc2x4FiVY42xxEH4z.$OJA25VwJ2fIEZizIqUDkS/yUtz8z5tuRiSS3XLum/F3:19064:0:99999:7:::
+</code></pre>
+								</div>
+							</div>
+							<p>The 2nd field, delimited by colons, is the hashed password in <a href="https://en.wikipedia.org/wiki/Bcrypt">Bcrypt</a> format. To import that into LDAP, prepend the hash with <code class="language-plaintext highlighter-rouge">{CRYPT}</code>, like this:</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">uid=ibug,ou=group,dc=ibug</span>
+<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
+<span class="na">replace</span><span class="pi">:</span> <span class="s">userPassword</span>
+<span class="na">userPassword</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">CRYPT</span><span class="pi">}</span><span class="s">$y$j9T$egdUbc2x4FiVY42xxEH4z.$OJA25VwJ2fIEZizIqUDkS/yUtz8z5tuRiSS3XLum/F3</span>
+</code></pre>
+								</div>
+							</div>
+							<p>It will be replaced with LDAP’s default password hash type when the user changes their password for the next time.</p>
+							<p>Now that we have our server set up and running, it’s time to configure client machines to use it.</p>
+							<h2 id="client">Client setup</h2>
+							<p>There are two options for clients: More commonly <code class="language-plaintext highlighter-rouge">libnss-ldapd</code> and <code class="language-plaintext highlighter-rouge">libpam-ldapd</code> are used together, or <code class="language-plaintext highlighter-rouge">sssd</code> if you’re familiar with it (which will not be described in this post). Note that are two obsolete packages <code class="language-plaintext highlighter-rouge">libnss-ldap</code> and <code class="language-plaintext highlighter-rouge">libpam-ldap</code> (both missing the final <code class="language-plaintext highlighter-rouge">d</code>) that might confuse you.</p>
+							<p>Start with <code class="language-plaintext highlighter-rouge">apt install libnss-ldapd libpam-ldapd</code>. You’ll be asked for the LDAP server and the base DN, then “name services to configure”. Select <code class="language-plaintext highlighter-rouge">passwd group shadow</code> for now.</p>
+							<p><img src="/image/linux/libnss-ldapd.png" alt="Configure libnss-ldapd" /></p>
+							<p>These two packages should also pull in <code class="language-plaintext highlighter-rouge">nscd</code> (Name Service Cache Daemon) and <code class="language-plaintext highlighter-rouge">nslcd</code> (Name Service LDAP Client Daemon). The former provides a local cache for name service lookup results, while the latter provides the ability to lookup items from an LDAP server.</p>
+							<p>After configuring the packages, your <code class="language-plaintext highlighter-rouge">/etc/nslcd.conf</code> should contain two lines that look similar to that of <code class="language-plaintext highlighter-rouge">/etc/ldap/ldap.conf</code>, except that the keys are in lowercase.</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>uri ldap://ldap.example.com
+base dc=ibug
+</code></pre>
+								</div>
+							</div>
+							<p>If the LDAP server is configured correctly (for <code class="language-plaintext highlighter-rouge">nslcd</code>), you should now be able to see LDAP users in the output of <code class="language-plaintext highlighter-rouge">getent passwd</code>, as well as <code class="language-plaintext highlighter-rouge">getent group</code>. LDAP users can also login via SSH or ttys.</p>
+							<p>An LDAP user changes their password using the same <code class="language-plaintext highlighter-rouge">passwd</code> command, which will be stored in LDAP and immediately available to all machines connected to this LDAP server. In case it doesn’t, <code class="language-plaintext highlighter-rouge">nscd -i passwd</code> and <code class="language-plaintext highlighter-rouge">nscd -i group</code> will refresh the cache and allow nslcd to pull in the latest information.</p>
+							<h2 id="advanced">Advanced topics</h2>
+							<h3 id="tls">Securing LDAP server with TLS</h3>
+							<p>Nothing is “baseline secure” over unencrypted traffic, so the next thing is to add TLS certificates for the LDAP server. Certificates aren’t hard to get. For example, if you have a public domain, <a href="https://letsencrypt.org/">Let’s Encrypt</a> is the easiest way to get a universally-trusted certificate. Otherwise, you can create a self-signed certificate that can include any domain name or IP address. <a href="https://hohnstaedt.de/xca/">XCA</a> is one of the best tools to manage a private Certificate Authority.</p>
+							<p>Copy the certificate and private key files to the <code class="language-plaintext highlighter-rouge">/etc/ldap/</code> directory. Change the owner and group to <code class="language-plaintext highlighter-rouge">openldap</code> and file mode to <code class="language-plaintext highlighter-rouge">0644</code> (for the certificate) or <code class="language-plaintext highlighter-rouge">0400</code> (for the private key). This ensures only the OpenLDAP server can access them. Now you need to tell the server to <em>use</em> these files.</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=config</span>
+<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
+<span class="na">add</span><span class="pi">:</span> <span class="s">olcTLSCertificateKeyFile</span>
+<span class="na">olcTLSCertificateKeyFile</span><span class="pi">:</span> <span class="s">/etc/ldap/server.key</span>
+<span class="pi">-</span>
+<span class="na">add</span><span class="pi">:</span> <span class="s">olcTLSCertificateFile</span>
+<span class="na">olcTLSCertificateFile</span><span class="pi">:</span> <span class="s">/etc/ldap/server.crt</span>
+<span class="pi">-</span>
+<span class="na">add</span><span class="pi">:</span> <span class="s">olcTLSCACertificateFile</span>
+<span class="na">olcTLSCACertificateFile</span><span class="pi">:</span> <span class="s">/etc/ldap/server.crt</span>
+</code></pre>
+								</div>
+							</div>
+							<p>This time the LDAP “admin” user can’t import these changes. You need to log in to the server as <code class="language-plaintext highlighter-rouge">root</code>, then use the following command:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>ldapmodify <span class="nt">-Y</span> EXTERNAL <span class="nt">-H</span> ldapi:/// <span class="nt">-f</span> ssl.ldif
+</code></pre>
+								</div>
+							</div>
+							<div class="notice--primary">
+								<h4 id="external-authentication-method"><i class="fas fa-fw fa-lightbulb"></i> “External” authentication method</h4>
+								<p>The “external” authentication method defers authentication to the transport layer. There are (at least) two kinds of supported methods: Unix domain socket option <code class="language-plaintext highlighter-rouge">SO_PEERCRED</code> (see <a href="https://man7.org/linux/man-pages/man7/unix.7.html">unix(7)</a>) and TLS client certificate. When connecting over UDS, the server can retrieve the client’s UID, GID and PID with that option.</p>
+								<p>The <code class="language-plaintext highlighter-rouge">-H ldapi:///</code> tells the <code class="language-plaintext highlighter-rouge">ldap*</code> commands to connect over a local Unix domain socket, which is required for <code class="language-plaintext highlighter-rouge">-Y EXTERNAL</code> (we don’t have TLS client certificates yet).</p>
+							</div>
+							<div class="notice--danger">
+								<h4 class="no_toc" id="order-is-important"><i class="fas fa-fw fa-exclamation-triangle"></i> Order is important</h4>
+								<p>The OpenLDAP documentation did not cover the detail that the private key must be added <em>before</em> the certificate. Otherwise you’ll get this response:</p>
+								<div class="language-text highlighter-rouge">
+									<div class="highlight">
+										<pre class="highlight"><code>ldap_modify: Other (e.g., implementation specific) error (80)
+</code></pre>
+									</div>
+  </div>
+								<p>References: <a href="https://askubuntu.com/a/1103245/612877">1</a>, <a href="https://gist.github.com/ndlrx/edef4474ec9f5edac594cc5e37644559">2</a>, <a href="https://serverfault.com/a/1007262/450575">3</a></p>
+							</div>
+							<p>After getting the certificates ready, we can now enable LDAP-over-TLS service. Somehow the Debian <code class="language-plaintext highlighter-rouge">slapd</code> package does not come with a native systemd service, but <code class="language-plaintext highlighter-rouge">/etc/init.d/slapd</code>, so “service settings” are configured at <code class="language-plaintext highlighter-rouge">/etc/default/slapd</code>. Locate that file and add <code class="language-plaintext highlighter-rouge">ldaps:///</code> for <code class="language-plaintext highlighter-rouge">SLAPD_SERVICES</code>. Optionally, though recommended, you can remove <code class="language-plaintext highlighter-rouge">ldap://</code> to disable the plaintext port. The line should now look like this:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nv">SLAPD_SERVICES</span><span class="o">=</span><span class="s2">"ldaps:/// ldapi:///"</span>
+</code></pre>
+								</div>
+							</div>
+							<p>You can now use <code class="language-plaintext highlighter-rouge">systemctl restart slapd</code> to restart the server, and <code class="language-plaintext highlighter-rouge">netstat -tlpn</code> to verify that the server is listening on the correct port (TCP 636).</p>
+							<h3 id="permissions">Managing permissions</h3>
+							<p>By default,</p>
+							<ul>
+								<li>The “admin” user (using <code class="language-plaintext highlighter-rouge">-D cn=admin,dc=... -W</code>) can modify the “database”, where users, groups etc. are stored.</li>
+								<li>The local root user can modify server settings. Namely, anything under the tree <code class="language-plaintext highlighter-rouge">cn=config</code>. Note that Distinguished Name (DN) resolves from right to left, like domain names.</li>
+							</ul>
+							<p>For me, I found it a hinderance that the root user cannot edit the database directly, so I added some permissions to make this happen.</p>
+							<p>As you may have noticed, we used the same LDIF format to change TLS settings, except for the server port. In fact, the whole <code class="language-plaintext highlighter-rouge">cn=config</code> tree is another LDAP database, just like the <code class="language-plaintext highlighter-rouge">mysql</code> database in MySQL. And this “config” database also has its metadata under <code class="language-plaintext highlighter-rouge">cn=config</code>.</p>
+							<p>First we identify where the metadata for the “config” database is:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>ldapsearch <span class="nt">-Y</span> EXTERNAL <span class="nt">-b</span> <span class="nv">cn</span><span class="o">=</span>config
+</code></pre>
+								</div>
+							</div>
+							<p>You can pipe the above command to <code class="language-plaintext highlighter-rouge">less</code> or send to a file for easier inspection. Pay attention to lines beginning with <code class="language-plaintext highlighter-rouge">dn:</code>, which describes a directory “node”. One of them will look like:</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
+</code></pre>
+								</div>
+							</div>
+							<p>The <code class="language-plaintext highlighter-rouge">olc</code> prefix stands for <strong>O</strong>pen<strong>L</strong>DAP <strong>C</strong>onfiguration, and <code class="language-plaintext highlighter-rouge">{1}</code> indicates an entry from multiple of the same name. You’ll probably notice there’s <code class="language-plaintext highlighter-rouge">olcDatabase={0}config</code> as well, which we’ll cover soon.</p>
+							<p>This item has a lot of attributes, among which there are:</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">olcDatabaseConfig</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">olcMdbConfig</span>
+<span class="na">olcDatabase</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">1</span><span class="pi">}</span><span class="s">mdb</span>
+<span class="na">olcDbDirectory</span><span class="pi">:</span> <span class="s">/var/lib/ldap</span>
+<span class="na">olcSuffix</span><span class="pi">:</span> <span class="s">dc=ibug</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">0</span><span class="pi">}</span><span class="s">to attrs=userPassword by self write by anonymous auth by * none</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">1</span><span class="pi">}</span><span class="s">to attrs=shadowLastChange by self write by * read</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">2</span><span class="pi">}</span><span class="s">to * by * read</span>
+<span class="na">olcRootDN</span><span class="pi">:</span> <span class="s">cn=admin,dc=ibug</span>
+</code></pre>
+								</div>
+							</div>
+							<p>The <code class="language-plaintext highlighter-rouge">olcAccess</code> key(s) describes its Access Control List (ACL), and apparently <code class="language-plaintext highlighter-rouge">{0}</code>, <code class="language-plaintext highlighter-rouge">{1}</code> and <code class="language-plaintext highlighter-rouge">{2}</code> have the same meaning as that of <code class="language-plaintext highlighter-rouge">olcDatabase={1}mdb</code>. The syntax is roughly as follows:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>olcAccess: {&lt;index&gt;}to &lt;what&gt; by &lt;who&gt; &lt;how&gt; [by &lt;who&gt; &lt;how&gt;]...
+</code></pre>
+								</div>
+							</div>
+							<p>Notice that there’s no explicit ACL to the “admin user”, because the admin user is registered as <code class="language-plaintext highlighter-rouge">olcRootDN</code> for this database. The next thing we need to do is to insert an all-access rule for the local root user. The next question is, how to “refer to” the root user?</p>
+							<p>If you looked through <code class="language-plaintext highlighter-rouge">olcDatabase={0}config</code>, you should have the answer now:</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={0}config,cn=config</span>
+<span class="nn">...</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">0</span><span class="pi">}</span><span class="s">to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break</span>
+<span class="nn">...</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Unfortunately LDIF does not allow modifying or inserting an item into a repeated attribute directly, so the way to do this is to replace all of them:</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
+<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
+<span class="na">replace</span><span class="pi">:</span> <span class="s">olcAccess</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to attrs=userPassword by self write by anonymous auth by * none</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to attrs=shadowLastChange by self write by * read</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to * by * read</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Seen how the <code class="language-plaintext highlighter-rouge">&lt;who&gt;</code> part is reminiscent of the “External authentication method” described above? Send this LDIF to the server and you’ll get the desired result. You can now try to modify the “user database” using root user and <code class="language-plaintext highlighter-rouge">-Y EXTERNAL</code>.</p>
+							<p>For more detailed description, you can check out the <a href="https://www.openldap.org/doc/admin24/access-control.html">slapd.access</a> help page.</p>
+							<h3 id="user-chsh">Allow users to change login shell</h3>
+							<p>Changing the login shell is a basic privilege of a normal POSIX user. Unlike <code class="language-plaintext highlighter-rouge">passwd</code> that automatically handles LDAP users, <code class="language-plaintext highlighter-rouge">chsh</code> does not, and only complains about PAM authentication failed.</p>
+							<p>It’s easy to discover that there’s a <code class="language-plaintext highlighter-rouge">chsh.ldap</code> command. It’s even easier to discover that it doesn’t work:</p>
+							<div class="language-python highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">ibug</span><span class="o">@</span><span class="n">ldap</span><span class="p">:</span><span class="o">~</span><span class="err">$</span> <span class="n">chsh</span><span class="p">.</span><span class="n">ldap</span>
+<span class="n">LDAP</span> <span class="n">password</span> <span class="k">for</span> <span class="n">ibug</span><span class="p">:</span>
+<span class="n">Enter</span> <span class="n">the</span> <span class="n">new</span> <span class="n">value</span><span class="p">,</span> <span class="ow">or</span> <span class="n">press</span> <span class="n">ENTER</span> <span class="k">for</span> <span class="n">the</span> <span class="n">default</span>
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s">"/usr/bin/chsh.ldap"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">80</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+    <span class="n">main</span><span class="p">()</span>
+  <span class="n">File</span> <span class="s">"/usr/bin/chsh.ldap"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">69</span><span class="p">,</span> <span class="ow">in</span> <span class="n">main</span>
+    <span class="n">shell</span> <span class="o">=</span> <span class="n">ask_shell</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="n">shell</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">"/usr/bin/chsh.ldap"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">50</span><span class="p">,</span> <span class="ow">in</span> <span class="n">ask_shell</span>
+    <span class="n">shell</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s">'  Login Shell [%s]: '</span> <span class="o">%</span> <span class="n">oldshell</span><span class="p">)</span>
+<span class="nb">UnboundLocalError</span><span class="p">:</span> <span class="n">local</span> <span class="n">variable</span> <span class="s">'input'</span> <span class="n">referenced</span> <span class="n">before</span> <span class="n">assignment</span>
+</code></pre>
+								</div>
+							</div>
+							<p>If you look at <code class="language-plaintext highlighter-rouge">/usr/bin/chsh.ldap</code>, it contains this stupid assignment:</p>
+							<div class="language-python highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="c1"># Provide Python 2 compatibility
+</span><span class="k">try</span><span class="p">:</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="nb">raw_input</span>
+<span class="k">except</span> <span class="nb">NameError</span><span class="p">:</span>
+    <span class="k">pass</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Removing this try-except block gets rid of the first error, but it’s still not working:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">ibug@ldap:~$</span><span class="w"> </span>chsh.ldap
+<span class="go">LDAP password for ibug:
+Enter the new value, or press ENTER for the default
+  Login Shell [/bin/bash]:
+/usr/bin/chsh.ldap: /bin/bash is an invalid shell
+</span></code></pre>
+								</div>
+							</div>
+							<p>The second one is trickier to fix because you don’t know where it’s doing wrong.</p>
+							<p>It took me some effort to find bug report <a href="https://bugs.launchpad.net/ubuntu/+source/nss-pam-ldapd/+bug/1892482">LP#1892482</a>, which provides a link to <a href="https://github.com/arthurdejong/nss-pam-ldapd/commit/1025d5de336d8c9585b79df3154b5649da344281">this commit</a> that fixes the problem. You can safely apply that commit to your local installation of <code class="language-plaintext highlighter-rouge">/usr/share/nslcd-utils</code>.</p>
+							<p>Now <code class="language-plaintext highlighter-rouge">chsh.ldap</code> seems to be working, <em>except</em> that it doesn’t save your selected shell.</p>
+							<p>Remember how there’s an ACL to allow users to change their passwords?</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">0</span><span class="pi">}</span><span class="s">to attrs=userPassword by self write by anonymous auth by * none</span>
+</code></pre>
+								</div>
+							</div>
+							<p>That’s right, the only thing left to do is to add another ACL to allow users to change their login shells as well, replacing all <code class="language-plaintext highlighter-rouge">olcAccess</code> keys <em>again</em>:</p>
+							<div class="language-yaml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
+<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
+<span class="na">replace</span><span class="pi">:</span> <span class="s">olcAccess</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to attrs=userPassword by self write by anonymous auth by * none</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to attrs=loginShell by self write by * none</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to attrs=shadowLastChange by self write by * read</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to * by * read</span>
+</code></pre>
+								</div>
+							</div>
+							<p>This time there’s no need to include <code class="language-plaintext highlighter-rouge">by anonymous auth</code> because who checks the login shell for authentication?</p>
+							<p>Now we can verify that <code class="language-plaintext highlighter-rouge">chsh.ldap</code> is working correctly:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">ibug@ldap:~$</span><span class="w"> </span>chsh.ldap
+<span class="go">LDAP password for ibug:
+Enter the new value, or press ENTER for the default
+  Login Shell [/bin/bash]: /bin/zsh
+</span><span class="gp">ibug@ldap:~$</span><span class="w"> </span>getent passwd | <span class="nb">grep </span>ibug
+<span class="go">ibug:x:1000:1000:iBug:/home/ibug:/bin/zsh
+</span><span class="gp">ibug@ldap:~$</span><span class="w">
+</span></code></pre>
+								</div>
+							</div>
+							<h2 id="afterword">Afterword</h2>
+							<p>LDAP is a powerful tool to manage a wide range of things, including hosts (like <code class="language-plaintext highlighter-rouge">/etc/hosts</code>) and even Sudo rules, with increasing complexity to set up. There’s also Active Directory on Windows platform that shares the same concepts and is even inter-operable with LDAP.</p>
+							<p>LDAP also supports plugins that enables automatic configuration of certain attributes, like “group membership”, where the plugin adds a corresponding <code class="language-plaintext highlighter-rouge">memberOf</code> for users when a <code class="language-plaintext highlighter-rouge">member</code> entry is created under a group. However, this plugin doesn’t work with the <code class="language-plaintext highlighter-rouge">posixGroup</code> object class and requires the conflicting <code class="language-plaintext highlighter-rouge">groupOfNames</code> object class. Fortunately, this does not affect the ability to lookup groups from users, since traditionally the user-group relationship is stored one-way only in <code class="language-plaintext highlighter-rouge">/etc/group</code>, and PAM by default tries to look it up this way.</p>
+							<p>If you need access control, OpenSSH supports <a href="https://man7.org/linux/man-pages/man5/sshd_config.5.html">an <code class="language-plaintext highlighter-rouge">AllowGroup</code> directive</a> to restrict login to certain groups, which you can then remotely configure in LDAP.</p>
+							<h2 id="references">References</h2>
+							<ul>
+								<li><a href="https://harrychen.xyz/2021/01/17/openldap-linux-auth/">使用 OpenLDAP 在 Linux 上进行中心化用户管理 - Harry Chen’s blog</a></li>
+								<li><a href="https://access.redhat.com/documentation/en-us/red_hat_directory_server/11/html/administration_guide/managing_the_nss_database_used_by_directory_server">9.3. Managing the NSS Database Used by Directory Server</a> (Red Hat Documentation)</li>
+								<li><a href="https://en.wikipedia.org/wiki/Bcrypt">Bcrypt - Wikipedia</a></li>
+								<li><a href="https://hohnstaedt.de/xca/">XCA</a></li>
+								<li>
+									<p><a href="https://github.com/arthurdejong/nss-pam-ldapd/commit/1025d5de336d8c9585b79df3154b5649da344281">The commit</a> that fixes <code class="language-plaintext highlighter-rouge">chsh.ldap</code></p>
+								</li>
+							</ul>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/ldap" class="page__taxonomy-item" rel="tag">ldap</a><span class="sep">, </span>
+									<a href="/tag/linux" class="page__taxonomy-item" rel="tag">linux</a><span class="sep">, </span>
+									<a href="/tag/server" class="page__taxonomy-item" rel="tag">server</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-03-18">Mar 18, 2022</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=Centralized+Linux+authentication+with+OpenLDAP%20https%3A%2F%2Fibug.io%2Fblog%2F2022%2F03%2Flinux-openldap-server%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2022%2F03%2Flinux-openldap-server%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2022%2F03%2Flinux-openldap-server%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/blog/2022/03/install-proxmox-ve-emmc/" class="pagination--pager" title="Install Proxmox VE on eMMC
+">Previous</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+				<div class="page__related">
+					<h2 class="page__related-title">You may also enjoy</h2>
+					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="page__meta-date">
+										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
+									</span>
+									<span class="page__meta-sep"></span>
+									<span class="page__meta-readtime">
+										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+										24 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are without diving into all the gory details of them, so I decided to go on this exploration myself.
+								</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="page__meta-date">
+										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
+									</span>
+									<span class="page__meta-sep"></span>
+									<span class="page__meta-readtime">
+										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+										15 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections. As an innovative attempt to a lab in this semester’s Network Security course, which was designed to...</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="page__meta-date">
+										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
+									</span>
+									<span class="page__meta-sep"></span>
+									<span class="page__meta-readtime">
+										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+										16 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on the training data of 9M user-item pairs and a social network.
+								</p>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<h2 class="archive__item-title no_toc" itemprop="headline">
+									<a href="/blog/2019/12/manage-servers-with-ssh-ca/" rel="permalink">Managing servers with OpenSSH Certificate Authority
+									</a>
+								</h2>
+								<p class="page__meta">
+									<span class="page__meta-date">
+										<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+										<time datetime="2019-12-23T00:00:00+00:00">Dec 23, 2019</time>
+									</span>
+									<span class="page__meta-sep"></span>
+									<span class="page__meta-readtime">
+										<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+										6 minute read
+									</span>
+								</p>
+								<p class="archive__item-excerpt" itemprop="description">Since the addition of the website server for an external corporation, I now have 5 Linux servers to manage on my own. I also have 4 terminal devices that I use to connect to those servers: two of my laptops, my Android phone (using Termux), and one of those servers that I use as a workstation.
+								</p>
+							</article>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					<p>&copy; 2022 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
+					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
+					<p>
+						Site version <a href="/status" class="version-text">G-636</a>
+					</p>
+				</div>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<!-- Including InstantSearch.js library and styling -->
+		<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js"></script>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css">
+		<script>
+			// Instanciating InstantSearch.js with Algolia credentials
+			const search = instantsearch({
+			  appId: '14DZKASAEJ',
+			  apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			  indexName: 'iBug_website',
+			  searchParameters: {
+			    restrictSearchableAttributes: [
+			      'title',
+			      'content'
+			    ]
+			  }
+			});
+
+			const hitTemplate = function(hit) {
+			  const url = hit.url;
+			  const title = hit._highlightResult.title.value;
+			  const content = hit._highlightResult.html.value;
+
+			  return `
+			    <div class="list__item">
+			      <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			        <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			        <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			      </article>
+			    </div>
+			  `;
+			}
+
+			// Adding searchbar and results widgets
+			search.addWidget(
+			  instantsearch.widgets.searchBox({
+			    container: '.search-searchbar',
+			    poweredBy: true,
+			    placeholder: 'Enter your search term...'
+			  })
+			);
+			search.addWidget(
+			  instantsearch.widgets.hits({
+			    container: '.search-hits',
+			    templates: {
+			      item: hitTemplate,
+			      empty: 'No results',
+			    }
+			  })
+			);
+
+			// Starting the search only when toggle is clicked
+			$(document).ready(function () {
+			  $(".search__toggle").on("click", function() {
+			    if(!search.started) {
+			      search.start();
+			    }
+			  });
+			});
+		</script>
+		<script>
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-115907213-1']);
+
+			_gaq.push(['_trackPageview']);
+
+			(function() {
+			  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/blog/2022/03/linux-openldap-server/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2022/03/linux-openldap-server"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	</body>
+</html>

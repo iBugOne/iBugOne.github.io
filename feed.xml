@@ -1,26 +1,402 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2022-03-17T20:04:33+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Install Proxmox VE on eMMC</title><link href="https://ibug.io/blog/2022/03/install-proxmox-ve-emmc/" rel="alternate" type="text/html" title="Install Proxmox VE on eMMC" /><published>2022-03-01T00:00:00+00:00</published><updated>2022-03-01T19:03:19+00:00</updated><id>https://ibug.io/blog/2022/03/install-proxmox-ve-emmc</id><content type="html" xml:base="https://ibug.io/blog/2022/03/install-proxmox-ve-emmc/"><![CDATA[<p>Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just a router”, so I figured I’d get some virtual machines to improve its utilization. Choosing the virtualization platform isn’t hard - I’m most familiar with Proxmox VE.</p>
-			<p>The offcial ISO installer is pretty straightforward, until the last step:</p>
-			<div class="language-text highlighter-rouge">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2022-03-18T06:14:15+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Centralized Linux authentication with OpenLDAP</title><link href="https://ibug.io/blog/2022/03/linux-openldap-server/" rel="alternate" type="text/html" title="Centralized Linux authentication with OpenLDAP" /><published>2022-03-18T00:00:00+00:00</published><updated>2022-03-18T14:13:48+00:00</updated><id>https://ibug.io/blog/2022/03/linux-openldap-server</id><content type="html" xml:base="https://ibug.io/blog/2022/03/linux-openldap-server/"><![CDATA[<p>LDAP, <del>the #1 way to get your graduation delayed</del> (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes the most serious dedication to set up and maintain, yet the slightest agitation to fail.</p>
+			<p>The <em>correct</em> story behind this opens up with our lab’s messy machine management. While home directories across machines are shared from a common NFS server, user and group information is managed manually. To start with, whenever someone joins our lab, the other admin (thankfully not yet me) creates a user for them on <em>every</em> machine they’d access, while paying attention to the consistency of UID and GID. What’s worse, we often grant temporary access to a selected set of machines to guest students to enable them to work on certain projects, or to participate in competitions on behalf of our lab. Not to mention the other admin himself has literally 5 different UIDs on different hosts.</p>
+			<p>LDAP solves this agony and saves a lot of sysadmins’ souls by providing centralized management to users, groups and some other organizational resources using a directory-structured database. While I previously used an existing GOsa² setup for simple management tasks, our lab’s new cluster provides an excellent opportunity to try out LDAP anew.</p>
+			<h2 id="prerequisites">Prerequisites</h2>
+			<p>Thanks to a network outage a few days ago, I get to reinstall our NFS server into Proxmox VE (yes again) to allow more specialized applications to be deployed in a more flexible manner. So I can just launch a new Debian Bullseye (11) virtual machine and begin this journey. The rest of this blog post assumes this environment.</p>
+			<h2 id="i-389ds">Interlude: 389 Directory Server</h2>
+			<p>A friend recommended Fedora’s <a href="https://directory.fedoraproject.org/">389 Directory Server</a> after learning that I wanted to set up some LDAP server, indicating that it’s easier to use and maintain.</p>
+			<p>So I followed the documentation and got a 389DS up and running. Everything looked simple and straightforward until I went on configuring TLS certificates. I created a self-signed certificate with extra Subject Alternative Names (as needed) and tried to import them to 389DS. <a href="https://directory.fedoraproject.org/docs/389ds/howto/howto-ssl-archive.html#importing-an-existing-self-sign-keycert-or-3rd-party-cacert">Their documentation on this</a> is completely unhelpful, and I struggled for two tedious hours before landing on <a href="https://access.redhat.com/documentation/en-us/red_hat_directory_server/11/html/administration_guide/managing_the_nss_database_used_by_directory_server">Red Hat’s documentation</a> that actually worked. 389DS’s default “group” object doesn’t support POSIX GID, either.</p>
+			<p>All those failures led to one question: Why bother with 389DS when it still uses <code class="language-plaintext highlighter-rouge">slapd</code> behind? So I ditched this VM and gave it up.</p>
+			<h2 id="server">Server setup</h2>
+			<p>Installation is easy:</p>
+			<div class="language-shell highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code>Unable to get device for partition 1 on device /dev/mmcblk0
+					<pre class="highlight"><code>apt <span class="nb">install </span>slapd
 </code></pre>
 				</div>
 			</div>
-			<h2 id="solution">Solution</h2>
-			<p>The Proxmox VE forum is <em>completely unhelpful</em> this time (<a href="https://forum.proxmox.com/threads/unable-to-get-device-for-partition-1-on-device-dev-mmcblk0.42348/">1</a>, <a href="https://forum.proxmox.com/threads/unable-to-get-device-for-partition-1.43234/">2</a>) with staff keeping on saying “it’s not supported”, so I had to look around for alternatives. Fortunately this article is right there:</p>
+			<p>This installs the OpenLDAP server with all recommended packages that’ll aid configuration. During installation, you’ll be prompted for the admin password. Ignore that for now as we’ll (probably) have to reconfigure this later.</p>
+			<p>This is because slapd tries to automatically determine the base Distinguished Name for the server, which often fails and falls back to the unpleasant <code class="language-plaintext highlighter-rouge">dc=nodomain</code>.</p>
+			<p>Run <code class="language-plaintext highlighter-rouge">dpkg-reconfigure slapd</code> to specify a domain name that will be used to construct the base DN from. It’s perfectly fine to have a short name like just <code class="language-plaintext highlighter-rouge">ibug</code>, or you can choose to be serious on this and use <code class="language-plaintext highlighter-rouge">example.com</code>. Either way, you probably don’t want to have a long DN like <code class="language-plaintext highlighter-rouge">dc=protonlab,dc=research,dc=google,dc=com</code>, which will make manual querying a nightmare.</p>
+			<p>Now we have an empty OpenLDAP server. The admin user’s DN is <code class="language-plaintext highlighter-rouge">cn=admin</code> followed by your base DN, so most data manipulation tasks require the role to be bound to <code class="language-plaintext highlighter-rouge">cn=admin,dc=ibug</code> for me.</p>
+			<p>The additional package <code class="language-plaintext highlighter-rouge">ldap-utils</code> provides tools like <code class="language-plaintext highlighter-rouge">ldapadd</code>, <code class="language-plaintext highlighter-rouge">ldapmodify</code> and <code class="language-plaintext highlighter-rouge">ldapdelete</code> which we’ll be mostly using later. <code class="language-plaintext highlighter-rouge">slapd</code> provides <code class="language-plaintext highlighter-rouge">slapcat</code> that dumps the whole database and <code class="language-plaintext highlighter-rouge">ldapvi</code> provides an interactive editor, both of which come in handy for management and debugging.</p>
+			<h3 id="ldap-utils">Configuring LDAP tools</h3>
+			<p>All interactions with the server are done through <code class="language-plaintext highlighter-rouge">ldap*</code> commands submitting text in LDIF (LDAP Data Interchange Format).</p>
+			<p>Before moving on to the next step, there are config files for common settings that simplifies later tasks.</p>
+			<p>Open <code class="language-plaintext highlighter-rouge">/etc/ldap/ldap.conf</code> (the system-wide settings) and set these options:</p>
+			<div class="language-text highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>BASE    dc=ibug
+URI     ldapi:///
+</code></pre>
+				</div>
+			</div>
+			<p>There are 3 ways to connect to an LDAP server</p>
 			<ul>
-				<li><a href="https://lookas2001.com/%E8%A7%A3%E5%86%B3-proxmox-ve-%E6%97%A0%E6%B3%95%E5%AE%89%E8%A3%85%E5%88%B0-emmc-%E4%B8%8A%E7%9A%84%E9%97%AE%E9%A2%98/">解决 Proxmox VE 无法安装到 eMMC 上的问题 - lookas2001</a></li>
+				<li><code class="language-plaintext highlighter-rouge">ldap://</code> (plaintext TCP, default port 389)</li>
+				<li><code class="language-plaintext highlighter-rouge">ldaps://</code> (over SSL/TLS, default port 636)</li>
+				<li><code class="language-plaintext highlighter-rouge">ldapi://</code> (over IPC, or Unix domain socket, usually <code class="language-plaintext highlighter-rouge">/var/run/slapd/ldapi</code>)</li>
 			</ul>
-			<p>Turns out it’s hard-coded into Proxmox VE’s Perl installer script, so all you have to do is to patch it:</p>
-			<ol>
-				<li>Boot the installer ISO to the first menu, select the second option <code class="language-plaintext highlighter-rouge">Install Proxmox VE (Debug mode)</code></li>
-				<li>The first time you’re present with a command-line prompt, type <code class="language-plaintext highlighter-rouge">exit</code> and Enter to skip it. This is a very early stage and you can’t do much here.</li>
-				<li>The second time you have a shell, locate <code class="language-plaintext highlighter-rouge">/usr/bin/proxinstall</code> and open it. Text editors such as <code class="language-plaintext highlighter-rouge">vi</code> and <code class="language-plaintext highlighter-rouge">nano</code> are available.</li>
+			<p>Once you have this file set up, you can omit the <code class="language-plaintext highlighter-rouge">-H &lt;host&gt;</code> option from all <code class="language-plaintext highlighter-rouge">ldap*</code> commands. Similarly, <code class="language-plaintext highlighter-rouge">BASE</code> is useful in <code class="language-plaintext highlighter-rouge">ldapsearch</code> or like.</p>
+			<h3 id="seeding">Populating the database</h3>
+			<p>Now that we have an empty database, we can create two directories for our users and groups. This is the first LDIF file to have.</p>
+			<div class="language-yaml highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">ou=user,dc=ibug</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">organizationalUnit</span>
+<span class="na">ou</span><span class="pi">:</span> <span class="s">user</span>
+
+<span class="na">dn</span><span class="pi">:</span> <span class="s">ou=group,dc=ibug</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">organizationalUnit</span>
+<span class="na">ou</span><span class="pi">:</span> <span class="s">group</span>
+</code></pre>
+				</div>
+			</div>
+			<p>Use <code class="language-plaintext highlighter-rouge">ldapadd -D cn=admin,dc=ibug -W -f base.ldif</code> to load the “change request” into the database.</p>
+			<h3 id="users-and-groups">Managing users and groups</h3>
+			<p>Now create the first user and group:</p>
+			<div class="language-yaml highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">uid=ibug,ou=user,dc=ibug</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">posixAccount</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">shadowAccount</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">inetOrgPerson</span>
+<span class="na">cn</span><span class="pi">:</span> <span class="s">iBug</span>
+<span class="na">sn</span><span class="pi">:</span> <span class="s">iBug</span>
+<span class="na">uid</span><span class="pi">:</span> <span class="s">ibug</span>
+<span class="na">uidNumber</span><span class="pi">:</span> <span class="m">1000</span>
+<span class="na">gidNumber</span><span class="pi">:</span> <span class="m">1000</span>
+<span class="na">homeDirectory</span><span class="pi">:</span> <span class="s">/home/ibug</span>
+<span class="na">loginShell</span><span class="pi">:</span> <span class="s">/bin/bash</span>
+<span class="na">gecos</span><span class="pi">:</span> <span class="s">iBug</span>
+
+<span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">posixGroup</span>
+<span class="na">cn</span><span class="pi">:</span> <span class="s">staff</span>
+<span class="na">gidNumber</span><span class="pi">:</span> <span class="m">1000</span>
+<span class="na">description</span><span class="pi">:</span> <span class="s">My staff group</span>
+</code></pre>
+				</div>
+			</div>
+			<p>For user objects, <code class="language-plaintext highlighter-rouge">inetOrgPerson</code> is a required “object class”, and therefore the <code class="language-plaintext highlighter-rouge">cn</code> and <code class="language-plaintext highlighter-rouge">sn</code> fields. Linux uses <code class="language-plaintext highlighter-rouge">posixAccount</code> and <code class="language-plaintext highlighter-rouge">shadowAccount</code> for authentication, and the <code class="language-plaintext highlighter-rouge">gecos</code> field is the one that’ll appear in output from commands like <code class="language-plaintext highlighter-rouge">getent passwd</code>.</p>
+			<p>To add a user to a group, use <code class="language-plaintext highlighter-rouge">ldapmodify</code> with this LDIF file:</p>
+			<div class="language-yaml highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
+<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
+<span class="na">add</span><span class="pi">:</span> <span class="s">memberUid</span>
+<span class="na">memberUid</span><span class="pi">:</span> <span class="s">ibug</span>
+</code></pre>
+				</div>
+			</div>
+			<p>Similarly, to change user information, just use <code class="language-plaintext highlighter-rouge">replace</code> with <code class="language-plaintext highlighter-rouge">changetype: modify</code>:</p>
+			<div class="language-yaml highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
+<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
+<span class="na">replace</span><span class="pi">:</span> <span class="s">gecos</span>
+<span class="na">gecos</span><span class="pi">:</span> <span class="s">New iBug</span>
+</code></pre>
+				</div>
+			</div>
+			<p>If you’re importing users and groups from an existing system, you may find the ability to preload the group with an initial set of users useful. When creating the group, you may supply any number of <code class="language-plaintext highlighter-rouge">memberUid</code>s. This has the same effect as adding them one by one.</p>
+			<div class="language-yaml highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">posixGroup</span>
+<span class="na">cn</span><span class="pi">:</span> <span class="s">staff</span>
+<span class="na">gidNumber</span><span class="pi">:</span> <span class="m">1000</span>
+<span class="na">description</span><span class="pi">:</span> <span class="s">My staff group</span>
+<span class="na">memberUid</span><span class="pi">:</span> <span class="s">ibug</span>
+<span class="na">memberUid</span><span class="pi">:</span> <span class="s">user1</span>
+<span class="na">memberUid</span><span class="pi">:</span> <span class="s">user2</span>
+<span class="na">memberUid</span><span class="pi">:</span> <span class="s">user3</span>
+<span class="na">memberUid</span><span class="pi">:</span> <span class="s">user4</span>
+</code></pre>
+				</div>
+			</div>
+			<p>Last but not least, <code class="language-plaintext highlighter-rouge">ldappasswd</code> sets or resets passwords for users:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>ldappasswd <span class="nt">-D</span> <span class="nv">cn</span><span class="o">=</span>admin,dc<span class="o">=</span>ibug <span class="nt">-W</span> <span class="nv">uid</span><span class="o">=</span>ibug,ou<span class="o">=</span>group,dc<span class="o">=</span>ibug
+</code></pre>
+				</div>
+			</div>
+			<p>If you don’t give the new password, <code class="language-plaintext highlighter-rouge">ldappasswd</code> will generate a random new one for you, which you can forward to the user themself.</p>
+			<h3 id="import-passwords">Importing passwords from Linux</h3>
+			<p>One great concern while migrating my lab’s authentication completely onto LDAP was whether users can keep their passwords. LDAP uses another hashing scheme SSHA by default, while any supported hashing scheme may be imported.</p>
+			<p>By default, modern Linux stores hashed user password in <code class="language-plaintext highlighter-rouge">/etc/shadow</code>, which is only accessible by root. It contains lines like this:</p>
+			<div class="language-text highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>root:$y$j9T$egdUbc2x4FiVY42xxEH4z.$OJA25VwJ2fIEZizIqUDkS/yUtz8z5tuRiSS3XLum/F3:19064:0:99999:7:::
+</code></pre>
+				</div>
+			</div>
+			<p>The 2nd field, delimited by colons, is the hashed password in <a href="https://en.wikipedia.org/wiki/Bcrypt">Bcrypt</a> format. To import that into LDAP, prepend the hash with <code class="language-plaintext highlighter-rouge">{CRYPT}</code>, like this:</p>
+			<div class="language-yaml highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">uid=ibug,ou=group,dc=ibug</span>
+<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
+<span class="na">replace</span><span class="pi">:</span> <span class="s">userPassword</span>
+<span class="na">userPassword</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">CRYPT</span><span class="pi">}</span><span class="s">$y$j9T$egdUbc2x4FiVY42xxEH4z.$OJA25VwJ2fIEZizIqUDkS/yUtz8z5tuRiSS3XLum/F3</span>
+</code></pre>
+				</div>
+			</div>
+			<p>It will be replaced with LDAP’s default password hash type when the user changes their password for the next time.</p>
+			<p>Now that we have our server set up and running, it’s time to configure client machines to use it.</p>
+			<h2 id="client">Client setup</h2>
+			<p>There are two options for clients: More commonly <code class="language-plaintext highlighter-rouge">libnss-ldapd</code> and <code class="language-plaintext highlighter-rouge">libpam-ldapd</code> are used together, or <code class="language-plaintext highlighter-rouge">sssd</code> if you’re familiar with it (which will not be described in this post). Note that are two obsolete packages <code class="language-plaintext highlighter-rouge">libnss-ldap</code> and <code class="language-plaintext highlighter-rouge">libpam-ldap</code> (both missing the final <code class="language-plaintext highlighter-rouge">d</code>) that might confuse you.</p>
+			<p>Start with <code class="language-plaintext highlighter-rouge">apt install libnss-ldapd libpam-ldapd</code>. You’ll be asked for the LDAP server and the base DN, then “name services to configure”. Select <code class="language-plaintext highlighter-rouge">passwd group shadow</code> for now.</p>
+			<p><img src="/image/linux/libnss-ldapd.png" alt="Configure libnss-ldapd" /></p>
+			<p>These two packages should also pull in <code class="language-plaintext highlighter-rouge">nscd</code> (Name Service Cache Daemon) and <code class="language-plaintext highlighter-rouge">nslcd</code> (Name Service LDAP Client Daemon). The former provides a local cache for name service lookup results, while the latter provides the ability to lookup items from an LDAP server.</p>
+			<p>After configuring the packages, your <code class="language-plaintext highlighter-rouge">/etc/nslcd.conf</code> should contain two lines that look similar to that of <code class="language-plaintext highlighter-rouge">/etc/ldap/ldap.conf</code>, except that the keys are in lowercase.</p>
+			<div class="language-text highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>uri ldap://ldap.example.com
+base dc=ibug
+</code></pre>
+				</div>
+			</div>
+			<p>If the LDAP server is configured correctly (for <code class="language-plaintext highlighter-rouge">nslcd</code>), you should now be able to see LDAP users in the output of <code class="language-plaintext highlighter-rouge">getent passwd</code>, as well as <code class="language-plaintext highlighter-rouge">getent group</code>. LDAP users can also login via SSH or ttys.</p>
+			<p>An LDAP user changes their password using the same <code class="language-plaintext highlighter-rouge">passwd</code> command, which will be stored in LDAP and immediately available to all machines connected to this LDAP server. In case it doesn’t, <code class="language-plaintext highlighter-rouge">nscd -i passwd</code> and <code class="language-plaintext highlighter-rouge">nscd -i group</code> will refresh the cache and allow nslcd to pull in the latest information.</p>
+			<h2 id="advanced">Advanced topics</h2>
+			<h3 id="tls">Securing LDAP server with TLS</h3>
+			<p>Nothing is “baseline secure” over unencrypted traffic, so the next thing is to add TLS certificates for the LDAP server. Certificates aren’t hard to get. For example, if you have a public domain, <a href="https://letsencrypt.org/">Let’s Encrypt</a> is the easiest way to get a universally-trusted certificate. Otherwise, you can create a self-signed certificate that can include any domain name or IP address. <a href="https://hohnstaedt.de/xca/">XCA</a> is one of the best tools to manage a private Certificate Authority.</p>
+			<p>Copy the certificate and private key files to the <code class="language-plaintext highlighter-rouge">/etc/ldap/</code> directory. Change the owner and group to <code class="language-plaintext highlighter-rouge">openldap</code> and file mode to <code class="language-plaintext highlighter-rouge">0644</code> (for the certificate) or <code class="language-plaintext highlighter-rouge">0400</code> (for the private key). This ensures only the OpenLDAP server can access them. Now you need to tell the server to <em>use</em> these files.</p>
+			<div class="language-yaml highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=config</span>
+<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
+<span class="na">add</span><span class="pi">:</span> <span class="s">olcTLSCertificateKeyFile</span>
+<span class="na">olcTLSCertificateKeyFile</span><span class="pi">:</span> <span class="s">/etc/ldap/server.key</span>
+<span class="pi">-</span>
+<span class="na">add</span><span class="pi">:</span> <span class="s">olcTLSCertificateFile</span>
+<span class="na">olcTLSCertificateFile</span><span class="pi">:</span> <span class="s">/etc/ldap/server.crt</span>
+<span class="pi">-</span>
+<span class="na">add</span><span class="pi">:</span> <span class="s">olcTLSCACertificateFile</span>
+<span class="na">olcTLSCACertificateFile</span><span class="pi">:</span> <span class="s">/etc/ldap/server.crt</span>
+</code></pre>
+				</div>
+			</div>
+			<p>This time the LDAP “admin” user can’t import these changes. You need to log in to the server as <code class="language-plaintext highlighter-rouge">root</code>, then use the following command:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>ldapmodify <span class="nt">-Y</span> EXTERNAL <span class="nt">-H</span> ldapi:/// <span class="nt">-f</span> ssl.ldif
+</code></pre>
+				</div>
+			</div>
+			<div class="notice--primary">
+				<h4 id="external-authentication-method"><i class="fas fa-fw fa-lightbulb"></i> “External” authentication method</h4>
+				<p>The “external” authentication method defers authentication to the transport layer. There are (at least) two kinds of supported methods: Unix domain socket option <code class="language-plaintext highlighter-rouge">SO_PEERCRED</code> (see <a href="https://man7.org/linux/man-pages/man7/unix.7.html">unix(7)</a>) and TLS client certificate. When connecting over UDS, the server can retrieve the client’s UID, GID and PID with that option.</p>
+				<p>The <code class="language-plaintext highlighter-rouge">-H ldapi:///</code> tells the <code class="language-plaintext highlighter-rouge">ldap*</code> commands to connect over a local Unix domain socket, which is required for <code class="language-plaintext highlighter-rouge">-Y EXTERNAL</code> (we don’t have TLS client certificates yet).</p>
+			</div>
+			<div class="notice--danger">
+				<h4 class="no_toc" id="order-is-important"><i class="fas fa-fw fa-exclamation-triangle"></i> Order is important</h4>
+				<p>The OpenLDAP documentation did not cover the detail that the private key must be added <em>before</em> the certificate. Otherwise you’ll get this response:</p>
+				<div class="language-text highlighter-rouge">
+					<div class="highlight">
+						<pre class="highlight"><code>ldap_modify: Other (e.g., implementation specific) error (80)
+</code></pre>
+					</div>
+  </div>
+				<p>References: <a href="https://askubuntu.com/a/1103245/612877">1</a>, <a href="https://gist.github.com/ndlrx/edef4474ec9f5edac594cc5e37644559">2</a>, <a href="https://serverfault.com/a/1007262/450575">3</a></p>
+			</div>
+			<p>After getting the certificates ready, we can now enable LDAP-over-TLS service. Somehow the Debian <code class="language-plaintext highlighter-rouge">slapd</code> package does not come with a native systemd service, but <code class="language-plaintext highlighter-rouge">/etc/init.d/slapd</code>, so “service settings” are configured at <code class="language-plaintext highlighter-rouge">/etc/default/slapd</code>. Locate that file and add <code class="language-plaintext highlighter-rouge">ldaps:///</code> for <code class="language-plaintext highlighter-rouge">SLAPD_SERVICES</code>. Optionally, though recommended, you can remove <code class="language-plaintext highlighter-rouge">ldap://</code> to disable the plaintext port. The line should now look like this:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="nv">SLAPD_SERVICES</span><span class="o">=</span><span class="s2">"ldaps:/// ldapi:///"</span>
+</code></pre>
+				</div>
+			</div>
+			<p>You can now use <code class="language-plaintext highlighter-rouge">systemctl restart slapd</code> to restart the server, and <code class="language-plaintext highlighter-rouge">netstat -tlpn</code> to verify that the server is listening on the correct port (TCP 636).</p>
+			<h3 id="permissions">Managing permissions</h3>
+			<p>By default,</p>
+			<ul>
+				<li>The “admin” user (using <code class="language-plaintext highlighter-rouge">-D cn=admin,dc=... -W</code>) can modify the “database”, where users, groups etc. are stored.</li>
+				<li>The local root user can modify server settings. Namely, anything under the tree <code class="language-plaintext highlighter-rouge">cn=config</code>. Note that Distinguished Name (DN) resolves from right to left, like domain names.</li>
+			</ul>
+			<p>For me, I found it a hinderance that the root user cannot edit the database directly, so I added some permissions to make this happen.</p>
+			<p>As you may have noticed, we used the same LDIF format to change TLS settings, except for the server port. In fact, the whole <code class="language-plaintext highlighter-rouge">cn=config</code> tree is another LDAP database, just like the <code class="language-plaintext highlighter-rouge">mysql</code> database in MySQL. And this “config” database also has its metadata under <code class="language-plaintext highlighter-rouge">cn=config</code>.</p>
+			<p>First we identify where the metadata for the “config” database is:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>ldapsearch <span class="nt">-Y</span> EXTERNAL <span class="nt">-b</span> <span class="nv">cn</span><span class="o">=</span>config
+</code></pre>
+				</div>
+			</div>
+			<p>You can pipe the above command to <code class="language-plaintext highlighter-rouge">less</code> or send to a file for easier inspection. Pay attention to lines beginning with <code class="language-plaintext highlighter-rouge">dn:</code>, which describes a directory “node”. One of them will look like:</p>
+			<div class="language-yaml highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
+</code></pre>
+				</div>
+			</div>
+			<p>The <code class="language-plaintext highlighter-rouge">olc</code> prefix stands for <strong>O</strong>pen<strong>L</strong>DAP <strong>C</strong>onfiguration, and <code class="language-plaintext highlighter-rouge">{1}</code> indicates an entry from multiple of the same name. You’ll probably notice there’s <code class="language-plaintext highlighter-rouge">olcDatabase={0}config</code> as well, which we’ll cover soon.</p>
+			<p>This item has a lot of attributes, among which there are:</p>
+			<div class="language-yaml highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">olcDatabaseConfig</span>
+<span class="na">objectClass</span><span class="pi">:</span> <span class="s">olcMdbConfig</span>
+<span class="na">olcDatabase</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">1</span><span class="pi">}</span><span class="s">mdb</span>
+<span class="na">olcDbDirectory</span><span class="pi">:</span> <span class="s">/var/lib/ldap</span>
+<span class="na">olcSuffix</span><span class="pi">:</span> <span class="s">dc=ibug</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">0</span><span class="pi">}</span><span class="s">to attrs=userPassword by self write by anonymous auth by * none</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">1</span><span class="pi">}</span><span class="s">to attrs=shadowLastChange by self write by * read</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">2</span><span class="pi">}</span><span class="s">to * by * read</span>
+<span class="na">olcRootDN</span><span class="pi">:</span> <span class="s">cn=admin,dc=ibug</span>
+</code></pre>
+				</div>
+			</div>
+			<p>The <code class="language-plaintext highlighter-rouge">olcAccess</code> key(s) describes its Access Control List (ACL), and apparently <code class="language-plaintext highlighter-rouge">{0}</code>, <code class="language-plaintext highlighter-rouge">{1}</code> and <code class="language-plaintext highlighter-rouge">{2}</code> have the same meaning as that of <code class="language-plaintext highlighter-rouge">olcDatabase={1}mdb</code>. The syntax is roughly as follows:</p>
+			<div class="language-text highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>olcAccess: {&lt;index&gt;}to &lt;what&gt; by &lt;who&gt; &lt;how&gt; [by &lt;who&gt; &lt;how&gt;]...
+</code></pre>
+				</div>
+			</div>
+			<p>Notice that there’s no explicit ACL to the “admin user”, because the admin user is registered as <code class="language-plaintext highlighter-rouge">olcRootDN</code> for this database. The next thing we need to do is to insert an all-access rule for the local root user. The next question is, how to “refer to” the root user?</p>
+			<p>If you looked through <code class="language-plaintext highlighter-rouge">olcDatabase={0}config</code>, you should have the answer now:</p>
+			<div class="language-yaml highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={0}config,cn=config</span>
+<span class="nn">...</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">0</span><span class="pi">}</span><span class="s">to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break</span>
+<span class="nn">...</span>
+</code></pre>
+				</div>
+			</div>
+			<p>Unfortunately LDIF does not allow modifying or inserting an item into a repeated attribute directly, so the way to do this is to replace all of them:</p>
+			<div class="language-yaml highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
+<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
+<span class="na">replace</span><span class="pi">:</span> <span class="s">olcAccess</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to attrs=userPassword by self write by anonymous auth by * none</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to attrs=shadowLastChange by self write by * read</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to * by * read</span>
+</code></pre>
+				</div>
+			</div>
+			<p>Seen how the <code class="language-plaintext highlighter-rouge">&lt;who&gt;</code> part is reminiscent of the “External authentication method” described above? Send this LDIF to the server and you’ll get the desired result. You can now try to modify the “user database” using root user and <code class="language-plaintext highlighter-rouge">-Y EXTERNAL</code>.</p>
+			<p>For more detailed description, you can check out the <a href="https://www.openldap.org/doc/admin24/access-control.html">slapd.access</a> help page.</p>
+			<h3 id="user-chsh">Allow users to change login shell</h3>
+			<p>Changing the login shell is a basic privilege of a normal POSIX user. Unlike <code class="language-plaintext highlighter-rouge">passwd</code> that automatically handles LDAP users, <code class="language-plaintext highlighter-rouge">chsh</code> does not, and only complains about PAM authentication failed.</p>
+			<p>It’s easy to discover that there’s a <code class="language-plaintext highlighter-rouge">chsh.ldap</code> command. It’s even easier to discover that it doesn’t work:</p>
+			<div class="language-python highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="n">ibug</span><span class="o">@</span><span class="n">ldap</span><span class="p">:</span><span class="o">~</span><span class="err">$</span> <span class="n">chsh</span><span class="p">.</span><span class="n">ldap</span>
+<span class="n">LDAP</span> <span class="n">password</span> <span class="k">for</span> <span class="n">ibug</span><span class="p">:</span>
+<span class="n">Enter</span> <span class="n">the</span> <span class="n">new</span> <span class="n">value</span><span class="p">,</span> <span class="ow">or</span> <span class="n">press</span> <span class="n">ENTER</span> <span class="k">for</span> <span class="n">the</span> <span class="n">default</span>
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+  <span class="n">File</span> <span class="s">"/usr/bin/chsh.ldap"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">80</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+    <span class="n">main</span><span class="p">()</span>
+  <span class="n">File</span> <span class="s">"/usr/bin/chsh.ldap"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">69</span><span class="p">,</span> <span class="ow">in</span> <span class="n">main</span>
+    <span class="n">shell</span> <span class="o">=</span> <span class="n">ask_shell</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="n">shell</span><span class="p">)</span>
+  <span class="n">File</span> <span class="s">"/usr/bin/chsh.ldap"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">50</span><span class="p">,</span> <span class="ow">in</span> <span class="n">ask_shell</span>
+    <span class="n">shell</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s">'  Login Shell [%s]: '</span> <span class="o">%</span> <span class="n">oldshell</span><span class="p">)</span>
+<span class="nb">UnboundLocalError</span><span class="p">:</span> <span class="n">local</span> <span class="n">variable</span> <span class="s">'input'</span> <span class="n">referenced</span> <span class="n">before</span> <span class="n">assignment</span>
+</code></pre>
+				</div>
+			</div>
+			<p>If you look at <code class="language-plaintext highlighter-rouge">/usr/bin/chsh.ldap</code>, it contains this stupid assignment:</p>
+			<div class="language-python highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="c1"># Provide Python 2 compatibility
+</span><span class="k">try</span><span class="p">:</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="nb">raw_input</span>
+<span class="k">except</span> <span class="nb">NameError</span><span class="p">:</span>
+    <span class="k">pass</span>
+</code></pre>
+				</div>
+			</div>
+			<p>Removing this try-except block gets rid of the first error, but it’s still not working:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">ibug@ldap:~$</span><span class="w"> </span>chsh.ldap
+<span class="go">LDAP password for ibug:
+Enter the new value, or press ENTER for the default
+  Login Shell [/bin/bash]:
+/usr/bin/chsh.ldap: /bin/bash is an invalid shell
+</span></code></pre>
+				</div>
+			</div>
+			<p>The second one is trickier to fix because you don’t know where it’s doing wrong.</p>
+			<p>It took me some effort to find bug report <a href="https://bugs.launchpad.net/ubuntu/+source/nss-pam-ldapd/+bug/1892482">LP#1892482</a>, which provides a link to <a href="https://github.com/arthurdejong/nss-pam-ldapd/commit/1025d5de336d8c9585b79df3154b5649da344281">this commit</a> that fixes the problem. You can safely apply that commit to your local installation of <code class="language-plaintext highlighter-rouge">/usr/share/nslcd-utils</code>.</p>
+			<p>Now <code class="language-plaintext highlighter-rouge">chsh.ldap</code> seems to be working, <em>except</em> that it doesn’t save your selected shell.</p>
+			<p>Remember how there’s an ACL to allow users to change their passwords?</p>
+			<div class="language-yaml highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">0</span><span class="pi">}</span><span class="s">to attrs=userPassword by self write by anonymous auth by * none</span>
+</code></pre>
+				</div>
+			</div>
+			<p>That’s right, the only thing left to do is to add another ACL to allow users to change their login shells as well, replacing all <code class="language-plaintext highlighter-rouge">olcAccess</code> keys <em>again</em>:</p>
+			<div class="language-yaml highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
+<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
+<span class="na">replace</span><span class="pi">:</span> <span class="s">olcAccess</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to attrs=userPassword by self write by anonymous auth by * none</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to attrs=loginShell by self write by * none</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to attrs=shadowLastChange by self write by * read</span>
+<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to * by * read</span>
+</code></pre>
+				</div>
+			</div>
+			<p>This time there’s no need to include <code class="language-plaintext highlighter-rouge">by anonymous auth</code> because who checks the login shell for authentication?</p>
+			<p>Now we can verify that <code class="language-plaintext highlighter-rouge">chsh.ldap</code> is working correctly:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">ibug@ldap:~$</span><span class="w"> </span>chsh.ldap
+<span class="go">LDAP password for ibug:
+Enter the new value, or press ENTER for the default
+  Login Shell [/bin/bash]: /bin/zsh
+</span><span class="gp">ibug@ldap:~$</span><span class="w"> </span>getent passwd | <span class="nb">grep </span>ibug
+<span class="go">ibug:x:1000:1000:iBug:/home/ibug:/bin/zsh
+</span><span class="gp">ibug@ldap:~$</span><span class="w">
+</span></code></pre>
+				</div>
+			</div>
+			<h2 id="afterword">Afterword</h2>
+			<p>LDAP is a powerful tool to manage a wide range of things, including hosts (like <code class="language-plaintext highlighter-rouge">/etc/hosts</code>) and even Sudo rules, with increasing complexity to set up. There’s also Active Directory on Windows platform that shares the same concepts and is even inter-operable with LDAP.</p>
+			<p>LDAP also supports plugins that enables automatic configuration of certain attributes, like “group membership”, where the plugin adds a corresponding <code class="language-plaintext highlighter-rouge">memberOf</code> for users when a <code class="language-plaintext highlighter-rouge">member</code> entry is created under a group. However, this plugin doesn’t work with the <code class="language-plaintext highlighter-rouge">posixGroup</code> object class and requires the conflicting <code class="language-plaintext highlighter-rouge">groupOfNames</code> object class. Fortunately, this does not affect the ability to lookup groups from users, since traditionally the user-group relationship is stored one-way only in <code class="language-plaintext highlighter-rouge">/etc/group</code>, and PAM by default tries to look it up this way.</p>
+			<p>If you need access control, OpenSSH supports <a href="https://man7.org/linux/man-pages/man5/sshd_config.5.html">an <code class="language-plaintext highlighter-rouge">AllowGroup</code> directive</a> to restrict login to certain groups, which you can then remotely configure in LDAP.</p>
+			<h2 id="references">References</h2>
+			<ul>
+				<li><a href="https://harrychen.xyz/2021/01/17/openldap-linux-auth/">使用 OpenLDAP 在 Linux 上进行中心化用户管理 - Harry Chen’s blog</a></li>
+				<li><a href="https://access.redhat.com/documentation/en-us/red_hat_directory_server/11/html/administration_guide/managing_the_nss_database_used_by_directory_server">9.3. Managing the NSS Database Used by Directory Server</a> (Red Hat Documentation)</li>
+				<li><a href="https://en.wikipedia.org/wiki/Bcrypt">Bcrypt - Wikipedia</a></li>
+				<li><a href="https://hohnstaedt.de/xca/">XCA</a></li>
 				<li>
-					<p>Search for <code class="language-plaintext highlighter-rouge">unable to get device</code> and you should find some code like this:</p>
-					<div class="language-perl highlighter-rouge">
-						<div class="highlight">
-							<pre class="highlight"><code> <span class="p">}</span> <span class="k">elsif</span> <span class="p">(</span><span class="nv">$dev</span> <span class="o">=~</span> <span class="sr">m|^/dev/[^/]+/hd[a-z]$|</span><span class="p">)</span> <span class="p">{</span>
+					<p><a href="https://github.com/arthurdejong/nss-pam-ldapd/commit/1025d5de336d8c9585b79df3154b5649da344281">The commit</a> that fixes <code class="language-plaintext highlighter-rouge">chsh.ldap</code></p>
+				</li>
+			</ul>
+			]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><category term="ldap" /><summary type="html"><![CDATA[LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes the most serious dedication to set up and maintain, yet the slightest agitation to fail.]]></summary></entry><entry><title type="html">Install Proxmox VE on eMMC</title><link href="https://ibug.io/blog/2022/03/install-proxmox-ve-emmc/" rel="alternate" type="text/html" title="Install Proxmox VE on eMMC" /><published>2022-03-01T00:00:00+00:00</published><updated>2022-03-01T19:03:19+00:00</updated><id>https://ibug.io/blog/2022/03/install-proxmox-ve-emmc</id><content type="html" xml:base="https://ibug.io/blog/2022/03/install-proxmox-ve-emmc/"><![CDATA[<p>Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just a router”, so I figured I’d get some virtual machines to improve its utilization. Choosing the virtualization platform isn’t hard - I’m most familiar with Proxmox VE.</p>
+		<p>The offcial ISO installer is pretty straightforward, until the last step:</p>
+		<div class="language-text highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>Unable to get device for partition 1 on device /dev/mmcblk0
+</code></pre>
+			</div>
+		</div>
+		<h2 id="solution">Solution</h2>
+		<p>The Proxmox VE forum is <em>completely unhelpful</em> this time (<a href="https://forum.proxmox.com/threads/unable-to-get-device-for-partition-1-on-device-dev-mmcblk0.42348/">1</a>, <a href="https://forum.proxmox.com/threads/unable-to-get-device-for-partition-1.43234/">2</a>) with staff keeping on saying “it’s not supported”, so I had to look around for alternatives. Fortunately this article is right there:</p>
+		<ul>
+			<li><a href="https://lookas2001.com/%E8%A7%A3%E5%86%B3-proxmox-ve-%E6%97%A0%E6%B3%95%E5%AE%89%E8%A3%85%E5%88%B0-emmc-%E4%B8%8A%E7%9A%84%E9%97%AE%E9%A2%98/">解决 Proxmox VE 无法安装到 eMMC 上的问题 - lookas2001</a></li>
+		</ul>
+		<p>Turns out it’s hard-coded into Proxmox VE’s Perl installer script, so all you have to do is to patch it:</p>
+		<ol>
+			<li>Boot the installer ISO to the first menu, select the second option <code class="language-plaintext highlighter-rouge">Install Proxmox VE (Debug mode)</code></li>
+			<li>The first time you’re present with a command-line prompt, type <code class="language-plaintext highlighter-rouge">exit</code> and Enter to skip it. This is a very early stage and you can’t do much here.</li>
+			<li>The second time you have a shell, locate <code class="language-plaintext highlighter-rouge">/usr/bin/proxinstall</code> and open it. Text editors such as <code class="language-plaintext highlighter-rouge">vi</code> and <code class="language-plaintext highlighter-rouge">nano</code> are available.</li>
+			<li>
+				<p>Search for <code class="language-plaintext highlighter-rouge">unable to get device</code> and you should find some code like this:</p>
+				<div class="language-perl highlighter-rouge">
+					<div class="highlight">
+						<pre class="highlight"><code> <span class="p">}</span> <span class="k">elsif</span> <span class="p">(</span><span class="nv">$dev</span> <span class="o">=~</span> <span class="sr">m|^/dev/[^/]+/hd[a-z]$|</span><span class="p">)</span> <span class="p">{</span>
      <span class="k">return</span> <span class="p">"</span><span class="si">${dev}$partnum</span><span class="p">";</span>
  <span class="p">}</span> <span class="k">elsif</span> <span class="p">(</span><span class="nv">$dev</span> <span class="o">=~</span> <span class="sr">m|^/dev/nvme\d+n\d+$|</span><span class="p">)</span> <span class="p">{</span>
      <span class="k">return</span> <span class="p">"</span><span class="si">${dev}</span><span class="s2">p</span><span class="si">$partnum</span><span class="p">";</span>
@@ -28,15 +404,15 @@
      <span class="nb">die</span> <span class="p">"</span><span class="s2">unable to get device for partition </span><span class="si">$partnum</span><span class="s2"> on device </span><span class="si">$dev</span><span class="se">\n</span><span class="p">";</span>
  <span class="p">}</span>
 </code></pre>
-						</div>
+					</div>
     </div>
-					<p>The full code can be found <a href="https://github.com/proxmox/pve-installer/blob/b04864ece2654c6ecf794f9c3ad1cedede351532/proxinstall#L729">on GitHub</a> if you’d like.</p>
-				</li>
-				<li>
-					<p>See how different kinds of storage devices are enumerated? Now add <code class="language-plaintext highlighter-rouge">/dev/mmcblk</code> to the list like this:</p>
-					<div class="language-perl highlighter-rouge">
-						<div class="highlight">
-							<pre class="highlight"><code> <span class="p">}</span> <span class="k">elsif</span> <span class="p">(</span><span class="nv">$dev</span> <span class="o">=~</span> <span class="sr">m|^/dev/[^/]+/hd[a-z]$|</span><span class="p">)</span> <span class="p">{</span>
+				<p>The full code can be found <a href="https://github.com/proxmox/pve-installer/blob/b04864ece2654c6ecf794f9c3ad1cedede351532/proxinstall#L729">on GitHub</a> if you’d like.</p>
+			</li>
+			<li>
+				<p>See how different kinds of storage devices are enumerated? Now add <code class="language-plaintext highlighter-rouge">/dev/mmcblk</code> to the list like this:</p>
+				<div class="language-perl highlighter-rouge">
+					<div class="highlight">
+						<pre class="highlight"><code> <span class="p">}</span> <span class="k">elsif</span> <span class="p">(</span><span class="nv">$dev</span> <span class="o">=~</span> <span class="sr">m|^/dev/[^/]+/hd[a-z]$|</span><span class="p">)</span> <span class="p">{</span>
      <span class="k">return</span> <span class="p">"</span><span class="si">${dev}$partnum</span><span class="p">";</span>
  <span class="p">}</span> <span class="k">elsif</span> <span class="p">(</span><span class="nv">$dev</span> <span class="o">=~</span> <span class="sr">m|^/dev/nvme\d+n\d+$|</span><span class="p">)</span> <span class="p">{</span>
      <span class="k">return</span> <span class="p">"</span><span class="si">${dev}</span><span class="s2">p</span><span class="si">$partnum</span><span class="p">";</span>
@@ -46,55 +422,55 @@
      <span class="nb">die</span> <span class="p">"</span><span class="s2">unable to get device for partition </span><span class="si">$partnum</span><span class="s2"> on device </span><span class="si">$dev</span><span class="se">\n</span><span class="p">";</span>
  <span class="p">}</span>
 </code></pre>
-						</div>
+					</div>
     </div>
-				</li>
-				<li>Save your edits and type <code class="language-plaintext highlighter-rouge">exit</code>. Proceed with the installation as normal. Select <code class="language-plaintext highlighter-rouge">/dev/mmcblk0</code> (without the <code class="language-plaintext highlighter-rouge">bootX</code> suffix) as the install target. You may want to disable swap to avoid rapid wearing of the eMMC.</li>
-				<li>The next time you have a shell, use <code class="language-plaintext highlighter-rouge">exit</code> to skip it. Nothing to do here.</li>
-			</ol>
-			<h2 id="rambling">Rambling</h2>
-			<p>While it’s possible to install Proxmox VE on top of a matching version of Debian, it’s tedious to install Debian <em>just for PVE</em>. The last time I had to do it this way was on very old hardware that the PVE installer just crashed (X server died), and that the PVE installer didn’t have a CLI version. Plus a standard Debian installation typically comes with extra stuff that you don’t want on a PVE system (or want to get rid of ASAP).</p>
-			<p>It’s also possible to modify the installer script beforehand, but you need to unpack <code class="language-plaintext highlighter-rouge">pve-installer.squashfs</code> and re-pack it into the ISO. You should think more seriously if you want to install PVE on a lot of eMMC devices.</p>
-			]]></content><author><name>iBug</name></author><category term="linux" /><summary type="html"><![CDATA[Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just a router”, so I figured I’d get some virtual machines to improve its utilization. Choosing the virtualization platform isn’t hard - I’m most familiar with Proxmox VE.]]></summary></entry><entry><title type="html">New Pandora’s box: Install Linux and Windows onto the same NTFS partition</title><link href="https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs/" rel="alternate" type="text/html" title="New Pandora’s box: Install Linux and Windows onto the same NTFS partition" /><published>2021-11-28T00:00:00+00:00</published><updated>2021-11-28T04:39:20+00:00</updated><id>https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs</id><content type="html" xml:base="https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs/"><![CDATA[<p>Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, <a href="https://www.techrepublic.com/article/linux-kernel-5-15-is-now-available-and-it-has-something-special-for-ntfs-users/">NTFS3</a>. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.</p>
-		<div class="notice--danger">
-			<h4 class="no_toc" id="warning"><i class="fas fa-exclamation-triangle"></i> WARNING</h4>
-			<p>This is COMPLETELY EXPERIMENTAL. If you are not familiar with either Linux or Windows, <strong>do not try this</strong>.</p>
-		</div>
-		<p>Sounds WEIRD to me. I’m going to do this experiment on my Proxmox VE cluster.</p>
-		<p><img src="/image/linux/monster/vm-create.png" alt="Create virtual machine" class="border" /></p>
-		<h2 id="preparation">Preparation</h2>
-		<h3 id="archiso">Archiso</h3>
-		<p>At the time of writing this article, the latest Arch Linux ISO (2021.11.01) was shipped with Kernel <strong>5.14</strong>.15 - no new NTFS3 driver. I need to create one for myself or this won’t work.</p>
-		<p><a href="https://wiki.archlinux.org/title/archiso">Archiso</a> is Arch’s official tool for creating custom ISO images. I’m not normally an Arch user, so I choose to install Arch first from an official ISO (20211101) before wiping it.</p>
-		<p><img src="/image/linux/monster/install-arch-partition.png" alt="Partitioning in Arch ISO" /></p>
-		<p>After this temporary system is set up, I just follow the Archiso guide and receive my own <code class="language-plaintext highlighter-rouge">archlinux-2021.11.22-x86_64.iso</code> with no trouble. It has Kernel <strong>5.15</strong>.4 packed.</p>
-		<p>I copy the ISO onto the Proxmox VE host system, reboot the VM with this new ISO and wipe <code class="language-plaintext highlighter-rouge">/dev/sda2</code> to avoid (possible) further issues with the Windows installer. I also format <code class="language-plaintext highlighter-rouge">/dev/sda1</code> again to ensure I’m really starting over anew.</p>
-		<h3 id="install-windows">Install Windows</h3>
-		<p>Since NTFS is developed by Microsoft and for Windows, it seems reasonable to assume Windows is best suited for NTFS. So I’ll install Windows first lest it recognizes the filesystem created by <code class="language-plaintext highlighter-rouge">mkfs.ntfs</code> (from the old <code class="language-plaintext highlighter-rouge">ntfs-3g</code> package) as “foreign” and complains anyhow.</p>
-		<p>The installation process of Windows 10 has always been as boring and mundane as it is, so I’m not going to be verbose here. Following the usual steps, except that the disk has already been partitioned, it’s easy to get Windows 10 up and ready.</p>
-		<p><img src="/image/linux/monster/install-win10-oobe.png" alt="Windows 10 OOBE screen" /></p>
-		<p>Proceeding through the out-of-box experience and I get to the desktop. There’s not many things of interest here, so I just shutdown the VM and take a snapshot.</p>
-		<p>Now it’s time to get this compound monstrosity set up.</p>
-		<h2 id="the-main-show">The Main Show</h2>
-		<p>Swap the CD/DVD drive image for the newly created archiso and boot it up:</p>
-		<p><img src="/image/linux/monster/install-archiso.png" alt="CD/DVD image selection" /></p>
-		<p>With the proper Linux kernel equipped, I can now mount the NTFS partition create by Windows installer. It seems NTFS is sophisticated enough to even allow Unix filesystem attibutes, like file modes (permissions) and ownership, as well as “special file types” like symbolic links and named sockets (Unix domain sockets). This may hint that bootstrapping a Linux system should not be too problematic.</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>fdisk <span class="nt">-l</span> /dev/sda  <span class="c"># confirm partition layout</span>
+			</li>
+			<li>Save your edits and type <code class="language-plaintext highlighter-rouge">exit</code>. Proceed with the installation as normal. Select <code class="language-plaintext highlighter-rouge">/dev/mmcblk0</code> (without the <code class="language-plaintext highlighter-rouge">bootX</code> suffix) as the install target. You may want to disable swap to avoid rapid wearing of the eMMC.</li>
+			<li>The next time you have a shell, use <code class="language-plaintext highlighter-rouge">exit</code> to skip it. Nothing to do here.</li>
+		</ol>
+		<h2 id="rambling">Rambling</h2>
+		<p>While it’s possible to install Proxmox VE on top of a matching version of Debian, it’s tedious to install Debian <em>just for PVE</em>. The last time I had to do it this way was on very old hardware that the PVE installer just crashed (X server died), and that the PVE installer didn’t have a CLI version. Plus a standard Debian installation typically comes with extra stuff that you don’t want on a PVE system (or want to get rid of ASAP).</p>
+		<p>It’s also possible to modify the installer script beforehand, but you need to unpack <code class="language-plaintext highlighter-rouge">pve-installer.squashfs</code> and re-pack it into the ISO. You should think more seriously if you want to install PVE on a lot of eMMC devices.</p>
+		]]></content><author><name>iBug</name></author><category term="linux" /><summary type="html"><![CDATA[Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just a router”, so I figured I’d get some virtual machines to improve its utilization. Choosing the virtualization platform isn’t hard - I’m most familiar with Proxmox VE.]]></summary></entry><entry><title type="html">New Pandora’s box: Install Linux and Windows onto the same NTFS partition</title><link href="https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs/" rel="alternate" type="text/html" title="New Pandora’s box: Install Linux and Windows onto the same NTFS partition" /><published>2021-11-28T00:00:00+00:00</published><updated>2021-11-28T04:39:20+00:00</updated><id>https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs</id><content type="html" xml:base="https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs/"><![CDATA[<p>Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, <a href="https://www.techrepublic.com/article/linux-kernel-5-15-is-now-available-and-it-has-something-special-for-ntfs-users/">NTFS3</a>. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.</p>
+	<div class="notice--danger">
+		<h4 class="no_toc" id="warning"><i class="fas fa-exclamation-triangle"></i> WARNING</h4>
+		<p>This is COMPLETELY EXPERIMENTAL. If you are not familiar with either Linux or Windows, <strong>do not try this</strong>.</p>
+	</div>
+	<p>Sounds WEIRD to me. I’m going to do this experiment on my Proxmox VE cluster.</p>
+	<p><img src="/image/linux/monster/vm-create.png" alt="Create virtual machine" class="border" /></p>
+	<h2 id="preparation">Preparation</h2>
+	<h3 id="archiso">Archiso</h3>
+	<p>At the time of writing this article, the latest Arch Linux ISO (2021.11.01) was shipped with Kernel <strong>5.14</strong>.15 - no new NTFS3 driver. I need to create one for myself or this won’t work.</p>
+	<p><a href="https://wiki.archlinux.org/title/archiso">Archiso</a> is Arch’s official tool for creating custom ISO images. I’m not normally an Arch user, so I choose to install Arch first from an official ISO (20211101) before wiping it.</p>
+	<p><img src="/image/linux/monster/install-arch-partition.png" alt="Partitioning in Arch ISO" /></p>
+	<p>After this temporary system is set up, I just follow the Archiso guide and receive my own <code class="language-plaintext highlighter-rouge">archlinux-2021.11.22-x86_64.iso</code> with no trouble. It has Kernel <strong>5.15</strong>.4 packed.</p>
+	<p>I copy the ISO onto the Proxmox VE host system, reboot the VM with this new ISO and wipe <code class="language-plaintext highlighter-rouge">/dev/sda2</code> to avoid (possible) further issues with the Windows installer. I also format <code class="language-plaintext highlighter-rouge">/dev/sda1</code> again to ensure I’m really starting over anew.</p>
+	<h3 id="install-windows">Install Windows</h3>
+	<p>Since NTFS is developed by Microsoft and for Windows, it seems reasonable to assume Windows is best suited for NTFS. So I’ll install Windows first lest it recognizes the filesystem created by <code class="language-plaintext highlighter-rouge">mkfs.ntfs</code> (from the old <code class="language-plaintext highlighter-rouge">ntfs-3g</code> package) as “foreign” and complains anyhow.</p>
+	<p>The installation process of Windows 10 has always been as boring and mundane as it is, so I’m not going to be verbose here. Following the usual steps, except that the disk has already been partitioned, it’s easy to get Windows 10 up and ready.</p>
+	<p><img src="/image/linux/monster/install-win10-oobe.png" alt="Windows 10 OOBE screen" /></p>
+	<p>Proceeding through the out-of-box experience and I get to the desktop. There’s not many things of interest here, so I just shutdown the VM and take a snapshot.</p>
+	<p>Now it’s time to get this compound monstrosity set up.</p>
+	<h2 id="the-main-show">The Main Show</h2>
+	<p>Swap the CD/DVD drive image for the newly created archiso and boot it up:</p>
+	<p><img src="/image/linux/monster/install-archiso.png" alt="CD/DVD image selection" /></p>
+	<p>With the proper Linux kernel equipped, I can now mount the NTFS partition create by Windows installer. It seems NTFS is sophisticated enough to even allow Unix filesystem attibutes, like file modes (permissions) and ownership, as well as “special file types” like symbolic links and named sockets (Unix domain sockets). This may hint that bootstrapping a Linux system should not be too problematic.</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>fdisk <span class="nt">-l</span> /dev/sda  <span class="c"># confirm partition layout</span>
 mount <span class="nt">-t</span> ntfs3 /dev/sda2 /mnt
 <span class="nb">mkdir</span> <span class="nt">-p</span> /mnt/boot/efi
 mount /dev/sda1 /mnt/boot/efi
 pacstrap /mnt base linux linux-firmware
 </code></pre>
-			</div>
 		</div>
-		<p>Indeed, <code class="language-plaintext highlighter-rouge">pacstrap</code> goes so smoothly that I almost forget it’s on a non-native filesystem. The only thing that makes me concerned is that <strong>there’s no <code class="language-plaintext highlighter-rouge">fsck</code> tool for NTFS</strong> (<em>file not found: <code class="language-plaintext highlighter-rouge">fsck.ntfs3</code></em> in console output).</p>
-		<p><img src="/image/linux/monster/install-arch-pacstrap.png" alt="pacstrap output" /></p>
-		<p>Now I can chroot into the system and set up the rest of the system.</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>genfstab <span class="nt">-U</span> /mnt <span class="o">&gt;&gt;</span> /mnt/etc/fstab
+	</div>
+	<p>Indeed, <code class="language-plaintext highlighter-rouge">pacstrap</code> goes so smoothly that I almost forget it’s on a non-native filesystem. The only thing that makes me concerned is that <strong>there’s no <code class="language-plaintext highlighter-rouge">fsck</code> tool for NTFS</strong> (<em>file not found: <code class="language-plaintext highlighter-rouge">fsck.ntfs3</code></em> in console output).</p>
+	<p><img src="/image/linux/monster/install-arch-pacstrap.png" alt="pacstrap output" /></p>
+	<p>Now I can chroot into the system and set up the rest of the system.</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>genfstab <span class="nt">-U</span> /mnt <span class="o">&gt;&gt;</span> /mnt/etc/fstab
 arch-chroot /mnt
 <span class="nb">ln</span> <span class="nt">-sf</span> /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 vim /etc/locale.gen  <span class="c"># add en_US.UTF-8 UTF-8</span>
@@ -102,13 +478,13 @@ vim /etc/locale.gen  <span class="c"># add en_US.UTF-8 UTF-8</span>
 passwd <span class="nt">-d</span> root
 <span class="nb">exit</span>  <span class="c"># quit chroot environment, return to archiso</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Fixing the bootloader is a bit different than usual, as Linux detects NTFS partitions as <code class="language-plaintext highlighter-rouge">ntfs</code>, not <code class="language-plaintext highlighter-rouge">ntfs3</code>. In case of auto mounting, Linux will try to mount with <code class="language-plaintext highlighter-rouge">-t ntfs</code>, which is not available (it’s provided by ntfs-3g). Fortunately, there’s a <code class="language-plaintext highlighter-rouge">rootfstype=</code> <a href="https://wiki.archlinux.org/title/kernel_parameters">kernel command-line parameter</a> to override the “filesystem type” parameter when mounting.</p>
-		<p>Putting this into action:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>arch-chroot /mnt
+	</div>
+	<p>Fixing the bootloader is a bit different than usual, as Linux detects NTFS partitions as <code class="language-plaintext highlighter-rouge">ntfs</code>, not <code class="language-plaintext highlighter-rouge">ntfs3</code>. In case of auto mounting, Linux will try to mount with <code class="language-plaintext highlighter-rouge">-t ntfs</code>, which is not available (it’s provided by ntfs-3g). Fortunately, there’s a <code class="language-plaintext highlighter-rouge">rootfstype=</code> <a href="https://wiki.archlinux.org/title/kernel_parameters">kernel command-line parameter</a> to override the “filesystem type” parameter when mounting.</p>
+	<p>Putting this into action:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>arch-chroot /mnt
 <span class="c"># configure networking</span>
 pacman <span class="nt">-Sy</span> grub efibootmgr
 vim /etc/default/grub
@@ -117,48 +493,48 @@ vim /etc/default/grub
 grub-install
 grub-mkconfig <span class="nt">-o</span> /boot/grub/grub.cfg
 </code></pre>
-			</div>
 		</div>
-		<p><img src="/image/linux/monster/install-arch-grub.png" alt="Install GRUB for Arch Linux" /></p>
-		<p>To make things a bit more interesting, I’m adding a desktop environment:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>pacman <span class="nt">-Sy</span> gnome
+	</div>
+	<p><img src="/image/linux/monster/install-arch-grub.png" alt="Install GRUB for Arch Linux" /></p>
+	<p>To make things a bit more interesting, I’m adding a desktop environment:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>pacman <span class="nt">-Sy</span> gnome
 <span class="c"># select some items - not everything</span>
 </code></pre>
-			</div>
 		</div>
-		<p>And configure networking as well:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="nb">cd</span> /etc/systemd/network
+	</div>
+	<p>And configure networking as well:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="nb">cd</span> /etc/systemd/network
 vim ens18.network
 <span class="nb">cd</span> ../system
 <span class="nb">ln</span> <span class="nt">-s</span> /lib/systemd/system/systemd-networkd.service multi-user.target.wants/
 </code></pre>
-			</div>
 		</div>
-		<p>All set, let’s give it a try.</p>
-		<h2 id="usage-experience">Usage experience</h2>
-		<p>Arch Linux plays surprisingly well with the new NTFS3 filesystem driver.</p>
-		<p><img src="/image/linux/monster/after-arch-neofetch.png" alt="System information in Arch Linux" /></p>
-		<p>To keep things simple, I didn’t install too much software. During my testing, the only issue I encountered was that <code class="language-plaintext highlighter-rouge">ldconfig</code> never worked. It always aborts.</p>
-		<p><img src="/image/linux/monster/arch-terminal-sigabrt.png" alt="ldconfig stops working" /></p>
-		<p>A non-issue is that there’s no working <code class="language-plaintext highlighter-rouge">fsck</code> tool, and there’s a systemd service “Fsck at boot” that consequently fails. It’s not as useful so I just disabled it.</p>
-		<p>The pioneer from r/archlinux said the system breaks after a few reboots, which didn’t happen to me. On the contrary, my Arch Linux was considerably resistant to Windows, and survived multiple Windows Updates, one Microsoft Update, and a few more. It even survived a CHKDSK despite a bunch of files being reported for “invalid filename” because <a href="https://stackoverflow.com/a/25477235/5958455">Windows dislikes colons in filenames</a> (not that NTFS doesn’t support).</p>
-		<h2 id="thoughts">Thoughts</h2>
-		<p>I must admit I’m amazed at how exquisitely NTFS is designed. It’s so mature that it hasn’t even been updated <a href="https://en.wikipedia.org/wiki/NTFS#Versions">since Windows XP</a>. One important part of NTFS is its Extended Attributes (EA) for files. Every NTFS filesystem contains a special file named <code class="language-plaintext highlighter-rouge">$MFT</code> located under its root directory. This is the metadata for all files, including file names, “normal attributes” and ACL, among which is the EA. Every file has an associated entry for EA, which can contain an arbitrary number of attributes (key-value pairs). In fact, the first generation of Windows Subsystem for Linux (WSL) stores Linux file modes and permissions <a href="https://docs.microsoft.com/en-us/windows/wsl/file-permissions">using custom EA keys</a>, which gets adapted by the new NTFS3 driver. Other EA keys are also used as needed, like <code class="language-plaintext highlighter-rouge">security.capability</code>, which is a 20-byte bitset. (Interestingly, EA was originally designed for compatibility with HPFS, which also has a similarly-extensible “Extended Attributes”.)</p>
-		<p>The new NTFS3 driver is a delighting improvement to the Linux ecosystem. Complaints about the classic NTFS-3G driver <a href="https://superuser.com/q/613869/688600">have</a> <a href="https://www.reddit.com/r/linuxquestions/comments/73v5pi/why_is_ntfs_on_linux_so_slow/">always</a> <a href="https://askubuntu.com/q/187813/612877">been</a> <a href="https://unix.stackexchange.com/q/107978/211239">around</a>. Performance was one of the primary concerns because it not only is based on FUSE (Filesystem in USErspace), but also badly optimized. Use of FUSE means extra context switches when accessing files, which, paired with hard-coded 4 KiB read/write unit, delivers unusually slow access speeds.</p>
-		<p>While the NTFS3 driver is a bit more optimized, concerns around compatibility are still encompassing. This is mainly because it’s still built on knowledge obtained from reverse engineering than technical documentation and standard. Fortunately, stability for NTFS-3G is already at a satisfactory level, and the new driver is thought to be more reliable than the old one.</p>
-		<p>Besides, this is a perfect example of Linux’s inclusiveness. Years before the commencement of the new NTFS3 driver, <a href="https://github.com/CyanoHao/NTFS-as-rootfs">attempts were made</a> to run Linux on top of NTFS using NTFS-3G. This leads to an interesting question: Will Linux run on top of FAT32? Technical difficulties are more conspicuous and critical this time, like lack of support and extensibility for file modes and more. I’ll explore into this challenge and share my findings in a subsequent blog post. Stay tuned!</p>
-		<h2 id="links--credits">Links &amp; Credits</h2>
-		<ul>
-			<li>Pioneer from r/archlinux: <a href="https://www.reddit.com/r/archlinux/comments/qwsftq/arch_linux_on_ntfs3/">Arch Linux on NTFS3!</a></li>
-			<li>
-				<p>Original idea by a GitHub user: <a href="https://gist.github.com/motorailgun/cc2c573f253d0893f429a165b5f851ee">Installing Windows and Linux into the same partition</a></p>
-			</li>
-		</ul>
-		]]></content><author><name>iBug</name></author><category term="linux" /><category term="windows" /><summary type="html"><![CDATA[Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, NTFS3. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.]]></summary></entry><entry><title type="html">Reinstall Windows VPS into Linux with iPXE network boot</title><link href="https://ibug.io/blog/2021/11/convert-windows-vps-to-linux/" rel="alternate" type="text/html" title="Reinstall Windows VPS into Linux with iPXE network boot" /><published>2021-11-22T00:00:00+00:00</published><updated>2021-11-23T01:53:16+00:00</updated><id>https://ibug.io/blog/2021/11/convert-windows-vps-to-linux</id><content type="html" xml:base="https://ibug.io/blog/2021/11/convert-windows-vps-to-linux/"><![CDATA[<p>This November I found a discount from one of my favorite VPS providers, <a href="https://go.ibugone.com/vps-hk">NETfront</a>. They offered <strong>Linux VPS with 2 vCPUs and 2 GB RAM</strong> at HK$56/mo, and also <strong>Windows VPS with 4 vCPUs and 4 GB RAM</strong> at HK$49/mo. Looks strange, right? Why buy the crappy Linux VPS when you can have a better configuration with <em>less</em> money (if possible)?</p>
+	</div>
+	<p>All set, let’s give it a try.</p>
+	<h2 id="usage-experience">Usage experience</h2>
+	<p>Arch Linux plays surprisingly well with the new NTFS3 filesystem driver.</p>
+	<p><img src="/image/linux/monster/after-arch-neofetch.png" alt="System information in Arch Linux" /></p>
+	<p>To keep things simple, I didn’t install too much software. During my testing, the only issue I encountered was that <code class="language-plaintext highlighter-rouge">ldconfig</code> never worked. It always aborts.</p>
+	<p><img src="/image/linux/monster/arch-terminal-sigabrt.png" alt="ldconfig stops working" /></p>
+	<p>A non-issue is that there’s no working <code class="language-plaintext highlighter-rouge">fsck</code> tool, and there’s a systemd service “Fsck at boot” that consequently fails. It’s not as useful so I just disabled it.</p>
+	<p>The pioneer from r/archlinux said the system breaks after a few reboots, which didn’t happen to me. On the contrary, my Arch Linux was considerably resistant to Windows, and survived multiple Windows Updates, one Microsoft Update, and a few more. It even survived a CHKDSK despite a bunch of files being reported for “invalid filename” because <a href="https://stackoverflow.com/a/25477235/5958455">Windows dislikes colons in filenames</a> (not that NTFS doesn’t support).</p>
+	<h2 id="thoughts">Thoughts</h2>
+	<p>I must admit I’m amazed at how exquisitely NTFS is designed. It’s so mature that it hasn’t even been updated <a href="https://en.wikipedia.org/wiki/NTFS#Versions">since Windows XP</a>. One important part of NTFS is its Extended Attributes (EA) for files. Every NTFS filesystem contains a special file named <code class="language-plaintext highlighter-rouge">$MFT</code> located under its root directory. This is the metadata for all files, including file names, “normal attributes” and ACL, among which is the EA. Every file has an associated entry for EA, which can contain an arbitrary number of attributes (key-value pairs). In fact, the first generation of Windows Subsystem for Linux (WSL) stores Linux file modes and permissions <a href="https://docs.microsoft.com/en-us/windows/wsl/file-permissions">using custom EA keys</a>, which gets adapted by the new NTFS3 driver. Other EA keys are also used as needed, like <code class="language-plaintext highlighter-rouge">security.capability</code>, which is a 20-byte bitset. (Interestingly, EA was originally designed for compatibility with HPFS, which also has a similarly-extensible “Extended Attributes”.)</p>
+	<p>The new NTFS3 driver is a delighting improvement to the Linux ecosystem. Complaints about the classic NTFS-3G driver <a href="https://superuser.com/q/613869/688600">have</a> <a href="https://www.reddit.com/r/linuxquestions/comments/73v5pi/why_is_ntfs_on_linux_so_slow/">always</a> <a href="https://askubuntu.com/q/187813/612877">been</a> <a href="https://unix.stackexchange.com/q/107978/211239">around</a>. Performance was one of the primary concerns because it not only is based on FUSE (Filesystem in USErspace), but also badly optimized. Use of FUSE means extra context switches when accessing files, which, paired with hard-coded 4 KiB read/write unit, delivers unusually slow access speeds.</p>
+	<p>While the NTFS3 driver is a bit more optimized, concerns around compatibility are still encompassing. This is mainly because it’s still built on knowledge obtained from reverse engineering than technical documentation and standard. Fortunately, stability for NTFS-3G is already at a satisfactory level, and the new driver is thought to be more reliable than the old one.</p>
+	<p>Besides, this is a perfect example of Linux’s inclusiveness. Years before the commencement of the new NTFS3 driver, <a href="https://github.com/CyanoHao/NTFS-as-rootfs">attempts were made</a> to run Linux on top of NTFS using NTFS-3G. This leads to an interesting question: Will Linux run on top of FAT32? Technical difficulties are more conspicuous and critical this time, like lack of support and extensibility for file modes and more. I’ll explore into this challenge and share my findings in a subsequent blog post. Stay tuned!</p>
+	<h2 id="links--credits">Links &amp; Credits</h2>
+	<ul>
+		<li>Pioneer from r/archlinux: <a href="https://www.reddit.com/r/archlinux/comments/qwsftq/arch_linux_on_ntfs3/">Arch Linux on NTFS3!</a></li>
+		<li>
+			<p>Original idea by a GitHub user: <a href="https://gist.github.com/motorailgun/cc2c573f253d0893f429a165b5f851ee">Installing Windows and Linux into the same partition</a></p>
+		</li>
+	</ul>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="windows" /><summary type="html"><![CDATA[Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, NTFS3. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.]]></summary></entry><entry><title type="html">Reinstall Windows VPS into Linux with iPXE network boot</title><link href="https://ibug.io/blog/2021/11/convert-windows-vps-to-linux/" rel="alternate" type="text/html" title="Reinstall Windows VPS into Linux with iPXE network boot" /><published>2021-11-22T00:00:00+00:00</published><updated>2021-11-23T01:53:16+00:00</updated><id>https://ibug.io/blog/2021/11/convert-windows-vps-to-linux</id><content type="html" xml:base="https://ibug.io/blog/2021/11/convert-windows-vps-to-linux/"><![CDATA[<p>This November I found a discount from one of my favorite VPS providers, <a href="https://go.ibugone.com/vps-hk">NETfront</a>. They offered <strong>Linux VPS with 2 vCPUs and 2 GB RAM</strong> at HK$56/mo, and also <strong>Windows VPS with 4 vCPUs and 4 GB RAM</strong> at HK$49/mo. Looks strange, right? Why buy the crappy Linux VPS when you can have a better configuration with <em>less</em> money (if possible)?</p>
 	<p class="notice--primary"><strong>Note</strong>: I knew this VPS provider ran <a href="https://www.proxmox.com/en/proxmox-ve">Proxmox VE</a> because I already had their VPSs. They’d give you a Proxmox VE noVNC console when you click “Console” to manage your VPS, from which you know they’re using QEMU/KVM as their virtualization platform. Direct access to QEMU screen is <em>awesome</em>!</p>
 	<h2 id="get-vps">Get a VPS</h2>
 	<p>First I head to the shopping cart to order a Windows VPS.</p>
@@ -1349,630 +1725,4 @@ git <span class="nt">-C</span> cert push
 	<p><img src="/image/windows/core-networking-time-exceeded-icmpv4-in.png" alt="New Rule" /></p>
 	<hr />
 	<p>This article was originally written as <a href="https://superuser.com/a/1623001/688600">an answer on Super User</a>.</p>
-	]]></content><author><name>iBug</name></author><category term="networking" /><category term="windows" /><summary type="html"><![CDATA[Today when I was running some networking diagnostics from an Ubuntu inside VMware Workstation, I noticed this strange result from mtr (My Traceroute):]]></summary></entry><entry><title type="html">A Deep Dive into Containers</title><link href="https://ibug.io/blog/2021/01/linux-container-explained/" rel="alternate" type="text/html" title="A Deep Dive into Containers" /><published>2021-01-31T00:00:00+00:00</published><updated>2021-02-05T15:47:37+00:00</updated><id>https://ibug.io/blog/2021/01/linux-container-explained</id><content type="html" xml:base="https://ibug.io/blog/2021/01/linux-container-explained/"><![CDATA[<p>Since years ago, containers have been a hot topic everywhere. There are many container softwares like <a href="https://www.docker.com/">Docker</a>, <a href="https://linuxcontainers.org/">Linux Containers</a> and <a href="https://sylabs.io/singularity/">Singularity</a>. It’s hard to say one <em>understand</em> what containers are without diving into all the gory details of them, so I decided to go on this exploration myself.</p>
-	<p>The actual motivation was (quite) a bit different, though, as I was a TA of <em>Operating Systems (H)</em> in Spring 2020, and I wanted to bring a wave of innovation into the course labs, so I worked this out very early.</p>
-	<p>The contents in this article are listed in the Table of Contents <span class="wide-only">on the right</span><span class="nonwide-only">at the top of this page</span>. My implementation in my GitHub repository and the original lab documents (which is also written primarily by me, in Chinese) are linked right above.</p>
-	<p>My test environment is Ubuntu 18.04 LTS (Kernel 5.3, HWE 18.04). In case of any difference, you can consult Google for details.</p>
-	<p>If you want to find out the exact system calls involved in a command-line tool, <a href="https://strace.io/"><code class="language-plaintext highlighter-rouge">strace</code></a> is your friend.</p>
-	<div class="notice--warning">
-		<h4 class="no_toc" id="code-samples-have-a-different-license-than-this-article"><i class="fas fa-exclamation-triangle"></i> Code samples have a different license than this article</h4>
-		<p>While this article is licensed under the CC BY-SA 4.0 license, code samples and snippets are taken from the GitHub repository, which is licensed under <a href="https://github.com/iBug/iSpawn/blob/master/LICENSE">the GPL-3.0 license</a>.</p>
-	</div>
-	<h2 id="experimenting">Experimenting with isolation</h2>
-	<p>Before we jump straight to writing code, let’s warm ourselves up by playing with an existing, minimal container implementation, to get a better idea of our target.</p>
-	<h3 id="rootfs">Preparing the root filesystem</h3>
-	<p>To keep things simple, we’re going to use the system images from the LXC project. Grab the latest Ubuntu image from <a href="https://images.linuxcontainers.org/images/ubuntu/">https://images.linuxcontainers.org/images/ubuntu/</a>, unzip it to somewhere convenient for you, and this part is <em>almost</em> done.</p>
-	<p>If you’re on a “modern” distro like latest Ubuntu, Debian or Fedora, you need to populate the <code class="language-plaintext highlighter-rouge">/etc/machine-id</code> file in the container image with a valid “machine ID”, because systemd needs it. A simple way to do this is</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>systemd-machine-id-setup <span class="nt">--root</span><span class="o">=</span>/path/to/your/rootfs
-</code></pre>
-		</div>
-	</div>
-	<p>If you’re running systemd 240 or later, there’s a better neat tool for this job:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>systemd-id128 new <span class="o">&gt;</span> /path/to/your/rootfs/etc/machine-id
-</code></pre>
-		</div>
-	</div>
-	<h3 id="chroot">Playing with chroot</h3>
-	<p><a href="https://wiki.debian.org/chroot">chroot</a> is an old way to limit the directory tree a process (and its subprocesses) can see to a specific subtree. Under normal circumstances, processes cannot see anything outsite the chroot’d directory. This is called a <em>chroot jail</em>. Understanding the concepts of chroot is an important first step to understanding containers, though a typical container does <em>not</em> use chroot (more on this below).</p>
-	<p>Using chroot is very easy:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="nb">chroot</span> /path/to/your/rootfs
-</code></pre>
-		</div>
-	</div>
-	<p>You now get a shell inside the <em>chroot jail</em>. You can perform file-based operation like running “regular” commands and editing system files. All changes are saved in this “container rootfs”. You can even try <code class="language-plaintext highlighter-rouge">apt update</code> and <code class="language-plaintext highlighter-rouge">apt install vim</code> and see if it works.</p>
-	<p>As you’re probably aware, chroot is just too simple and sometimes naive to be secure. You can try the following commands, but be sure to save your work. <strong>Proceed with caution!</strong></p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>reboot
-mount
-<span class="nb">dd </span><span class="k">if</span><span class="o">=</span>/dev/sda <span class="nv">of</span><span class="o">=</span><span class="nb">test </span><span class="nv">bs</span><span class="o">=</span>4k <span class="nv">count</span><span class="o">=</span>1
-<span class="nb">echo</span> <span class="nv">$$</span>
-</code></pre>
-		</div>
-	</div>
-	<h3 id="systemd-nspawn">Playing with systemd-nspawn</h3>
-	<p>As you can see, chroot lacks too many security constaints. <a href="https://wiki.debian.org/nspawn">Systemd-nspawn</a>, on the other hand, is a <em>complete</em> container implementation and is thus secure against random programs.</p>
-	<p>Using systemd-nspawn is equally easy:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="nb">cd</span> /path/to/your/rootfs
-systemd-nspawn
-</code></pre>
-		</div>
-	</div>
-	<p>Now repeat your experiments in the chroot section and carefully observe the differences.</p>
-	<h2 id="base-program">The base program</h2>
-	<p>After getting your rootfs up for rocking, we’ll start with a fairly simple chroot-based program, modify it step-by-step, until it becomes the container we want.</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
-#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
-#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="c1"> // For wait(2)</span><span class="cp">
-#include</span> <span class="cpf">&lt;sys/wait.h&gt;</span><span class="c1">  // For wait(2)</span><span class="cp">
-</span>
-<span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">usage</span> <span class="o">=</span>
-<span class="s">"Usage: %s &lt;directory&gt; &lt;command&gt; [args...]</span><span class="se">\n</span><span class="s">"</span>
-<span class="s">"</span><span class="se">\n</span><span class="s">"</span>
-<span class="s">"  Run &lt;directory&gt; as a container and execute &lt;command&gt;.</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
-
-<span class="kt">void</span> <span class="nf">error_exit</span><span class="p">(</span><span class="kt">int</span> <span class="n">code</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">message</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">perror</span><span class="p">(</span><span class="n">message</span><span class="p">);</span>
-    <span class="n">_exit</span><span class="p">(</span><span class="n">code</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">argc</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="n">usage</span><span class="p">,</span> <span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
-        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">chdir</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">error_exit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
-
-    <span class="n">pid_t</span> <span class="n">pid</span> <span class="o">=</span> <span class="n">fork</span><span class="p">();</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">pid</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-        <span class="c1">// Child goes for target program</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">chroot</span><span class="p">(</span><span class="s">"."</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">error_exit</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">"chroot"</span><span class="p">);</span>
-        <span class="n">execvp</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">argv</span> <span class="o">+</span> <span class="mi">2</span><span class="p">);</span>
-        <span class="n">error_exit</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="s">"exec"</span><span class="p">);</span>
-    <span class="p">}</span>
-
-    <span class="c1">// Parent waits for child</span>
-    <span class="kt">int</span> <span class="n">status</span><span class="p">,</span> <span class="n">ecode</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="n">wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">status</span><span class="p">);</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">WIFEXITED</span><span class="p">(</span><span class="n">status</span><span class="p">))</span> <span class="p">{</span>
-        <span class="n">printf</span><span class="p">(</span><span class="s">"Exited with status %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">WEXITSTATUS</span><span class="p">(</span><span class="n">status</span><span class="p">));</span>
-        <span class="n">ecode</span> <span class="o">=</span> <span class="n">WEXITSTATUS</span><span class="p">(</span><span class="n">status</span><span class="p">);</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">WIFSIGNALED</span><span class="p">(</span><span class="n">status</span><span class="p">))</span> <span class="p">{</span>
-        <span class="n">printf</span><span class="p">(</span><span class="s">"Killed by signal %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">WTERMSIG</span><span class="p">(</span><span class="n">status</span><span class="p">));</span>
-        <span class="n">ecode</span> <span class="o">=</span> <span class="o">-</span><span class="n">WTERMSIG</span><span class="p">(</span><span class="n">status</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="n">ecode</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<h2 id="namespaces">Namespaces</h2>
-	<p><a href="https://en.wikipedia.org/wiki/Linux_namespaces">Namespaces</a> are a fundamental aspect of Linux containers. They provide isolation for a variety of mission-critical system resources like process IDs, hostnames, network stacks and inter-process communication. They are the key to making containers “look independent” from the host system.</p>
-	<p>As of Linux kernel 5.6 released in April 2020, there are 8 kinds of namespaces present:</p>
-	<ul>
-		<li><strong>Mount namespace</strong> isolates mount points (visibility) from the parent. New mount activities in the parent namespace won’t be visible in child namespaces. However, to achieve the reverse, a separate thing called “mount propagation” is involved. First appeared in 2002, Linux 2.4.19.</li>
-		<li><strong>UTS namespace</strong> provides isolated hostnames. UTS stands for <a href="https://en.wikipedia.org/wiki/History_of_Unix">“<strong>U</strong>NIX <strong>T</strong>ime-<strong>S</strong>haring system”</a>. First appeared in 2006, Linux 2.6.19.</li>
-		<li><strong>IPC namespace</strong> isolates traditional System V-style IPC methods. First appeared in 2006, Linux 2.6.19.</li>
-		<li><strong>PID namespace</strong> provides a separate set of process IDs so that a process may look different inside. This is important for certain programs to function properly, most notably the init process, which must be PID 1. First appeared in 2008, Linux 2.6.24.</li>
-		<li><strong>Networking namespace</strong> provides a full set of network stack. Suitable for creating isolated network environments for containers. First appeared in 2009, Linux 2.6.29.</li>
-		<li><strong>User namespace</strong> allows mapping UIDs / GIDs from containers to hosts, so that unpriviledged users can perform certain tasks that normally require the superuser privilege, without actually elevating themselves or posing risks to the host. First appeared in 2013, Linux 3.8.</li>
-		<li><strong>Cgroup namespace</strong> provides isolated cgroup hierarchies so containers can safely utilize cgroup functionalities without affecting the host. First appeared in 2016, Linux 4.6.</li>
-		<li><strong>Time namespace</strong> allows different processes to “see” different system times. First appeared in 2020, Linux 5.6.</li>
-	</ul>
-	<p>There are two ways to get namespaces isolated, <a href="https://man7.org/linux/man-pages/man2/unshare.2.html"><code class="language-plaintext highlighter-rouge">unshare()</code></a> and <a href="https://man7.org/linux/man-pages/man2/clone.2.html"><code class="language-plaintext highlighter-rouge">clone()</code></a>. A brief difference is that <code class="language-plaintext highlighter-rouge">unshare</code> isolates for the calling process (except PID namespace, check the manual for more details), while <code class="language-plaintext highlighter-rouge">clone</code> creates a new process with isolated namespaces. We’ll go for <code class="language-plaintext highlighter-rouge">clone</code> because it’s the system call underneath Go’s <code class="language-plaintext highlighter-rouge"><span class="n">exec</span><span class="o">.</span><span class="n">Command</span></code>, and that Go is used for popular container software like Docker and Singularity.</p>
-	<p>To utilize the <code class="language-plaintext highlighter-rouge">clone</code> system call, we need some adaptions, among which the most notable ones are the entry function and the child stack (using <code class="language-plaintext highlighter-rouge">mmap()</code>, I had problems later with <code class="language-plaintext highlighter-rouge">malloc()</code> in my early testing). The rest are covered pretty well in the manual so there’s no need to repeat them here (e.g. <code class="language-plaintext highlighter-rouge">SIGCHLD</code> appearing in <code class="language-plaintext highlighter-rouge">flags</code> parameter).</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kt">int</span> <span class="nf">child</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">printf</span><span class="p">(</span><span class="s">"My name is %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">);</span>
-    <span class="k">return</span> <span class="mi">3</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
-    <span class="kt">char</span> <span class="n">name</span><span class="p">[]</span> <span class="o">=</span> <span class="s">"child"</span><span class="p">;</span>
-
-<span class="cp">#define STACK_SIZE (1024 * 1024) // 1 MiB
-</span>    <span class="kt">void</span> <span class="o">*</span><span class="n">child_stack</span> <span class="o">=</span> <span class="n">mmap</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="n">STACK_SIZE</span><span class="p">,</span>
-                             <span class="n">PROT_READ</span> <span class="o">|</span> <span class="n">PROT_WRITE</span><span class="p">,</span>
-                             <span class="n">MAP_PRIVATE</span> <span class="o">|</span> <span class="n">MAP_ANONYMOUS</span> <span class="o">|</span> <span class="n">MAP_STACK</span><span class="p">,</span>
-                             <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
-    <span class="c1">// Assume stack grows downwards</span>
-    <span class="kt">void</span> <span class="o">*</span><span class="n">child_stack_start</span> <span class="o">=</span> <span class="n">child_stack</span> <span class="o">+</span> <span class="n">STACK_SIZE</span><span class="p">;</span>
-
-    <span class="kt">int</span> <span class="n">ch</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">child_stack_start</span><span class="p">,</span> <span class="n">SIGCHLD</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
-    <span class="kt">int</span> <span class="n">status</span><span class="p">;</span>
-    <span class="n">wait</span><span class="p">(</span><span class="o">&amp;</span><span class="n">status</span><span class="p">);</span>
-    <span class="n">printf</span><span class="p">(</span><span class="s">"Child exited with code %d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">WEXITSTATUS</span><span class="p">(</span><span class="n">status</span><span class="p">));</span>
-    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>And for the include headers as well.</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="cp">#define _GNU_SOURCE    // Required for enabling clone(2)
-#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
-#include</span> <span class="cpf">&lt;sched.h&gt;</span><span class="c1">     // For clone(2)</span><span class="cp">
-#include</span> <span class="cpf">&lt;signal.h&gt;</span><span class="c1">    // For SIGCHLD constant</span><span class="cp">
-#include</span> <span class="cpf">&lt;sys/mman.h&gt;</span><span class="c1">  // For mmap(2)</span><span class="cp">
-#include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="c1"> // For wait(2)</span><span class="cp">
-#include</span> <span class="cpf">&lt;sys/wait.h&gt;</span><span class="c1">  // For wait(2)</span><span class="cp">
-</span></code></pre>
-		</div>
-	</div>
-	<p>Now that we have <code class="language-plaintext highlighter-rouge">clone</code> ready, adding support for namespace isolation is as simple as adding flags to the parameters.</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kt">int</span> <span class="n">ch</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">child_stack_start</span><span class="p">,</span> <span class="n">CLONE_NEWNS</span> <span class="o">|</span> <span class="n">CLONE_NEWUTS</span> <span class="o">|</span> <span class="n">CLONE_NEWIPC</span> <span class="o">|</span> <span class="n">CLONE_NEWPID</span> <span class="o">|</span> <span class="n">CLONE_NEWCGROUP</span> <span class="o">|</span> <span class="n">SIGCHLD</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
-</code></pre>
-		</div>
-	</div>
-	<h2 id="mounts">Mounts</h2>
-	<p>Traditionally, mounting is a way to map raw disks to accessible filesystems. Since then, its usage has evolved and supports much more than disk mapping. We’re particularly interested in using special filesystems like <code class="language-plaintext highlighter-rouge">/proc</code> (the FS that provides runtime information like processes and kernel parameters), <code class="language-plaintext highlighter-rouge">/sys</code> (system settings, device information etc.), <code class="language-plaintext highlighter-rouge">/tmp</code> (a temporary filesystem backed by RAM) etc., without which a container won’t function properly.</p>
-	<p>For a minimal example, we’ll mount 4 essential filesystems with correct mount options for our container. They are the three mentioned above plus <code class="language-plaintext highlighter-rouge">/dev</code> as a tmpfs. We’ll also create a few device nodes under <code class="language-plaintext highlighter-rouge">/dev</code> so things can go smoothly when they’re needed (e.g. <code class="language-plaintext highlighter-rouge">some_command &gt; /dev/null</code>).</p>
-	<div class="notice--primary">
-		<h4 class="no_toc" id="were-not-using-devtmpfs-here"><i class="fas fa-times-circle"></i> We’re not using <code class="language-plaintext highlighter-rouge">devtmpfs</code> here</h4>
-		<p>If you examine current mounts in your host system, you’ll probably see that <code class="language-plaintext highlighter-rouge">/dev</code> is mounted as <code class="language-plaintext highlighter-rouge">devtmpfs</code>. While it may appear straightforward to employ that, it’s unacceptable for <strong>a container</strong>, as it exposes <em>all</em> device nodes to the container, which violates the purpose of isolation of containers. See <a href="https://unix.stackexchange.com/q/77933/211239">this answer</a> on Unix &amp; Linux Stack Exchange.</p>
-	</div>
-	<p>To do this manually, you’ll issue the following commands in a shell.</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>mount <span class="nt">-t</span> tmpfs tmpfs /dev
-mount <span class="nt">-t</span> proc proc /proc
-mount <span class="nt">-t</span> sysfs sysfs /sys
-mount <span class="nt">-t</span> tmpfs tmpfs /tmp
-</code></pre>
-		</div>
-	</div>
-	<p>You can then run <code class="language-plaintext highlighter-rouge">mount</code> without arguments to see the mount results.</p>
-	<div class="language-text highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>sysfs on /sys type sysfs (rw,relatime)
-proc on /proc type proc (rw,relatime)
-tmpfs on /dev type devtmpfs (rw,relatime)
-tmpfs on /tmp type tmpfs (rw,relatime)
-</code></pre>
-		</div>
-	</div>
-	<p>If you compare this with the mount points in your host system, you may notice something different.</p>
-	<div class="language-text highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime)
-proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
-udev on /dev type devtmpfs (rw,nosuid,noexec,relatime,size=65895752k,nr_inodes=16473938,mode=755)
-tmpfs on /run type tmpfs (rw,nosuid,nodev,noexec,relatime,size=13191916k,mode=755)
-</code></pre>
-		</div>
-	</div>
-	<p>The extra flags (<code class="language-plaintext highlighter-rouge">nosuid,nodev,noexec</code>) control the behavior of the mount point. For example, <code class="language-plaintext highlighter-rouge">nosuid</code> means the set-uid bit will be ignored for entries under the mount point, while <code class="language-plaintext highlighter-rouge">noexec</code> prevents any execution of programs from inside.</p>
-	<p>Now we’re going to do it in C. The system call is also named <code class="language-plaintext highlighter-rouge">mount</code>, and has the following signature:</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kt">int</span> <span class="nf">mount</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">source</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">target</span><span class="p">,</span>
-          <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">filesystemtype</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">mountflags</span><span class="p">,</span>
-          <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">data</span><span class="p">);</span>
-</code></pre>
-		</div>
-	</div>
-	<p>It should be intuitive enough what the first three parameters are for, so for now we can just write</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="n">mount</span><span class="p">(</span><span class="s">"tmpfs"</span><span class="p">,</span> <span class="s">"/dev"</span><span class="p">,</span> <span class="s">"tmpfs"</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
-<span class="n">mount</span><span class="p">(</span><span class="s">"proc"</span><span class="p">,</span> <span class="s">"/proc"</span><span class="p">,</span> <span class="s">"proc"</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
-<span class="n">mount</span><span class="p">(</span><span class="s">"sysfs"</span><span class="p">,</span> <span class="s">"/sys"</span><span class="p">,</span> <span class="s">"sysfs"</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
-<span class="n">mount</span><span class="p">(</span><span class="s">"tmpfs"</span><span class="p">,</span> <span class="s">"/tmp"</span><span class="p">,</span> <span class="s">"tmpfs"</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
-</code></pre>
-		</div>
-	</div>
-	<p>The fourth parameter corresponds to the flags we discussed above. All applicable flags can be found in the man page for <a href="https://man7.org/linux/man-pages/man2/mount.2.html"><code class="language-plaintext highlighter-rouge">mount(2)</code></a>.</p>
-	<p id="mount-data-parameter">Keep in mind that, however, the last parameter isn’t entirely useless. It’s simply not used for now, but it’ll play a role later. (Actually, you may have noticed already. Good job for that.)</p>
-	<h3 id="device-nodes">Creating device nodes</h3>
-	<p>Now that we have an empty <code class="language-plaintext highlighter-rouge">/dev</code> directory, we should populate it with some device nodes so that software expecting their presence could work. At a minimum, we need <code class="language-plaintext highlighter-rouge">null</code>, <code class="language-plaintext highlighter-rouge">zero</code>, <code class="language-plaintext highlighter-rouge">random</code> and <code class="language-plaintext highlighter-rouge">urandom</code>, but you can add <code class="language-plaintext highlighter-rouge">tty</code> and <code class="language-plaintext highlighter-rouge">console</code> if you want (these two are a bit different - you have been warned).</p>
-	<p>Device nodes are created with <a href="https://man7.org/linux/man-pages/man2/mknod.2.html"><code class="language-plaintext highlighter-rouge">mknod(2)</code></a>, whose prototype is:</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kt">int</span> <span class="nf">mknod</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="n">mode_t</span> <span class="n">mode</span><span class="p">,</span> <span class="n">dev_t</span> <span class="n">dev</span><span class="p">);</span>
-</code></pre>
-		</div>
-	</div>
-	<p>With a little research effort, we know we’ll call it like this:</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="n">mknod</span><span class="p">(</span><span class="s">"/dev/something"</span><span class="p">,</span> <span class="n">S_IFCHR</span> <span class="o">|</span> <span class="mo">0666</span><span class="p">,</span> <span class="n">makedev</span><span class="p">(</span><span class="n">MAJOR</span><span class="p">,</span> <span class="n">MINOR</span><span class="p">));</span>
-</code></pre>
-		</div>
-	</div>
-	<p>To determine the device node numbers, you can take a look at the same nodes in the host system, using <code class="language-plaintext highlighter-rouge">ls -l</code> or <code class="language-plaintext highlighter-rouge">stat</code>. Don’t worry, the numbers for special devices remain the same across Linux distros, <a href="https://unix.stackexchange.com/a/354985/211239">unlike BSD systems</a>. It shouldn’t take long before you come to this:</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="n">mknod</span><span class="p">(</span><span class="s">"dev/null"</span><span class="p">,</span> <span class="n">S_IFCHR</span> <span class="o">|</span> <span class="mo">0666</span><span class="p">,</span> <span class="n">makedev</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">));</span>
-<span class="n">mknod</span><span class="p">(</span><span class="s">"dev/zero"</span><span class="p">,</span> <span class="n">S_IFCHR</span> <span class="o">|</span> <span class="mo">0666</span><span class="p">,</span> <span class="n">makedev</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">));</span>
-<span class="n">mknod</span><span class="p">(</span><span class="s">"dev/random"</span><span class="p">,</span> <span class="n">S_IFCHR</span> <span class="o">|</span> <span class="mo">0666</span><span class="p">,</span> <span class="n">makedev</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">));</span>
-<span class="n">mknod</span><span class="p">(</span><span class="s">"dev/urandom"</span><span class="p">,</span> <span class="n">S_IFCHR</span> <span class="o">|</span> <span class="mo">0666</span><span class="p">,</span> <span class="n">makedev</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">));</span>
-</code></pre>
-		</div>
-	</div>
-	<h2 id="pivot-root">pivot_root</h2>
-	<p>We’re ready with mounts, so now we can take a look at switching the root filesystem for our container.</p>
-	<p>The <a href="#base-program">base program</a> used <code class="language-plaintext highlighter-rouge">chroot()</code> for the time being, but talking about a (baseline) secure container, <a href="https://github.com/earthquake/chw00t">it’s terrible</a>. We have to resort to another Linux feature, <code class="language-plaintext highlighter-rouge">pivot_root</code>, for this purpose.</p>
-	<p>Let’s first take a look at <a href="https://man7.org/linux/man-pages/man2/pivot_root.2.html">its man page</a> to determine its prototype.</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kt">int</span> <span class="nf">pivot_root</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">new_root</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">put_old</span><span class="p">);</span>
-</code></pre>
-		</div>
-	</div>
-	<p>This system call is special enough that we must also take care of its notes and requirements. For example, <code class="language-plaintext highlighter-rouge">new_root</code> must be a mount point. While the man page does provide a solution to this problem by mounting the directory on top of itself, it’s too prone to errors for us to adopt. Instead we’ll be creating a temporary directory to use as the mount point.</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">newroot</span> <span class="o">=</span> <span class="s">"/tmp/ispawn"</span><span class="p">;</span>
-<span class="n">mkdir</span><span class="p">(</span><span class="n">newroot</span><span class="p">,</span> <span class="mo">0755</span><span class="p">);</span>
-</code></pre>
-		</div>
-	</div>
-	<p>We also need a value for the second parameter to <code class="language-plaintext highlighter-rouge">pivot_root</code>, the <code class="language-plaintext highlighter-rouge">put_old</code> directory. The manual says the following:</p>
-	<blockquote>
-		<p><code class="language-plaintext highlighter-rouge">put_old</code> must be at or underneath <code class="language-plaintext highlighter-rouge">new_root</code></p>
-	</blockquote>
-	<p>A direct interpretation is that <code class="language-plaintext highlighter-rouge">put_old</code> must be at a subpath under <code class="language-plaintext highlighter-rouge">new_root</code>, which means we can simply create (or reuse an existing) a directory under <code class="language-plaintext highlighter-rouge">new_root</code> to use.</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">put_old</span> <span class="o">=</span> <span class="s">"/tmp/ispawn/oldroot"</span><span class="p">;</span>
-<span class="n">mkdir</span><span class="p">(</span><span class="n">put_old</span><span class="p">);</span>
-</code></pre>
-		</div>
-	</div>
-	<p>And now we can do <code class="language-plaintext highlighter-rouge">pivot_root</code> with the directories we just set up:</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="n">pivot_root</span><span class="p">(</span><span class="n">newroot</span><span class="p">,</span> <span class="n">put_old</span><span class="p">);</span>
-</code></pre>
-		</div>
-	</div>
-	<p>If everything so far is correct, we should now be running inside the new root tree. The “old root”, or the root filesystem of the host system, is now available at <code class="language-plaintext highlighter-rouge">/oldroot</code>.</p>
-	<p>Apparently, a container shouldn’t be able to access the host filesystem without explicit grants, so we’re going to “hide” the old root. It is, from the view from within the container, an ordinary mount point that we can just unmount. However, as there (definitely) are other processes in the host system still using the filesystem, it can’t be unmounted directly.</p>
-	<p>There’s a technique called “lazy unmounting”, where existing processes continue to use the filesystem as usual, while other processes see it disappeared. It <a href="https://unix.stackexchange.com/q/390056/211239">could be dangerous</a>, but as we’re the one-and-only process inside the container, we know it’s safe for us.</p>
-	<p>With that many information told, the actual code is really simple:</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="n">umount2</span><span class="p">(</span><span class="s">"/oldroot"</span><span class="p">,</span> <span class="n">MNT_DETACH</span><span class="p">);</span>
-</code></pre>
-		</div>
-	</div>
-	<p>We’re using the <code class="language-plaintext highlighter-rouge">umount2</code> system call because we need to pass the extra flags to it. Now that the host filesystem is gone, we can remove the now-empty directory (remember we’re doing clean-up jobs):</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="n">rmdir</span><span class="p">(</span><span class="s">"/oldroot"</span><span class="p">);</span>
-</code></pre>
-		</div>
-	</div>
-	<p>We’ve isolated our container filesystem from the host system, and then we can proceed to securing and fortifying our container.</p>
-	<h2 id="capabilities">Capabilities</h2>
-	<p>In the traditional UNIX era, there were only two privilege levels - <em>privileged</em> (root) and <em>unprivileged</em> (non-root), where a <em>privileged</em> process has every privilege to alter the system, while an <em>unprivileged</em> process has none. Since Linux 2.2 in 1999, <em>capabilities</em> have been added to the kernel so that unprivileged processes may acquire certain abilities needed for some task, while privileged processes may drop capabilities unneeded, allowing for privilege control at a finer granularity. A <code class="language-plaintext highlighter-rouge">ping</code> process doesn’t need any extra privileges than sending ICMP packets, and a web server (probably) doesn’t need any extra privileges than binding to a low port (1 to 1023), do they?</p>
-	<p>With capabilities, unprivileged processes can be granted access to selected system functionalities, while privileged processes can be deprived of selected ones. For example, <code class="language-plaintext highlighter-rouge">CAP_NET_BIND_SERVICE</code> is the capability to bind to TCP or UDP ports between 1 and 1023, and <code class="language-plaintext highlighter-rouge">CAP_CHOWN</code> enables the use of <code class="language-plaintext highlighter-rouge">chown(2)</code>.</p>
-	<p>Now turning our focus back to containers. Without privilege separation, a “root” process inside a container can still do dangerous things, like scanning your hard drive where the host filesystem resides, and manipulate it. This is definitely not anything expected, so we’re going to limit the capabilities the container can have as a whole.</p>
-	<p>The system calls behind capabilities manipulation are very complicated, so unlike in previous sections, we’re going to use wrapped-up libraries to aid with this. There are two options available, <code class="language-plaintext highlighter-rouge">libcap</code> and <code class="language-plaintext highlighter-rouge">libcap-ng</code>, of which the latter is easier to understand and use. The documentations for <a href="https://linux.die.net/man/3/libcap">libcap</a> and <a href="https://people.redhat.com/sgrubb/libcap-ng/">libcap-ng</a> are given. Note that since they’re “external” libraries, extra flags need to be supplied when compiling. For libcap you’ll add <code class="language-plaintext highlighter-rouge">-lcap</code> to the compilation command, and similarly for libcap-ng you’ll add <code class="language-plaintext highlighter-rouge">-lcap-ng</code> to the command.</p>
-	<p>As an easier starting point, we’ll use <a href="https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities">Docker’s capabilities set</a> to avoid having to sort everything out by ourselves. Before we start, there’s another thing to learn - the different “sets” of capabilities of a process. In a few short words,</p>
-	<ul>
-		<li>The <em>bounding</em> set restricts the maximum possible set of capabilities a process (and all its descendants) can have</li>
-		<li>The <em>effective</em> set is what a process currently has and is effective</li>
-		<li>The <em>permitted</em> set may be granted when “asked” (using the appropriate system calls)</li>
-	</ul>
-	<p>It’s noticeable that we want to limit all three sets for the container. Using libcap-ng, the code is very simple:</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="n">capng_clear</span><span class="p">(</span><span class="n">CAPNG_SELECT_BOTH</span><span class="p">);</span>
-<span class="n">capng_updatev</span><span class="p">(</span><span class="n">CAPNG_ADD</span><span class="p">,</span> <span class="p">(</span><span class="n">capng_type_t</span><span class="p">)(</span><span class="n">CAPNG_EFFECTIVE</span> <span class="o">|</span> <span class="n">CAPNG_PERMITTED</span> <span class="o">|</span> <span class="n">CAPNG_BOUNDING_SET</span><span class="p">),</span>
-    <span class="n">CAP_SETPCAP</span><span class="p">,</span>
-    <span class="c1">// ...</span>
-    <span class="n">CAP_SETFCAP</span><span class="p">,</span>
-    <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
-<span class="n">capng_apply</span><span class="p">(</span><span class="n">CAPNG_SELECT_BOTH</span><span class="p">);</span>
-</code></pre>
-		</div>
-	</div>
-	<p>With <code class="language-plaintext highlighter-rouge">capng_clear</code>, we clear all capabilities from our pending changes, and add whitelisted capabilities, before finally applying the changes.</p>
-	<p>Using libcap, however, is slightly more complicated to achieve the same, as there’s no direct “clear all” function, but instead you’ll have to list them by yourself. <a href="https://github.com/iBug/iSpawn/commit/bcf27bf42771e7fd8c7f24abbec5907f6f727fd7">Here</a>’s an older version of my attempted code if you want to learn. Nevertheless, it’s never bad to learn more.</p>
-	<h2 id="seccomp">SecComp</h2>
-	<p>SecComp (Secure Computing) is a security module in Linux that lets a process to transition one-way into a “secure state” where no system call other than <code class="language-plaintext highlighter-rouge">read()</code>, <code class="language-plaintext highlighter-rouge">write()</code>, <code class="language-plaintext highlighter-rouge">sigreturn()</code> and <code class="language-plaintext highlighter-rouge">exit()</code> is allowed. It’s easily noticeable that this feature is too strict for making something useful, and <strong>seccomp-bpf</strong> is an extension to the rescue.</p>
-	<p>Seccomp BPF extends the seccomp module with Berkeley Packer Filter (BPF), an embedded instruction set that allows highly customized seccomp rules to be deployed. With BPF, you can create custom logic for system call filtering, including matching and testing individual system call arguments.</p>
-	<h2 id="syscall-filter">System call filtering</h2>
-	<p>To ensure full control, we’re using a whitelist for system calls. This means any unknown one will be rejected. So we’ll start by creating a new “SecComp filter context”, and set the default action to “reject”. By “reject”, we’ll return “permission denied” when a process tries to call it.</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="n">scmp_filter_ctx</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">seccomp_init</span><span class="p">(</span><span class="n">SCMP_ACT_ERRNO</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
-</code></pre>
-		</div>
-	</div>
-	<p>The <code class="language-plaintext highlighter-rouge">SCMP_ACT_ERRNO(1)</code> refers exactly to “respond with EPERM”, which will be hit if no other filters apply.</p>
-	<h3 id="syscall-whitelist">System call whitelist</h3>
-	<p>We’ll now add each “safe” system call to our filter and set it to “allowed”. To save some time scratching your head examining each system call, we’ll adopt <a href="https://github.com/moby/moby/blob/master/profiles/seccomp/default.json">Docker’s syscall whitelist</a>. Each system call will be wrapped in <code class="language-plaintext highlighter-rouge">SCMP_SYS</code> so it’s turned into a suitable number used inside SecComp.</p>
-	<p>We need to add the whole big list of “general” system calls, plus some platform- or scenario-specific ones, namely, two special system calls for <code class="language-plaintext highlighter-rouge">amd64</code> platform, and a few others for system administration, since we’ve allowed <code class="language-plaintext highlighter-rouge">CAP_SYS_ADMIN</code> inside the container.</p>
-	<p>Use your favorite text processing toolstack to get the big list into a C-array so we can loop over, like <a href="https://github.com/iBug/iSpawn/blob/master/syscall_allow.c">this</a>:</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kt">int</span> <span class="n">allowed_syscalls</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="n">SCMP_SYS</span><span class="p">(</span><span class="n">accept</span><span class="p">),</span>
-    <span class="n">SCMP_SYS</span><span class="p">(</span><span class="n">accept4</span><span class="p">),</span>
-    <span class="n">SCMP_SYS</span><span class="p">(</span><span class="n">access</span><span class="p">),</span>
-    <span class="c1">// Many, many more...</span>
-    <span class="n">SCMP_SYS</span><span class="p">(</span><span class="n">waitpid</span><span class="p">),</span>
-    <span class="n">SCMP_SYS</span><span class="p">(</span><span class="n">write</span><span class="p">),</span>
-    <span class="n">SCMP_SYS</span><span class="p">(</span><span class="n">writev</span><span class="p">),</span>
-</code></pre>
-		</div>
-	</div>
-	<p>And then append these special ones we want to include as well:</p>
-	<div class="language-plaintext highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>    // amd64-specific required syscalls
-    SCMP_SYS(arch_prctl),
-    SCMP_SYS(modify_ldt),
-
-    // CAP_SYS_ADMIN-specific syscalls
-    SCMP_SYS(bpf),
-    SCMP_SYS(clone),
-    SCMP_SYS(fanotify_init),
-    SCMP_SYS(lookup_dcookie),
-    SCMP_SYS(mount),
-    SCMP_SYS(name_to_handle_at),
-    SCMP_SYS(perf_event_open),
-    SCMP_SYS(quotactl),
-    SCMP_SYS(setdomainname),
-    SCMP_SYS(sethostname),
-    SCMP_SYS(setns),
-    SCMP_SYS(syslog),
-    SCMP_SYS(umount),
-    SCMP_SYS(umount2),
-    SCMP_SYS(unshare)
-};
-</code></pre>
-		</div>
-	</div>
-	<p>Find the number of items included, and save it for easier later use.</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kt">size_t</span> <span class="n">allowed_syscalls_len</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">allowed_syscalls</span><span class="p">)</span> <span class="o">/</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">allowed_syscalls</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
-</code></pre>
-		</div>
-	</div>
-	<p>We can then add each system call to our new SecComp filter as “allowed” with a simple loop:</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">allowed_syscalls_len</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">seccomp_rule_add</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">SCMP_ACT_ALLOW</span><span class="p">,</span> <span class="n">allowed_syscalls</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">0</span><span class="p">);</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<h3 id="loading-seccomp">Loading SecComp filter</h3>
-	<p>After our filter has been constructed, we can load it onto our process for it to take effect.</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="n">seccomp_load</span><span class="p">(</span><span class="n">ctx</span><span class="p">);</span>
-</code></pre>
-		</div>
-	</div>
-	<p>And finally, release the workspace to avoid memory leaks.</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="n">seccomp_release</span><span class="p">(</span><span class="n">ctx</span><span class="p">);</span>
-</code></pre>
-		</div>
-	</div>
-	<h3 id="seccomp-caveats">Caveats</h3>
-	<h4 id="seccomp-incompatible-syscalls">Incompatible system calls</h4>
-	<p>As I worked this out on an Ubuntu 18.04 environment, some newer system calls weren’t available in my system headers, like the <code class="language-plaintext highlighter-rouge">io_uring</code>-related ones that are introduced in Linux 5.1. You can safely comment out any of them that your compiler complains about not recognizing. There shouldn’t be too many of them if your environment is up-to-date, though.</p>
-	<h4 id="seccomp-checking">Precautionary checking</h4>
-	<p>As it’s too common for one of the function calls to fail, I’ve added sanity checks for them. Here’s the complete code of this part.</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kt">int</span> <span class="nf">filter_syscall</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">scmp_filter_ctx</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">seccomp_init</span><span class="p">(</span><span class="n">SCMP_ACT_ERRNO</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">ctx</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">allowed_syscalls_len</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="p">((</span><span class="n">errno</span> <span class="o">=</span> <span class="n">seccomp_rule_add</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">SCMP_ACT_ALLOW</span><span class="p">,</span> <span class="n">allowed_syscalls</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">0</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-    <span class="k">if</span> <span class="p">((</span><span class="n">errno</span> <span class="o">=</span> <span class="o">-</span><span class="n">seccomp_load</span><span class="p">(</span><span class="n">ctx</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="n">seccomp_release</span><span class="p">(</span><span class="n">ctx</span><span class="p">);</span>
-    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<h2 id="cgroups">Resource restriction</h2>
-	<p>The last part we’ll visit is restricting container resources. Surely we don’t want a container to overuse system resources like CPU or RAM and make the host system less stable. Linux Control Groups (Cgroups) is designed for efficient resource constraint that we’re going to make use of. There are many “cgroup systems” for different aspects of system resources, including CPU, RAM and even disk I/O. Looks pretty neat, right?</p>
-	<p>Unlike other parts we’ve built so far, cgroup doesn’t use system calls for setup and configuration, but a filesystem-based interface instead, like those in <code class="language-plaintext highlighter-rouge">/proc</code> or <code class="language-plaintext highlighter-rouge">/sys</code>. In fact, the cgroup control interface resides exactly under <code class="language-plaintext highlighter-rouge">/sys</code>, at <code class="language-plaintext highlighter-rouge">/sys/fs/cgroup</code>. With this interface, we read and write “files” to change configuration values, and create and delete directories to add or remove structures.</p>
-	<p>There are multiple cgroup “controllers” working on different aspects of system resources, each having a distinct tree structure under <code class="language-plaintext highlighter-rouge">/sys/fs/cgroup</code>. So first we’ll examine what cgroup controllers are available:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">root@ubuntu:~#</span><span class="w"> </span><span class="nb">ls</span> /sys/fs/cgroup
-<span class="go">blkio        cpuacct  freezer  net_cls           perf_event  systemd
-cpu          cpuset   hugetlb  net_cls,net_prio  pids        unified
-cpu,cpuacct  devices  memory   net_prio          rdma
-</span></code></pre>
-		</div>
-	</div>
-	<p>Here we’re interested in some of them, namely, <code class="language-plaintext highlighter-rouge">blkio</code>, <code class="language-plaintext highlighter-rouge">cpu</code>, <code class="language-plaintext highlighter-rouge">memory</code> and <code class="language-plaintext highlighter-rouge">pids</code>.</p>
-	<p>Let’s first take a look at <code class="language-plaintext highlighter-rouge">pids</code>. We’ll create our own subtree to start with:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">root@ubuntu:~#</span><span class="w"> </span><span class="nb">mkdir</span> /sys/fs/cgroup/pids/ispawn
-<span class="gp">root@ubuntu:~#</span><span class="w"> </span><span class="nb">ls</span> /sys/fs/cgroup/pids/ispawn
-<span class="go">cgroup.clone_children  notify_on_release  pid.events  tasks
-cgroup.procs           pid.current        pid.max
-</span></code></pre>
-		</div>
-	</div>
-	<p>It’s easily imagined that <code class="language-plaintext highlighter-rouge">pid.max</code> controls the maximum number of PIDs in this subsystem, so let’s write something to it:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">root@ubuntu:~#</span><span class="w"> </span><span class="nb">echo </span>16 <span class="o">&gt;</span> /sys/fs/cgroup/pids/ispawn/pid.max
-</code></pre>
-		</div>
-	</div>
-	<p>To verify that it’s working, make an attempt to exceed the limit. Open another shell and find its pid with <code class="language-plaintext highlighter-rouge">echo $$</code>. Write the number that you see (it’s the PID of the new shell) to <code class="language-plaintext highlighter-rouge">/sys/fs/cgroup/pids/ispawn/cgroup.procs</code>. You can verify that the new process has been added to the subsystem by reading that <code class="language-plaintext highlighter-rouge">cgroup.procs</code> files out, and you’ll see the PID you just written.</p>
-	<p>Now switch to the new shell and try spawning a lot of subprocesses, for example:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">for </span>i <span class="k">in</span> <span class="o">{</span>1..20<span class="o">}</span><span class="p">;</span> <span class="k">do</span> /bin/sleep 10<span class="p">;</span> <span class="k">done</span>
-</code></pre>
-		</div>
-	</div>
-	<p>You can see the shell output as <em>Operation not permitted</em> for 5 to 6 times. This means it has hit the PID cap and fails to spawn more processes.</p>
-	<p>In our C-based container program, we’ll do this in the parent process. The code is intuitively simple.</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="n">mkdir</span><span class="p">(</span><span class="s">"/sys/fs/cgroup/pids/ispawn"</span><span class="p">,</span> <span class="mo">0777</span><span class="p">);</span>
-<span class="kt">FILE</span> <span class="o">*</span><span class="n">fp</span> <span class="o">=</span> <span class="n">fopen</span><span class="p">(</span><span class="s">"/sys/fs/cgroup/pids/ispawn/pid.max"</span><span class="p">,</span> <span class="s">"w"</span><span class="p">);</span>
-<span class="n">fprintf</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="s">"%d"</span><span class="p">,</span> <span class="mi">16</span><span class="p">);</span>
-<span class="n">fclose</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
-<span class="kt">FILE</span> <span class="o">*</span><span class="n">fp</span> <span class="o">=</span> <span class="n">fopen</span><span class="p">(</span><span class="s">"/sys/fs/cgroup/pids/ispawn/cgroup.procs"</span><span class="p">,</span> <span class="s">"w"</span><span class="p">);</span>
-<span class="n">fprintf</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="s">"%d"</span><span class="p">,</span> <span class="n">pid</span><span class="p">);</span> <span class="c1">// pid of the child process</span>
-<span class="n">fclose</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
-</code></pre>
-		</div>
-	</div>
-	<p>We can now proceed to setting other limits:</p>
-	<ul>
-		<li>To reduce CPU shares, we write to <code class="language-plaintext highlighter-rouge">cpu/cpu.shares</code>. Because CPU shares are relative to each other and the system default is usually 1024, setting the value to 256 for our container gives it 1/4 as much CPU as other processes when the system load goes up. (It still gets more CPU when needed and when the system is more idle.)</li>
-		<li>To limit memory usage, we write to <code class="language-plaintext highlighter-rouge">memory/memory.limit_in_bytes</code> (for userspace memory) and <code class="language-plaintext highlighter-rouge">memory/memory.kmem.limit_in_bytes</code> (for kernel memory).
-			<ul>
-				<li>However, this limits only physical memory usage, so when swap is present, memory gets swapped out onto disk when it hits the limit. To completely disable swap for our container, set <code class="language-plaintext highlighter-rouge">memory/memory.swappiness</code> to zero.</li>
-			</ul>
-		</li>
-		<li>To reduce disk I/O priority, we write to <code class="language-plaintext highlighter-rouge">blkio/weight</code>. This is relative to 100 so writing 50 will reduce its disk I/O priority to half.</li>
-		<li>The last thing to note is that the tree hierarchies are independent among different cgroup controllers, so you have to create the same <code class="language-plaintext highlighter-rouge">ispawn</code> directory in <em>each</em> of them, and write <code class="language-plaintext highlighter-rouge">cgroup.procs</code> inside <em>each</em> of them.</li>
-	</ul>
-	<div class="notice--primary">
-		<h4 class="no_toc" id="heads-up"><i class="fas fa-fw fa-lightbulb"></i> Heads up</h4>
-		<p>The course lab at the time was based on Ubuntu 18.04 with Linux kernel 5.3 (18.04 HWE). The cgroup controllers in newer kernels may be very different from what’s presented in this article. For example, with Linux 5.4 on Ubuntu 20.04, the keys in PID cgroup begins with <code class="language-plaintext highlighter-rouge">pids.</code> instead of <code class="language-plaintext highlighter-rouge">pid.</code>, and <code class="language-plaintext highlighter-rouge">blkio</code> has a completely different set of available keys. Make sure you examine the cgroup directories before copying and pasting code.</p>
-	</div>
-	<h3 id="mount-cgroup-controllers">Mounting cgroup controllers inside the container</h3>
-	<p>To enable applications in our container to use cgroup controllers, we must mount them inside. Like how we mounted <code class="language-plaintext highlighter-rouge">/sys</code>, <code class="language-plaintext highlighter-rouge">/tmp</code> and other filesystems, we check the output of <code class="language-plaintext highlighter-rouge">mount</code> to determine how we’re going to call <code class="language-plaintext highlighter-rouge">mount(2)</code>.</p>
-	<div class="language-text highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>cgroup on /sys/fs/cgroup/pids type cgroup (rw,nosuid,nodev,noexec,relatime,pids)
-</code></pre>
-		</div>
-	</div>
-	<p>Everything looks similar to what we’ve just done, but there’s one different thing: There’s no mount flag for <code class="language-plaintext highlighter-rouge">pids</code>.</p>
-	<p>Recalling <a href="#mount-data-parameter">we skipped the last parameter of <code class="language-plaintext highlighter-rouge">mount</code></a>, now it’s time to pick it back up. Fortunately, it isn’t too complicated. For our use case, we can just pass the string <code class="language-plaintext highlighter-rouge">"pids"</code> to that parameter, and we swap the string for another to mount another cgroup controller. You can read the man page for <a href="https://man7.org/linux/man-pages/man7/cgroups.7.html"><code class="language-plaintext highlighter-rouge">cgroups(7)</code></a> about this, look for <em>Mounting v1 controllers</em>.</p>
-	<p>To mimic the monut points on our host system, we additionally mount a tmpfs at <code class="language-plaintext highlighter-rouge">/sys/fs/cgroup</code>, and remount this mountpoint as read-only after adding the controllers. The final result looks like this:</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kt">void</span> <span class="nf">mount_cgroup</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
-    <span class="kt">int</span> <span class="n">cgmountflags</span> <span class="o">=</span> <span class="n">MS_NOSUID</span> <span class="o">|</span> <span class="n">MS_NODEV</span> <span class="o">|</span> <span class="n">MS_NOEXEC</span> <span class="o">|</span> <span class="n">MS_RELATIME</span><span class="p">;</span>
-    <span class="c1">// Mount a tmpfs first</span>
-    <span class="n">mount</span><span class="p">(</span><span class="s">"none"</span><span class="p">,</span> <span class="s">"sys/fs/cgroup"</span><span class="p">,</span> <span class="s">"tmpfs"</span><span class="p">,</span> <span class="n">cgmountflags</span><span class="p">,</span> <span class="s">"mode=755"</span><span class="p">);</span>
-
-    <span class="c1">// Prepare mount points</span>
-    <span class="n">mkdir</span><span class="p">(</span><span class="s">"sys/fs/cgroup/blkio"</span><span class="p">,</span> <span class="mo">0755</span><span class="p">);</span>
-    <span class="n">mkdir</span><span class="p">(</span><span class="s">"sys/fs/cgroup/cpu,cpuacct"</span><span class="p">,</span> <span class="mo">0755</span><span class="p">);</span>
-    <span class="n">mkdir</span><span class="p">(</span><span class="s">"sys/fs/cgroup/memory"</span><span class="p">,</span> <span class="mo">0755</span><span class="p">);</span>
-    <span class="n">mkdir</span><span class="p">(</span><span class="s">"sys/fs/cgroup/pids"</span><span class="p">,</span> <span class="mo">0755</span><span class="p">);</span>
-
-    <span class="c1">// Mount cgroup subsystems</span>
-    <span class="n">mount</span><span class="p">(</span><span class="s">"cgroup"</span><span class="p">,</span> <span class="s">"sys/fs/cgroup/blkio"</span><span class="p">,</span> <span class="s">"cgroup"</span><span class="p">,</span> <span class="n">cgmountflags</span><span class="p">,</span> <span class="s">"blkio"</span><span class="p">);</span>
-    <span class="n">mount</span><span class="p">(</span><span class="s">"cgroup"</span><span class="p">,</span> <span class="s">"sys/fs/cgroup/cpu,cpuacct"</span><span class="p">,</span> <span class="s">"cgroup"</span><span class="p">,</span> <span class="n">cgmountflags</span><span class="p">,</span> <span class="s">"cpu,cpuacct"</span><span class="p">);</span>
-    <span class="n">mount</span><span class="p">(</span><span class="s">"cgroup"</span><span class="p">,</span> <span class="s">"sys/fs/cgroup/memory"</span><span class="p">,</span> <span class="s">"cgroup"</span><span class="p">,</span> <span class="n">cgmountflags</span><span class="p">,</span> <span class="s">"memory"</span><span class="p">);</span>
-    <span class="n">mount</span><span class="p">(</span><span class="s">"cgroup"</span><span class="p">,</span> <span class="s">"sys/fs/cgroup/pids"</span><span class="p">,</span> <span class="s">"cgroup"</span><span class="p">,</span> <span class="n">cgmountflags</span><span class="p">,</span> <span class="s">"pids"</span><span class="p">);</span>
-
-    <span class="c1">// cpu and cpuacct need symlinks</span>
-    <span class="n">symlink</span><span class="p">(</span><span class="s">"cpu,cpuacct"</span><span class="p">,</span> <span class="s">"sys/fs/cgroup/cpu"</span><span class="p">);</span>
-    <span class="n">symlink</span><span class="p">(</span><span class="s">"cpu,cpuacct"</span><span class="p">,</span> <span class="s">"sys/fs/cgroup/cpuacct"</span><span class="p">);</span>
-
-    <span class="c1">// Remount the tmpfs as R/O</span>
-    <span class="n">mount</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="s">"sys/fs/cgroup"</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">MS_REMOUNT</span> <span class="o">|</span> <span class="n">MS_RDONLY</span> <span class="o">|</span> <span class="n">cgmountflags</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
-    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<h3 id="cgroup-namespace-caveat">A small problem with cgroup namespace</h3>
-	<p>During my experiments, I noticed a strange issue where I could see the host cgroup hierarchies in my container implementation. It turns out that the cgroup “root” inside a cgroup namespace is the subtree the process belongs in when this cgroup namespace is created / isolated. Once the namespaces is created, its root is determined and fixed, even if the “root” process is moved into another subtree later.</p>
-	<p>This means the child process must be “moved” to the desired cgroup subtree before the cgroup namespace is isolated. This leaves us with two options:</p>
-	<ol>
-		<li>The parent process moves itself to the target cgroup subtree before calling <code class="language-plaintext highlighter-rouge">clone()</code> with <code class="language-plaintext highlighter-rouge">CLONE_NEWCGROUP</code></li>
-		<li>The parent process calls <code class="language-plaintext highlighter-rouge">clone()</code> without <code class="language-plaintext highlighter-rouge">CLONE_NEWCGROUP</code>, moves the child process to the target cgroup subtree, and then tells the child process to isolate the cgroup namespace.</li>
-	</ol>
-	<p>It should be noted that with the second option, some kind of “syncing” is needed to avoid the child process going too quickly to perform the cgroup namespace isolation before the parent process finishes its job. It’s easy to come up with a solution that just works: We can create a pipe between the processes, where the parent process can send something to tell the child process that it’s ready.</p>
-	<p>With this in mind, the second option is actually <a href="https://github.com/iBug/iSpawn/commit/cc4dcb1032e2a4d4fc57491cc904f126b719ba88">easier to implement</a>, since there’s another system call for isolating namespaces in-place (i.e. without creating a new process), that we put away earlier. It’s <code class="language-plaintext highlighter-rouge">unshare(2)</code>. It’s simple to use, too, just call <code class="language-plaintext highlighter-rouge">unshare(CLONE_NEWCGROUP)</code> when ready.</p>
-	<p>To verify that this issue is handled correctly, check the content in <code class="language-plaintext highlighter-rouge">/proc/1/cgroup</code>. The correct result should look like this, where every line ends with a single <code class="language-plaintext highlighter-rouge">/</code>:</p>
-	<div class="language-text highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>12:cpuset:/
-11:rdma:/
-10:blkio:/
-9:pids:/
-8:devices:/
-7:net_cls,net_prio:/
-6:memory:/
-5:hugetlb:/
-4:perf_event:/
-3:cpu,cpuacct:/
-2:freezer:/
-1:name=systemd:/
-0::/
-</code></pre>
-		</div>
-	</div>
-	<p>With an incorrectly written container, certain lines may have an unexpected value, generally starting with <code class="language-plaintext highlighter-rouge">/../</code>, for example:</p>
-	<div class="language-text highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>12:cpuset:/
-11:rdma:/
-10:blkio:/../user.slice
-9:pids:/../user.slice/user-0.slice/
-8:devices:/
-7:net_cls,net_prio:/
-6:memory:/../user.slice/user-0.slice/
-5:hugetlb:/
-4:perf_event:/
-3:cpu,cpuacct:/../user.slice
-2:freezer:/
-1:name=systemd:/
-0::/
-</code></pre>
-		</div>
-	</div>
-	<p>As explained above, these paths are “paths to the cgroup location of PID 1 relative to the ‘root’ of the cgroup namespace”. When properly done, the PID 1 should have all of its cgroup hierarchies belonging at “root”.</p>
-	<p>Don’t be surprised to see the inconsistent lines from <code class="language-plaintext highlighter-rouge">/proc/1/cgroup</code>, as a process can be at different locations in different cgroup controllers.</p>
-	<h2 id="conclusion">Conclusion</h2>
-	<p>Now here, at this point, we’ve gone through all technologies required for a functional and secure Linux container, although our “container” isn’t necessarily functional and secure. It’s going to be hard work examining and patching all the loopholes for the best security, if you’d like, but the fundamentals have been covered already so there won’t be anything new.</p>
-	<p>There are two namespaces we’ve skipped in the beginning (three if you count <code class="language-plaintext highlighter-rouge">CLONE_NEWTIME</code>). They are slightly more complicated to set up and isn’t necessary for a container, as Docker doesn’t use User Namespaces and systemd-nspawn doesn’t use Network Namespaces by default.</p>
-	<p>There are also more to consider if you want multiple containers to run simultaneously. One notable thing is that each should have a separete cgroup subtree. Avoiding mount point conflict in race conditions is another thing to take into account.</p>
-	<p>Should you want a ready-to-use example to play with, here’s the complete code that I wrote, with some bells and whistles added: <a href="https://github.com/iBug/iSpawn"><i class="fab fa-github"></i> iBug/iSpawn</a>. Keep in mind that it’s wrote for Ubuntu 18.04 and things could have been changed drastically, so it may not work in your system.</p>
-	<h3 id="further-reading">Further reading</h3>
-	<ul>
-		<li><strong>Linux containers in 500 lines of code</strong> by <em>Lizzie Dixon</em> - <a href="https://blog.lizzie.io/linux-containers-in-500-loc.html">https://blog.lizzie.io/linux-containers-in-500-loc.html</a></li>
-		<li>Wikipedia articles on …
-			<ul>
-				<li><a href="https://en.wikipedia.org/wiki/Linux_namespaces">Linux Namespaces</a></li>
-				<li><a href="https://en.wikipedia.org/wiki/Capability-based_security">Capability-based security</a></li>
-				<li><a href="https://en.wikipedia.org/wiki/Seccomp">SecComp</a></li>
-				<li><a href="https://en.wikipedia.org/wiki/Cgroups">Cgroups</a></li>
-				<li><a href="https://en.wikipedia.org/wiki/Security-Enhanced_Linux">SELinux</a>, which we didn’t touch here</li>
-			</ul>
-		</li>
-	</ul>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="container" /><category term="c" /><summary type="html"><![CDATA[Let's write our own container in C, from scratch]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="networking" /><category term="windows" /><summary type="html"><![CDATA[Today when I was running some networking diagnostics from an Ubuntu inside VMware Workstation, I noticed this strange result from mtr (My Traceroute):]]></summary></entry></feed>
