@@ -42,7 +42,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=02fc11c">
+		<link rel="stylesheet" href="/assets/css/main.css?v=6ee8441">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css">
 		<!--[if IE]>
 			<style>
@@ -64,11 +64,6 @@
 			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
 			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
 		</script>
-		<!--
- Minimal Mistakes layout: single
- Page Path: _posts/2021/2021-01-31-linux-container-explained.md
- Page Type: 
--->
 	</head>
 	<body class="layout--single">
 		<nav class="skip-links">
@@ -373,7 +368,7 @@ systemd-nspawn
 									<li><strong>Cgroup namespace</strong> provides isolated cgroup hierarchies so containers can safely utilize cgroup functionalities without affecting the host. First appeared in 2016, Linux 4.6.</li>
 									<li><strong>Time namespace</strong> allows different processes to “see” different system times. First appeared in 2020, Linux 5.6.</li>
 								</ul>
-								<p>There are two ways to get namespaces isolated, <a href="https://man7.org/linux/man-pages/man2/unshare.2.html"><code class="language-plaintext highlighter-rouge">unshare()</code></a> and <a href="https://man7.org/linux/man-pages/man2/clone.2.html"><code class="language-plaintext highlighter-rouge">clone()</code></a>. A brief difference is that <code class="language-plaintext highlighter-rouge">unshare</code> isolates for the calling process (except PID namespace, check the manual for more details), while <code class="language-plaintext highlighter-rouge">clone</code> creates a new process with isolated namespaces. We’ll go for <code class="language-plaintext highlighter-rouge">clone</code> because it’s the system call underneath Go’s <code class="language-plaintext highlighter-rouge"><span class="n">exec</span><span class="o">.</span><span class="n">Command</span></code>, and that Go is used for popular container software like Docker and Singularity.</p>
+								<p>There are two ways to get namespaces isolated, <a href="https://man7.org/linux/man-pages/man2/unshare.2.html"><code class="language-plaintext highlighter-rouge">unshare()</code></a> and <a href="https://man7.org/linux/man-pages/man2/clone.2.html"><code class="language-plaintext highlighter-rouge">clone()</code></a>. A brief difference is that <code class="language-plaintext highlighter-rouge">unshare</code> isolates for the calling process (except PID namespace, check the manual for more details), while <code class="language-plaintext highlighter-rouge">clone</code> creates a new process with isolated namespaces. We’ll go for <code class="language-plaintext highlighter-rouge">clone</code> because it’s the system call underneath Go’s <code class="language-go highlighter-rouge"><span class="n">exec</span><span class="o">.</span><span class="n">Command</span></code>, and that Go is used for popular container software like Docker and Singularity.</p>
 								<p>To utilize the <code class="language-plaintext highlighter-rouge">clone</code> system call, we need some adaptions, among which the most notable ones are the entry function and the child stack (using <code class="language-plaintext highlighter-rouge">mmap()</code>, I had problems later with <code class="language-plaintext highlighter-rouge">malloc()</code> in my early testing). The rest are covered pretty well in the manual so there’s no need to repeat them here (e.g. <code class="language-plaintext highlighter-rouge">SIGCHLD</code> appearing in <code class="language-plaintext highlighter-rouge">flags</code> parameter).</p>
 								<div class="language-c highlighter-rouge">
 									<div class="highlight">
@@ -1020,7 +1015,7 @@ cgroup.procs           pid.current        pid.max
 						<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 						<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 						<p>
-							Site version <a href="/status" class="version-text">G-653</a>
+							Site version <a href="/status" class="version-text">G-654</a>
 						</p>
 					</div>
 				</footer>
