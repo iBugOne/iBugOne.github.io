@@ -114,7 +114,7 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2018/05/python-reversi/</loc>
-			<lastmod>2022-04-30T20:00:10+00:00</lastmod>
+			<lastmod>2022-05-01T00:28:33+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2018/05/alpha-beta-pruning/</loc>
@@ -182,7 +182,7 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/09/raspberry-pi-4-review-benchmark/</loc>
-			<lastmod>2022-04-30T19:59:16+00:00</lastmod>
+			<lastmod>2022-05-01T00:28:33+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2019/09/convert-dfa-to-regex/</loc>
@@ -343,9 +343,6 @@
 			<loc>https://ibug.io/tag/development/</loc>
 		</url>
 		<url>
-			<loc>https://ibug.io/tag/python/</loc>
-		</url>
-		<url>
 			<loc>https://ibug.io/tag/algorithm/</loc>
 		</url>
 		<url>
@@ -424,9 +421,6 @@
 			<loc>https://ibug.io/category/talk/</loc>
 		</url>
 		<url>
-			<loc>https://ibug.io/category/reviews/</loc>
-		</url>
-		<url>
 			<loc>https://ibug.io/year/2009/</loc>
 		</url>
 		<url>
@@ -500,9 +494,6 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/tag/development/</loc>
-		</url>
-		<url>
-			<loc>https://ibug.io/tag/python/</loc>
 		</url>
 		<url>
 			<loc>https://ibug.io/tag/algorithm/</loc>
@@ -604,9 +595,6 @@
 			<loc>https://ibug.io/category/talk/</loc>
 		</url>
 		<url>
-			<loc>https://ibug.io/category/reviews/</loc>
-		</url>
-		<url>
 			<loc>https://ibug.io/collection/posts/</loc>
 		</url>
 		<url>
@@ -647,10 +635,10 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/assets/index/abuseipdb-verification.html</loc>
-			<lastmod>2022-04-30T12:00:45+00:00</lastmod>
+			<lastmod>2022-04-30T16:28:57+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/assets/index/</loc>
-			<lastmod>2022-04-30T12:00:45+00:00</lastmod>
+			<lastmod>2022-04-30T16:28:57+00:00</lastmod>
 		</url>
 	</urlset>
