@@ -277,10 +277,6 @@
 			<lastmod>2021-12-21T04:11:24+00:00</lastmod>
 		</url>
 		<url>
-			<loc>https://ibug.io/project/vlab/</loc>
-			<lastmod>2021-12-21T04:11:24+00:00</lastmod>
-		</url>
-		<url>
 			<loc>https://ibug.io/project/USTC-RV-Chisel/</loc>
 			<lastmod>2021-12-21T04:11:24+00:00</lastmod>
 		</url>
@@ -298,6 +294,10 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/project/PyReversi/</loc>
+			<lastmod>2021-12-21T04:11:24+00:00</lastmod>
+		</url>
+		<url>
+			<loc>https://ibug.io/project/vlab/</loc>
 			<lastmod>2021-12-21T04:11:24+00:00</lastmod>
 		</url>
 		<url>
@@ -635,10 +635,10 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/assets/index/abuseipdb-verification.html</loc>
-			<lastmod>2022-05-01T07:21:41+00:00</lastmod>
+			<lastmod>2022-05-01T13:42:03+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/assets/index/</loc>
-			<lastmod>2022-05-01T07:21:41+00:00</lastmod>
+			<lastmod>2022-05-01T13:42:03+00:00</lastmod>
 		</url>
 	</urlset>
