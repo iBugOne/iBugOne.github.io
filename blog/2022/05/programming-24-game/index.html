@@ -1,0 +1,1234 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>Taking 24-point game to the next level - iBug</title>
+		<meta name="description" content="The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.">
+		<meta name="author" content="iBug">
+		<meta property="article:author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="Taking 24-point game to the next level">
+		<meta property="og:url" content="https://ibug.io/blog/2022/05/programming-24-game/">
+		<meta property="og:description" content="The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2022-05-25T00:00:00+00:00">
+		<meta property="article:modified_time" content="2022-05-25T04:52:06+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2022/05/programming-24-game/">
+		<script type="application/ld+json">
+			{
+			  "@context": "https://schema.org",
+
+			    "@type": "Person",
+			    "name": "iBug",
+			    "url": "https://ibug.io/"
+
+			}
+		</script>
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script>
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=9251f56">
+		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
+		<!--[if IE]>
+			<style>
+				/* old IE unsupported flexbox fixes */
+				.greedy-nav .site-title {
+				  padding-right: 3em;
+				}
+				.greedy-nav button {
+				  position: absolute;
+				  top: 0;
+				  right: 0;
+				  height: 100%;
+				}
+			</style>
+		<![endif]-->
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<meta name="theme-color" content="#EDEDED">
+		<script>
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+	</head>
+	<body class="layout--single">
+		<nav class="skip-links">
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<!--[if lt IE 9]>
+			<div class="notice--danger align-center" style="margin: 0;">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience.</div>
+		<![endif]-->
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt="iBug"></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a href="/about/">About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/blog/">Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/projects/">Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/friends/">Friends</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/cn/">中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<i class="fas fa-search"></i>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay"
+  style=" background-image: url('/image/header/mountain-1.jpg');"
+>
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						Taking 24-point game to the next level
+					</h1>
+					<p class="page__meta">
+						<span class="page__meta-date">
+							<i class="far fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2022-05-25T00:00:00+00:00">May 25, 2022</time>
+						</span>
+						<span class="page__meta-sep"></span>
+						<span class="page__meta-readtime">
+							<i class="far fa-clock" aria-hidden="true"></i>
+							19 minute read
+						</span>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person">
+						<div class="author__avatar">
+							<img src="/image/avatar.png" alt="iBug" itemprop="image">
+						</div>
+						<div class="author__content">
+							<h3 class="author__name" itemprop="name">iBug</h3>
+							<div class="author__bio" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer"><i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox" />
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/bookmarks/"><i class="fas fa-fw fa-bookmark"></i> Bookmarks</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="Taking 24-point game to the next level">
+					<meta itemprop="description" content="The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.">
+					<meta itemprop="datePublished" content="2022-05-25T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2022-05-25T04:52:06+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#searching-for-answers">Searching for answers</a></li>
+										<li><a href="#generating-the-solution">Generating the solution</a></li>
+										<li><a href="#next-level-reducing-duplicate-answers">Next level: Reducing duplicate answers</a>
+											<ul>
+												<li><a href="#redesigning-data-structure">Redesigning data structure</a></li>
+												<li><a href="#deduplicating">Deduplicating</a></li>
+											</ul>
+										</li>
+										<li><a href="#advanced-level-more-deduplication-and-optimization">Advanced level: More deduplication, and optimization</a>
+											<ul>
+												<li><a href="#switching-to-c">Switching to C++</a></li>
+												<li><a href="#double-negativity-in-multiplicative-groups">Double-negativity in multiplicative groups</a></li>
+												<li><a href="#subtracting-negative-values">Subtracting negative values</a></li>
+												<li><a href="#substracting-zeros-and-dividing-by-ones">Substracting zeros and dividing by ones</a></li>
+												<li><a href="#memoizing-intermediate-results">Memoizing intermediate results</a></li>
+												<li><a href="#placement-of-zeros-and-ones">Placement of zeros and ones</a></li>
+											</ul>
+										</li>
+										<li><a href="#postface">Postface</a></li>
+										<li><a href="#references">References</a></li>
+									</ul>
+								</nav>
+							</aside>
+							<p>The <a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 game</a> is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.</p>
+							<p>Getting a program that determines whether a set of 4 numbers is solvable is easy, as there are only as many possible combinations as 4 numbers can form. Even a simple brute-force search</p>
+							<h2 id="searching-for-answers">Searching for answers</h2>
+							<p>Obviously it’s not going to be a good idea to enumerate all the arrangements and search by filling in the numbers, so we’re going to think about this from bottom-up.</p>
+							<p>Starting from two numbers, it’s easy to enumerate all 4 arithmetic operators for <code class="language-plaintext highlighter-rouge">a?b</code> and <code class="language-plaintext highlighter-rouge">b?a</code>, with addition and multiplication being <a href="https://en.wikipedia.org/wiki/Commutative_property">commutative</a> (i.e. <code class="language-plaintext highlighter-rouge">a+b</code> and <code class="language-plaintext highlighter-rouge">b+a</code> are identical), resulting in a total of 6 operations.</p>
+							<p>Taking this to a three-number setup. We can reduce it to the two-number case by picking two of the numbers and applying an operation. This can be generalized to an arbitrary number of inputs. As long as we’re cutting down a number at every recursion, we’ll eventually cover all possible combinations of all inputs and come to a conclusion.</p>
+							<p>With only one input number, we compare it with our search target to see if it’s an answer we want. One little note here is that <code class="language-plaintext highlighter-rouge">[0.1 + 0.2 != 0.3](https://stackoverflow.com/q/588004/5958455)</code>, so floating-point number equality must be handled with caution.</p>
+							<p>I wrote my initial versions of the 24 program in Go, and here’s the snippet on recursive searching:</p>
+							<div class="language-go highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">var</span> <span class="n">target</span> <span class="kt">float64</span>
+
+<span class="k">func</span> <span class="n">CompareFloat</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">threshold</span> <span class="kt">float64</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">Abs</span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">b</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">threshold</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">Find24</span><span class="p">(</span><span class="n">nodes</span> <span class="p">[]</span><span class="o">*</span><span class="n">Expression</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span> <span class="o">==</span> <span class="m">1</span> <span class="p">{</span>
+		<span class="n">result</span> <span class="o">:=</span> <span class="n">CompareFloat</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="m">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="m">1e-6</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">result</span> <span class="p">{</span>
+			<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="m">0</span><span class="p">]</span><span class="o">.</span><span class="n">repr</span><span class="p">,</span> <span class="s">"="</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+		<span class="p">}</span>
+		<span class="k">return</span> <span class="n">result</span>
+	<span class="p">}</span>
+	<span class="n">result</span> <span class="o">:=</span> <span class="no">false</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">);</span> <span class="n">i</span><span class="o">++</span> <span class="p">{</span>
+		<span class="k">for</span> <span class="n">j</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">);</span> <span class="n">j</span><span class="o">++</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">j</span> <span class="p">{</span>
+				<span class="k">continue</span>
+			<span class="p">}</span>
+			<span class="n">newNodes</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="o">*</span><span class="n">Expression</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">1</span><span class="p">)</span>
+			<span class="k">for</span> <span class="n">k</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">);</span> <span class="n">k</span><span class="o">++</span> <span class="p">{</span>
+				<span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">i</span> <span class="o">||</span> <span class="n">k</span> <span class="o">==</span> <span class="n">j</span> <span class="p">{</span>
+					<span class="k">continue</span>
+				<span class="p">}</span>
+				<span class="n">newNodes</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">newNodes</span><span class="p">,</span> <span class="n">nodes</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+			<span class="p">}</span>
+			<span class="n">newNodes</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">newNodes</span><span class="p">,</span> <span class="nb">new</span><span class="p">(</span><span class="n">Expression</span><span class="p">))</span>
+			<span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">j</span> <span class="p">{</span>
+				<span class="n">newNodes</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="sc">'+'</span><span class="p">)</span>
+				<span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">||</span> <span class="n">Find24</span><span class="p">(</span><span class="n">newNodes</span><span class="p">)</span>
+				<span class="n">newNodes</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="sc">'*'</span><span class="p">)</span>
+				<span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">||</span> <span class="n">Find24</span><span class="p">(</span><span class="n">newNodes</span><span class="p">)</span>
+			<span class="p">}</span>
+			<span class="n">newNodes</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="sc">'-'</span><span class="p">)</span>
+			<span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">||</span> <span class="n">Find24</span><span class="p">(</span><span class="n">newNodes</span><span class="p">)</span>
+			<span class="n">newNodes</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="sc">'/'</span><span class="p">)</span>
+			<span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">||</span> <span class="n">Find24</span><span class="p">(</span><span class="n">newNodes</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="n">result</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<h2 id="generating-the-solution">Generating the solution</h2>
+							<p>Without displaying the solution, the program can only get as far as a simple <a href="https://leetcode.com/problems/24-game/">LeetCode challenge</a> or another online judger. For anything to make the programming quiz more suitable as a school assignment, printing out the found solution is the next thing.</p>
+							<p>Apparently just joining the numbers and the operators together is not enough, as in many cases parentheses are required to denote specific order of operations over normal operator precedence. For example, <code class="language-plaintext highlighter-rouge">6*2+2</code> is not 24, but <code class="language-plaintext highlighter-rouge">6*(2+2)</code> is. Fortunately, blindly adding parentheses works just well, though duplicate or equivalent answers would be <em>extremely</em> common. No one would think that <code class="language-plaintext highlighter-rouge">(1+2)+3</code> and <code class="language-plaintext highlighter-rouge">1+(2+3)</code> makes any sensical difference, right? That’s because addition and multiplication are <a href="https://en.wikipedia.org/wiki/Associative_property">associative</a>. We also need to avoid adding parentheses around plain numbers, assuming we’re not dealing with negative inputs at this moment.</p>
+							<p>By enumerating all four operators and writing rules to carefully add parentheses when needed, we have a relatively logical <code class="language-plaintext highlighter-rouge">JoinExpression</code> function.</p>
+							<div class="language-go highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">type</span> <span class="n">Expression</span> <span class="k">struct</span> <span class="p">{</span>
+	<span class="n">value</span> <span class="kt">float64</span>
+	<span class="n">op</span>    <span class="kt">rune</span>
+	<span class="n">repr</span>  <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="o">*</span><span class="n">Expression</span><span class="p">,</span> <span class="n">op</span> <span class="kt">rune</span><span class="p">)</span> <span class="o">*</span><span class="n">Expression</span> <span class="p">{</span>
+	<span class="k">var</span> <span class="n">value</span> <span class="kt">float64</span>
+	<span class="k">var</span> <span class="n">repr</span> <span class="kt">string</span>
+	<span class="k">switch</span> <span class="n">op</span> <span class="p">{</span>
+	<span class="k">case</span> <span class="sc">'+'</span><span class="o">:</span>
+		<span class="n">value</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">e2</span><span class="o">.</span><span class="n">value</span>
+		<span class="n">repr</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"%s+%s"</span><span class="p">,</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
+	<span class="k">case</span> <span class="sc">'-'</span><span class="o">:</span>
+		<span class="n">value</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="n">e2</span><span class="o">.</span><span class="n">value</span>
+		<span class="n">rhs</span> <span class="o">:=</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span>
+		<span class="k">if</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="p">{</span>
+			<span class="n">rhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
+		<span class="p">}</span>
+		<span class="n">repr</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"%s-%s"</span><span class="p">,</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
+	<span class="k">case</span> <span class="sc">'*'</span><span class="o">:</span>
+		<span class="n">value</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="n">e2</span><span class="o">.</span><span class="n">value</span>
+		<span class="n">lhs</span> <span class="o">:=</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span>
+		<span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e1</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="p">{</span>
+			<span class="n">lhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
+		<span class="p">}</span>
+		<span class="n">rhs</span> <span class="o">:=</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span>
+		<span class="k">if</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="p">{</span>
+			<span class="n">rhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
+		<span class="p">}</span>
+		<span class="n">repr</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"%s*%s"</span><span class="p">,</span> <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
+	<span class="k">case</span> <span class="sc">'/'</span><span class="o">:</span>
+		<span class="n">value</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="n">e2</span><span class="o">.</span><span class="n">value</span>
+		<span class="n">lhs</span> <span class="o">:=</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span>
+		<span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e1</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="p">{</span>
+			<span class="n">lhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
+		<span class="p">}</span>
+		<span class="n">rhs</span> <span class="o">:=</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span>
+		<span class="k">if</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'*'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'/'</span> <span class="p">{</span>
+			<span class="n">rhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
+		<span class="p">}</span>
+		<span class="n">repr</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"%s/%s"</span><span class="p">,</span> <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="o">&amp;</span><span class="n">Expression</span><span class="p">{</span><span class="n">value</span><span class="o">:</span> <span class="n">value</span><span class="p">,</span> <span class="n">op</span><span class="o">:</span> <span class="n">op</span><span class="p">,</span> <span class="n">repr</span><span class="o">:</span> <span class="n">repr</span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Since plain numbers never need parantheses, their “operator” is assigned to a single dot (or any character not used in the code).</p>
+							<p>At this point, all that’s missing for a complete program is a <code class="language-plaintext highlighter-rouge">main()</code> function. To add a little bit of flexibility of changing the target value, I used Go’s standard library <code class="language-plaintext highlighter-rouge">flag</code> for parsing command-line arguments, though only a single option is needed now.</p>
+							<p>To avoid generating the same answer for any particular set of inputs, I shuffled the input numbers before doing the search.</p>
+							<div class="language-go highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">flag</span><span class="o">.</span><span class="n">Float64Var</span><span class="p">(</span><span class="o">&amp;</span><span class="n">target</span><span class="p">,</span> <span class="s">"t"</span><span class="p">,</span> <span class="m">24.0</span><span class="p">,</span> <span class="s">"target value"</span><span class="p">)</span>
+	<span class="n">flag</span><span class="o">.</span><span class="n">Parse</span><span class="p">()</span>
+
+	<span class="n">nums</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="o">*</span><span class="n">Expression</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">flag</span><span class="o">.</span><span class="n">Args</span><span class="p">()))</span>
+	<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">arg</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">flag</span><span class="o">.</span><span class="n">Args</span><span class="p">()</span> <span class="p">{</span>
+		<span class="n">value</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">strconv</span><span class="o">.</span><span class="n">ParseFloat</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="m">64</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+			<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+		<span class="p">}</span>
+		<span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">Expression</span><span class="p">{</span><span class="n">value</span><span class="o">:</span> <span class="n">value</span><span class="p">,</span> <span class="n">op</span><span class="o">:</span> <span class="sc">'.'</span><span class="p">,</span> <span class="n">repr</span><span class="o">:</span> <span class="n">arg</span><span class="p">}</span>
+	<span class="p">}</span>
+
+	<span class="n">rand</span><span class="o">.</span><span class="n">Seed</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">Now</span><span class="p">()</span><span class="o">.</span><span class="n">UnixNano</span><span class="p">())</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">nums</span> <span class="p">{</span>
+		<span class="n">j</span> <span class="o">:=</span> <span class="n">rand</span><span class="o">.</span><span class="n">Intn</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="m">1</span><span class="p">)</span>
+		<span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+	<span class="p">}</span>
+
+	<span class="k">if</span> <span class="o">!</span><span class="n">Find24</span><span class="p">(</span><span class="n">nums</span><span class="p">)</span> <span class="p">{</span>
+		<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"No solution"</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>The complete program can be found <a href="https://gist.github.com/iBug/62610c759f7702071baaf884301ae067">here</a> and ready to compile &amp; run.</p>
+							<p>This program can output lines among <code class="language-plaintext highlighter-rouge">(1+3)*(2+4) = 24</code> and <code class="language-plaintext highlighter-rouge">1*2*3*4 = 24</code>, which looks good so far.</p>
+							<h2 id="next-level-reducing-duplicate-answers">Next level: Reducing duplicate answers</h2>
+							<p>It’s easy to add a “show all answers” flag:</p>
+							<div class="language-go highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">var</span> <span class="n">allAnswers</span> <span class="kt">bool</span>
+
+<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="n">flag</span><span class="o">.</span><span class="n">BoolVar</span><span class="p">(</span><span class="o">&amp;</span><span class="n">allAnswers</span><span class="p">,</span> <span class="s">"a"</span><span class="p">,</span> <span class="no">false</span><span class="p">,</span> <span class="s">"find all solutions"</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>And replace all <code class="language-plaintext highlighter-rouge">return result</code> with <code class="language-plaintext highlighter-rouge">return result &amp;&amp; !allAnswers</code> so that short-circuit expressions continue to run after finding an answer.</p>
+							<p>It does, however, prints a <em>lot</em> of redundant answers:</p>
+							<div class="language-plaintext highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>1*2*4*3 = 24
+1*3*2*4 = 24
+1*3*2*4 = 24
+1*4*2*3 = 24
+1*4*2*3 = 24
+2*1*4*3 = 24
+2*1*4*3 = 24
+2*3*1*4 = 24
+2*3*1*4 = 24
+</code></pre>
+								</div>
+							</div>
+							<p>Under the hood it could just be <code class="language-plaintext highlighter-rouge">(1*4)*(2*3)</code> and <code class="language-plaintext highlighter-rouge">1*(4*(2*3))</code>, which we don’t know for sure since we only omitted the parentheses.</p>
+							<h3 id="redesigning-data-structure">Redesigning data structure</h3>
+							<p>We could fix this by flattening expressions so each addition and multiplication operator can have multiple operands. This also enables reliable sorting of elements, which is also pretty obvious.</p>
+							<p>There’s still more. We need to handle nested negativity. For example, <code class="language-plaintext highlighter-rouge">1-2+3</code> and <code class="language-plaintext highlighter-rouge">1-(2-3)</code> are really no different, and special care is to be taken when flattening. It also poses the challenge of sorting elements with mixed signs, as well as when parenthesizing them.</p>
+							<p>To keep the logic straightforward, instead of binary trees, we can use lists to store the operands. Subtracted elements can then be stored in another list under the same “group of additions”, and likewise is division. Finally, plain numbers still require their specialized handling.</p>
+							<div class="language-go highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">type</span> <span class="n">Expression</span> <span class="k">interface</span> <span class="p">{</span>
+	<span class="n">Value</span><span class="p">()</span> <span class="kt">float64</span>
+	<span class="n">Repr</span><span class="p">()</span> <span class="kt">string</span>
+<span class="p">}</span>
+
+<span class="k">type</span> <span class="n">AddGroup</span> <span class="k">struct</span> <span class="p">{</span>
+	<span class="n">Pos</span> <span class="p">[]</span><span class="n">Expression</span>
+	<span class="n">Neg</span> <span class="p">[]</span><span class="n">Expression</span>
+<span class="p">}</span>
+
+<span class="k">type</span> <span class="n">MulGroup</span> <span class="k">struct</span> <span class="p">{</span>
+	<span class="n">Pos</span> <span class="p">[]</span><span class="n">Expression</span>
+	<span class="n">Neg</span> <span class="p">[]</span><span class="n">Expression</span>
+<span class="p">}</span>
+
+<span class="k">type</span> <span class="n">Number</span> <span class="k">struct</span> <span class="p">{</span>
+	<span class="n">Val</span> <span class="kt">float64</span>
+	<span class="n">Str</span> <span class="kt">string</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Sorting is easy as long as there’s a well-defined “order”:</p>
+							<div class="language-go highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">func</span> <span class="n">CompareExpression</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="n">Expression</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">e2</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="no">true</span>
+	<span class="p">}</span>
+	<span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">e2</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="no">false</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="n">strings</span><span class="o">.</span><span class="n">Compare</span><span class="p">(</span><span class="n">e1</span><span class="o">.</span><span class="n">Repr</span><span class="p">(),</span> <span class="n">e2</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span> <span class="o">&lt;</span> <span class="m">0</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span> <span class="p">[]</span><span class="n">Expression</span><span class="p">)</span> <span class="p">{</span>
+	<span class="n">sort</span><span class="o">.</span><span class="n">Slice</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="n">CompareExpression</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">e</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+	<span class="p">})</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Calculating the value is also easy:</p>
+							<div class="language-go highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">AddGroup</span><span class="p">)</span> <span class="n">Value</span><span class="p">()</span> <span class="kt">float64</span> <span class="p">{</span>
+	<span class="k">var</span> <span class="n">s</span> <span class="kt">float64</span> <span class="o">=</span> <span class="m">0</span>
+	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
+		<span class="n">s</span> <span class="o">+=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
+	<span class="p">}</span>
+	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="p">{</span>
+		<span class="n">s</span> <span class="o">-=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="n">s</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">MulGroup</span><span class="p">)</span> <span class="n">Value</span><span class="p">()</span> <span class="kt">float64</span> <span class="p">{</span>
+	<span class="k">var</span> <span class="n">s</span> <span class="kt">float64</span> <span class="o">=</span> <span class="m">1</span>
+	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
+		<span class="n">s</span> <span class="o">*=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
+	<span class="p">}</span>
+	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="p">{</span>
+		<span class="n">s</span> <span class="o">/=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="n">s</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Generating representations for expressions has also been made easier and more consistent, as we no longer need to add parentheses for additions around subtractions, or multiplications around divisions. We only need parentheses around “groups of addition” among “groups of multiplication”. To ensure consistency, sort the expressions before producing strings.</p>
+							<div class="language-go highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">AddGroup</span><span class="p">)</span> <span class="n">Repr</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
+	<span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">)</span>
+	<span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">)</span>
+	<span class="k">var</span> <span class="n">s</span> <span class="n">strings</span><span class="o">.</span><span class="n">Builder</span>
+	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
+		<span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"+"</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span>
+	<span class="p">}</span>
+	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="p">{</span>
+		<span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"-"</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">String</span><span class="p">()[</span><span class="m">1</span><span class="o">:</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">MulGroup</span><span class="p">)</span> <span class="n">Repr</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
+	<span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">)</span>
+	<span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">)</span>
+	<span class="k">var</span> <span class="n">s</span> <span class="n">strings</span><span class="o">.</span><span class="n">Builder</span>
+	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="n">_</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">ee</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">Number</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
+			<span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"*"</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span>
+		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+			<span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"*("</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">()</span> <span class="o">+</span> <span class="s">")"</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="n">_</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">ee</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">Number</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
+			<span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"/"</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span>
+		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+			<span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"/("</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">()</span> <span class="o">+</span> <span class="s">")"</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">String</span><span class="p">()[</span><span class="m">1</span><span class="o">:</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Joining two elements into a new expression is now a little bit more complex, since we want to avoid nesting the same kind of groups. We need to check the types of the joining operands to determine whether we should append as a single element, or extract the lists and concatenate them. This also helps ensure that every group has at least one “positive” element, so it doesn’t begin with a minus sign or division.</p>
+							<div class="language-go highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">func</span> <span class="n">JoinAddGroup</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="n">Expression</span><span class="p">,</span> <span class="n">neg2</span> <span class="kt">bool</span><span class="p">)</span> <span class="o">*</span><span class="n">AddGroup</span> <span class="p">{</span>
+	<span class="n">e</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="n">AddGroup</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">a1</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">e1</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">AddGroup</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
+		<span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">a1</span><span class="o">.</span><span class="n">Pos</span><span class="o">...</span><span class="p">)</span>
+		<span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">,</span> <span class="n">a1</span><span class="o">.</span><span class="n">Neg</span><span class="o">...</span><span class="p">)</span>
+	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+		<span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">e1</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="k">if</span> <span class="n">a2</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">e2</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">AddGroup</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="n">neg2</span> <span class="p">{</span>
+			<span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">Neg</span><span class="o">...</span><span class="p">)</span>
+			<span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">Pos</span><span class="o">...</span><span class="p">)</span>
+		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+			<span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">Pos</span><span class="o">...</span><span class="p">)</span>
+			<span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">Neg</span><span class="o">...</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="n">neg2</span> <span class="p">{</span>
+			<span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">,</span> <span class="n">e2</span><span class="p">)</span>
+		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+			<span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">e2</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="n">e</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>A <code class="language-plaintext highlighter-rouge">neg2</code> switch is provided to determine between <code class="language-plaintext highlighter-rouge">e1+e2</code> and <code class="language-plaintext highlighter-rouge">e1-e2</code> as we don’t want separate code for handling subtraction.</p>
+							<p>The exact same code is used for <code class="language-plaintext highlighter-rouge">JoinMulGroup</code> with only the types replaced. (This is why I switched to C++ after this point: Function templates are much more friendly for this kind of repeated logic.)</p>
+							<h3 id="deduplicating">Deduplicating</h3>
+							<p>With reliable expression flattening and sorting in place, we can now deduplicate results by comparing string representation:</p>
+							<div class="language-go highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">var</span> <span class="n">answers</span> <span class="p">[]</span><span class="kt">string</span>
+
+<span class="k">func</span> <span class="n">EvalResult</span><span class="p">(</span><span class="n">e</span> <span class="n">Expression</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+	<span class="n">result</span> <span class="o">:=</span> <span class="n">CompareFloat</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Value</span><span class="p">(),</span> <span class="n">target</span><span class="p">,</span> <span class="m">1e-6</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">result</span> <span class="p">{</span>
+		<span class="n">s</span> <span class="o">:=</span> <span class="n">e</span><span class="o">.</span><span class="n">Repr</span><span class="p">()</span>
+		<span class="n">duplicate</span> <span class="o">:=</span> <span class="no">false</span>
+		<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ans</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">answers</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="n">ans</span> <span class="o">==</span> <span class="n">s</span> <span class="p">{</span>
+				<span class="n">duplicate</span> <span class="o">=</span> <span class="no">true</span>
+				<span class="k">break</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+		<span class="k">if</span> <span class="o">!</span><span class="n">duplicate</span> <span class="p">{</span>
+			<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s">"="</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+			<span class="n">answers</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">answers</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="k">return</span> <span class="n">result</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">allAnswers</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>This is about as far as the new data structure can bring us. The current program handles structural duplicates very well: Running on input <code class="language-plaintext highlighter-rouge">1 2 3 4</code> produces only 4 results:</p>
+							<div class="language-plaintext highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>4*(1+2+3) = 24
+1*2*3*4 = 24
+2*3*4/1 = 24
+(1+3)*(2+4) = 24
+</code></pre>
+								</div>
+							</div>
+							<p>The complete code so far can be found <a href="https://gist.github.com/iBug/b0e3d7dc11e53ac53df5f6d0438ad3b5">here</a>.</p>
+							<h2 id="advanced-level-more-deduplication-and-optimization">Advanced level: More deduplication, and optimization</h2>
+							<p>On a side note, I switched to C++ at this point because I found Go’s comprehensive runtime <em>cumbersome</em>, and its lack of compiler optimization is specifically detrimental for such computing tasks. C++ has everything I need, including dynamic arrays (<code class="language-plaintext highlighter-rouge">vector</code>), dynamic typing (RTTI via <code class="language-plaintext highlighter-rouge">virtual</code> functions and <code class="language-plaintext highlighter-rouge">dynamic_cast</code>) and hash sets (<code class="language-plaintext highlighter-rouge">unordered_set</code>). C++ also has the advantage of supporting function templates and inheritance, which helps greatly with duplicate logic. The only thing missing from Go is a standard library for parsing command-line arguments, which bothers very little as I don’t need complex parsing rules. (There are external libraries that I want to avoid, such as POSIX <code class="language-plaintext highlighter-rouge">getopt()</code>.)</p>
+							<h3 id="switching-to-c">Switching to C++</h3>
+							<p>To mimic the <code class="language-plaintext highlighter-rouge">Expression</code> interface in Go, I created an abstract base class:</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
+    <span class="k">virtual</span> <span class="o">~</span><span class="n">Expression</span><span class="p">()</span> <span class="p">{}</span>
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">normalize</span><span class="p">()</span> <span class="p">{}</span>
+    <span class="k">virtual</span> <span class="k">operator</span> <span class="n">string</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">virtual</span> <span class="k">operator</span> <span class="kt">double</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre>
+								</div>
+							</div>
+							<p>I also took this chance to separate <code class="language-plaintext highlighter-rouge">string()</code> from <code class="language-plaintext highlighter-rouge">normalize()</code>, since they really could do different things and not necessarily together.</p>
+							<p>The additive group and multiplicative group can also have some commonalities extracted into a new base class, to allow even more shared code.</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">struct</span> <span class="nc">ExpressionGroup</span> <span class="o">:</span> <span class="n">Expression</span> <span class="p">{</span>
+    <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;</span> <span class="n">positive</span><span class="p">;</span>
+    <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;</span> <span class="n">negative</span><span class="p">;</span>
+
+    <span class="kt">void</span> <span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
+            <span class="n">e</span><span class="o">-&gt;</span><span class="n">normalize</span><span class="p">();</span>
+        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
+            <span class="n">e</span><span class="o">-&gt;</span><span class="n">normalize</span><span class="p">();</span>
+        <span class="n">sort_expressions</span><span class="p">(</span><span class="n">positive</span><span class="p">);</span>
+        <span class="n">sort_expressions</span><span class="p">(</span><span class="n">negative</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
+<span class="n">T</span><span class="o">*</span> <span class="nf">join_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span> <span class="n">Expression</span><span class="o">*</span> <span class="n">b</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">negative</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">static_assert</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_base_of</span><span class="o">&lt;</span><span class="n">ExpressionGroup</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">,</span>
+                  <span class="s">"T must be derived from ExpressionGroup"</span><span class="p">);</span>
+    <span class="c1">// implementation</span>
+<span class="p">}</span>
+
+<span class="kr">inline</span> <span class="n">AdditiveGroup</span><span class="o">*</span>
+<span class="nf">join_additive_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span>
+                    <span class="n">Expression</span><span class="o">*</span> <span class="n">b</span><span class="p">,</span>
+                    <span class="kt">bool</span> <span class="n">negative</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">join_group</span><span class="o">&lt;</span><span class="n">AdditiveGroup</span><span class="o">&gt;</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">negative</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kr">inline</span> <span class="n">MultiplicativeGroup</span><span class="o">*</span>
+<span class="nf">join_multiplicative_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span>
+                          <span class="n">Expression</span><span class="o">*</span> <span class="n">b</span><span class="p">,</span>
+                          <span class="kt">bool</span> <span class="n">negative</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">join_group</span><span class="o">&lt;</span><span class="n">MultiplicativeGroup</span><span class="o">&gt;</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">negative</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<h3 id="double-negativity-in-multiplicative-groups">Double-negativity in multiplicative groups</h3>
+							<p>When fed with input <code class="language-plaintext highlighter-rouge">1 1 4 9</code>, the above Go program produces 2 results:</p>
+							<div class="language-plaintext highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>(4-1)*(9-1) = 24
+(1-9)*(1-4) = 24
+</code></pre>
+								</div>
+							</div>
+							<p>To fix this, we examine how many additive groups that can be “inverted” under a multiplicative group, and invert them in pairs.</p>
+							<p>We consider an additive group <em>invertible</em> if it evaluates to a negative value and has at least one subtracted element:</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">invert</span><span class="p">()</span> <span class="p">{}</span>
+    <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">is_invertible</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="nb">false</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="nc">ExpressionGroup</span> <span class="o">:</span> <span class="n">Expression</span> <span class="p">{</span>
+    <span class="kt">bool</span> <span class="n">is_invertible</span><span class="p">()</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="o">!</span><span class="n">negative</span><span class="p">.</span><span class="n">empty</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="nc">AdditiveGroup</span> <span class="o">:</span> <span class="n">ExpressionGroup</span> <span class="p">{</span>
+    <span class="kt">void</span> <span class="n">invert</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">swap</span><span class="p">(</span><span class="n">positive</span><span class="p">,</span> <span class="n">negative</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="kt">bool</span> <span class="n">is_invertible</span><span class="p">()</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kt">double</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">is_invertible</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Note that the default implementation for <code class="language-plaintext highlighter-rouge">invert()</code> and <code class="language-plaintext highlighter-rouge">is_invertible()</code> applies to plain numbers as they can’t just grab a minus sign and become inverted.</p>
+							<p>Now we have the necessary APIs for fixing multiplicative groups:</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kt">void</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">neg_count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
+        <span class="n">neg_count</span> <span class="o">+=</span> <span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">();</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
+        <span class="n">neg_count</span> <span class="o">+=</span> <span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">();</span>
+    <span class="n">neg_count</span> <span class="o">-=</span> <span class="n">neg_count</span> <span class="o">%</span> <span class="mi">2</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">neg_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span> <span class="p">{</span>
+            <span class="n">e</span><span class="o">-&gt;</span><span class="n">invert</span><span class="p">();</span>
+            <span class="n">neg_count</span><span class="o">--</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">neg_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span> <span class="p">{</span>
+            <span class="n">e</span><span class="o">-&gt;</span><span class="n">invert</span><span class="p">();</span>
+            <span class="n">neg_count</span><span class="o">--</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="k">this</span><span class="o">-&gt;</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Because normalization doesn’t change the value of an expression, we call it only when we need a string representation. This means we can normalize after determining whether it’s a solution.</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">answers</span><span class="p">;</span>
+
+<span class="kt">bool</span> <span class="nf">eval_result</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">node</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">bool</span> <span class="n">result</span> <span class="o">=</span> <span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="n">node</span><span class="p">,</span> <span class="n">target</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">node</span><span class="o">-&gt;</span><span class="n">normalize</span><span class="p">();</span>
+        <span class="k">auto</span> <span class="n">expr</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="o">*</span><span class="n">node</span><span class="p">);</span>
+        <span class="k">auto</span> <span class="n">is_new_answer</span> <span class="o">=</span> <span class="n">answers</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">expr</span><span class="p">).</span><span class="n">second</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">is_new_answer</span><span class="p">)</span>
+            <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">expr</span> <span class="o">&lt;&lt;</span> <span class="s">" = "</span> <span class="o">&lt;&lt;</span> <span class="n">target</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<h3 id="subtracting-negative-values">Subtracting negative values</h3>
+							<p>When fed with input <code class="language-plaintext highlighter-rouge">1 1 4 9</code>, the above Go program produces 7 results, among which are these two:</p>
+							<div class="language-plaintext highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>4+(7-3)*5 = 24
+4-(3-7)*5 = 24
+</code></pre>
+								</div>
+							</div>
+							<p>Apparently they are no more than a pair of <code class="language-plaintext highlighter-rouge">a+b</code> and <code class="language-plaintext highlighter-rouge">a-(-b)</code> variants. The latter form is just boring.</p>
+							<p>Now, in addition to additive groups, we need to implement inversion for multiplicative groups as well. This one isn’t hard either, just iterate through its children and see if any of them is invertible:</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">struct</span> <span class="nc">MultiplicativeGroup</span> <span class="o">:</span> <span class="n">ExpressionGroup</span> <span class="p">{</span>
+    <span class="kt">bool</span> <span class="n">is_invertible</span><span class="p">()</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="kt">double</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span>
+                <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span>
+                <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kt">void</span> <span class="n">invert</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span> <span class="p">{</span>
+                <span class="n">e</span><span class="o">-&gt;</span><span class="n">invert</span><span class="p">();</span>
+                <span class="k">return</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span> <span class="p">{</span>
+                <span class="n">e</span><span class="o">-&gt;</span><span class="n">invert</span><span class="p">();</span>
+                <span class="k">return</span><span class="p">;</span>
+            <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</code></pre>
+								</div>
+							</div>
+							<p>We also have extra things to do than sorting when normalizing an additive group. That is, to move all invertible children from the negative list to the positive list, inverting all involved.</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kt">void</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">negative</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">negative</span><span class="p">.</span><span class="n">end</span><span class="p">();)</span> <span class="p">{</span>
+        <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">=</span> <span class="o">*</span><span class="n">it</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span> <span class="p">{</span>
+            <span class="n">e</span><span class="o">-&gt;</span><span class="n">invert</span><span class="p">();</span>
+            <span class="n">positive</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+            <span class="n">it</span> <span class="o">=</span> <span class="n">negative</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">it</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="o">++</span><span class="n">it</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">this</span><span class="o">-&gt;</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<h3 id="substracting-zeros-and-dividing-by-ones">Substracting zeros and dividing by ones</h3>
+							<p>Zero is the <a href="https://en.wikipedia.org/wiki/Identity_element">identity element</a> of addition, and one is that of multiplication. This means <code class="language-plaintext highlighter-rouge">a+0=a-0=a</code> and <code class="language-plaintext highlighter-rouge">a*1=a/1=a</code>. We can normalize <code class="language-plaintext highlighter-rouge">-0</code> into <code class="language-plaintext highlighter-rouge">+0</code> and <code class="language-plaintext highlighter-rouge">/1</code> into <code class="language-plaintext highlighter-rouge">*1</code>. This one’s even easier since it only moves elements from the negative list to the positive list.</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kt">void</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span> <span class="p">{</span>
+        <span class="n">positive</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+        <span class="n">it</span> <span class="o">=</span> <span class="n">negative</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">it</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="c1">// ...</span>
+<span class="p">}</span> 
+</code></pre>
+								</div>
+							</div>
+							<p>For multiplicative groups, we can go one step further and take care of <code class="language-plaintext highlighter-rouge">/(-1)</code> as well:</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kt">void</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+    <span class="c1">// ...</span>
+		<span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">negative</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">negative</span><span class="p">.</span><span class="n">end</span><span class="p">();)</span> <span class="p">{</span>
+        <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">=</span> <span class="o">*</span><span class="n">it</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">||</span> <span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">))</span> <span class="p">{</span>
+            <span class="n">positive</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+            <span class="n">it</span> <span class="o">=</span> <span class="n">negative</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">it</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="o">++</span><span class="n">it</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="c1">// ...</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<h3 id="memoizing-intermediate-results">Memoizing intermediate results</h3>
+							<p>For small inputs like only 4 numbers, there are only up to 36×18×6=3,888 leaf nodes to search, so any working algorithm shouldn’t run for more than tens of milliseconds. But why limit to 4 input numbers, a pretty artificial value, when the algorithm is designed to scale and handle inputs of any sizes?</p>
+							<p>With 8 input numbers, the latest Go program runs from 20 seconds to more than a minute. It’s easily imaginable that there are a lot of duplicate intermediate search nodes, like <code class="language-plaintext highlighter-rouge">(a+b) (c+d)</code> and <code class="language-plaintext highlighter-rouge">(c+d) (a+b)</code>. Searching further down these states wastes a lot of time. Given that we already have normalization and sorting facilities, it’s straightforward to serialize an intermediate state, save it in a set, and prune repeated search branches.</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">states</span><span class="p">;</span>
+
+<span class="kt">bool</span> <span class="nf">dedup_state</span><span class="p">(</span><span class="k">const</span> <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;&amp;</span> <span class="n">nodes</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">use_states</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="k">auto</span> <span class="n">n</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">;</span>
+    <span class="n">sort_expressions</span><span class="p">(</span><span class="n">n</span><span class="p">);</span>
+    <span class="n">stringstream</span> <span class="n">ss</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">e</span><span class="o">-&gt;</span><span class="n">normalize</span><span class="p">();</span>
+        <span class="n">ss</span> <span class="o">&lt;&lt;</span> <span class="s">":"</span> <span class="o">&lt;&lt;</span> <span class="n">string</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="o">!</span><span class="n">states</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">ss</span><span class="p">.</span><span class="n">str</span><span class="p">()).</span><span class="n">second</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Then at the beginning of the recursive <code class="language-plaintext highlighter-rouge">search()</code> function, right after the evaluation branch, we add the pruning logic:</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kt">bool</span> <span class="nf">search</span><span class="p">(</span><span class="k">const</span> <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;&amp;</span> <span class="n">nodes</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">nodes</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">eval_result</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">all_answers</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">dedup_state</span><span class="p">(</span><span class="n">nodes</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+</code></pre>
+								</div>
+							</div>
+							<p>My testing shows that this optimization brings a speedup of 1.5× to 2×, depending on input pattern. On extreme cases like 8 ones, the speedup even goes over 4×.</p>
+							<p>Finally, to use the right tool for the right job:</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">use_states</span> <span class="o">=</span> <span class="n">nums</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">;</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Because generating and hashing strings could be expensive, and there aren’t enough duplicates for small inputs, I chose to enable mid-way deduplication only for inputs with 5 or more numbers.</p>
+							<h3 id="placement-of-zeros-and-ones">Placement of zeros and ones</h3>
+							<p>The last thing to handle is the placement of no-ops, like <code class="language-plaintext highlighter-rouge">*1</code> and <code class="language-plaintext highlighter-rouge">+3-3</code>. While it could be arithmetically different between <code class="language-plaintext highlighter-rouge">a+b-b</code> and <code class="language-plaintext highlighter-rouge">a*b/b</code>, or between <code class="language-plaintext highlighter-rouge">a*1+b</code> and <code class="language-plaintext highlighter-rouge">(a+b)*1</code>, one would think the difference is minimal when playing with cards in reality.</p>
+							<p>Taking the same convention as on the <a href="https://www.4nums.com/theory/">4 Numbers</a> website, points 7 and 8, the following rules is defined as “preferences for duplicates”:</p>
+							<ul>
+								<li>Multiplying by ±1 happens on the topmost multiplication group, so <code class="language-plaintext highlighter-rouge">1*2+3*4</code> becomes <code class="language-plaintext highlighter-rouge">1*(2+3*4)</code>, except when there’s a pair of additive no-ops: <code class="language-plaintext highlighter-rouge">(a+b)*1+c-c</code> is preferred over <code class="language-plaintext highlighter-rouge">(a+b+c-c)*1</code>.</li>
+								<li>A pair of same numbers cancelling each other must be done with addition and subtraction, and must happen at the topmost layer, so <code class="language-plaintext highlighter-rouge">a*b/b+c</code> becomes <code class="language-plaintext highlighter-rouge">a+c+b-b</code>. This applies to ones.</li>
+							</ul>
+							<p>Now put them into code. If we try to fix it the same way as normalizing, there’s a fundamental difference from previous deduplication methods: The other normalization don’t modify the components (structurally) but only move them around, while the handling of zeros and ones will have to extract numbers from sub-expressions and place them elsewhere. This breaks two things:</p>
+							<ul>
+								<li>The searching algorithm assumes numbers and expressions aren’t modified in recursions. Continuing to do so might cause the search to miss potential solutions.</li>
+								<li>After cleaning up <code class="language-plaintext highlighter-rouge">shared_ptr</code>s, memory allocation is handled manually. Breaking the existing tree structure makes tracking objects <em>much</em> harder, and it’s easier to reach a memory leak or whatever.</li>
+							</ul>
+							<p>So I had to give up normalizing this one. But there must be a solution.</p>
+							<p>Turning our attention back to the recursive searching. It performs a comprehensive enumeration of possible combinations of every pair of numbers, and therefore must be able to form every possible expression tree from the given numbers.</p>
+							<p>Right, we could just define the “canonical forms” and reject solutions coming in non-canonical forms.</p>
+							<p>Starting off with the base form. The sole boolean argument is necessary because certain structures should live in the top layer, and they need special treatment.</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
+    <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">is_top_level</span> <span class="o">=</span> <span class="nb">true</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span> <span class="p">}</span>
+<span class="p">};</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Obviously for plain numbers there’s nothing we can do, so this virtual function is not overridden for <code class="language-plaintext highlighter-rouge">struct Number</code>.</p>
+							<p>Now for the expression groups. Recursive checking is required, and more specific rules are to be provided by further overrides in the two kinds of specialized groups.</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">struct</span> <span class="nc">ExpressionGroup</span> <span class="o">:</span> <span class="n">Expression</span> <span class="p">{</span>
+    <span class="kt">bool</span> <span class="n">has_negative_pairs</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e1</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
+            <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e2</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">is_equal</span><span class="p">(</span><span class="kt">double</span><span class="p">(</span><span class="o">*</span><span class="n">e1</span><span class="p">),</span> <span class="kt">double</span><span class="p">(</span><span class="o">*</span><span class="n">e2</span><span class="p">)))</span>
+                    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="kt">bool</span> <span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">is_top_level</span> <span class="o">=</span> <span class="nb">true</span><span class="p">)</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_canonical</span><span class="p">(</span><span class="nb">false</span><span class="p">))</span>
+                <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_canonical</span><span class="p">(</span><span class="nb">false</span><span class="p">))</span>
+                <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</code></pre>
+								</div>
+							</div>
+							<p>The extra function is provided as a helper to shorten specialized code for descendants.</p>
+							<p>Multiplicative groups are easier to deal with: A top-level MG permits multiplying by ones, but only a single one.</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kt">bool</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">allow_ones</span> <span class="o">=</span> <span class="nb">true</span><span class="p">)</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="n">allow_ones</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">ones</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
+        <span class="n">ones</span> <span class="o">+=</span> <span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">allow_ones</span> <span class="o">&amp;&amp;</span> <span class="n">ones</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">ones</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="k">return</span> <span class="o">!</span><span class="n">has_negative_pairs</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Additive groups are a bit complicated, as they could contain a (technically) second-level MG while still permitting them to have multiply-by-ones. So instead of calling their <code class="language-plaintext highlighter-rouge">is_canonical()</code> with <code class="language-plaintext highlighter-rouge">false</code>, the argument should be inherited from the AG itself.</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kt">bool</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">is_top_level</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+	  <span class="k">if</span> <span class="p">(</span><span class="n">is_top_level</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_canonical</span><span class="p">(</span><span class="k">dynamic_cast</span><span class="o">&lt;</span><span class="n">MultiplicativeGroup</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">nullptr</span><span class="p">))</span>
+                <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_canonical</span><span class="p">(</span><span class="k">dynamic_cast</span><span class="o">&lt;</span><span class="n">MultiplicativeGroup</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">nullptr</span><span class="p">))</span>
+                <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="n">is_top_level</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="k">return</span> <span class="o">!</span><span class="n">has_negative_pairs</span><span class="p">();</span>
+<span class="err">}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Unfortunately, this is practically ineffective. Solutions like <code class="language-plaintext highlighter-rouge">1*4+4*5</code> keep popping up. The missing details are:</p>
+							<ul>
+								<li>A sub-MG inherits its top-level-like behavior if it’s the only MG among all children of a top-level AG</li>
+								<li>An AG permits a top-level child MG if it’s otherwise a no-op. For example, <code class="language-plaintext highlighter-rouge">24*1+5-5</code> but not <code class="language-plaintext highlighter-rouge">8*1+8+8</code></li>
+							</ul>
+							<p>For the first point, we need to count all children and see how many of them are MGs, and for the second point we can check if the value of the AG equals to its only child MG. So wrap that up:</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">mg_count</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">,</span> <span class="o">*</span><span class="n">mg</span><span class="p">))</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Now the program is correctly reporting that <code class="language-plaintext highlighter-rouge">1 8 8 8</code> has a single solution <code class="language-plaintext highlighter-rouge">(8+8+8)*1</code>, except that it stops producing solutions for <code class="language-plaintext highlighter-rouge">5 6 7 7</code>.</p>
+							<p>Notice that the only solution is <code class="language-plaintext highlighter-rouge">(5-7/7)*6</code>, and that we’re rejecting instead of normalizing this kind of “non-canonical” forms. The problem is that <code class="language-plaintext highlighter-rouge">7/7</code> acts as a concrete one for subtraction, instead of a no-op. Should have checked if there are other operands for multiplying…</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">return</span> <span class="o">!</span><span class="p">(</span><span class="n">positive</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">has_negative_pairs</span><span class="p">());</span>
+</code></pre>
+								</div>
+							</div>
+							<p>The program is still reporting “No solutions” for <code class="language-plaintext highlighter-rouge">1 5 5 5</code>, which has the same root cause. In the sole solution <code class="language-plaintext highlighter-rouge">(5-1/5)*5</code>, the 1 in the MG doesn’t act as a no-op, either. Time to wrap up with another guard.</p>
+							<div class="language-cpp highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">positive</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="cm">/* check for ones */</span> <span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<h2 id="postface">Postface</h2>
+							<p>The 4 Numbers website provides a comprehensive list of all 1362 solvable quadruples from 1 to 13 (i.e. formed with a standard 52-card set). Just grab the page and do some HTML processing, and a good test suite is readily available.</p>
+							<p><a href="https://gist.github.com/iBug/ea958ca7f1270128d58b5176858d71cb">Here</a>’s the final version of the C++ code. It gives identical solutions to all 1362 test cases.</p>
+							<p>The problem originates from a course <em>Program Design II</em> where a friend of mine works as a TA this semester.</p>
+							<h2 id="references">References</h2>
+							<ul>
+								<li><a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 (puzzle) - Wikipedia</a></li>
+								<li>
+									<p><a href="https://www.4nums.com/theory/">Definition of “distinct” by 4 Numbers website</a></p>
+								</li>
+							</ul>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/algorithm" class="page__taxonomy-item" rel="tag">algorithm</a><span class="sep">, </span>
+									<a href="/tag/c" class="page__taxonomy-item" rel="tag">c++</a><span class="sep">, </span>
+									<a href="/tag/development" class="page__taxonomy-item" rel="tag">development</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-05-25">May 25, 2022</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=Taking+24-point+game+to+the+next+level%20https%3A%2F%2Fibug.io%2Fblog%2F2022%2F05%2Fprogramming-24-game%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2022%2F05%2Fprogramming-24-game%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2022%2F05%2Fprogramming-24-game%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/blog/2022/03/linux-openldap-server/" class="pagination--pager" title="Centralized Linux authentication with OpenLDAP
+">Previous</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+				<div class="page__related">
+					<h2 class="page__related-title">You may also enjoy</h2>
+					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/linux-container.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are w...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											24 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											16 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/vpn-imagine.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											15 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/ldap.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											14 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					<p>&copy; 2022 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
+					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
+					<p>
+						Site version <a href="/status" class="version-text">G-697</a>
+					</p>
+				</div>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<!-- Including InstantSearch.js library and styling -->
+		<script src="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js"></script>
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css">
+		<script>
+			// Instanciating InstantSearch.js with Algolia credentials
+			const search = instantsearch({
+			  appId: '14DZKASAEJ',
+			  apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			  indexName: 'iBug_website',
+			  searchParameters: {
+			    restrictSearchableAttributes: [
+			      'title',
+			      'content'
+			    ]
+			  }
+			});
+
+			const hitTemplate = function(hit) {
+			  const url = hit.url;
+			  const title = hit._highlightResult.title.value;
+			  const content = hit._highlightResult.html.value;
+
+			  return `
+			    <div class="list__item">
+			      <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			        <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			        <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			      </article>
+			    </div>
+			  `;
+			}
+
+			// Adding searchbar and results widgets
+			search.addWidget(
+			  instantsearch.widgets.searchBox({
+			    container: '.search-searchbar',
+			    poweredBy: true,
+			    placeholder: 'Enter your search term...'
+			  })
+			);
+			search.addWidget(
+			  instantsearch.widgets.hits({
+			    container: '.search-hits',
+			    templates: {
+			      item: hitTemplate,
+			      empty: 'No results',
+			    }
+			  })
+			);
+
+			// Starting the search only when toggle is clicked
+			$(document).ready(function () {
+			  $(".search__toggle").on("click", function() {
+			    if(!search.started) {
+			      search.start();
+			    }
+			  });
+			});
+		</script>
+		<script>
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-115907213-1']);
+
+			_gaq.push(['_trackPageview']);
+
+			(function() {
+			  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/blog/2022/05/programming-24-game/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2022/05/programming-24-game"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	</body>
+</html>
