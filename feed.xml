@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2022-05-24T21:06:05+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Taking the 24 puzzle game to the next level</title><link href="https://ibug.io/blog/2022/05/programming-24-game/" rel="alternate" type="text/html" title="Taking the 24 puzzle game to the next level" /><published>2022-05-25T00:00:00+00:00</published><updated>2022-05-25T05:05:32+00:00</updated><id>https://ibug.io/blog/2022/05/programming-24-game</id><content type="html" xml:base="https://ibug.io/blog/2022/05/programming-24-game/"><![CDATA[<p>The <a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 game</a> is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2022-05-24T21:10:56+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Taking the 24 puzzle game to the next level</title><link href="https://ibug.io/blog/2022/05/programming-24-game/" rel="alternate" type="text/html" title="Taking the 24 puzzle game to the next level" /><published>2022-05-25T00:00:00+00:00</published><updated>2022-05-25T05:10:22+00:00</updated><id>https://ibug.io/blog/2022/05/programming-24-game</id><content type="html" xml:base="https://ibug.io/blog/2022/05/programming-24-game/"><![CDATA[<p>The <a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 game</a> is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.</p>
 			<p>Getting a program that determines whether a set of 4 numbers is solvable is easy, as there are only as many possible combinations as 4 numbers can form. Even a simple brute-force search</p>
 			<h2 id="searching-for-answers">Searching for answers</h2>
 			<p>Obviously it’s not going to be a good idea to enumerate all the arrangements and search by filling in the numbers, so we’re going to think about this from bottom-up.</p>
@@ -11,44 +11,44 @@
 					<pre class="highlight"><code><span class="k">var</span> <span class="n">target</span> <span class="kt">float64</span>
 
 <span class="k">func</span> <span class="n">CompareFloat</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">threshold</span> <span class="kt">float64</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-	<span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">Abs</span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">b</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">threshold</span>
+    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">Abs</span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">b</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">threshold</span>
 <span class="p">}</span>
 
 <span class="k">func</span> <span class="n">Find24</span><span class="p">(</span><span class="n">nodes</span> <span class="p">[]</span><span class="o">*</span><span class="n">Expression</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span> <span class="o">==</span> <span class="m">1</span> <span class="p">{</span>
-		<span class="n">result</span> <span class="o">:=</span> <span class="n">CompareFloat</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="m">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="m">1e-6</span><span class="p">)</span>
-		<span class="k">if</span> <span class="n">result</span> <span class="p">{</span>
-			<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="m">0</span><span class="p">]</span><span class="o">.</span><span class="n">repr</span><span class="p">,</span> <span class="s">"="</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-		<span class="p">}</span>
-		<span class="k">return</span> <span class="n">result</span>
-	<span class="p">}</span>
-	<span class="n">result</span> <span class="o">:=</span> <span class="no">false</span>
-	<span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">);</span> <span class="n">i</span><span class="o">++</span> <span class="p">{</span>
-		<span class="k">for</span> <span class="n">j</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">);</span> <span class="n">j</span><span class="o">++</span> <span class="p">{</span>
-			<span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">j</span> <span class="p">{</span>
-				<span class="k">continue</span>
-			<span class="p">}</span>
-			<span class="n">newNodes</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="o">*</span><span class="n">Expression</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">1</span><span class="p">)</span>
-			<span class="k">for</span> <span class="n">k</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">);</span> <span class="n">k</span><span class="o">++</span> <span class="p">{</span>
-				<span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">i</span> <span class="o">||</span> <span class="n">k</span> <span class="o">==</span> <span class="n">j</span> <span class="p">{</span>
-					<span class="k">continue</span>
-				<span class="p">}</span>
-				<span class="n">newNodes</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">newNodes</span><span class="p">,</span> <span class="n">nodes</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
-			<span class="p">}</span>
-			<span class="n">newNodes</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">newNodes</span><span class="p">,</span> <span class="nb">new</span><span class="p">(</span><span class="n">Expression</span><span class="p">))</span>
-			<span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">j</span> <span class="p">{</span>
-				<span class="n">newNodes</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="sc">'+'</span><span class="p">)</span>
-				<span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">||</span> <span class="n">Find24</span><span class="p">(</span><span class="n">newNodes</span><span class="p">)</span>
-				<span class="n">newNodes</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="sc">'*'</span><span class="p">)</span>
-				<span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">||</span> <span class="n">Find24</span><span class="p">(</span><span class="n">newNodes</span><span class="p">)</span>
-			<span class="p">}</span>
-			<span class="n">newNodes</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="sc">'-'</span><span class="p">)</span>
-			<span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">||</span> <span class="n">Find24</span><span class="p">(</span><span class="n">newNodes</span><span class="p">)</span>
-			<span class="n">newNodes</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="sc">'/'</span><span class="p">)</span>
-			<span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">||</span> <span class="n">Find24</span><span class="p">(</span><span class="n">newNodes</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-	<span class="k">return</span> <span class="n">result</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span> <span class="o">==</span> <span class="m">1</span> <span class="p">{</span>
+        <span class="n">result</span> <span class="o">:=</span> <span class="n">CompareFloat</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="m">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="m">1e-6</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="p">{</span>
+            <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="m">0</span><span class="p">]</span><span class="o">.</span><span class="n">repr</span><span class="p">,</span> <span class="s">"="</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">result</span>
+    <span class="p">}</span>
+    <span class="n">result</span> <span class="o">:=</span> <span class="no">false</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">);</span> <span class="n">i</span><span class="o">++</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">);</span> <span class="n">j</span><span class="o">++</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">j</span> <span class="p">{</span>
+                <span class="k">continue</span>
+            <span class="p">}</span>
+            <span class="n">newNodes</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="o">*</span><span class="n">Expression</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">);</span> <span class="n">k</span><span class="o">++</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">i</span> <span class="o">||</span> <span class="n">k</span> <span class="o">==</span> <span class="n">j</span> <span class="p">{</span>
+                    <span class="k">continue</span>
+                <span class="p">}</span>
+                <span class="n">newNodes</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">newNodes</span><span class="p">,</span> <span class="n">nodes</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="p">}</span>
+            <span class="n">newNodes</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">newNodes</span><span class="p">,</span> <span class="nb">new</span><span class="p">(</span><span class="n">Expression</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">j</span> <span class="p">{</span>
+                <span class="n">newNodes</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="sc">'+'</span><span class="p">)</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">||</span> <span class="n">Find24</span><span class="p">(</span><span class="n">newNodes</span><span class="p">)</span>
+                <span class="n">newNodes</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="sc">'*'</span><span class="p">)</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">||</span> <span class="n">Find24</span><span class="p">(</span><span class="n">newNodes</span><span class="p">)</span>
+            <span class="p">}</span>
+            <span class="n">newNodes</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="sc">'-'</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">||</span> <span class="n">Find24</span><span class="p">(</span><span class="n">newNodes</span><span class="p">)</span>
+            <span class="n">newNodes</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="sc">'/'</span><span class="p">)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">||</span> <span class="n">Find24</span><span class="p">(</span><span class="n">newNodes</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">result</span>
 <span class="p">}</span>
 </code></pre>
 				</div>
@@ -60,49 +60,49 @@
 			<div class="language-go highlighter-rouge">
 				<div class="highlight">
 					<pre class="highlight"><code><span class="k">type</span> <span class="n">Expression</span> <span class="k">struct</span> <span class="p">{</span>
-	<span class="n">value</span> <span class="kt">float64</span>
-	<span class="n">op</span>    <span class="kt">rune</span>
-	<span class="n">repr</span>  <span class="kt">string</span>
+    <span class="n">value</span> <span class="kt">float64</span>
+    <span class="n">op</span>    <span class="kt">rune</span>
+    <span class="n">repr</span>  <span class="kt">string</span>
 <span class="p">}</span>
 
 <span class="k">func</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="o">*</span><span class="n">Expression</span><span class="p">,</span> <span class="n">op</span> <span class="kt">rune</span><span class="p">)</span> <span class="o">*</span><span class="n">Expression</span> <span class="p">{</span>
-	<span class="k">var</span> <span class="n">value</span> <span class="kt">float64</span>
-	<span class="k">var</span> <span class="n">repr</span> <span class="kt">string</span>
-	<span class="k">switch</span> <span class="n">op</span> <span class="p">{</span>
-	<span class="k">case</span> <span class="sc">'+'</span><span class="o">:</span>
-		<span class="n">value</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">e2</span><span class="o">.</span><span class="n">value</span>
-		<span class="n">repr</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"%s+%s"</span><span class="p">,</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
-	<span class="k">case</span> <span class="sc">'-'</span><span class="o">:</span>
-		<span class="n">value</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="n">e2</span><span class="o">.</span><span class="n">value</span>
-		<span class="n">rhs</span> <span class="o">:=</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span>
-		<span class="k">if</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="p">{</span>
-			<span class="n">rhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
-		<span class="p">}</span>
-		<span class="n">repr</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"%s-%s"</span><span class="p">,</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
-	<span class="k">case</span> <span class="sc">'*'</span><span class="o">:</span>
-		<span class="n">value</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="n">e2</span><span class="o">.</span><span class="n">value</span>
-		<span class="n">lhs</span> <span class="o">:=</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span>
-		<span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e1</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="p">{</span>
-			<span class="n">lhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
-		<span class="p">}</span>
-		<span class="n">rhs</span> <span class="o">:=</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span>
-		<span class="k">if</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="p">{</span>
-			<span class="n">rhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
-		<span class="p">}</span>
-		<span class="n">repr</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"%s*%s"</span><span class="p">,</span> <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
-	<span class="k">case</span> <span class="sc">'/'</span><span class="o">:</span>
-		<span class="n">value</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="n">e2</span><span class="o">.</span><span class="n">value</span>
-		<span class="n">lhs</span> <span class="o">:=</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span>
-		<span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e1</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="p">{</span>
-			<span class="n">lhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
-		<span class="p">}</span>
-		<span class="n">rhs</span> <span class="o">:=</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span>
-		<span class="k">if</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'*'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'/'</span> <span class="p">{</span>
-			<span class="n">rhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
-		<span class="p">}</span>
-		<span class="n">repr</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"%s/%s"</span><span class="p">,</span> <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
-	<span class="p">}</span>
-	<span class="k">return</span> <span class="o">&amp;</span><span class="n">Expression</span><span class="p">{</span><span class="n">value</span><span class="o">:</span> <span class="n">value</span><span class="p">,</span> <span class="n">op</span><span class="o">:</span> <span class="n">op</span><span class="p">,</span> <span class="n">repr</span><span class="o">:</span> <span class="n">repr</span><span class="p">}</span>
+    <span class="k">var</span> <span class="n">value</span> <span class="kt">float64</span>
+    <span class="k">var</span> <span class="n">repr</span> <span class="kt">string</span>
+    <span class="k">switch</span> <span class="n">op</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="sc">'+'</span><span class="o">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">e2</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">repr</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"%s+%s"</span><span class="p">,</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
+    <span class="k">case</span> <span class="sc">'-'</span><span class="o">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="n">e2</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">rhs</span> <span class="o">:=</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span>
+        <span class="k">if</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="p">{</span>
+            <span class="n">rhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">repr</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"%s-%s"</span><span class="p">,</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
+    <span class="k">case</span> <span class="sc">'*'</span><span class="o">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="n">e2</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">lhs</span> <span class="o">:=</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span>
+        <span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e1</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="p">{</span>
+            <span class="n">lhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">rhs</span> <span class="o">:=</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span>
+        <span class="k">if</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="p">{</span>
+            <span class="n">rhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">repr</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"%s*%s"</span><span class="p">,</span> <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
+    <span class="k">case</span> <span class="sc">'/'</span><span class="o">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="n">e2</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">lhs</span> <span class="o">:=</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span>
+        <span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e1</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="p">{</span>
+            <span class="n">lhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">rhs</span> <span class="o">:=</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span>
+        <span class="k">if</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'*'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'/'</span> <span class="p">{</span>
+            <span class="n">rhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">repr</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"%s/%s"</span><span class="p">,</span> <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="o">&amp;</span><span class="n">Expression</span><span class="p">{</span><span class="n">value</span><span class="o">:</span> <span class="n">value</span><span class="p">,</span> <span class="n">op</span><span class="o">:</span> <span class="n">op</span><span class="p">,</span> <span class="n">repr</span><span class="o">:</span> <span class="n">repr</span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre>
 				</div>
@@ -113,27 +113,27 @@
 			<div class="language-go highlighter-rouge">
 				<div class="highlight">
 					<pre class="highlight"><code><span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="n">flag</span><span class="o">.</span><span class="n">Float64Var</span><span class="p">(</span><span class="o">&amp;</span><span class="n">target</span><span class="p">,</span> <span class="s">"t"</span><span class="p">,</span> <span class="m">24.0</span><span class="p">,</span> <span class="s">"target value"</span><span class="p">)</span>
-	<span class="n">flag</span><span class="o">.</span><span class="n">Parse</span><span class="p">()</span>
+    <span class="n">flag</span><span class="o">.</span><span class="n">Float64Var</span><span class="p">(</span><span class="o">&amp;</span><span class="n">target</span><span class="p">,</span> <span class="s">"t"</span><span class="p">,</span> <span class="m">24.0</span><span class="p">,</span> <span class="s">"target value"</span><span class="p">)</span>
+    <span class="n">flag</span><span class="o">.</span><span class="n">Parse</span><span class="p">()</span>
 
-	<span class="n">nums</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="o">*</span><span class="n">Expression</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">flag</span><span class="o">.</span><span class="n">Args</span><span class="p">()))</span>
-	<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">arg</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">flag</span><span class="o">.</span><span class="n">Args</span><span class="p">()</span> <span class="p">{</span>
-		<span class="n">value</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">strconv</span><span class="o">.</span><span class="n">ParseFloat</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="m">64</span><span class="p">)</span>
-		<span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
-			<span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-		<span class="p">}</span>
-		<span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">Expression</span><span class="p">{</span><span class="n">value</span><span class="o">:</span> <span class="n">value</span><span class="p">,</span> <span class="n">op</span><span class="o">:</span> <span class="sc">'.'</span><span class="p">,</span> <span class="n">repr</span><span class="o">:</span> <span class="n">arg</span><span class="p">}</span>
-	<span class="p">}</span>
+    <span class="n">nums</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="o">*</span><span class="n">Expression</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">flag</span><span class="o">.</span><span class="n">Args</span><span class="p">()))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">arg</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">flag</span><span class="o">.</span><span class="n">Args</span><span class="p">()</span> <span class="p">{</span>
+        <span class="n">value</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">strconv</span><span class="o">.</span><span class="n">ParseFloat</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="m">64</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
+            <span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">Expression</span><span class="p">{</span><span class="n">value</span><span class="o">:</span> <span class="n">value</span><span class="p">,</span> <span class="n">op</span><span class="o">:</span> <span class="sc">'.'</span><span class="p">,</span> <span class="n">repr</span><span class="o">:</span> <span class="n">arg</span><span class="p">}</span>
+    <span class="p">}</span>
 
-	<span class="n">rand</span><span class="o">.</span><span class="n">Seed</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">Now</span><span class="p">()</span><span class="o">.</span><span class="n">UnixNano</span><span class="p">())</span>
-	<span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">nums</span> <span class="p">{</span>
-		<span class="n">j</span> <span class="o">:=</span> <span class="n">rand</span><span class="o">.</span><span class="n">Intn</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="m">1</span><span class="p">)</span>
-		<span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-	<span class="p">}</span>
+    <span class="n">rand</span><span class="o">.</span><span class="n">Seed</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">Now</span><span class="p">()</span><span class="o">.</span><span class="n">UnixNano</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">nums</span> <span class="p">{</span>
+        <span class="n">j</span> <span class="o">:=</span> <span class="n">rand</span><span class="o">.</span><span class="n">Intn</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="m">1</span><span class="p">)</span>
+        <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="p">}</span>
 
-	<span class="k">if</span> <span class="o">!</span><span class="n">Find24</span><span class="p">(</span><span class="n">nums</span><span class="p">)</span> <span class="p">{</span>
-		<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"No solution"</span><span class="p">)</span>
-	<span class="p">}</span>
+    <span class="k">if</span> <span class="o">!</span><span class="n">Find24</span><span class="p">(</span><span class="n">nums</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"No solution"</span><span class="p">)</span>
+    <span class="p">}</span>
 <span class="p">}</span>
 </code></pre>
 				</div>
@@ -147,7 +147,7 @@
 					<pre class="highlight"><code><span class="k">var</span> <span class="n">allAnswers</span> <span class="kt">bool</span>
 
 <span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
-	<span class="n">flag</span><span class="o">.</span><span class="n">BoolVar</span><span class="p">(</span><span class="o">&amp;</span><span class="n">allAnswers</span><span class="p">,</span> <span class="s">"a"</span><span class="p">,</span> <span class="no">false</span><span class="p">,</span> <span class="s">"find all solutions"</span><span class="p">)</span>
+    <span class="n">flag</span><span class="o">.</span><span class="n">BoolVar</span><span class="p">(</span><span class="o">&amp;</span><span class="n">allAnswers</span><span class="p">,</span> <span class="s">"a"</span><span class="p">,</span> <span class="no">false</span><span class="p">,</span> <span class="s">"find all solutions"</span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre>
 				</div>
@@ -176,23 +176,23 @@
 			<div class="language-go highlighter-rouge">
 				<div class="highlight">
 					<pre class="highlight"><code><span class="k">type</span> <span class="n">Expression</span> <span class="k">interface</span> <span class="p">{</span>
-	<span class="n">Value</span><span class="p">()</span> <span class="kt">float64</span>
-	<span class="n">Repr</span><span class="p">()</span> <span class="kt">string</span>
+    <span class="n">Value</span><span class="p">()</span> <span class="kt">float64</span>
+    <span class="n">Repr</span><span class="p">()</span> <span class="kt">string</span>
 <span class="p">}</span>
 
 <span class="k">type</span> <span class="n">AddGroup</span> <span class="k">struct</span> <span class="p">{</span>
-	<span class="n">Pos</span> <span class="p">[]</span><span class="n">Expression</span>
-	<span class="n">Neg</span> <span class="p">[]</span><span class="n">Expression</span>
+    <span class="n">Pos</span> <span class="p">[]</span><span class="n">Expression</span>
+    <span class="n">Neg</span> <span class="p">[]</span><span class="n">Expression</span>
 <span class="p">}</span>
 
 <span class="k">type</span> <span class="n">MulGroup</span> <span class="k">struct</span> <span class="p">{</span>
-	<span class="n">Pos</span> <span class="p">[]</span><span class="n">Expression</span>
-	<span class="n">Neg</span> <span class="p">[]</span><span class="n">Expression</span>
+    <span class="n">Pos</span> <span class="p">[]</span><span class="n">Expression</span>
+    <span class="n">Neg</span> <span class="p">[]</span><span class="n">Expression</span>
 <span class="p">}</span>
 
 <span class="k">type</span> <span class="n">Number</span> <span class="k">struct</span> <span class="p">{</span>
-	<span class="n">Val</span> <span class="kt">float64</span>
-	<span class="n">Str</span> <span class="kt">string</span>
+    <span class="n">Val</span> <span class="kt">float64</span>
+    <span class="n">Str</span> <span class="kt">string</span>
 <span class="p">}</span>
 </code></pre>
 				</div>
@@ -201,19 +201,19 @@
 			<div class="language-go highlighter-rouge">
 				<div class="highlight">
 					<pre class="highlight"><code><span class="k">func</span> <span class="n">CompareExpression</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="n">Expression</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">e2</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="no">true</span>
-	<span class="p">}</span>
-	<span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">e2</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="no">false</span>
-	<span class="p">}</span>
-	<span class="k">return</span> <span class="n">strings</span><span class="o">.</span><span class="n">Compare</span><span class="p">(</span><span class="n">e1</span><span class="o">.</span><span class="n">Repr</span><span class="p">(),</span> <span class="n">e2</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span> <span class="o">&lt;</span> <span class="m">0</span>
+    <span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">e2</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="no">true</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">e2</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="no">false</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">strings</span><span class="o">.</span><span class="n">Compare</span><span class="p">(</span><span class="n">e1</span><span class="o">.</span><span class="n">Repr</span><span class="p">(),</span> <span class="n">e2</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span> <span class="o">&lt;</span> <span class="m">0</span>
 <span class="p">}</span>
 
 <span class="k">func</span> <span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span> <span class="p">[]</span><span class="n">Expression</span><span class="p">)</span> <span class="p">{</span>
-	<span class="n">sort</span><span class="o">.</span><span class="n">Slice</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-		<span class="k">return</span> <span class="n">CompareExpression</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">e</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
-	<span class="p">})</span>
+    <span class="n">sort</span><span class="o">.</span><span class="n">Slice</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">CompareExpression</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">e</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+    <span class="p">})</span>
 <span class="p">}</span>
 </code></pre>
 				</div>
@@ -222,25 +222,25 @@
 			<div class="language-go highlighter-rouge">
 				<div class="highlight">
 					<pre class="highlight"><code><span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">AddGroup</span><span class="p">)</span> <span class="n">Value</span><span class="p">()</span> <span class="kt">float64</span> <span class="p">{</span>
-	<span class="k">var</span> <span class="n">s</span> <span class="kt">float64</span> <span class="o">=</span> <span class="m">0</span>
-	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
-		<span class="n">s</span> <span class="o">+=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
-	<span class="p">}</span>
-	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="p">{</span>
-		<span class="n">s</span> <span class="o">-=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
-	<span class="p">}</span>
-	<span class="k">return</span> <span class="n">s</span>
+    <span class="k">var</span> <span class="n">s</span> <span class="kt">float64</span> <span class="o">=</span> <span class="m">0</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
+        <span class="n">s</span> <span class="o">+=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="p">{</span>
+        <span class="n">s</span> <span class="o">-=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">s</span>
 <span class="p">}</span>
 
 <span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">MulGroup</span><span class="p">)</span> <span class="n">Value</span><span class="p">()</span> <span class="kt">float64</span> <span class="p">{</span>
-	<span class="k">var</span> <span class="n">s</span> <span class="kt">float64</span> <span class="o">=</span> <span class="m">1</span>
-	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
-		<span class="n">s</span> <span class="o">*=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
-	<span class="p">}</span>
-	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="p">{</span>
-		<span class="n">s</span> <span class="o">/=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
-	<span class="p">}</span>
-	<span class="k">return</span> <span class="n">s</span>
+    <span class="k">var</span> <span class="n">s</span> <span class="kt">float64</span> <span class="o">=</span> <span class="m">1</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
+        <span class="n">s</span> <span class="o">*=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="p">{</span>
+        <span class="n">s</span> <span class="o">/=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">s</span>
 <span class="p">}</span>
 </code></pre>
 				</div>
@@ -249,37 +249,37 @@
 			<div class="language-go highlighter-rouge">
 				<div class="highlight">
 					<pre class="highlight"><code><span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">AddGroup</span><span class="p">)</span> <span class="n">Repr</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
-	<span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">)</span>
-	<span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">)</span>
-	<span class="k">var</span> <span class="n">s</span> <span class="n">strings</span><span class="o">.</span><span class="n">Builder</span>
-	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
-		<span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"+"</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span>
-	<span class="p">}</span>
-	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="p">{</span>
-		<span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"-"</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span>
-	<span class="p">}</span>
-	<span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">String</span><span class="p">()[</span><span class="m">1</span><span class="o">:</span><span class="p">]</span>
+    <span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">)</span>
+    <span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">)</span>
+    <span class="k">var</span> <span class="n">s</span> <span class="n">strings</span><span class="o">.</span><span class="n">Builder</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"+"</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span>
+    <span class="p">}</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="p">{</span>
+        <span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"-"</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">String</span><span class="p">()[</span><span class="m">1</span><span class="o">:</span><span class="p">]</span>
 <span class="p">}</span>
 
 <span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">MulGroup</span><span class="p">)</span> <span class="n">Repr</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
-	<span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">)</span>
-	<span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">)</span>
-	<span class="k">var</span> <span class="n">s</span> <span class="n">strings</span><span class="o">.</span><span class="n">Builder</span>
-	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
-		<span class="k">if</span> <span class="n">_</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">ee</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">Number</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
-			<span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"*"</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span>
-		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-			<span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"*("</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">()</span> <span class="o">+</span> <span class="s">")"</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-	<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="p">{</span>
-		<span class="k">if</span> <span class="n">_</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">ee</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">Number</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
-			<span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"/"</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span>
-		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-			<span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"/("</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">()</span> <span class="o">+</span> <span class="s">")"</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-	<span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">String</span><span class="p">()[</span><span class="m">1</span><span class="o">:</span><span class="p">]</span>
+    <span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">)</span>
+    <span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">)</span>
+    <span class="k">var</span> <span class="n">s</span> <span class="n">strings</span><span class="o">.</span><span class="n">Builder</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">_</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">ee</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">Number</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"*"</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"*("</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">()</span> <span class="o">+</span> <span class="s">")"</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">_</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">ee</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">Number</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"/"</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"/("</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">()</span> <span class="o">+</span> <span class="s">")"</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">String</span><span class="p">()[</span><span class="m">1</span><span class="o">:</span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre>
 				</div>
@@ -288,29 +288,29 @@
 			<div class="language-go highlighter-rouge">
 				<div class="highlight">
 					<pre class="highlight"><code><span class="k">func</span> <span class="n">JoinAddGroup</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="n">Expression</span><span class="p">,</span> <span class="n">neg2</span> <span class="kt">bool</span><span class="p">)</span> <span class="o">*</span><span class="n">AddGroup</span> <span class="p">{</span>
-	<span class="n">e</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="n">AddGroup</span><span class="p">)</span>
-	<span class="k">if</span> <span class="n">a1</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">e1</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">AddGroup</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
-		<span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">a1</span><span class="o">.</span><span class="n">Pos</span><span class="o">...</span><span class="p">)</span>
-		<span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">,</span> <span class="n">a1</span><span class="o">.</span><span class="n">Neg</span><span class="o">...</span><span class="p">)</span>
-	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-		<span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">e1</span><span class="p">)</span>
-	<span class="p">}</span>
-	<span class="k">if</span> <span class="n">a2</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">e2</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">AddGroup</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
-		<span class="k">if</span> <span class="n">neg2</span> <span class="p">{</span>
-			<span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">Neg</span><span class="o">...</span><span class="p">)</span>
-			<span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">Pos</span><span class="o">...</span><span class="p">)</span>
-		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-			<span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">Pos</span><span class="o">...</span><span class="p">)</span>
-			<span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">Neg</span><span class="o">...</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-		<span class="k">if</span> <span class="n">neg2</span> <span class="p">{</span>
-			<span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">,</span> <span class="n">e2</span><span class="p">)</span>
-		<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-			<span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">e2</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-	<span class="k">return</span> <span class="n">e</span>
+    <span class="n">e</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="n">AddGroup</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a1</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">e1</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">AddGroup</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
+        <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">a1</span><span class="o">.</span><span class="n">Pos</span><span class="o">...</span><span class="p">)</span>
+        <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">,</span> <span class="n">a1</span><span class="o">.</span><span class="n">Neg</span><span class="o">...</span><span class="p">)</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">e1</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">a2</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">e2</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">AddGroup</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">neg2</span> <span class="p">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">Neg</span><span class="o">...</span><span class="p">)</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">Pos</span><span class="o">...</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">Pos</span><span class="o">...</span><span class="p">)</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">Neg</span><span class="o">...</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="n">neg2</span> <span class="p">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">,</span> <span class="n">e2</span><span class="p">)</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">e2</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">e</span>
 <span class="p">}</span>
 </code></pre>
 				</div>
@@ -324,22 +324,22 @@
 					<pre class="highlight"><code><span class="k">var</span> <span class="n">answers</span> <span class="p">[]</span><span class="kt">string</span>
 
 <span class="k">func</span> <span class="n">EvalResult</span><span class="p">(</span><span class="n">e</span> <span class="n">Expression</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-	<span class="n">result</span> <span class="o">:=</span> <span class="n">CompareFloat</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Value</span><span class="p">(),</span> <span class="n">target</span><span class="p">,</span> <span class="m">1e-6</span><span class="p">)</span>
-	<span class="k">if</span> <span class="n">result</span> <span class="p">{</span>
-		<span class="n">s</span> <span class="o">:=</span> <span class="n">e</span><span class="o">.</span><span class="n">Repr</span><span class="p">()</span>
-		<span class="n">duplicate</span> <span class="o">:=</span> <span class="no">false</span>
-		<span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ans</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">answers</span> <span class="p">{</span>
-			<span class="k">if</span> <span class="n">ans</span> <span class="o">==</span> <span class="n">s</span> <span class="p">{</span>
-				<span class="n">duplicate</span> <span class="o">=</span> <span class="no">true</span>
-				<span class="k">break</span>
-			<span class="p">}</span>
-		<span class="p">}</span>
-		<span class="k">if</span> <span class="o">!</span><span class="n">duplicate</span> <span class="p">{</span>
-			<span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s">"="</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-			<span class="n">answers</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">answers</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
-		<span class="p">}</span>
-	<span class="p">}</span>
-	<span class="k">return</span> <span class="n">result</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">allAnswers</span>
+    <span class="n">result</span> <span class="o">:=</span> <span class="n">CompareFloat</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Value</span><span class="p">(),</span> <span class="n">target</span><span class="p">,</span> <span class="m">1e-6</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="p">{</span>
+        <span class="n">s</span> <span class="o">:=</span> <span class="n">e</span><span class="o">.</span><span class="n">Repr</span><span class="p">()</span>
+        <span class="n">duplicate</span> <span class="o">:=</span> <span class="no">false</span>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ans</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">answers</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="n">ans</span> <span class="o">==</span> <span class="n">s</span> <span class="p">{</span>
+                <span class="n">duplicate</span> <span class="o">=</span> <span class="no">true</span>
+                <span class="k">break</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="o">!</span><span class="n">duplicate</span> <span class="p">{</span>
+            <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s">"="</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+            <span class="n">answers</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">answers</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">result</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">allAnswers</span>
 <span class="p">}</span>
 </code></pre>
 				</div>
@@ -577,7 +577,7 @@
 				<div class="highlight">
 					<pre class="highlight"><code><span class="kt">void</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
     <span class="c1">// ...</span>
-		<span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">negative</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">negative</span><span class="p">.</span><span class="n">end</span><span class="p">();)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">negative</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">negative</span><span class="p">.</span><span class="n">end</span><span class="p">();)</span> <span class="p">{</span>
         <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">=</span> <span class="o">*</span><span class="n">it</span><span class="p">;</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">||</span> <span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">))</span> <span class="p">{</span>
             <span class="n">positive</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
@@ -706,7 +706,7 @@
 			<div class="language-cpp highlighter-rouge">
 				<div class="highlight">
 					<pre class="highlight"><code><span class="kt">bool</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">is_top_level</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
-	  <span class="k">if</span> <span class="p">(</span><span class="n">is_top_level</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">is_top_level</span><span class="p">)</span> <span class="p">{</span>
         <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
             <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_canonical</span><span class="p">(</span><span class="k">dynamic_cast</span><span class="o">&lt;</span><span class="n">MultiplicativeGroup</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">nullptr</span><span class="p">))</span>
                 <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
