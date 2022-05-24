@@ -21,7 +21,7 @@
 		<meta property="og:description" content="The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2022-05-25T00:00:00+00:00">
-		<meta property="article:modified_time" content="2022-05-25T05:10:22+00:00">
+		<meta property="article:modified_time" content="2022-05-25T05:15:51+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2022/05/programming-24-game/">
 		<script type="application/ld+json">
 			{
@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=66db41e">
+		<link rel="stylesheet" href="/assets/css/main.css?v=fa8cf3a">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<!--[if IE]>
 			<style>
@@ -188,7 +188,7 @@
 					<meta itemprop="headline" content="Taking the 24 puzzle game to the next level">
 					<meta itemprop="description" content="The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.">
 					<meta itemprop="datePublished" content="2022-05-25T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2022-05-25T05:10:22+00:00">
+					<meta itemprop="dateModified" content="2022-05-25T05:15:51+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -197,22 +197,22 @@
 										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
 									</header>
 									<ul class="toc__menu">
-										<li><a href="#searching-for-answers">Searching for answers</a></li>
-										<li><a href="#generating-the-solution">Generating the solution</a></li>
-										<li><a href="#next-level-reducing-duplicate-answers">Next level: Reducing duplicate answers</a>
+										<li><a href="#searching">Searching for answers</a></li>
+										<li><a href="#stringify">Generating the solution</a></li>
+										<li><a href="#next-level">Next level: Reducing duplicate answers</a>
 											<ul>
-												<li><a href="#redesigning-data-structure">Redesigning data structure</a></li>
+												<li><a href="#data-structures">Redesigning data structure</a></li>
 												<li><a href="#deduplicating">Deduplicating</a></li>
 											</ul>
 										</li>
-										<li><a href="#advanced-level-more-deduplication-and-optimization">Advanced level: More deduplication, and optimization</a>
+										<li><a href="#advanced">Advanced level: More deduplication, and optimization</a>
 											<ul>
-												<li><a href="#switching-to-c">Switching to C++</a></li>
-												<li><a href="#double-negativity-in-multiplicative-groups">Double-negativity in multiplicative groups</a></li>
-												<li><a href="#subtracting-negative-values">Subtracting negative values</a></li>
-												<li><a href="#substracting-zeros-and-dividing-by-ones">Substracting zeros and dividing by ones</a></li>
-												<li><a href="#memoizing-intermediate-results">Memoizing intermediate results</a></li>
-												<li><a href="#placement-of-zeros-and-ones">Placement of zeros and ones</a></li>
+												<li><a href="#cpp">Switching to C++</a></li>
+												<li><a href="#double-negativity">Double-negativity in multiplicative groups</a></li>
+												<li><a href="#negative-subtraction">Subtracting negative values</a></li>
+												<li><a href="#identity-elements">Substracting zeros and dividing by ones</a></li>
+												<li><a href="#memoization">Memoizing intermediate results</a></li>
+												<li><a href="#placement">Placement of zeros and ones</a></li>
 											</ul>
 										</li>
 										<li><a href="#postface">Postface</a></li>
@@ -222,7 +222,7 @@
 							</aside>
 							<p>The <a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 game</a> is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.</p>
 							<p>Getting a program that determines whether a set of 4 numbers is solvable is easy, as there are only as many possible combinations as 4 numbers can form. Even a simple brute-force search</p>
-							<h2 id="searching-for-answers">Searching for answers</h2>
+							<h2 id="searching">Searching for answers</h2>
 							<p>Obviously it’s not going to be a good idea to enumerate all the arrangements and search by filling in the numbers, so we’re going to think about this from bottom-up.</p>
 							<p>Starting from two numbers, it’s easy to enumerate all 4 arithmetic operators for <code class="language-plaintext highlighter-rouge">a?b</code> and <code class="language-plaintext highlighter-rouge">b?a</code>, with addition and multiplication being <a href="https://en.wikipedia.org/wiki/Commutative_property">commutative</a> (i.e. <code class="language-plaintext highlighter-rouge">a+b</code> and <code class="language-plaintext highlighter-rouge">b+a</code> are identical), resulting in a total of 6 operations.</p>
 							<p>Taking this to a three-number setup. We can reduce it to the two-number case by picking two of the numbers and applying an operation. This can be generalized to an arbitrary number of inputs. As long as we’re cutting down a number at every recursion, we’ll eventually cover all possible combinations of all inputs and come to a conclusion.</p>
@@ -275,7 +275,7 @@
 </code></pre>
 								</div>
 							</div>
-							<h2 id="generating-the-solution">Generating the solution</h2>
+							<h2 id="stringify">Generating the solution</h2>
 							<p>Without displaying the solution, the program can only get as far as a simple <a href="https://leetcode.com/problems/24-game/">LeetCode challenge</a> or another online judger. For anything to make the programming quiz more suitable as a school assignment, printing out the found solution is the next thing.</p>
 							<p>Apparently just joining the numbers and the operators together is not enough, as in many cases parentheses are required to denote specific order of operations over normal operator precedence. For example, <code class="language-plaintext highlighter-rouge">6*2+2</code> is not 24, but <code class="language-plaintext highlighter-rouge">6*(2+2)</code> is. Fortunately, blindly adding parentheses works just well, though duplicate or equivalent answers would be <em>extremely</em> common. No one would think that <code class="language-plaintext highlighter-rouge">(1+2)+3</code> and <code class="language-plaintext highlighter-rouge">1+(2+3)</code> makes any sensical difference, right? That’s because addition and multiplication are <a href="https://en.wikipedia.org/wiki/Associative_property">associative</a>. We also need to avoid adding parentheses around plain numbers, assuming we’re not dealing with negative inputs at this moment.</p>
 							<p>By enumerating all four operators and writing rules to carefully add parentheses when needed, we have a relatively logical <code class="language-plaintext highlighter-rouge">JoinExpression</code> function.</p>
@@ -362,7 +362,7 @@
 							</div>
 							<p>The complete program can be found <a href="https://gist.github.com/iBug/62610c759f7702071baaf884301ae067">here</a> and ready to compile &amp; run.</p>
 							<p>This program can output lines among <code class="language-plaintext highlighter-rouge">(1+3)*(2+4) = 24</code> and <code class="language-plaintext highlighter-rouge">1*2*3*4 = 24</code>, which looks good so far.</p>
-							<h2 id="next-level-reducing-duplicate-answers">Next level: Reducing duplicate answers</h2>
+							<h2 id="next-level">Next level: Reducing duplicate answers</h2>
 							<p>It’s easy to add a “show all answers” flag:</p>
 							<div class="language-go highlighter-rouge">
 								<div class="highlight">
@@ -391,7 +391,7 @@
 								</div>
 							</div>
 							<p>Under the hood it could just be <code class="language-plaintext highlighter-rouge">(1*4)*(2*3)</code> and <code class="language-plaintext highlighter-rouge">1*(4*(2*3))</code>, which we don’t know for sure since we only omitted the parentheses.</p>
-							<h3 id="redesigning-data-structure">Redesigning data structure</h3>
+							<h3 id="data-structures">Redesigning data structure</h3>
 							<p>We could fix this by flattening expressions so each addition and multiplication operator can have multiple operands. This also enables reliable sorting of elements, which is also pretty obvious.</p>
 							<p>There’s still more. We need to handle nested negativity. For example, <code class="language-plaintext highlighter-rouge">1-2+3</code> and <code class="language-plaintext highlighter-rouge">1-(2-3)</code> are really no different, and special care is to be taken when flattening. It also poses the challenge of sorting elements with mixed signs, as well as when parenthesizing them.</p>
 							<p>To keep the logic straightforward, instead of binary trees, we can use lists to store the operands. Subtracted elements can then be stored in another list under the same “group of additions”, and likewise is division. Finally, plain numbers still require their specialized handling.</p>
@@ -577,9 +577,9 @@
 								</div>
 							</div>
 							<p>The complete code so far can be found <a href="https://gist.github.com/iBug/b0e3d7dc11e53ac53df5f6d0438ad3b5">here</a>.</p>
-							<h2 id="advanced-level-more-deduplication-and-optimization">Advanced level: More deduplication, and optimization</h2>
+							<h2 id="advanced">Advanced level: More deduplication, and optimization</h2>
 							<p>On a side note, I switched to C++ at this point because I found Go’s comprehensive runtime <em>cumbersome</em>, and its lack of compiler optimization is specifically detrimental for such computing tasks. C++ has everything I need, including dynamic arrays (<code class="language-plaintext highlighter-rouge">vector</code>), dynamic typing (RTTI via <code class="language-plaintext highlighter-rouge">virtual</code> functions and <code class="language-plaintext highlighter-rouge">dynamic_cast</code>) and hash sets (<code class="language-plaintext highlighter-rouge">unordered_set</code>). C++ also has the advantage of supporting function templates and inheritance, which helps greatly with duplicate logic. The only thing missing from Go is a standard library for parsing command-line arguments, which bothers very little as I don’t need complex parsing rules. (There are external libraries that I want to avoid, such as POSIX <code class="language-plaintext highlighter-rouge">getopt()</code>.)</p>
-							<h3 id="switching-to-c">Switching to C++</h3>
+							<h3 id="cpp">Switching to C++</h3>
 							<p>To mimic the <code class="language-plaintext highlighter-rouge">Expression</code> interface in Go, I created an abstract base class:</p>
 							<div class="language-cpp highlighter-rouge">
 								<div class="highlight">
@@ -633,7 +633,7 @@
 </code></pre>
 								</div>
 							</div>
-							<h3 id="double-negativity-in-multiplicative-groups">Double-negativity in multiplicative groups</h3>
+							<h3 id="double-negativity">Double-negativity in multiplicative groups</h3>
 							<p>When fed with input <code class="language-plaintext highlighter-rouge">1 1 4 9</code>, the above Go program produces 2 results:</p>
 							<div class="language-plaintext highlighter-rouge">
 								<div class="highlight">
@@ -718,7 +718,7 @@
 </code></pre>
 								</div>
 							</div>
-							<h3 id="subtracting-negative-values">Subtracting negative values</h3>
+							<h3 id="negative-subtraction">Subtracting negative values</h3>
 							<p>When fed with input <code class="language-plaintext highlighter-rouge">1 1 4 9</code>, the above Go program produces 7 results, among which are these two:</p>
 							<div class="language-plaintext highlighter-rouge">
 								<div class="highlight">
@@ -779,7 +779,7 @@
 </code></pre>
 								</div>
 							</div>
-							<h3 id="substracting-zeros-and-dividing-by-ones">Substracting zeros and dividing by ones</h3>
+							<h3 id="identity-elements">Substracting zeros and dividing by ones</h3>
 							<p>Zero is the <a href="https://en.wikipedia.org/wiki/Identity_element">identity element</a> of addition, and one is that of multiplication. This means <code class="language-plaintext highlighter-rouge">a+0=a-0=a</code> and <code class="language-plaintext highlighter-rouge">a*1=a/1=a</code>. We can normalize <code class="language-plaintext highlighter-rouge">-0</code> into <code class="language-plaintext highlighter-rouge">+0</code> and <code class="language-plaintext highlighter-rouge">/1</code> into <code class="language-plaintext highlighter-rouge">*1</code>. This one’s even easier since it only moves elements from the negative list to the positive list.</p>
 							<div class="language-cpp highlighter-rouge">
 								<div class="highlight">
@@ -813,7 +813,7 @@
 </code></pre>
 								</div>
 							</div>
-							<h3 id="memoizing-intermediate-results">Memoizing intermediate results</h3>
+							<h3 id="memoization">Memoizing intermediate results</h3>
 							<p>For small inputs like only 4 numbers, there are only up to 36×18×6=3,888 leaf nodes to search, so any working algorithm shouldn’t run for more than tens of milliseconds. But why limit to 4 input numbers, a pretty artificial value, when the algorithm is designed to scale and handle inputs of any sizes?</p>
 							<p>With 8 input numbers, the latest Go program runs from 20 seconds to more than a minute. It’s easily imaginable that there are a lot of duplicate intermediate search nodes, like <code class="language-plaintext highlighter-rouge">(a+b) (c+d)</code> and <code class="language-plaintext highlighter-rouge">(c+d) (a+b)</code>. Searching further down these states wastes a lot of time. Given that we already have normalization and sorting facilities, it’s straightforward to serialize an intermediate state, save it in a set, and prune repeated search branches.</p>
 							<div class="language-cpp highlighter-rouge">
@@ -855,7 +855,7 @@
 								</div>
 							</div>
 							<p>Because generating and hashing strings could be expensive, and there aren’t enough duplicates for small inputs, I chose to enable mid-way deduplication only for inputs with 5 or more numbers.</p>
-							<h3 id="placement-of-zeros-and-ones">Placement of zeros and ones</h3>
+							<h3 id="placement">Placement of zeros and ones</h3>
 							<p>The last thing to handle is the placement of no-ops, like <code class="language-plaintext highlighter-rouge">*1</code> and <code class="language-plaintext highlighter-rouge">+3-3</code>. While it could be arithmetically different between <code class="language-plaintext highlighter-rouge">a+b-b</code> and <code class="language-plaintext highlighter-rouge">a*b/b</code>, or between <code class="language-plaintext highlighter-rouge">a*1+b</code> and <code class="language-plaintext highlighter-rouge">(a+b)*1</code>, one would think the difference is minimal when playing with cards in reality.</p>
 							<p>Taking the same convention as on the <a href="https://www.4nums.com/theory/">4 Numbers</a> website, points 7 and 8, the following rules is defined as “preferences for duplicates”:</p>
 							<ul>
@@ -1139,7 +1139,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-699</a>
+						Site version <a href="/status" class="version-text">G-700</a>
 					</p>
 				</div>
 			</footer>
