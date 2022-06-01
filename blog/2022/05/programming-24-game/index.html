@@ -21,7 +21,7 @@
 		<meta property="og:description" content="The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2022-05-25T00:00:00+00:00">
-		<meta property="article:modified_time" content="2022-05-26T15:58:22+00:00">
+		<meta property="article:modified_time" content="2022-06-01T23:56:59+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2022/05/programming-24-game/">
 		<script type="application/ld+json">
 			{
@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=89bf414">
+		<link rel="stylesheet" href="/assets/css/main.css?v=fb42967">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -171,7 +171,7 @@
 					<meta itemprop="headline" content="Taking the 24 puzzle game to the next level">
 					<meta itemprop="description" content="The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.">
 					<meta itemprop="datePublished" content="2022-05-25T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2022-05-26T15:58:22+00:00">
+					<meta itemprop="dateModified" content="2022-06-01T23:56:59+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -343,8 +343,10 @@
 </code></pre>
 								</div>
 							</div>
-							<p>The complete program can be found <a href="https://gist.github.com/iBug/62610c759f7702071baaf884301ae067">here</a> and is ready to compile &amp; run.</p>
-							<p>This program can output lines among <code class="language-plaintext highlighter-rouge">(1+3)*(2+4) = 24</code> and <code class="language-plaintext highlighter-rouge">1*2*3*4 = 24</code>, which looks good so far.</p>
+							<div class="notice--primary">
+								<p>The complete program can be found <a href="https://gist.github.com/iBug/62610c759f7702071baaf884301ae067">here</a> and is ready to compile &amp; run.</p>
+								<p>This program can output lines among <code class="language-plaintext highlighter-rouge">(1+3)*(2+4) = 24</code> and <code class="language-plaintext highlighter-rouge">1*2*3*4 = 24</code>, which looks good so far.</p>
+							</div>
 							<h2 id="next-level">Next level: Reducing duplicate answers</h2>
 							<p>It’s easy to add a “show all answers” flag:</p>
 							<div class="language-go highlighter-rouge">
@@ -559,7 +561,7 @@
 </code></pre>
 								</div>
 							</div>
-							<p>The complete code so far can be found <a href="https://gist.github.com/iBug/b0e3d7dc11e53ac53df5f6d0438ad3b5">here</a>.</p>
+							<p class="notice--primary">The complete code so far can be found <a href="https://gist.github.com/iBug/b0e3d7dc11e53ac53df5f6d0438ad3b5">here</a>.</p>
 							<h2 id="advanced">Advanced level: More deduplication, and optimization</h2>
 							<p>On a side note, I switched to C++ at this point because I found Go’s comprehensive runtime <em>cumbersome</em>, and its lack of compiler optimization is specifically detrimental for such computing tasks. C++ has everything I need, including dynamic arrays (<code class="language-plaintext highlighter-rouge">vector</code>), dynamic typing (RTTI via <code class="language-plaintext highlighter-rouge">virtual</code> functions and <code class="language-plaintext highlighter-rouge">dynamic_cast</code>) and hash sets (<code class="language-plaintext highlighter-rouge">unordered_set</code>). C++ also has the advantage of supporting function templates and inheritance, which helps greatly with duplicate logic. The only thing missing from Go is a standard library for parsing command-line arguments, which bothers very little as I don’t need complex parsing rules. (There are external libraries that I want to avoid, such as POSIX <code class="language-plaintext highlighter-rouge">getopt()</code>.)</p>
 							<h3 id="cpp">Switching to C++</h3>
@@ -957,7 +959,7 @@
 							</div>
 							<h2 id="postface">Postface</h2>
 							<p>The 4 Numbers website provides a comprehensive list of all 1362 solvable quadruples from 1 to 13 (i.e. formed with a standard 52-card set). Just grab the page and do some HTML processing, and a good test suite is readily available.</p>
-							<p><a href="https://gist.github.com/iBug/ea958ca7f1270128d58b5176858d71cb">Here</a>’s the final version of the C++ code. It gives identical solutions to all 1362 test cases.</p>
+							<p><a href="https://gist.github.com/iBug/ea958ca7f1270128d58b5176858d71cb">Here</a>’s the final version of the C++ code. It gives solutions to 1362 test cases where all of them are identical to those on the 4 Numbers website.</p>
 							<p>The problem originates from a course <em>Program Design II</em> where a friend of mine works as a TA this semester.</p>
 							<h2 id="references">References</h2>
 							<ul>
@@ -976,7 +978,7 @@
 									<a href="/tag/development" class="page__taxonomy-item" rel="tag">development</a>
 								</span>
 							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-05-26">May 26, 2022</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-06-01">Jun 1, 2022</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
@@ -1122,7 +1124,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-705</a>
+						Site version <a href="/status" class="version-text">G-706</a>
 					</p>
 				</div>
 			</footer>

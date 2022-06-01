@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2022-05-28T07:09:40+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Taking the 24 puzzle game to the next level</title><link href="https://ibug.io/blog/2022/05/programming-24-game/" rel="alternate" type="text/html" title="Taking the 24 puzzle game to the next level" /><published>2022-05-25T00:00:00+00:00</published><updated>2022-05-26T15:58:22+00:00</updated><id>https://ibug.io/blog/2022/05/programming-24-game</id><content type="html" xml:base="https://ibug.io/blog/2022/05/programming-24-game/"><![CDATA[<p>The <a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 game</a> is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2022-06-01T15:57:39+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Taking the 24 puzzle game to the next level</title><link href="https://ibug.io/blog/2022/05/programming-24-game/" rel="alternate" type="text/html" title="Taking the 24 puzzle game to the next level" /><published>2022-05-25T00:00:00+00:00</published><updated>2022-06-01T23:56:59+00:00</updated><id>https://ibug.io/blog/2022/05/programming-24-game</id><content type="html" xml:base="https://ibug.io/blog/2022/05/programming-24-game/"><![CDATA[<p>The <a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 game</a> is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.</p>
 			<p>Getting a program that determines whether a set of 4 numbers is solvable is easy, as there are only as many possible combinations as 4 numbers can form. Even a simple brute-force search won’t take long to determine the solution. So I will go through the search algorithm and see how much improvement can be made.</p>
 			<h2 id="searching">Searching for answers</h2>
 			<p>Obviously it’s not going to be a good idea to enumerate all the arrangements and search by filling in the numbers, so we’re going to think about this from bottom-up.</p>
@@ -138,8 +138,10 @@
 </code></pre>
 				</div>
 			</div>
-			<p>The complete program can be found <a href="https://gist.github.com/iBug/62610c759f7702071baaf884301ae067">here</a> and is ready to compile &amp; run.</p>
-			<p>This program can output lines among <code class="language-plaintext highlighter-rouge">(1+3)*(2+4) = 24</code> and <code class="language-plaintext highlighter-rouge">1*2*3*4 = 24</code>, which looks good so far.</p>
+			<div class="notice--primary">
+				<p>The complete program can be found <a href="https://gist.github.com/iBug/62610c759f7702071baaf884301ae067">here</a> and is ready to compile &amp; run.</p>
+				<p>This program can output lines among <code class="language-plaintext highlighter-rouge">(1+3)*(2+4) = 24</code> and <code class="language-plaintext highlighter-rouge">1*2*3*4 = 24</code>, which looks good so far.</p>
+			</div>
 			<h2 id="next-level">Next level: Reducing duplicate answers</h2>
 			<p>It’s easy to add a “show all answers” flag:</p>
 			<div class="language-go highlighter-rouge">
@@ -354,7 +356,7 @@
 </code></pre>
 				</div>
 			</div>
-			<p>The complete code so far can be found <a href="https://gist.github.com/iBug/b0e3d7dc11e53ac53df5f6d0438ad3b5">here</a>.</p>
+			<p class="notice--primary">The complete code so far can be found <a href="https://gist.github.com/iBug/b0e3d7dc11e53ac53df5f6d0438ad3b5">here</a>.</p>
 			<h2 id="advanced">Advanced level: More deduplication, and optimization</h2>
 			<p>On a side note, I switched to C++ at this point because I found Go’s comprehensive runtime <em>cumbersome</em>, and its lack of compiler optimization is specifically detrimental for such computing tasks. C++ has everything I need, including dynamic arrays (<code class="language-plaintext highlighter-rouge">vector</code>), dynamic typing (RTTI via <code class="language-plaintext highlighter-rouge">virtual</code> functions and <code class="language-plaintext highlighter-rouge">dynamic_cast</code>) and hash sets (<code class="language-plaintext highlighter-rouge">unordered_set</code>). C++ also has the advantage of supporting function templates and inheritance, which helps greatly with duplicate logic. The only thing missing from Go is a standard library for parsing command-line arguments, which bothers very little as I don’t need complex parsing rules. (There are external libraries that I want to avoid, such as POSIX <code class="language-plaintext highlighter-rouge">getopt()</code>.)</p>
 			<h3 id="cpp">Switching to C++</h3>
@@ -752,7 +754,7 @@
 			</div>
 			<h2 id="postface">Postface</h2>
 			<p>The 4 Numbers website provides a comprehensive list of all 1362 solvable quadruples from 1 to 13 (i.e. formed with a standard 52-card set). Just grab the page and do some HTML processing, and a good test suite is readily available.</p>
-			<p><a href="https://gist.github.com/iBug/ea958ca7f1270128d58b5176858d71cb">Here</a>’s the final version of the C++ code. It gives identical solutions to all 1362 test cases.</p>
+			<p><a href="https://gist.github.com/iBug/ea958ca7f1270128d58b5176858d71cb">Here</a>’s the final version of the C++ code. It gives solutions to 1362 test cases where all of them are identical to those on the 4 Numbers website.</p>
 			<p>The problem originates from a course <em>Program Design II</em> where a friend of mine works as a TA this semester.</p>
 			<h2 id="references">References</h2>
 			<ul>
