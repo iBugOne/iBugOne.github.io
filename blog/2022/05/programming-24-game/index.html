@@ -21,7 +21,7 @@
 		<meta property="og:description" content="The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2022-05-25T00:00:00+00:00">
-		<meta property="article:modified_time" content="2022-06-01T23:56:59+00:00">
+		<meta property="article:modified_time" content="2022-06-02T00:13:13+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2022/05/programming-24-game/">
 		<script type="application/ld+json">
 			{
@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=fb42967">
+		<link rel="stylesheet" href="/assets/css/main.css?v=eaf1077">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -171,7 +171,7 @@
 					<meta itemprop="headline" content="Taking the 24 puzzle game to the next level">
 					<meta itemprop="description" content="The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.">
 					<meta itemprop="datePublished" content="2022-05-25T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2022-06-01T23:56:59+00:00">
+					<meta itemprop="dateModified" content="2022-06-02T00:13:13+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -842,7 +842,7 @@
 							<p>Because generating and hashing strings could be expensive, and there aren’t enough duplicates for small inputs, I chose to enable mid-way deduplication only for inputs with 5 or more numbers.</p>
 							<h3 id="placement">Placement of zeros and ones</h3>
 							<p>The last thing to handle is the placement of no-ops, like <code class="language-plaintext highlighter-rouge">*1</code> and <code class="language-plaintext highlighter-rouge">+3-3</code>. While it could be arithmetically different between <code class="language-plaintext highlighter-rouge">a+b-b</code> and <code class="language-plaintext highlighter-rouge">a*b/b</code>, or between <code class="language-plaintext highlighter-rouge">a*1+b</code> and <code class="language-plaintext highlighter-rouge">(a+b)*1</code>, one would think the difference is minimal when playing with cards in reality.</p>
-							<p>Taking the same convention as on the <a href="https://www.4nums.com/theory/">4 Numbers</a> website, points 7 and 8, the following rules is defined as “preferences for duplicates”:</p>
+							<p>Taking the same convention as on the <a href="https://www.4nums.com/theory/"><em>4 Numbers</em></a> website, points 7 and 8, the following rules is defined as “preferences for duplicates”:</p>
 							<ul>
 								<li>Multiplying by ±1 happens on the topmost multiplication group, so <code class="language-plaintext highlighter-rouge">1*2+3*4</code> becomes <code class="language-plaintext highlighter-rouge">1*(2+3*4)</code>, except when there’s a pair of additive no-ops: <code class="language-plaintext highlighter-rouge">(a+b)*1+c-c</code> is preferred over <code class="language-plaintext highlighter-rouge">(a+b+c-c)*1</code>.</li>
 								<li>A pair of same numbers cancelling each other must be done with addition and subtraction, and must happen at the topmost layer, so <code class="language-plaintext highlighter-rouge">a*b/b+c</code> becomes <code class="language-plaintext highlighter-rouge">a+c+b-b</code>. This applies to ones.</li>
@@ -958,14 +958,14 @@
 								</div>
 							</div>
 							<h2 id="postface">Postface</h2>
-							<p>The 4 Numbers website provides a comprehensive list of all 1362 solvable quadruples from 1 to 13 (i.e. formed with a standard 52-card set). Just grab the page and do some HTML processing, and a good test suite is readily available.</p>
-							<p><a href="https://gist.github.com/iBug/ea958ca7f1270128d58b5176858d71cb">Here</a>’s the final version of the C++ code. It gives solutions to 1362 test cases where all of them are identical to those on the 4 Numbers website.</p>
+							<p>The <em>4 Numbers</em> website provides a comprehensive list of all 1362 solvable quadruples from 1 to 13 (i.e. formed with a standard 52-card set). Just grab the page and do some HTML processing, and a good test suite is readily available.</p>
+							<p><a href="https://gist.github.com/iBug/ea958ca7f1270128d58b5176858d71cb">Here</a>’s the final version of the C++ code. It gives solutions to 1362 test cases where all of them are identical to those on the <em>4 Numbers</em> website.</p>
 							<p>The problem originates from a course <em>Program Design II</em> where a friend of mine works as a TA this semester.</p>
 							<h2 id="references">References</h2>
 							<ul>
 								<li><a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 (puzzle) - Wikipedia</a></li>
 								<li>
-									<p><a href="https://www.4nums.com/theory/">Definition of “distinct” by 4 Numbers website</a></p>
+									<p><a href="https://www.4nums.com/theory/">Definition of “distinct” by <em>4 Numbers</em> website</a></p>
 								</li>
 							</ul>
 						</section>
@@ -978,7 +978,7 @@
 									<a href="/tag/development" class="page__taxonomy-item" rel="tag">development</a>
 								</span>
 							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-06-01">Jun 1, 2022</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-06-02">Jun 2, 2022</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
@@ -1124,7 +1124,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-706</a>
+						Site version <a href="/status" class="version-text">G-707</a>
 					</p>
 				</div>
 			</footer>
