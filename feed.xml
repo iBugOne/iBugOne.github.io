@@ -1,14 +1,109 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.2">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2022-06-19T04:37:08+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Taking the 24 puzzle game to the next level</title><link href="https://ibug.io/blog/2022/05/programming-24-game/" rel="alternate" type="text/html" title="Taking the 24 puzzle game to the next level" /><published>2022-05-25T00:00:00+00:00</published><updated>2022-06-02T00:13:13+00:00</updated><id>https://ibug.io/blog/2022/05/programming-24-game</id><content type="html" xml:base="https://ibug.io/blog/2022/05/programming-24-game/"><![CDATA[<p>The <a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 game</a> is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.</p>
-			<p>Getting a program that determines whether a set of 4 numbers is solvable is easy, as there are only as many possible combinations as 4 numbers can form. Even a simple brute-force search won’t take long to determine the solution. So I will go through the search algorithm and see how much improvement can be made.</p>
-			<h2 id="searching">Searching for answers</h2>
-			<p>Obviously it’s not going to be a good idea to enumerate all the arrangements and search by filling in the numbers, so we’re going to think about this from bottom-up.</p>
-			<p>Starting from two numbers, it’s easy to enumerate all 4 arithmetic operators for <code class="language-plaintext highlighter-rouge">a?b</code> and <code class="language-plaintext highlighter-rouge">b?a</code>, with addition and multiplication being <a href="https://en.wikipedia.org/wiki/Commutative_property">commutative</a> (i.e. <code class="language-plaintext highlighter-rouge">a+b</code> and <code class="language-plaintext highlighter-rouge">b+a</code> are identical), resulting in a total of 6 operations.</p>
-			<p>Taking this to a three-number setup. We can reduce it to the two-number case by picking two of the numbers and applying an operation. This can be generalized to an arbitrary number of inputs. As long as we’re cutting down a number at every recursion, we’ll eventually cover all possible combinations of all inputs and come to a conclusion.</p>
-			<p>With only one input number, we compare it with our search target to see if it’s an answer we want. One little note here is that <a href="https://stackoverflow.com/q/588004/5958455"><code class="language-plaintext highlighter-rouge">0.1 + 0.2 != 0.3</code></a>, so floating-point number equality must be handled with caution.</p>
-			<p>I wrote my initial versions of the 24 program in Go, and here’s the snippet on recursive searching:</p>
-			<div class="language-go highlighter-rouge">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.2">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2022-06-19T14:06:29+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">LVM metadata exceeds maximum metadata size, now what next?</title><link href="https://ibug.io/blog/2022/06/lvm-metadata-full/" rel="alternate" type="text/html" title="LVM metadata exceeds maximum metadata size, now what next?" /><published>2022-06-19T00:00:00+00:00</published><updated>2022-06-19T22:06:07+00:00</updated><id>https://ibug.io/blog/2022/06/lvm-metadata-full</id><content type="html" xml:base="https://ibug.io/blog/2022/06/lvm-metadata-full/"><![CDATA[<p>An LVM volume group (VG) on our Proxmox VE cluster has failed to create new logical volumes, reporting that its metadata was full. At first this appears to be easy, “fine I’ll just add more space for metadata”, but it quickly revealed to be an versity to struggle through.</p>
+			<div class="language-console highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code><span class="k">var</span> <span class="n">target</span> <span class="kt">float64</span>
+					<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>lvcreate <span class="nt">-L</span> 4M <span class="nt">-n</span> test-1721 <span class="nb">test</span>
+<span class="go">  VG test 1723 metadata on /dev/sdc1 (521759 bytes) exceeds maximum metadata size (521472 bytes)
+  Failed to write VG test.
+</span><span class="gp">root@iBug-Server:~#</span><span class="w"> </span><span class="c"># wut?</span>
+</code></pre>
+				</div>
+			</div>
+			<h2 id="problems">Problems</h2>
+			<p>It isn’t hard to imagine that, just like regular disks need a partition table, LVM also needs its “partition table”, called <em>LVM metadata</em>, to store its information about PVs, VGs and LVs. It grows with the complexity of a VG, like number of PVs and configuration of LVs.</p>
+			<p>The metadata size and capacity of a PV and a VG can be inspected with <code class="language-plaintext highlighter-rouge">pvdisplay</code> and <code class="language-plaintext highlighter-rouge">vgdisplay</code>, respectively.</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>pvdisplay <span class="nt">-C</span> <span class="nt">-o</span> name,mda_size,mda_free
+<span class="go">  PV         PMdaSize  PMdaFree
+  /dev/sdc1   1020.00k        0
+</span><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>vgdisplay <span class="nt">-C</span> <span class="nt">-o</span> name,mda_size,mda_free
+<span class="go">  VG   VMdaSize  VMdaFree
+  test  1020.00k        0
+</span></code></pre>
+				</div>
+			</div>
+			<p>The metadata area (whence <code class="language-plaintext highlighter-rouge">mda</code>) is where LVM stores volume information. The trouble comes from the fact that LVM MDA has multiple oddities going against intuition, which adds to the complexity of findin a solution.</p>
+			<h3 id="1-metadata-is-an-ambiguous-term">1. “Metadata” is an ambiguous term</h3>
+			<p>If you just go ahead and search for “LVM metadata size”, you’ll be surprised to see how irrelevant the search results are. In fact, they’re about “thin pool metadata”, which is a discrete LV usually named <code class="language-plaintext highlighter-rouge">poolname_tmeta</code>.</p>
+			<p>In fact, the correct answer is in the man page, which should show up as the first Google result, <a href="https://man7.org/linux/man-pages/man8/pvcreate.8.html"><code class="language-plaintext highlighter-rouge">pvcreate(8)</code></a>. This is where I discovered the use of <code class="language-plaintext highlighter-rouge">pvs</code> and <code class="language-plaintext highlighter-rouge">vgs</code> to get the sizes.</p>
+			<h3 id="2-the-default-mda-size-is-fixed">2. The default MDA size is fixed</h3>
+			<p>Contrary to common expectations, the default value for MDA size is <em>fixed</em> and does not scale with PV size or VG size. This is explained in the man page, right above <code class="language-plaintext highlighter-rouge">pvs -o mda_size</code>.</p>
+			<p>This is not the case, however, for LVM Thin Pools. It’s not known what the design considerations are behind this.</p>
+			<h3 id="3-the-size-of-the-mda-cannot-be-changed-after-creation">3. The size of the MDA cannot be changed after creation</h3>
+			<p>As many would probably have, I also thought that “fine, I’ll just expand the size for the MDA”, and started digging through Google and relevant man pages. Another quarter-hour was spent trying to find how to do this, only to find that it can only be set at the creation of the PV. This was confirmed by <a href="https://forum.proxmox.com/threads/cannot-create-more-snapshot-without-deleting-some-olds-one.110112/">this Proxmox forum post</a>.</p>
+			<h3 id="4-reducing-metadata-copies-does-not-free-up-space">4. Reducing “metadata copies” does not free up space</h3>
+			<p>There’s also a <code class="language-plaintext highlighter-rouge">pvmetadatacopies</code> option listed in both <code class="language-plaintext highlighter-rouge">vgchange(8)</code> and <code class="language-plaintext highlighter-rouge">pvchange(8)</code>, which appears tempting to give a try. Unfortunately, opposite to intuition again, this does not free up half of the MDA space. Setting it to 1 down from the default 2 produces no visible changes.</p>
+			<h2 id="finding-the-solution">Finding the solution</h2>
+			<p>At this point I had figured out a silhouette for the problem I was facing: A VG on a single PV, fixed MDA size, no room to free up any metadata.</p>
+			<p>Fortunately, the shared SAN target supports “overcommitting”, meaning I can have an extra LUN with little effort. Given that the utilized storage is slightly over 50%, it’s not possible to move data onto the new LUN. Even if there were enough free space, moving data would take an infeasible amount of time. Ideally this new LUN shouldn’t be too large, to minimize possible aftermath should the underlying disk group goes full.</p>
+			<p>So, how can this trouble be overcome, with the help of a new LUN?</p>
+			<hr />
+			<p>Digging into this level of details, Google is unable to help, so I had to resort to man pages, if I did not have to check the source codes.</p>
+			<p>Looking at <code class="language-plaintext highlighter-rouge">pvchange(8)</code>, the only modifiable property of an existing PV is <code class="language-plaintext highlighter-rouge">metadataignore</code>. It instructs LVM to ignore the MDA for a PV.</p>
+			<p>A possible solution has arisen: Create a new PV with large enough MDA, merge it into the VG, and disable metadata storage on the old PV.</p>
+			<h2 id="solution">Solution</h2>
+			<p>I created a new LUN in the storage server’s dashboard and loaded it onto all servers in the cluster using <code class="language-plaintext highlighter-rouge">iscsiadm</code>:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>iscsiadm <span class="nt">-m</span> session <span class="nt">--rescan</span>
+</code></pre>
+				</div>
+			</div>
+			<p>The rescan may have some delay so I continued monitoring it for a minute before <code class="language-plaintext highlighter-rouge">/dev/sdd</code> showed up on all hosts.</p>
+			<p>Now I turn the new block device into a PV and add it to the problematic VG:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>pvcreate <span class="nt">--metadatasize</span> 64m /dev/sdd
+vgextend <span class="nb">test</span> /dev/sdd
+</code></pre>
+				</div>
+			</div>
+			<p>Partly to my surprise, a warning popped up:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>VG <span class="nb">test </span>1723 metadata on /dev/sdc1 <span class="o">(</span>521615 bytes<span class="o">)</span> exceeds maximum metadata size <span class="o">(</span>521472 bytes<span class="o">)</span>
+WARNING: Failed to write an MDA of VG test.
+Volume group <span class="s2">"test"</span> successfully extended
+</code></pre>
+				</div>
+			</div>
+			<p>This one isn’t hard to understand: The VG metadata must record the identifiers of all participating PVs, so adding a PV means more metadata to be stored.</p>
+			<p>So before pulling this off, I had to remove a LV temporarily. I had a few laying around for testing purposes, so finding one to get rid of was not hard. After that I could repeat the <code class="language-plaintext highlighter-rouge">vgextend</code> command without a single warning.</p>
+			<p>Next I exclude the original PV from storing metadata:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>pvchange <span class="nt">--metadataignore</span> y /dev/sdc1
+</code></pre>
+				</div>
+			</div>
+			<p>Now I can add another LV inside this VG without error:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>lvcreate <span class="nt">-L</span> 1M <span class="nt">-n</span> test-1721 <span class="nb">test</span>
+<span class="go">  Rounding up size to full physical extent 4.00 MiB
+  Logical volume "test-1721" created.
+</span><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>pvs <span class="nt">-o</span> name,mda_size,mda_free
+<span class="go">  PV         PMdaSize  PMdaFree
+  /dev/sdc1   1020.00k        0
+  /dev/sdd     &lt;65.00m   &lt;32.00m
+</span></code></pre>
+				</div>
+			</div>
+			<h2 id="caveats">Caveats</h2>
+			<p>LVM by default stores an identical copy of the metadata on every PV that belongs to the same VG. Using this “solution”, the complete metadata is only stored on the newly created PV. You certainly want to use reliable storage for this new PV as it’s now a <a href="https://en.wikipedia.org/wiki/Single_point_of_failure">SPOF</a> of the whole VG.</p>
+			<p>If in any case you want a copy of the metadata for inspection or to recover a failed VG (hope you don’t need to do that), LVM maintains automatic backups under <code class="language-plaintext highlighter-rouge">/etc/lvm/backup</code>. They’re in their original form, are text-based (so easily readable), and are ready for use with <code class="language-plaintext highlighter-rouge">vgcfgrestore</code>.</p>
+			<p>Indeed, the recommended solution is to create a new, larger VG and migrate your data ASAP. After all, data security matters the most.</p>
+			]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><summary type="html"><![CDATA[An LVM volume group (VG) on our Proxmox VE cluster has failed to create new logical volumes, reporting that its metadata was full. At first this appears to be easy, “fine I’ll just add more space for metadata”, but it quickly revealed to be an versity to struggle through.]]></summary></entry><entry><title type="html">Taking the 24 puzzle game to the next level</title><link href="https://ibug.io/blog/2022/05/programming-24-game/" rel="alternate" type="text/html" title="Taking the 24 puzzle game to the next level" /><published>2022-05-25T00:00:00+00:00</published><updated>2022-06-02T00:13:13+00:00</updated><id>https://ibug.io/blog/2022/05/programming-24-game</id><content type="html" xml:base="https://ibug.io/blog/2022/05/programming-24-game/"><![CDATA[<p>The <a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 game</a> is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.</p>
+		<p>Getting a program that determines whether a set of 4 numbers is solvable is easy, as there are only as many possible combinations as 4 numbers can form. Even a simple brute-force search won’t take long to determine the solution. So I will go through the search algorithm and see how much improvement can be made.</p>
+		<h2 id="searching">Searching for answers</h2>
+		<p>Obviously it’s not going to be a good idea to enumerate all the arrangements and search by filling in the numbers, so we’re going to think about this from bottom-up.</p>
+		<p>Starting from two numbers, it’s easy to enumerate all 4 arithmetic operators for <code class="language-plaintext highlighter-rouge">a?b</code> and <code class="language-plaintext highlighter-rouge">b?a</code>, with addition and multiplication being <a href="https://en.wikipedia.org/wiki/Commutative_property">commutative</a> (i.e. <code class="language-plaintext highlighter-rouge">a+b</code> and <code class="language-plaintext highlighter-rouge">b+a</code> are identical), resulting in a total of 6 operations.</p>
+		<p>Taking this to a three-number setup. We can reduce it to the two-number case by picking two of the numbers and applying an operation. This can be generalized to an arbitrary number of inputs. As long as we’re cutting down a number at every recursion, we’ll eventually cover all possible combinations of all inputs and come to a conclusion.</p>
+		<p>With only one input number, we compare it with our search target to see if it’s an answer we want. One little note here is that <a href="https://stackoverflow.com/q/588004/5958455"><code class="language-plaintext highlighter-rouge">0.1 + 0.2 != 0.3</code></a>, so floating-point number equality must be handled with caution.</p>
+		<p>I wrote my initial versions of the 24 program in Go, and here’s the snippet on recursive searching:</p>
+		<div class="language-go highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">var</span> <span class="n">target</span> <span class="kt">float64</span>
 
 <span class="k">func</span> <span class="n">CompareFloat</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">threshold</span> <span class="kt">float64</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
     <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">Abs</span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">b</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">threshold</span>
@@ -51,15 +146,15 @@
     <span class="k">return</span> <span class="n">result</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<h2 id="stringify">Generating the solution</h2>
-			<p>Without displaying the solution, the program can only get as far as a simple <a href="https://leetcode.com/problems/24-game/">LeetCode challenge</a> or another online judger. For anything to make the programming quiz more suitable as a school assignment, printing out the found solution is the next thing.</p>
-			<p>Apparently just joining the numbers and the operators together is not enough, as in many cases parentheses are required to denote specific order of operations over normal operator precedence. For example, <code class="language-plaintext highlighter-rouge">6*2+2</code> is not 24, but <code class="language-plaintext highlighter-rouge">6*(2+2)</code> is. Fortunately, blindly adding parentheses works just well, though duplicate or equivalent answers would be <em>extremely</em> common. No one would think that <code class="language-plaintext highlighter-rouge">(1+2)+3</code> and <code class="language-plaintext highlighter-rouge">1+(2+3)</code> makes any sensical difference, right? That’s because addition and multiplication are <a href="https://en.wikipedia.org/wiki/Associative_property">associative</a>. We also need to avoid adding parentheses around plain numbers, assuming we’re not dealing with negative inputs at this moment.</p>
-			<p>By enumerating all four operators and writing rules to carefully add parentheses when needed, we have a relatively logical <code class="language-plaintext highlighter-rouge">JoinExpression</code> function.</p>
-			<div class="language-go highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">type</span> <span class="n">Expression</span> <span class="k">struct</span> <span class="p">{</span>
+		</div>
+		<h2 id="stringify">Generating the solution</h2>
+		<p>Without displaying the solution, the program can only get as far as a simple <a href="https://leetcode.com/problems/24-game/">LeetCode challenge</a> or another online judger. For anything to make the programming quiz more suitable as a school assignment, printing out the found solution is the next thing.</p>
+		<p>Apparently just joining the numbers and the operators together is not enough, as in many cases parentheses are required to denote specific order of operations over normal operator precedence. For example, <code class="language-plaintext highlighter-rouge">6*2+2</code> is not 24, but <code class="language-plaintext highlighter-rouge">6*(2+2)</code> is. Fortunately, blindly adding parentheses works just well, though duplicate or equivalent answers would be <em>extremely</em> common. No one would think that <code class="language-plaintext highlighter-rouge">(1+2)+3</code> and <code class="language-plaintext highlighter-rouge">1+(2+3)</code> makes any sensical difference, right? That’s because addition and multiplication are <a href="https://en.wikipedia.org/wiki/Associative_property">associative</a>. We also need to avoid adding parentheses around plain numbers, assuming we’re not dealing with negative inputs at this moment.</p>
+		<p>By enumerating all four operators and writing rules to carefully add parentheses when needed, we have a relatively logical <code class="language-plaintext highlighter-rouge">JoinExpression</code> function.</p>
+		<div class="language-go highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">type</span> <span class="n">Expression</span> <span class="k">struct</span> <span class="p">{</span>
     <span class="n">value</span> <span class="kt">float64</span>
     <span class="n">op</span>    <span class="kt">rune</span>
     <span class="n">repr</span>  <span class="kt">string</span>
@@ -105,14 +200,14 @@
     <span class="k">return</span> <span class="o">&amp;</span><span class="n">Expression</span><span class="p">{</span><span class="n">value</span><span class="o">:</span> <span class="n">value</span><span class="p">,</span> <span class="n">op</span><span class="o">:</span> <span class="n">op</span><span class="p">,</span> <span class="n">repr</span><span class="o">:</span> <span class="n">repr</span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Since plain numbers never need parantheses, their “operator” is assigned to a single dot (or any character not used in the code).</p>
-			<p>At this point, all that’s missing for a complete program is a <code class="language-plaintext highlighter-rouge">main()</code> function. To add a little bit of flexibility of changing the target value, I used Go’s standard library <code class="language-plaintext highlighter-rouge">flag</code> for parsing command-line arguments, though only a single option is needed now.</p>
-			<p>To avoid generating the same answer for any particular set of inputs, I shuffled the input numbers before doing the search.</p>
-			<div class="language-go highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+		</div>
+		<p>Since plain numbers never need parantheses, their “operator” is assigned to a single dot (or any character not used in the code).</p>
+		<p>At this point, all that’s missing for a complete program is a <code class="language-plaintext highlighter-rouge">main()</code> function. To add a little bit of flexibility of changing the target value, I used Go’s standard library <code class="language-plaintext highlighter-rouge">flag</code> for parsing command-line arguments, though only a single option is needed now.</p>
+		<p>To avoid generating the same answer for any particular set of inputs, I shuffled the input numbers before doing the search.</p>
+		<div class="language-go highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">flag</span><span class="o">.</span><span class="n">Float64Var</span><span class="p">(</span><span class="o">&amp;</span><span class="n">target</span><span class="p">,</span> <span class="s">"t"</span><span class="p">,</span> <span class="m">24.0</span><span class="p">,</span> <span class="s">"target value"</span><span class="p">)</span>
     <span class="n">flag</span><span class="o">.</span><span class="n">Parse</span><span class="p">()</span>
 
@@ -136,29 +231,29 @@
     <span class="p">}</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<div class="notice--primary">
-				<p>The complete program can be found <a href="https://gist.github.com/iBug/62610c759f7702071baaf884301ae067">here</a> and is ready to compile &amp; run.</p>
-				<p>This program can output lines among <code class="language-plaintext highlighter-rouge">(1+3)*(2+4) = 24</code> and <code class="language-plaintext highlighter-rouge">1*2*3*4 = 24</code>, which looks good so far.</p>
-			</div>
-			<h2 id="next-level">Next level: Reducing duplicate answers</h2>
-			<p>It’s easy to add a “show all answers” flag:</p>
-			<div class="language-go highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">var</span> <span class="n">allAnswers</span> <span class="kt">bool</span>
+		</div>
+		<div class="notice--primary">
+			<p>The complete program can be found <a href="https://gist.github.com/iBug/62610c759f7702071baaf884301ae067">here</a> and is ready to compile &amp; run.</p>
+			<p>This program can output lines among <code class="language-plaintext highlighter-rouge">(1+3)*(2+4) = 24</code> and <code class="language-plaintext highlighter-rouge">1*2*3*4 = 24</code>, which looks good so far.</p>
+		</div>
+		<h2 id="next-level">Next level: Reducing duplicate answers</h2>
+		<p>It’s easy to add a “show all answers” flag:</p>
+		<div class="language-go highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">var</span> <span class="n">allAnswers</span> <span class="kt">bool</span>
 
 <span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">flag</span><span class="o">.</span><span class="n">BoolVar</span><span class="p">(</span><span class="o">&amp;</span><span class="n">allAnswers</span><span class="p">,</span> <span class="s">"a"</span><span class="p">,</span> <span class="no">false</span><span class="p">,</span> <span class="s">"find all solutions"</span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<p>And replace all <code class="language-plaintext highlighter-rouge">return result</code> with <code class="language-plaintext highlighter-rouge">return result &amp;&amp; !allAnswers</code> so that short-circuit expressions continue to run after finding an answer.</p>
-			<p>It does, however, prints a <em>lot</em> of redundant answers:</p>
-			<div class="language-plaintext highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>1*2*4*3 = 24
+		</div>
+		<p>And replace all <code class="language-plaintext highlighter-rouge">return result</code> with <code class="language-plaintext highlighter-rouge">return result &amp;&amp; !allAnswers</code> so that short-circuit expressions continue to run after finding an answer.</p>
+		<p>It does, however, prints a <em>lot</em> of redundant answers:</p>
+		<div class="language-plaintext highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>1*2*4*3 = 24
 1*3*2*4 = 24
 1*3*2*4 = 24
 1*4*2*3 = 24
@@ -168,16 +263,16 @@
 2*3*1*4 = 24
 2*3*1*4 = 24
 </code></pre>
-				</div>
 			</div>
-			<p>Under the hood it could just be <code class="language-plaintext highlighter-rouge">(1*4)*(2*3)</code> and <code class="language-plaintext highlighter-rouge">1*(4*(2*3))</code>, which we don’t know for sure since we only omitted the parentheses.</p>
-			<h3 id="data-structures">Redesigning data structure</h3>
-			<p>We could fix this by flattening expressions so each addition and multiplication operator can have multiple operands. This also enables reliable sorting of elements, which is also pretty obvious.</p>
-			<p>There’s still more. We need to handle nested negativity. For example, <code class="language-plaintext highlighter-rouge">1-2+3</code> and <code class="language-plaintext highlighter-rouge">1-(2-3)</code> are really no different, and special care is to be taken when flattening. It also poses the challenge of sorting elements with mixed signs, as well as when parenthesizing them.</p>
-			<p>To keep the logic straightforward, instead of binary trees, we can use lists to store the operands. Subtracted elements can then be stored in another list under the same “group of additions”, and likewise is division. Finally, plain numbers still require their specialized handling.</p>
-			<div class="language-go highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">type</span> <span class="n">Expression</span> <span class="k">interface</span> <span class="p">{</span>
+		</div>
+		<p>Under the hood it could just be <code class="language-plaintext highlighter-rouge">(1*4)*(2*3)</code> and <code class="language-plaintext highlighter-rouge">1*(4*(2*3))</code>, which we don’t know for sure since we only omitted the parentheses.</p>
+		<h3 id="data-structures">Redesigning data structure</h3>
+		<p>We could fix this by flattening expressions so each addition and multiplication operator can have multiple operands. This also enables reliable sorting of elements, which is also pretty obvious.</p>
+		<p>There’s still more. We need to handle nested negativity. For example, <code class="language-plaintext highlighter-rouge">1-2+3</code> and <code class="language-plaintext highlighter-rouge">1-(2-3)</code> are really no different, and special care is to be taken when flattening. It also poses the challenge of sorting elements with mixed signs, as well as when parenthesizing them.</p>
+		<p>To keep the logic straightforward, instead of binary trees, we can use lists to store the operands. Subtracted elements can then be stored in another list under the same “group of additions”, and likewise is division. Finally, plain numbers still require their specialized handling.</p>
+		<div class="language-go highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">type</span> <span class="n">Expression</span> <span class="k">interface</span> <span class="p">{</span>
     <span class="n">Value</span><span class="p">()</span> <span class="kt">float64</span>
     <span class="n">Repr</span><span class="p">()</span> <span class="kt">string</span>
 <span class="p">}</span>
@@ -197,12 +292,12 @@
     <span class="n">Str</span> <span class="kt">string</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Sorting is easy as long as there’s a well-defined “order”:</p>
-			<div class="language-go highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">func</span> <span class="n">CompareExpression</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="n">Expression</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+		</div>
+		<p>Sorting is easy as long as there’s a well-defined “order”:</p>
+		<div class="language-go highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">func</span> <span class="n">CompareExpression</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="n">Expression</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
     <span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">e2</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="p">{</span>
         <span class="k">return</span> <span class="no">true</span>
     <span class="p">}</span>
@@ -218,12 +313,12 @@
     <span class="p">})</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Calculating the value is also easy:</p>
-			<div class="language-go highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">AddGroup</span><span class="p">)</span> <span class="n">Value</span><span class="p">()</span> <span class="kt">float64</span> <span class="p">{</span>
+		</div>
+		<p>Calculating the value is also easy:</p>
+		<div class="language-go highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">AddGroup</span><span class="p">)</span> <span class="n">Value</span><span class="p">()</span> <span class="kt">float64</span> <span class="p">{</span>
     <span class="k">var</span> <span class="n">s</span> <span class="kt">float64</span> <span class="o">=</span> <span class="m">0</span>
     <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
         <span class="n">s</span> <span class="o">+=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
@@ -245,12 +340,12 @@
     <span class="k">return</span> <span class="n">s</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Generating representations for expressions has also been made easier and more consistent, as we no longer need to add parentheses for additions around subtractions, or multiplications around divisions. We only need parentheses around “groups of addition” among “groups of multiplication”. To ensure consistency, sort the expressions before producing strings.</p>
-			<div class="language-go highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">AddGroup</span><span class="p">)</span> <span class="n">Repr</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
+		</div>
+		<p>Generating representations for expressions has also been made easier and more consistent, as we no longer need to add parentheses for additions around subtractions, or multiplications around divisions. We only need parentheses around “groups of addition” among “groups of multiplication”. To ensure consistency, sort the expressions before producing strings.</p>
+		<div class="language-go highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">AddGroup</span><span class="p">)</span> <span class="n">Repr</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
     <span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">)</span>
     <span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">)</span>
     <span class="k">var</span> <span class="n">s</span> <span class="n">strings</span><span class="o">.</span><span class="n">Builder</span>
@@ -284,12 +379,12 @@
     <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">String</span><span class="p">()[</span><span class="m">1</span><span class="o">:</span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Joining two elements into a new expression is now a little bit more complex, since we want to avoid nesting the same kind of groups. We need to check the types of the joining operands to determine whether we should append as a single element, or extract the lists and concatenate them. This also helps ensure that every group has at least one “positive” element, so it doesn’t begin with a minus sign or division.</p>
-			<div class="language-go highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">func</span> <span class="n">JoinAddGroup</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="n">Expression</span><span class="p">,</span> <span class="n">neg2</span> <span class="kt">bool</span><span class="p">)</span> <span class="o">*</span><span class="n">AddGroup</span> <span class="p">{</span>
+		</div>
+		<p>Joining two elements into a new expression is now a little bit more complex, since we want to avoid nesting the same kind of groups. We need to check the types of the joining operands to determine whether we should append as a single element, or extract the lists and concatenate them. This also helps ensure that every group has at least one “positive” element, so it doesn’t begin with a minus sign or division.</p>
+		<div class="language-go highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">func</span> <span class="n">JoinAddGroup</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="n">Expression</span><span class="p">,</span> <span class="n">neg2</span> <span class="kt">bool</span><span class="p">)</span> <span class="o">*</span><span class="n">AddGroup</span> <span class="p">{</span>
     <span class="n">e</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="n">AddGroup</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">a1</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">e1</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">AddGroup</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
         <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">a1</span><span class="o">.</span><span class="n">Pos</span><span class="o">...</span><span class="p">)</span>
@@ -315,15 +410,15 @@
     <span class="k">return</span> <span class="n">e</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<p>A <code class="language-plaintext highlighter-rouge">neg2</code> switch is provided to determine between <code class="language-plaintext highlighter-rouge">e1+e2</code> and <code class="language-plaintext highlighter-rouge">e1-e2</code> as we don’t want separate code for handling subtraction.</p>
-			<p>The exact same code is used for <code class="language-plaintext highlighter-rouge">JoinMulGroup</code> with only the types replaced. (This is why I switched to C++ after this point: Function templates are much more friendly for this kind of repeated logic.)</p>
-			<h3 id="deduplicating">Deduplicating</h3>
-			<p>With reliable expression flattening and sorting in place, we can now deduplicate results by comparing string representation:</p>
-			<div class="language-go highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">var</span> <span class="n">answers</span> <span class="p">[]</span><span class="kt">string</span>
+		</div>
+		<p>A <code class="language-plaintext highlighter-rouge">neg2</code> switch is provided to determine between <code class="language-plaintext highlighter-rouge">e1+e2</code> and <code class="language-plaintext highlighter-rouge">e1-e2</code> as we don’t want separate code for handling subtraction.</p>
+		<p>The exact same code is used for <code class="language-plaintext highlighter-rouge">JoinMulGroup</code> with only the types replaced. (This is why I switched to C++ after this point: Function templates are much more friendly for this kind of repeated logic.)</p>
+		<h3 id="deduplicating">Deduplicating</h3>
+		<p>With reliable expression flattening and sorting in place, we can now deduplicate results by comparing string representation:</p>
+		<div class="language-go highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">var</span> <span class="n">answers</span> <span class="p">[]</span><span class="kt">string</span>
 
 <span class="k">func</span> <span class="n">EvalResult</span><span class="p">(</span><span class="n">e</span> <span class="n">Expression</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
     <span class="n">result</span> <span class="o">:=</span> <span class="n">CompareFloat</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Value</span><span class="p">(),</span> <span class="n">target</span><span class="p">,</span> <span class="m">1e-6</span><span class="p">)</span>
@@ -344,39 +439,39 @@
     <span class="k">return</span> <span class="n">result</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">allAnswers</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<p>This is about as far as the new data structure can bring us. The current program handles structural duplicates very well: Running on input <code class="language-plaintext highlighter-rouge">1 2 3 4</code> produces only 4 results:</p>
-			<div class="language-plaintext highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>4*(1+2+3) = 24
+		</div>
+		<p>This is about as far as the new data structure can bring us. The current program handles structural duplicates very well: Running on input <code class="language-plaintext highlighter-rouge">1 2 3 4</code> produces only 4 results:</p>
+		<div class="language-plaintext highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>4*(1+2+3) = 24
 1*2*3*4 = 24
 2*3*4/1 = 24
 (1+3)*(2+4) = 24
 </code></pre>
-				</div>
 			</div>
-			<p class="notice--primary">The complete code so far can be found <a href="https://gist.github.com/iBug/b0e3d7dc11e53ac53df5f6d0438ad3b5">here</a>.</p>
-			<h2 id="advanced">Advanced level: More deduplication, and optimization</h2>
-			<p>On a side note, I switched to C++ at this point because I found Go’s comprehensive runtime <em>cumbersome</em>, and its lack of compiler optimization is specifically detrimental for such computing tasks. C++ has everything I need, including dynamic arrays (<code class="language-plaintext highlighter-rouge">vector</code>), dynamic typing (RTTI via <code class="language-plaintext highlighter-rouge">virtual</code> functions and <code class="language-plaintext highlighter-rouge">dynamic_cast</code>) and hash sets (<code class="language-plaintext highlighter-rouge">unordered_set</code>). C++ also has the advantage of supporting function templates and inheritance, which helps greatly with duplicate logic. The only thing missing from Go is a standard library for parsing command-line arguments, which bothers very little as I don’t need complex parsing rules. (There are external libraries that I want to avoid, such as POSIX <code class="language-plaintext highlighter-rouge">getopt()</code>.)</p>
-			<h3 id="cpp">Switching to C++</h3>
-			<p>To mimic the <code class="language-plaintext highlighter-rouge">Expression</code> interface in Go, I created an abstract base class:</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
+		</div>
+		<p class="notice--primary">The complete code so far can be found <a href="https://gist.github.com/iBug/b0e3d7dc11e53ac53df5f6d0438ad3b5">here</a>.</p>
+		<h2 id="advanced">Advanced level: More deduplication, and optimization</h2>
+		<p>On a side note, I switched to C++ at this point because I found Go’s comprehensive runtime <em>cumbersome</em>, and its lack of compiler optimization is specifically detrimental for such computing tasks. C++ has everything I need, including dynamic arrays (<code class="language-plaintext highlighter-rouge">vector</code>), dynamic typing (RTTI via <code class="language-plaintext highlighter-rouge">virtual</code> functions and <code class="language-plaintext highlighter-rouge">dynamic_cast</code>) and hash sets (<code class="language-plaintext highlighter-rouge">unordered_set</code>). C++ also has the advantage of supporting function templates and inheritance, which helps greatly with duplicate logic. The only thing missing from Go is a standard library for parsing command-line arguments, which bothers very little as I don’t need complex parsing rules. (There are external libraries that I want to avoid, such as POSIX <code class="language-plaintext highlighter-rouge">getopt()</code>.)</p>
+		<h3 id="cpp">Switching to C++</h3>
+		<p>To mimic the <code class="language-plaintext highlighter-rouge">Expression</code> interface in Go, I created an abstract base class:</p>
+		<div class="language-cpp highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
     <span class="k">virtual</span> <span class="o">~</span><span class="n">Expression</span><span class="p">()</span> <span class="p">{}</span>
     <span class="k">virtual</span> <span class="kt">void</span> <span class="n">normalize</span><span class="p">()</span> <span class="p">{}</span>
     <span class="k">virtual</span> <span class="k">operator</span> <span class="n">string</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
     <span class="k">virtual</span> <span class="k">operator</span> <span class="kt">double</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">};</span>
 </code></pre>
-				</div>
 			</div>
-			<p>I also took this chance to separate <code class="language-plaintext highlighter-rouge">string()</code> from <code class="language-plaintext highlighter-rouge">normalize()</code>, since they really could do different things and not necessarily together.</p>
-			<p>The additive group and multiplicative group can also have some commonalities extracted into a new base class, to allow even more shared code.</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">struct</span> <span class="nc">ExpressionGroup</span> <span class="o">:</span> <span class="n">Expression</span> <span class="p">{</span>
+		</div>
+		<p>I also took this chance to separate <code class="language-plaintext highlighter-rouge">string()</code> from <code class="language-plaintext highlighter-rouge">normalize()</code>, since they really could do different things and not necessarily together.</p>
+		<p>The additive group and multiplicative group can also have some commonalities extracted into a new base class, to allow even more shared code.</p>
+		<div class="language-cpp highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">struct</span> <span class="nc">ExpressionGroup</span> <span class="o">:</span> <span class="n">Expression</span> <span class="p">{</span>
     <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;</span> <span class="n">positive</span><span class="p">;</span>
     <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;</span> <span class="n">negative</span><span class="p">;</span>
 
@@ -411,22 +506,22 @@
     <span class="k">return</span> <span class="n">join_group</span><span class="o">&lt;</span><span class="n">MultiplicativeGroup</span><span class="o">&gt;</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">negative</span><span class="p">);</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<h3 id="double-negativity">Double-negativity in multiplicative groups</h3>
-			<p>When fed with input <code class="language-plaintext highlighter-rouge">1 1 4 9</code>, the above Go program produces 2 results:</p>
-			<div class="language-plaintext highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>(4-1)*(9-1) = 24
+		</div>
+		<h3 id="double-negativity">Double-negativity in multiplicative groups</h3>
+		<p>When fed with input <code class="language-plaintext highlighter-rouge">1 1 4 9</code>, the above Go program produces 2 results:</p>
+		<div class="language-plaintext highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>(4-1)*(9-1) = 24
 (1-9)*(1-4) = 24
 </code></pre>
-				</div>
 			</div>
-			<p>To fix this, we examine how many additive groups that can be “inverted” under a multiplicative group, and invert them in pairs.</p>
-			<p>We consider an additive group <em>invertible</em> if it evaluates to a negative value and has at least one subtracted element:</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
+		</div>
+		<p>To fix this, we examine how many additive groups that can be “inverted” under a multiplicative group, and invert them in pairs.</p>
+		<p>We consider an additive group <em>invertible</em> if it evaluates to a negative value and has at least one subtracted element:</p>
+		<div class="language-cpp highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
     <span class="k">virtual</span> <span class="kt">void</span> <span class="n">invert</span><span class="p">()</span> <span class="p">{}</span>
     <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">is_invertible</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="nb">false</span><span class="p">;</span> <span class="p">}</span>
 <span class="p">};</span>
@@ -447,13 +542,13 @@
     <span class="p">}</span>
 <span class="p">};</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Note that the default implementation for <code class="language-plaintext highlighter-rouge">invert()</code> and <code class="language-plaintext highlighter-rouge">is_invertible()</code> applies to plain numbers as they can’t just grab a minus sign and become inverted.</p>
-			<p>Now we have the necessary APIs for fixing multiplicative groups:</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="kt">void</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+		</div>
+		<p>Note that the default implementation for <code class="language-plaintext highlighter-rouge">invert()</code> and <code class="language-plaintext highlighter-rouge">is_invertible()</code> applies to plain numbers as they can’t just grab a minus sign and become inverted.</p>
+		<p>Now we have the necessary APIs for fixing multiplicative groups:</p>
+		<div class="language-cpp highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="kt">void</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
     <span class="kt">int</span> <span class="n">neg_count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
     <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
         <span class="n">neg_count</span> <span class="o">+=</span> <span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">();</span>
@@ -477,12 +572,12 @@
     <span class="k">this</span><span class="o">-&gt;</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">();</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Because normalization doesn’t change the value of an expression, we call it only when we need a string representation. This means we can normalize after determining whether it’s a solution.</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">answers</span><span class="p">;</span>
+		</div>
+		<p>Because normalization doesn’t change the value of an expression, we call it only when we need a string representation. This means we can normalize after determining whether it’s a solution.</p>
+		<div class="language-cpp highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">answers</span><span class="p">;</span>
 
 <span class="kt">bool</span> <span class="nf">eval_result</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">node</span><span class="p">)</span> <span class="p">{</span>
     <span class="kt">bool</span> <span class="n">result</span> <span class="o">=</span> <span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="n">node</span><span class="p">,</span> <span class="n">target</span><span class="p">);</span>
@@ -496,22 +591,22 @@
     <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<h3 id="negative-subtraction">Subtracting negative values</h3>
-			<p>When fed with input <code class="language-plaintext highlighter-rouge">1 1 4 9</code>, the above Go program produces 7 results, among which are these two:</p>
-			<div class="language-plaintext highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>4+(7-3)*5 = 24
+		</div>
+		<h3 id="negative-subtraction">Subtracting negative values</h3>
+		<p>When fed with input <code class="language-plaintext highlighter-rouge">1 1 4 9</code>, the above Go program produces 7 results, among which are these two:</p>
+		<div class="language-plaintext highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>4+(7-3)*5 = 24
 4-(3-7)*5 = 24
 </code></pre>
-				</div>
 			</div>
-			<p>Apparently they are no more than a pair of <code class="language-plaintext highlighter-rouge">a+b</code> and <code class="language-plaintext highlighter-rouge">a-(-b)</code> variants. The latter form is just boring.</p>
-			<p>Now, in addition to additive groups, we need to implement inversion for multiplicative groups as well. This one isn’t hard either, just iterate through its children and see if any of them is invertible:</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">struct</span> <span class="nc">MultiplicativeGroup</span> <span class="o">:</span> <span class="n">ExpressionGroup</span> <span class="p">{</span>
+		</div>
+		<p>Apparently they are no more than a pair of <code class="language-plaintext highlighter-rouge">a+b</code> and <code class="language-plaintext highlighter-rouge">a-(-b)</code> variants. The latter form is just boring.</p>
+		<p>Now, in addition to additive groups, we need to implement inversion for multiplicative groups as well. This one isn’t hard either, just iterate through its children and see if any of them is invertible:</p>
+		<div class="language-cpp highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">struct</span> <span class="nc">MultiplicativeGroup</span> <span class="o">:</span> <span class="n">ExpressionGroup</span> <span class="p">{</span>
     <span class="kt">bool</span> <span class="n">is_invertible</span><span class="p">()</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
         <span class="k">if</span> <span class="p">(</span><span class="kt">double</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
             <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
@@ -538,12 +633,12 @@
     <span class="p">}</span>
 <span class="p">};</span>
 </code></pre>
-				</div>
 			</div>
-			<p>We also have extra things to do than sorting when normalizing an additive group. That is, to move all invertible children from the negative list to the positive list, inverting all involved.</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="kt">void</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+		</div>
+		<p>We also have extra things to do than sorting when normalizing an additive group. That is, to move all invertible children from the negative list to the positive list, inverting all involved.</p>
+		<div class="language-cpp highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="kt">void</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
     <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">negative</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">negative</span><span class="p">.</span><span class="n">end</span><span class="p">();)</span> <span class="p">{</span>
         <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">=</span> <span class="o">*</span><span class="n">it</span><span class="p">;</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span> <span class="p">{</span>
@@ -557,13 +652,13 @@
     <span class="k">this</span><span class="o">-&gt;</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">();</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<h3 id="identity-elements">Substracting zeros and dividing by ones</h3>
-			<p>Zero is the <a href="https://en.wikipedia.org/wiki/Identity_element">identity element</a> of addition, and one is that of multiplication. This means <code class="language-plaintext highlighter-rouge">a+0=a-0=a</code> and <code class="language-plaintext highlighter-rouge">a*1=a/1=a</code>. We can normalize <code class="language-plaintext highlighter-rouge">-0</code> into <code class="language-plaintext highlighter-rouge">+0</code> and <code class="language-plaintext highlighter-rouge">/1</code> into <code class="language-plaintext highlighter-rouge">*1</code>. This one’s even easier since it only moves elements from the negative list to the positive list.</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="kt">void</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+		</div>
+		<h3 id="identity-elements">Substracting zeros and dividing by ones</h3>
+		<p>Zero is the <a href="https://en.wikipedia.org/wiki/Identity_element">identity element</a> of addition, and one is that of multiplication. This means <code class="language-plaintext highlighter-rouge">a+0=a-0=a</code> and <code class="language-plaintext highlighter-rouge">a*1=a/1=a</code>. We can normalize <code class="language-plaintext highlighter-rouge">-0</code> into <code class="language-plaintext highlighter-rouge">+0</code> and <code class="language-plaintext highlighter-rouge">/1</code> into <code class="language-plaintext highlighter-rouge">*1</code>. This one’s even easier since it only moves elements from the negative list to the positive list.</p>
+		<div class="language-cpp highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="kt">void</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
     <span class="c1">// ...</span>
     <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span> <span class="p">{</span>
         <span class="n">positive</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
@@ -572,12 +667,12 @@
     <span class="c1">// ...</span>
 <span class="p">}</span> 
 </code></pre>
-				</div>
 			</div>
-			<p>For multiplicative groups, we can go one step further and take care of <code class="language-plaintext highlighter-rouge">/(-1)</code> as well:</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="kt">void</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+		</div>
+		<p>For multiplicative groups, we can go one step further and take care of <code class="language-plaintext highlighter-rouge">/(-1)</code> as well:</p>
+		<div class="language-cpp highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="kt">void</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
     <span class="c1">// ...</span>
     <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">negative</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">negative</span><span class="p">.</span><span class="n">end</span><span class="p">();)</span> <span class="p">{</span>
         <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">=</span> <span class="o">*</span><span class="n">it</span><span class="p">;</span>
@@ -591,14 +686,14 @@
     <span class="c1">// ...</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<h3 id="memoization">Memoizing intermediate results</h3>
-			<p>For small inputs like only 4 numbers, there are only up to 36×18×6=3,888 leaf nodes to search, so any working algorithm shouldn’t run for more than tens of milliseconds. But why limit to 4 input numbers, a pretty artificial value, when the algorithm is designed to scale and handle inputs of any sizes?</p>
-			<p>With 8 input numbers, the latest Go program runs from 20 seconds to more than a minute. It’s easily imaginable that there are a lot of duplicate intermediate search nodes, like <code class="language-plaintext highlighter-rouge">(a+b) (c+d)</code> and <code class="language-plaintext highlighter-rouge">(c+d) (a+b)</code>. Searching further down these states wastes a lot of time. Given that we already have normalization and sorting facilities, it’s straightforward to serialize an intermediate state, save it in a set, and prune repeated search branches.</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">states</span><span class="p">;</span>
+		</div>
+		<h3 id="memoization">Memoizing intermediate results</h3>
+		<p>For small inputs like only 4 numbers, there are only up to 36×18×6=3,888 leaf nodes to search, so any working algorithm shouldn’t run for more than tens of milliseconds. But why limit to 4 input numbers, a pretty artificial value, when the algorithm is designed to scale and handle inputs of any sizes?</p>
+		<p>With 8 input numbers, the latest Go program runs from 20 seconds to more than a minute. It’s easily imaginable that there are a lot of duplicate intermediate search nodes, like <code class="language-plaintext highlighter-rouge">(a+b) (c+d)</code> and <code class="language-plaintext highlighter-rouge">(c+d) (a+b)</code>. Searching further down these states wastes a lot of time. Given that we already have normalization and sorting facilities, it’s straightforward to serialize an intermediate state, save it in a set, and prune repeated search branches.</p>
+		<div class="language-cpp highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">states</span><span class="p">;</span>
 
 <span class="kt">bool</span> <span class="nf">dedup_state</span><span class="p">(</span><span class="k">const</span> <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;&amp;</span> <span class="n">nodes</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">use_states</span><span class="p">)</span>
@@ -613,57 +708,57 @@
     <span class="k">return</span> <span class="o">!</span><span class="n">states</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">ss</span><span class="p">.</span><span class="n">str</span><span class="p">()).</span><span class="n">second</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Then at the beginning of the recursive <code class="language-plaintext highlighter-rouge">search()</code> function, right after the evaluation branch, we add the pruning logic:</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="kt">bool</span> <span class="nf">search</span><span class="p">(</span><span class="k">const</span> <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;&amp;</span> <span class="n">nodes</span><span class="p">)</span> <span class="p">{</span>
+		</div>
+		<p>Then at the beginning of the recursive <code class="language-plaintext highlighter-rouge">search()</code> function, right after the evaluation branch, we add the pruning logic:</p>
+		<div class="language-cpp highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="kt">bool</span> <span class="nf">search</span><span class="p">(</span><span class="k">const</span> <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;&amp;</span> <span class="n">nodes</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">nodes</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">eval_result</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">all_answers</span><span class="p">;</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">dedup_state</span><span class="p">(</span><span class="n">nodes</span><span class="p">))</span>
         <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
 </code></pre>
-				</div>
 			</div>
-			<p>My testing shows that this optimization brings a speedup of 1.5× to 2×, depending on input pattern. On extreme cases like 8 ones, the speedup even goes over 4×.</p>
-			<p>Finally, to use the right tool for the right job:</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="n">use_states</span> <span class="o">=</span> <span class="n">nums</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">;</span>
+		</div>
+		<p>My testing shows that this optimization brings a speedup of 1.5× to 2×, depending on input pattern. On extreme cases like 8 ones, the speedup even goes over 4×.</p>
+		<p>Finally, to use the right tool for the right job:</p>
+		<div class="language-cpp highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="n">use_states</span> <span class="o">=</span> <span class="n">nums</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">;</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Because generating and hashing strings could be expensive, and there aren’t enough duplicates for small inputs, I chose to enable mid-way deduplication only for inputs with 5 or more numbers.</p>
-			<h3 id="placement">Placement of zeros and ones</h3>
-			<p>The last thing to handle is the placement of no-ops, like <code class="language-plaintext highlighter-rouge">*1</code> and <code class="language-plaintext highlighter-rouge">+3-3</code>. While it could be arithmetically different between <code class="language-plaintext highlighter-rouge">a+b-b</code> and <code class="language-plaintext highlighter-rouge">a*b/b</code>, or between <code class="language-plaintext highlighter-rouge">a*1+b</code> and <code class="language-plaintext highlighter-rouge">(a+b)*1</code>, one would think the difference is minimal when playing with cards in reality.</p>
-			<p>Taking the same convention as on the <a href="https://www.4nums.com/theory/"><em>4 Numbers</em></a> website, points 7 and 8, the following rules is defined as “preferences for duplicates”:</p>
-			<ul>
-				<li>Multiplying by ±1 happens on the topmost multiplication group, so <code class="language-plaintext highlighter-rouge">1*2+3*4</code> becomes <code class="language-plaintext highlighter-rouge">1*(2+3*4)</code>, except when there’s a pair of additive no-ops: <code class="language-plaintext highlighter-rouge">(a+b)*1+c-c</code> is preferred over <code class="language-plaintext highlighter-rouge">(a+b+c-c)*1</code>.</li>
-				<li>A pair of same numbers cancelling each other must be done with addition and subtraction, and must happen at the topmost layer, so <code class="language-plaintext highlighter-rouge">a*b/b+c</code> becomes <code class="language-plaintext highlighter-rouge">a+c+b-b</code>. This applies to ones.</li>
-			</ul>
-			<p>Now put them into code. If we try to fix it the same way as normalizing, there’s a fundamental difference from previous deduplication methods: The other normalization don’t modify the components (structurally) but only move them around, while the handling of zeros and ones will have to extract numbers from sub-expressions and place them elsewhere. This breaks two things:</p>
-			<ul>
-				<li>The searching algorithm assumes numbers and expressions aren’t modified in recursions. Continuing to do so might cause the search to miss potential solutions.</li>
-				<li>After cleaning up <code class="language-plaintext highlighter-rouge">shared_ptr</code>s, memory allocation is handled manually. Breaking the existing tree structure makes tracking objects <em>much</em> harder, and it’s easier to reach a memory leak or whatever.</li>
-			</ul>
-			<p>So I had to give up normalizing this one. But there must be a solution.</p>
-			<p>Turning our attention back to the recursive searching. It performs a comprehensive enumeration of possible combinations of every pair of numbers, and therefore must be able to form every possible expression tree from the given numbers.</p>
-			<p>Right, we could just define the “canonical forms” and reject solutions coming in non-canonical forms.</p>
-			<p>Starting off with the base form. The sole boolean argument is necessary because certain structures should live in the top layer, and they need special treatment.</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
+		</div>
+		<p>Because generating and hashing strings could be expensive, and there aren’t enough duplicates for small inputs, I chose to enable mid-way deduplication only for inputs with 5 or more numbers.</p>
+		<h3 id="placement">Placement of zeros and ones</h3>
+		<p>The last thing to handle is the placement of no-ops, like <code class="language-plaintext highlighter-rouge">*1</code> and <code class="language-plaintext highlighter-rouge">+3-3</code>. While it could be arithmetically different between <code class="language-plaintext highlighter-rouge">a+b-b</code> and <code class="language-plaintext highlighter-rouge">a*b/b</code>, or between <code class="language-plaintext highlighter-rouge">a*1+b</code> and <code class="language-plaintext highlighter-rouge">(a+b)*1</code>, one would think the difference is minimal when playing with cards in reality.</p>
+		<p>Taking the same convention as on the <a href="https://www.4nums.com/theory/"><em>4 Numbers</em></a> website, points 7 and 8, the following rules is defined as “preferences for duplicates”:</p>
+		<ul>
+			<li>Multiplying by ±1 happens on the topmost multiplication group, so <code class="language-plaintext highlighter-rouge">1*2+3*4</code> becomes <code class="language-plaintext highlighter-rouge">1*(2+3*4)</code>, except when there’s a pair of additive no-ops: <code class="language-plaintext highlighter-rouge">(a+b)*1+c-c</code> is preferred over <code class="language-plaintext highlighter-rouge">(a+b+c-c)*1</code>.</li>
+			<li>A pair of same numbers cancelling each other must be done with addition and subtraction, and must happen at the topmost layer, so <code class="language-plaintext highlighter-rouge">a*b/b+c</code> becomes <code class="language-plaintext highlighter-rouge">a+c+b-b</code>. This applies to ones.</li>
+		</ul>
+		<p>Now put them into code. If we try to fix it the same way as normalizing, there’s a fundamental difference from previous deduplication methods: The other normalization don’t modify the components (structurally) but only move them around, while the handling of zeros and ones will have to extract numbers from sub-expressions and place them elsewhere. This breaks two things:</p>
+		<ul>
+			<li>The searching algorithm assumes numbers and expressions aren’t modified in recursions. Continuing to do so might cause the search to miss potential solutions.</li>
+			<li>After cleaning up <code class="language-plaintext highlighter-rouge">shared_ptr</code>s, memory allocation is handled manually. Breaking the existing tree structure makes tracking objects <em>much</em> harder, and it’s easier to reach a memory leak or whatever.</li>
+		</ul>
+		<p>So I had to give up normalizing this one. But there must be a solution.</p>
+		<p>Turning our attention back to the recursive searching. It performs a comprehensive enumeration of possible combinations of every pair of numbers, and therefore must be able to form every possible expression tree from the given numbers.</p>
+		<p>Right, we could just define the “canonical forms” and reject solutions coming in non-canonical forms.</p>
+		<p>Starting off with the base form. The sole boolean argument is necessary because certain structures should live in the top layer, and they need special treatment.</p>
+		<div class="language-cpp highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
     <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">is_top_level</span> <span class="o">=</span> <span class="nb">true</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span> <span class="p">}</span>
 <span class="p">};</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Obviously for plain numbers there’s nothing we can do, so this virtual function is not overridden for <code class="language-plaintext highlighter-rouge">struct Number</code>.</p>
-			<p>Now for the expression groups. Recursive checking is required, and more specific rules are to be provided by further overrides in the two kinds of specialized groups.</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">struct</span> <span class="nc">ExpressionGroup</span> <span class="o">:</span> <span class="n">Expression</span> <span class="p">{</span>
+		</div>
+		<p>Obviously for plain numbers there’s nothing we can do, so this virtual function is not overridden for <code class="language-plaintext highlighter-rouge">struct Number</code>.</p>
+		<p>Now for the expression groups. Recursive checking is required, and more specific rules are to be provided by further overrides in the two kinds of specialized groups.</p>
+		<div class="language-cpp highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">struct</span> <span class="nc">ExpressionGroup</span> <span class="o">:</span> <span class="n">Expression</span> <span class="p">{</span>
     <span class="kt">bool</span> <span class="n">has_negative_pairs</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span>
         <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e1</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
             <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e2</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
@@ -683,13 +778,13 @@
     <span class="p">}</span>
 <span class="p">};</span>
 </code></pre>
-				</div>
 			</div>
-			<p>The extra function is provided as a helper to shorten specialized code for descendants.</p>
-			<p>Multiplicative groups are easier to deal with: A top-level MG permits multiplying by ones, but only a single one.</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="kt">bool</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">allow_ones</span> <span class="o">=</span> <span class="nb">true</span><span class="p">)</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
+		</div>
+		<p>The extra function is provided as a helper to shorten specialized code for descendants.</p>
+		<p>Multiplicative groups are easier to deal with: A top-level MG permits multiplying by ones, but only a single one.</p>
+		<div class="language-cpp highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="kt">bool</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">allow_ones</span> <span class="o">=</span> <span class="nb">true</span><span class="p">)</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="n">allow_ones</span><span class="p">))</span>
         <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
     <span class="kt">int</span> <span class="n">ones</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
@@ -702,12 +797,12 @@
     <span class="k">return</span> <span class="o">!</span><span class="n">has_negative_pairs</span><span class="p">();</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Additive groups are a bit complicated, as they could contain a (technically) second-level MG while still permitting them to have multiply-by-ones. So instead of calling their <code class="language-plaintext highlighter-rouge">is_canonical()</code> with <code class="language-plaintext highlighter-rouge">false</code>, the argument should be inherited from the AG itself.</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="kt">bool</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">is_top_level</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+		</div>
+		<p>Additive groups are a bit complicated, as they could contain a (technically) second-level MG while still permitting them to have multiply-by-ones. So instead of calling their <code class="language-plaintext highlighter-rouge">is_canonical()</code> with <code class="language-plaintext highlighter-rouge">false</code>, the argument should be inherited from the AG itself.</p>
+		<div class="language-cpp highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="kt">bool</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">is_top_level</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">is_top_level</span><span class="p">)</span> <span class="p">{</span>
         <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
             <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_canonical</span><span class="p">(</span><span class="k">dynamic_cast</span><span class="o">&lt;</span><span class="n">MultiplicativeGroup</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">nullptr</span><span class="p">))</span>
@@ -723,91 +818,91 @@
     <span class="k">return</span> <span class="o">!</span><span class="n">has_negative_pairs</span><span class="p">();</span>
 <span class="err">}</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Unfortunately, this is practically ineffective. Solutions like <code class="language-plaintext highlighter-rouge">1*4+4*5</code> keep popping up. The missing details are:</p>
-			<ul>
-				<li>A sub-MG inherits its top-level-like behavior if it’s the only MG among all children of a top-level AG</li>
-				<li>An AG permits a top-level child MG if it’s otherwise a no-op. For example, <code class="language-plaintext highlighter-rouge">24*1+5-5</code> but not <code class="language-plaintext highlighter-rouge">8*1+8+8</code></li>
-			</ul>
-			<p>For the first point, we need to count all children and see how many of them are MGs, and for the second point we can check if the value of the AG equals to its only child MG. So wrap that up:</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">mg_count</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">,</span> <span class="o">*</span><span class="n">mg</span><span class="p">))</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
-</code></pre>
-				</div>
-			</div>
-			<p>Now the program is correctly reporting that <code class="language-plaintext highlighter-rouge">1 8 8 8</code> has a single solution <code class="language-plaintext highlighter-rouge">(8+8+8)*1</code>, except that it stops producing solutions for <code class="language-plaintext highlighter-rouge">5 6 7 7</code>.</p>
-			<p>Notice that the only solution is <code class="language-plaintext highlighter-rouge">(5-7/7)*6</code>, and that we’re rejecting instead of normalizing this kind of “non-canonical” forms. The problem is that <code class="language-plaintext highlighter-rouge">7/7</code> acts as a concrete one for subtraction, instead of a no-op. Should have checked if there are other operands for multiplying…</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">return</span> <span class="o">!</span><span class="p">(</span><span class="n">positive</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">has_negative_pairs</span><span class="p">());</span>
-</code></pre>
-				</div>
-			</div>
-			<p>The program is still reporting “No solutions” for <code class="language-plaintext highlighter-rouge">1 5 5 5</code>, which has the same root cause. In the sole solution <code class="language-plaintext highlighter-rouge">(5-1/5)*5</code>, the 1 in the MG doesn’t act as a no-op, either. Time to wrap up with another guard.</p>
-			<div class="language-cpp highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">positive</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="cm">/* check for ones */</span> <span class="p">}</span>
-</code></pre>
-				</div>
-			</div>
-			<h2 id="postface">Postface</h2>
-			<p>The <em>4 Numbers</em> website provides a comprehensive list of all 1362 solvable quadruples from 1 to 13 (i.e. formed with a standard 52-card set). Just grab the page and do some HTML processing, and a good test suite is readily available.</p>
-			<p><a href="https://gist.github.com/iBug/ea958ca7f1270128d58b5176858d71cb">Here</a>’s the final version of the C++ code. It gives solutions to 1362 test cases where all of them are identical to those on the <em>4 Numbers</em> website.</p>
-			<p>The problem originates from a course <em>Program Design II</em> where a friend of mine works as a TA this semester.</p>
-			<h2 id="references">References</h2>
-			<ul>
-				<li><a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 (puzzle) - Wikipedia</a></li>
-				<li>
-					<p><a href="https://www.4nums.com/theory/">Definition of “distinct” by <em>4 Numbers</em> website</a></p>
-				</li>
-			</ul>
-			]]></content><author><name>iBug</name></author><category term="development" /><category term="c++" /><category term="algorithm" /><summary type="html"><![CDATA[The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.]]></summary></entry><entry><title type="html">Centralized Linux authentication with OpenLDAP</title><link href="https://ibug.io/blog/2022/03/linux-openldap-server/" rel="alternate" type="text/html" title="Centralized Linux authentication with OpenLDAP" /><published>2022-03-18T00:00:00+00:00</published><updated>2022-05-01T15:21:23+00:00</updated><id>https://ibug.io/blog/2022/03/linux-openldap-server</id><content type="html" xml:base="https://ibug.io/blog/2022/03/linux-openldap-server/"><![CDATA[<p>LDAP, <del>the #1 way to get your graduation delayed</del> (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes the most serious dedication to set up and maintain, yet the slightest agitation to fail.</p>
-		<p>The <em>correct</em> story behind this opens up with our lab’s messy machine management. While home directories across machines are shared from a common NFS server, user and group information is managed manually. To start with, whenever someone joins our lab, the other admin (thankfully not yet me) creates a user for them on <em>every</em> machine they’d access, while paying attention to the consistency of UID and GID. What’s worse, we often grant temporary access to a selected set of machines to guest students to enable them to work on certain projects, or to participate in competitions on behalf of our lab. Not to mention the other admin himself has literally 5 different UIDs on different hosts.</p>
-		<p>LDAP solves this agony and saves a lot of sysadmins’ souls by providing centralized management to users, groups and some other organizational resources using a directory-structured database. While I previously used an existing GOsa² setup for simple management tasks, our lab’s new cluster provides an excellent opportunity to try out LDAP anew.</p>
-		<h2 id="prerequisites">Prerequisites</h2>
-		<p>Thanks to a network outage a few days ago, I get to reinstall our NFS server into Proxmox VE (yes again) to allow more specialized applications to be deployed in a more flexible manner. So I can just launch a new Debian Bullseye (11) virtual machine and begin this journey. The rest of this blog post assumes this environment.</p>
-		<h2 id="i-389ds">Interlude: 389 Directory Server</h2>
-		<p>A friend recommended Fedora’s <a href="https://directory.fedoraproject.org/">389 Directory Server</a> after learning that I wanted to set up some LDAP server, indicating that it’s easier to use and maintain.</p>
-		<p>So I followed the documentation and got a 389DS up and running. Everything looked simple and straightforward until I went on configuring TLS certificates. I created a self-signed certificate with extra Subject Alternative Names (as needed) and tried to import them to 389DS. <a href="https://directory.fedoraproject.org/docs/389ds/howto/howto-ssl-archive.html#importing-an-existing-self-sign-keycert-or-3rd-party-cacert">Their documentation on this</a> is completely unhelpful, and I struggled for two tedious hours before landing on <a href="https://access.redhat.com/documentation/en-us/red_hat_directory_server/11/html/administration_guide/managing_the_nss_database_used_by_directory_server">Red Hat’s documentation</a> that actually worked. 389DS’s default “group” object doesn’t support POSIX GID, either.</p>
-		<p>All those failures led to one question: Why bother with 389DS when it still uses <code class="language-plaintext highlighter-rouge">slapd</code> behind? So I ditched this VM and gave it up.</p>
-		<h2 id="server">Server setup</h2>
-		<p>Installation is easy:</p>
-		<div class="language-shell highlighter-rouge">
+		</div>
+		<p>Unfortunately, this is practically ineffective. Solutions like <code class="language-plaintext highlighter-rouge">1*4+4*5</code> keep popping up. The missing details are:</p>
+		<ul>
+			<li>A sub-MG inherits its top-level-like behavior if it’s the only MG among all children of a top-level AG</li>
+			<li>An AG permits a top-level child MG if it’s otherwise a no-op. For example, <code class="language-plaintext highlighter-rouge">24*1+5-5</code> but not <code class="language-plaintext highlighter-rouge">8*1+8+8</code></li>
+		</ul>
+		<p>For the first point, we need to count all children and see how many of them are MGs, and for the second point we can check if the value of the AG equals to its only child MG. So wrap that up:</p>
+		<div class="language-cpp highlighter-rouge">
 			<div class="highlight">
-				<pre class="highlight"><code>apt <span class="nb">install </span>slapd
+				<pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">mg_count</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">,</span> <span class="o">*</span><span class="n">mg</span><span class="p">))</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
 </code></pre>
 			</div>
 		</div>
-		<p>This installs the OpenLDAP server with all recommended packages that’ll aid configuration. During installation, you’ll be prompted for the admin password. Ignore that for now as we’ll (probably) have to reconfigure this later.</p>
-		<p>This is because slapd tries to automatically determine the base Distinguished Name for the server, which often fails and falls back to the unpleasant <code class="language-plaintext highlighter-rouge">dc=nodomain</code>.</p>
-		<p>Run <code class="language-plaintext highlighter-rouge">dpkg-reconfigure slapd</code> to specify a domain name that will be used to construct the base DN from. It’s perfectly fine to have a short name like just <code class="language-plaintext highlighter-rouge">ibug</code>, or you can choose to be serious on this and use <code class="language-plaintext highlighter-rouge">example.com</code>. Either way, you probably don’t want to have a long DN like <code class="language-plaintext highlighter-rouge">dc=protonlab,dc=research,dc=google,dc=com</code>, which will make manual querying a nightmare.</p>
-		<p>Now we have an empty OpenLDAP server. The admin user’s DN is <code class="language-plaintext highlighter-rouge">cn=admin</code> followed by your base DN, so most data manipulation tasks require the role to be bound to <code class="language-plaintext highlighter-rouge">cn=admin,dc=ibug</code> for me.</p>
-		<p>The additional package <code class="language-plaintext highlighter-rouge">ldap-utils</code> provides tools like <code class="language-plaintext highlighter-rouge">ldapadd</code>, <code class="language-plaintext highlighter-rouge">ldapmodify</code> and <code class="language-plaintext highlighter-rouge">ldapdelete</code> which we’ll be mostly using later. <code class="language-plaintext highlighter-rouge">slapd</code> provides <code class="language-plaintext highlighter-rouge">slapcat</code> that dumps the whole database and <code class="language-plaintext highlighter-rouge">ldapvi</code> provides an interactive editor, both of which come in handy for management and debugging.</p>
-		<h3 id="ldap-utils">Configuring LDAP tools</h3>
-		<p>All interactions with the server are done through <code class="language-plaintext highlighter-rouge">ldap*</code> commands submitting text in LDIF (LDAP Data Interchange Format).</p>
-		<p>Before moving on to the next step, there are config files for common settings that simplifies later tasks.</p>
-		<p>Open <code class="language-plaintext highlighter-rouge">/etc/ldap/ldap.conf</code> (the system-wide settings) and set these options:</p>
-		<div class="language-text highlighter-rouge">
+		<p>Now the program is correctly reporting that <code class="language-plaintext highlighter-rouge">1 8 8 8</code> has a single solution <code class="language-plaintext highlighter-rouge">(8+8+8)*1</code>, except that it stops producing solutions for <code class="language-plaintext highlighter-rouge">5 6 7 7</code>.</p>
+		<p>Notice that the only solution is <code class="language-plaintext highlighter-rouge">(5-7/7)*6</code>, and that we’re rejecting instead of normalizing this kind of “non-canonical” forms. The problem is that <code class="language-plaintext highlighter-rouge">7/7</code> acts as a concrete one for subtraction, instead of a no-op. Should have checked if there are other operands for multiplying…</p>
+		<div class="language-cpp highlighter-rouge">
 			<div class="highlight">
-				<pre class="highlight"><code>BASE    dc=ibug
+				<pre class="highlight"><code><span class="k">return</span> <span class="o">!</span><span class="p">(</span><span class="n">positive</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">has_negative_pairs</span><span class="p">());</span>
+</code></pre>
+			</div>
+		</div>
+		<p>The program is still reporting “No solutions” for <code class="language-plaintext highlighter-rouge">1 5 5 5</code>, which has the same root cause. In the sole solution <code class="language-plaintext highlighter-rouge">(5-1/5)*5</code>, the 1 in the MG doesn’t act as a no-op, either. Time to wrap up with another guard.</p>
+		<div class="language-cpp highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">positive</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="cm">/* check for ones */</span> <span class="p">}</span>
+</code></pre>
+			</div>
+		</div>
+		<h2 id="postface">Postface</h2>
+		<p>The <em>4 Numbers</em> website provides a comprehensive list of all 1362 solvable quadruples from 1 to 13 (i.e. formed with a standard 52-card set). Just grab the page and do some HTML processing, and a good test suite is readily available.</p>
+		<p><a href="https://gist.github.com/iBug/ea958ca7f1270128d58b5176858d71cb">Here</a>’s the final version of the C++ code. It gives solutions to 1362 test cases where all of them are identical to those on the <em>4 Numbers</em> website.</p>
+		<p>The problem originates from a course <em>Program Design II</em> where a friend of mine works as a TA this semester.</p>
+		<h2 id="references">References</h2>
+		<ul>
+			<li><a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 (puzzle) - Wikipedia</a></li>
+			<li>
+				<p><a href="https://www.4nums.com/theory/">Definition of “distinct” by <em>4 Numbers</em> website</a></p>
+			</li>
+		</ul>
+		]]></content><author><name>iBug</name></author><category term="development" /><category term="c++" /><category term="algorithm" /><summary type="html"><![CDATA[The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.]]></summary></entry><entry><title type="html">Centralized Linux authentication with OpenLDAP</title><link href="https://ibug.io/blog/2022/03/linux-openldap-server/" rel="alternate" type="text/html" title="Centralized Linux authentication with OpenLDAP" /><published>2022-03-18T00:00:00+00:00</published><updated>2022-05-01T15:21:23+00:00</updated><id>https://ibug.io/blog/2022/03/linux-openldap-server</id><content type="html" xml:base="https://ibug.io/blog/2022/03/linux-openldap-server/"><![CDATA[<p>LDAP, <del>the #1 way to get your graduation delayed</del> (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes the most serious dedication to set up and maintain, yet the slightest agitation to fail.</p>
+	<p>The <em>correct</em> story behind this opens up with our lab’s messy machine management. While home directories across machines are shared from a common NFS server, user and group information is managed manually. To start with, whenever someone joins our lab, the other admin (thankfully not yet me) creates a user for them on <em>every</em> machine they’d access, while paying attention to the consistency of UID and GID. What’s worse, we often grant temporary access to a selected set of machines to guest students to enable them to work on certain projects, or to participate in competitions on behalf of our lab. Not to mention the other admin himself has literally 5 different UIDs on different hosts.</p>
+	<p>LDAP solves this agony and saves a lot of sysadmins’ souls by providing centralized management to users, groups and some other organizational resources using a directory-structured database. While I previously used an existing GOsa² setup for simple management tasks, our lab’s new cluster provides an excellent opportunity to try out LDAP anew.</p>
+	<h2 id="prerequisites">Prerequisites</h2>
+	<p>Thanks to a network outage a few days ago, I get to reinstall our NFS server into Proxmox VE (yes again) to allow more specialized applications to be deployed in a more flexible manner. So I can just launch a new Debian Bullseye (11) virtual machine and begin this journey. The rest of this blog post assumes this environment.</p>
+	<h2 id="i-389ds">Interlude: 389 Directory Server</h2>
+	<p>A friend recommended Fedora’s <a href="https://directory.fedoraproject.org/">389 Directory Server</a> after learning that I wanted to set up some LDAP server, indicating that it’s easier to use and maintain.</p>
+	<p>So I followed the documentation and got a 389DS up and running. Everything looked simple and straightforward until I went on configuring TLS certificates. I created a self-signed certificate with extra Subject Alternative Names (as needed) and tried to import them to 389DS. <a href="https://directory.fedoraproject.org/docs/389ds/howto/howto-ssl-archive.html#importing-an-existing-self-sign-keycert-or-3rd-party-cacert">Their documentation on this</a> is completely unhelpful, and I struggled for two tedious hours before landing on <a href="https://access.redhat.com/documentation/en-us/red_hat_directory_server/11/html/administration_guide/managing_the_nss_database_used_by_directory_server">Red Hat’s documentation</a> that actually worked. 389DS’s default “group” object doesn’t support POSIX GID, either.</p>
+	<p>All those failures led to one question: Why bother with 389DS when it still uses <code class="language-plaintext highlighter-rouge">slapd</code> behind? So I ditched this VM and gave it up.</p>
+	<h2 id="server">Server setup</h2>
+	<p>Installation is easy:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>apt <span class="nb">install </span>slapd
+</code></pre>
+		</div>
+	</div>
+	<p>This installs the OpenLDAP server with all recommended packages that’ll aid configuration. During installation, you’ll be prompted for the admin password. Ignore that for now as we’ll (probably) have to reconfigure this later.</p>
+	<p>This is because slapd tries to automatically determine the base Distinguished Name for the server, which often fails and falls back to the unpleasant <code class="language-plaintext highlighter-rouge">dc=nodomain</code>.</p>
+	<p>Run <code class="language-plaintext highlighter-rouge">dpkg-reconfigure slapd</code> to specify a domain name that will be used to construct the base DN from. It’s perfectly fine to have a short name like just <code class="language-plaintext highlighter-rouge">ibug</code>, or you can choose to be serious on this and use <code class="language-plaintext highlighter-rouge">example.com</code>. Either way, you probably don’t want to have a long DN like <code class="language-plaintext highlighter-rouge">dc=protonlab,dc=research,dc=google,dc=com</code>, which will make manual querying a nightmare.</p>
+	<p>Now we have an empty OpenLDAP server. The admin user’s DN is <code class="language-plaintext highlighter-rouge">cn=admin</code> followed by your base DN, so most data manipulation tasks require the role to be bound to <code class="language-plaintext highlighter-rouge">cn=admin,dc=ibug</code> for me.</p>
+	<p>The additional package <code class="language-plaintext highlighter-rouge">ldap-utils</code> provides tools like <code class="language-plaintext highlighter-rouge">ldapadd</code>, <code class="language-plaintext highlighter-rouge">ldapmodify</code> and <code class="language-plaintext highlighter-rouge">ldapdelete</code> which we’ll be mostly using later. <code class="language-plaintext highlighter-rouge">slapd</code> provides <code class="language-plaintext highlighter-rouge">slapcat</code> that dumps the whole database and <code class="language-plaintext highlighter-rouge">ldapvi</code> provides an interactive editor, both of which come in handy for management and debugging.</p>
+	<h3 id="ldap-utils">Configuring LDAP tools</h3>
+	<p>All interactions with the server are done through <code class="language-plaintext highlighter-rouge">ldap*</code> commands submitting text in LDIF (LDAP Data Interchange Format).</p>
+	<p>Before moving on to the next step, there are config files for common settings that simplifies later tasks.</p>
+	<p>Open <code class="language-plaintext highlighter-rouge">/etc/ldap/ldap.conf</code> (the system-wide settings) and set these options:</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>BASE    dc=ibug
 URI     ldapi:///
 </code></pre>
-			</div>
 		</div>
-		<p>There are 3 ways to connect to an LDAP server</p>
-		<ul>
-			<li><code class="language-plaintext highlighter-rouge">ldap://</code> (plaintext TCP, default port 389)</li>
-			<li><code class="language-plaintext highlighter-rouge">ldaps://</code> (over SSL/TLS, default port 636)</li>
-			<li><code class="language-plaintext highlighter-rouge">ldapi://</code> (over IPC, or Unix domain socket, usually <code class="language-plaintext highlighter-rouge">/var/run/slapd/ldapi</code>)</li>
-		</ul>
-		<p>Once you have this file set up, you can omit the <code class="language-plaintext highlighter-rouge">-H &lt;host&gt;</code> option from all <code class="language-plaintext highlighter-rouge">ldap*</code> commands. Similarly, <code class="language-plaintext highlighter-rouge">BASE</code> is useful in <code class="language-plaintext highlighter-rouge">ldapsearch</code> or like.</p>
-		<h3 id="seeding">Populating the database</h3>
-		<p>Now that we have an empty database, we can create two directories for our users and groups. This is the first LDIF file to have.</p>
-		<div class="language-yaml highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">ou=user,dc=ibug</span>
+	</div>
+	<p>There are 3 ways to connect to an LDAP server</p>
+	<ul>
+		<li><code class="language-plaintext highlighter-rouge">ldap://</code> (plaintext TCP, default port 389)</li>
+		<li><code class="language-plaintext highlighter-rouge">ldaps://</code> (over SSL/TLS, default port 636)</li>
+		<li><code class="language-plaintext highlighter-rouge">ldapi://</code> (over IPC, or Unix domain socket, usually <code class="language-plaintext highlighter-rouge">/var/run/slapd/ldapi</code>)</li>
+	</ul>
+	<p>Once you have this file set up, you can omit the <code class="language-plaintext highlighter-rouge">-H &lt;host&gt;</code> option from all <code class="language-plaintext highlighter-rouge">ldap*</code> commands. Similarly, <code class="language-plaintext highlighter-rouge">BASE</code> is useful in <code class="language-plaintext highlighter-rouge">ldapsearch</code> or like.</p>
+	<h3 id="seeding">Populating the database</h3>
+	<p>Now that we have an empty database, we can create two directories for our users and groups. This is the first LDIF file to have.</p>
+	<div class="language-yaml highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">ou=user,dc=ibug</span>
 <span class="na">objectClass</span><span class="pi">:</span> <span class="s">organizationalUnit</span>
 <span class="na">ou</span><span class="pi">:</span> <span class="s">user</span>
 
@@ -815,14 +910,14 @@ URI     ldapi:///
 <span class="na">objectClass</span><span class="pi">:</span> <span class="s">organizationalUnit</span>
 <span class="na">ou</span><span class="pi">:</span> <span class="s">group</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Use <code class="language-plaintext highlighter-rouge">ldapadd -D cn=admin,dc=ibug -W -f base.ldif</code> to load the “change request” into the database.</p>
-		<h3 id="users-and-groups">Managing users and groups</h3>
-		<p>Now create the first user and group:</p>
-		<div class="language-yaml highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">uid=ibug,ou=user,dc=ibug</span>
+	</div>
+	<p>Use <code class="language-plaintext highlighter-rouge">ldapadd -D cn=admin,dc=ibug -W -f base.ldif</code> to load the “change request” into the database.</p>
+	<h3 id="users-and-groups">Managing users and groups</h3>
+	<p>Now create the first user and group:</p>
+	<div class="language-yaml highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">uid=ibug,ou=user,dc=ibug</span>
 <span class="na">objectClass</span><span class="pi">:</span> <span class="s">posixAccount</span>
 <span class="na">objectClass</span><span class="pi">:</span> <span class="s">shadowAccount</span>
 <span class="na">objectClass</span><span class="pi">:</span> <span class="s">inetOrgPerson</span>
@@ -841,33 +936,33 @@ URI     ldapi:///
 <span class="na">gidNumber</span><span class="pi">:</span> <span class="m">1000</span>
 <span class="na">description</span><span class="pi">:</span> <span class="s">My staff group</span>
 </code></pre>
-			</div>
 		</div>
-		<p>For user objects, <code class="language-plaintext highlighter-rouge">inetOrgPerson</code> is a required “object class”, and therefore the <code class="language-plaintext highlighter-rouge">cn</code> and <code class="language-plaintext highlighter-rouge">sn</code> fields. Linux uses <code class="language-plaintext highlighter-rouge">posixAccount</code> and <code class="language-plaintext highlighter-rouge">shadowAccount</code> for authentication, and the <code class="language-plaintext highlighter-rouge">gecos</code> field is the one that’ll appear in output from commands like <code class="language-plaintext highlighter-rouge">getent passwd</code>.</p>
-		<p>To add a user to a group, use <code class="language-plaintext highlighter-rouge">ldapmodify</code> with this LDIF file:</p>
-		<div class="language-yaml highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
+	</div>
+	<p>For user objects, <code class="language-plaintext highlighter-rouge">inetOrgPerson</code> is a required “object class”, and therefore the <code class="language-plaintext highlighter-rouge">cn</code> and <code class="language-plaintext highlighter-rouge">sn</code> fields. Linux uses <code class="language-plaintext highlighter-rouge">posixAccount</code> and <code class="language-plaintext highlighter-rouge">shadowAccount</code> for authentication, and the <code class="language-plaintext highlighter-rouge">gecos</code> field is the one that’ll appear in output from commands like <code class="language-plaintext highlighter-rouge">getent passwd</code>.</p>
+	<p>To add a user to a group, use <code class="language-plaintext highlighter-rouge">ldapmodify</code> with this LDIF file:</p>
+	<div class="language-yaml highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
 <span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
 <span class="na">add</span><span class="pi">:</span> <span class="s">memberUid</span>
 <span class="na">memberUid</span><span class="pi">:</span> <span class="s">ibug</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Similarly, to change user information, just use <code class="language-plaintext highlighter-rouge">replace</code> with <code class="language-plaintext highlighter-rouge">changetype: modify</code>:</p>
-		<div class="language-yaml highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
+	</div>
+	<p>Similarly, to change user information, just use <code class="language-plaintext highlighter-rouge">replace</code> with <code class="language-plaintext highlighter-rouge">changetype: modify</code>:</p>
+	<div class="language-yaml highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
 <span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
 <span class="na">replace</span><span class="pi">:</span> <span class="s">gecos</span>
 <span class="na">gecos</span><span class="pi">:</span> <span class="s">New iBug</span>
 </code></pre>
-			</div>
 		</div>
-		<p>If you’re importing users and groups from an existing system, you may find the ability to preload the group with an initial set of users useful. When creating the group, you may supply any number of <code class="language-plaintext highlighter-rouge">memberUid</code>s. This has the same effect as adding them one by one.</p>
-		<div class="language-yaml highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
+	</div>
+	<p>If you’re importing users and groups from an existing system, you may find the ability to preload the group with an initial set of users useful. When creating the group, you may supply any number of <code class="language-plaintext highlighter-rouge">memberUid</code>s. This has the same effect as adding them one by one.</p>
+	<div class="language-yaml highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
 <span class="na">objectClass</span><span class="pi">:</span> <span class="s">posixGroup</span>
 <span class="na">cn</span><span class="pi">:</span> <span class="s">staff</span>
 <span class="na">gidNumber</span><span class="pi">:</span> <span class="m">1000</span>
@@ -878,59 +973,59 @@ URI     ldapi:///
 <span class="na">memberUid</span><span class="pi">:</span> <span class="s">user3</span>
 <span class="na">memberUid</span><span class="pi">:</span> <span class="s">user4</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Last but not least, <code class="language-plaintext highlighter-rouge">ldappasswd</code> sets or resets passwords for users:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>ldappasswd <span class="nt">-D</span> <span class="nv">cn</span><span class="o">=</span>admin,dc<span class="o">=</span>ibug <span class="nt">-W</span> <span class="nv">uid</span><span class="o">=</span>ibug,ou<span class="o">=</span>group,dc<span class="o">=</span>ibug
+	</div>
+	<p>Last but not least, <code class="language-plaintext highlighter-rouge">ldappasswd</code> sets or resets passwords for users:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>ldappasswd <span class="nt">-D</span> <span class="nv">cn</span><span class="o">=</span>admin,dc<span class="o">=</span>ibug <span class="nt">-W</span> <span class="nv">uid</span><span class="o">=</span>ibug,ou<span class="o">=</span>group,dc<span class="o">=</span>ibug
 </code></pre>
-			</div>
 		</div>
-		<p>If you don’t give the new password, <code class="language-plaintext highlighter-rouge">ldappasswd</code> will generate a random new one for you, which you can forward to the user themself.</p>
-		<h3 id="import-passwords">Importing passwords from Linux</h3>
-		<p>One great concern while migrating my lab’s authentication completely onto LDAP was whether users can keep their passwords. LDAP uses another hashing scheme SSHA by default, while any supported hashing scheme may be imported.</p>
-		<p>By default, modern Linux stores hashed user password in <code class="language-plaintext highlighter-rouge">/etc/shadow</code>, which is only accessible by root. It contains lines like this:</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>root:$y$j9T$egdUbc2x4FiVY42xxEH4z.$OJA25VwJ2fIEZizIqUDkS/yUtz8z5tuRiSS3XLum/F3:19064:0:99999:7:::
+	</div>
+	<p>If you don’t give the new password, <code class="language-plaintext highlighter-rouge">ldappasswd</code> will generate a random new one for you, which you can forward to the user themself.</p>
+	<h3 id="import-passwords">Importing passwords from Linux</h3>
+	<p>One great concern while migrating my lab’s authentication completely onto LDAP was whether users can keep their passwords. LDAP uses another hashing scheme SSHA by default, while any supported hashing scheme may be imported.</p>
+	<p>By default, modern Linux stores hashed user password in <code class="language-plaintext highlighter-rouge">/etc/shadow</code>, which is only accessible by root. It contains lines like this:</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>root:$y$j9T$egdUbc2x4FiVY42xxEH4z.$OJA25VwJ2fIEZizIqUDkS/yUtz8z5tuRiSS3XLum/F3:19064:0:99999:7:::
 </code></pre>
-			</div>
 		</div>
-		<p>The 2nd field, delimited by colons, is the hashed password in <a href="https://en.wikipedia.org/wiki/Bcrypt">Bcrypt</a> format. To import that into LDAP, prepend the hash with <code class="language-plaintext highlighter-rouge">{CRYPT}</code>, like this:</p>
-		<div class="language-yaml highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">uid=ibug,ou=group,dc=ibug</span>
+	</div>
+	<p>The 2nd field, delimited by colons, is the hashed password in <a href="https://en.wikipedia.org/wiki/Bcrypt">Bcrypt</a> format. To import that into LDAP, prepend the hash with <code class="language-plaintext highlighter-rouge">{CRYPT}</code>, like this:</p>
+	<div class="language-yaml highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">uid=ibug,ou=group,dc=ibug</span>
 <span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
 <span class="na">replace</span><span class="pi">:</span> <span class="s">userPassword</span>
 <span class="na">userPassword</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">CRYPT</span><span class="pi">}</span><span class="s">$y$j9T$egdUbc2x4FiVY42xxEH4z.$OJA25VwJ2fIEZizIqUDkS/yUtz8z5tuRiSS3XLum/F3</span>
 </code></pre>
-			</div>
 		</div>
-		<p>It will be replaced with LDAP’s default password hash type when the user changes their password for the next time.</p>
-		<p>Now that we have our server set up and running, it’s time to configure client machines to use it.</p>
-		<h2 id="client">Client setup</h2>
-		<p>There are two options for clients: More commonly <code class="language-plaintext highlighter-rouge">libnss-ldapd</code> and <code class="language-plaintext highlighter-rouge">libpam-ldapd</code> are used together, or <code class="language-plaintext highlighter-rouge">sssd</code> if you’re familiar with it (which will not be described in this post). Note that are two obsolete packages <code class="language-plaintext highlighter-rouge">libnss-ldap</code> and <code class="language-plaintext highlighter-rouge">libpam-ldap</code> (both missing the final <code class="language-plaintext highlighter-rouge">d</code>) that might confuse you.</p>
-		<p>Start with <code class="language-plaintext highlighter-rouge">apt install libnss-ldapd libpam-ldapd</code>. You’ll be asked for the LDAP server and the base DN, then “name services to configure”. Select <code class="language-plaintext highlighter-rouge">passwd group shadow</code> for now.</p>
-		<p><img src="/image/linux/libnss-ldapd.png" alt="Configure libnss-ldapd" /></p>
-		<p>These two packages should also pull in <code class="language-plaintext highlighter-rouge">nscd</code> (Name Service Cache Daemon) and <code class="language-plaintext highlighter-rouge">nslcd</code> (Name Service LDAP Client Daemon). The former provides a local cache for name service lookup results, while the latter provides the ability to lookup items from an LDAP server.</p>
-		<p>After configuring the packages, your <code class="language-plaintext highlighter-rouge">/etc/nslcd.conf</code> should contain two lines that look similar to that of <code class="language-plaintext highlighter-rouge">/etc/ldap/ldap.conf</code>, except that the keys are in lowercase.</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>uri ldap://ldap.example.com
+	</div>
+	<p>It will be replaced with LDAP’s default password hash type when the user changes their password for the next time.</p>
+	<p>Now that we have our server set up and running, it’s time to configure client machines to use it.</p>
+	<h2 id="client">Client setup</h2>
+	<p>There are two options for clients: More commonly <code class="language-plaintext highlighter-rouge">libnss-ldapd</code> and <code class="language-plaintext highlighter-rouge">libpam-ldapd</code> are used together, or <code class="language-plaintext highlighter-rouge">sssd</code> if you’re familiar with it (which will not be described in this post). Note that are two obsolete packages <code class="language-plaintext highlighter-rouge">libnss-ldap</code> and <code class="language-plaintext highlighter-rouge">libpam-ldap</code> (both missing the final <code class="language-plaintext highlighter-rouge">d</code>) that might confuse you.</p>
+	<p>Start with <code class="language-plaintext highlighter-rouge">apt install libnss-ldapd libpam-ldapd</code>. You’ll be asked for the LDAP server and the base DN, then “name services to configure”. Select <code class="language-plaintext highlighter-rouge">passwd group shadow</code> for now.</p>
+	<p><img src="/image/linux/libnss-ldapd.png" alt="Configure libnss-ldapd" /></p>
+	<p>These two packages should also pull in <code class="language-plaintext highlighter-rouge">nscd</code> (Name Service Cache Daemon) and <code class="language-plaintext highlighter-rouge">nslcd</code> (Name Service LDAP Client Daemon). The former provides a local cache for name service lookup results, while the latter provides the ability to lookup items from an LDAP server.</p>
+	<p>After configuring the packages, your <code class="language-plaintext highlighter-rouge">/etc/nslcd.conf</code> should contain two lines that look similar to that of <code class="language-plaintext highlighter-rouge">/etc/ldap/ldap.conf</code>, except that the keys are in lowercase.</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>uri ldap://ldap.example.com
 base dc=ibug
 </code></pre>
-			</div>
 		</div>
-		<p>If the LDAP server is configured correctly (for <code class="language-plaintext highlighter-rouge">nslcd</code>), you should now be able to see LDAP users in the output of <code class="language-plaintext highlighter-rouge">getent passwd</code>, as well as <code class="language-plaintext highlighter-rouge">getent group</code>. LDAP users can also login via SSH or ttys.</p>
-		<p>An LDAP user changes their password using the same <code class="language-plaintext highlighter-rouge">passwd</code> command, which will be stored in LDAP and immediately available to all machines connected to this LDAP server. In case it doesn’t, <code class="language-plaintext highlighter-rouge">nscd -i passwd</code> and <code class="language-plaintext highlighter-rouge">nscd -i group</code> will refresh the cache and allow nslcd to pull in the latest information.</p>
-		<h2 id="advanced">Advanced topics</h2>
-		<h3 id="tls">Securing LDAP server with TLS</h3>
-		<p>Nothing is “baseline secure” over unencrypted traffic, so the next thing is to add TLS certificates for the LDAP server. Certificates aren’t hard to get. For example, if you have a public domain, <a href="https://letsencrypt.org/">Let’s Encrypt</a> is the easiest way to get a universally-trusted certificate. Otherwise, you can create a self-signed certificate that can include any domain name or IP address. <a href="https://hohnstaedt.de/xca/">XCA</a> is one of the best tools to manage a private Certificate Authority.</p>
-		<p>Copy the certificate and private key files to the <code class="language-plaintext highlighter-rouge">/etc/ldap/</code> directory. Change the owner and group to <code class="language-plaintext highlighter-rouge">openldap</code> and file mode to <code class="language-plaintext highlighter-rouge">0644</code> (for the certificate) or <code class="language-plaintext highlighter-rouge">0400</code> (for the private key). This ensures only the OpenLDAP server can access them. Now you need to tell the server to <em>use</em> these files.</p>
-		<div class="language-yaml highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=config</span>
+	</div>
+	<p>If the LDAP server is configured correctly (for <code class="language-plaintext highlighter-rouge">nslcd</code>), you should now be able to see LDAP users in the output of <code class="language-plaintext highlighter-rouge">getent passwd</code>, as well as <code class="language-plaintext highlighter-rouge">getent group</code>. LDAP users can also login via SSH or ttys.</p>
+	<p>An LDAP user changes their password using the same <code class="language-plaintext highlighter-rouge">passwd</code> command, which will be stored in LDAP and immediately available to all machines connected to this LDAP server. In case it doesn’t, <code class="language-plaintext highlighter-rouge">nscd -i passwd</code> and <code class="language-plaintext highlighter-rouge">nscd -i group</code> will refresh the cache and allow nslcd to pull in the latest information.</p>
+	<h2 id="advanced">Advanced topics</h2>
+	<h3 id="tls">Securing LDAP server with TLS</h3>
+	<p>Nothing is “baseline secure” over unencrypted traffic, so the next thing is to add TLS certificates for the LDAP server. Certificates aren’t hard to get. For example, if you have a public domain, <a href="https://letsencrypt.org/">Let’s Encrypt</a> is the easiest way to get a universally-trusted certificate. Otherwise, you can create a self-signed certificate that can include any domain name or IP address. <a href="https://hohnstaedt.de/xca/">XCA</a> is one of the best tools to manage a private Certificate Authority.</p>
+	<p>Copy the certificate and private key files to the <code class="language-plaintext highlighter-rouge">/etc/ldap/</code> directory. Change the owner and group to <code class="language-plaintext highlighter-rouge">openldap</code> and file mode to <code class="language-plaintext highlighter-rouge">0644</code> (for the certificate) or <code class="language-plaintext highlighter-rouge">0400</code> (for the private key). This ensures only the OpenLDAP server can access them. Now you need to tell the server to <em>use</em> these files.</p>
+	<div class="language-yaml highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=config</span>
 <span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
 <span class="na">add</span><span class="pi">:</span> <span class="s">olcTLSCertificateKeyFile</span>
 <span class="na">olcTLSCertificateKeyFile</span><span class="pi">:</span> <span class="s">/etc/ldap/server.key</span>
@@ -941,66 +1036,66 @@ base dc=ibug
 <span class="na">add</span><span class="pi">:</span> <span class="s">olcTLSCACertificateFile</span>
 <span class="na">olcTLSCACertificateFile</span><span class="pi">:</span> <span class="s">/etc/ldap/server.crt</span>
 </code></pre>
-			</div>
 		</div>
-		<p>This time the LDAP “admin” user can’t import these changes. You need to log in to the server as <code class="language-plaintext highlighter-rouge">root</code>, then use the following command:</p>
-		<div class="language-shell highlighter-rouge">
+	</div>
+	<p>This time the LDAP “admin” user can’t import these changes. You need to log in to the server as <code class="language-plaintext highlighter-rouge">root</code>, then use the following command:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>ldapmodify <span class="nt">-Y</span> EXTERNAL <span class="nt">-H</span> ldapi:/// <span class="nt">-f</span> ssl.ldif
+</code></pre>
+		</div>
+	</div>
+	<div class="notice--primary">
+		<h4 id="external-authentication-method"><i class="fas fa-fw fa-lightbulb"></i> “External” authentication method</h4>
+		<p>The “external” authentication method defers authentication to the transport layer. There are (at least) two kinds of supported methods: Unix domain socket option <code class="language-plaintext highlighter-rouge">SO_PEERCRED</code> (see <a href="https://man7.org/linux/man-pages/man7/unix.7.html">unix(7)</a>) and TLS client certificate. When connecting over UDS, the server can retrieve the client’s UID, GID and PID with that option.</p>
+		<p>The <code class="language-plaintext highlighter-rouge">-H ldapi:///</code> tells the <code class="language-plaintext highlighter-rouge">ldap*</code> commands to connect over a local Unix domain socket, which is required for <code class="language-plaintext highlighter-rouge">-Y EXTERNAL</code> (we don’t have TLS client certificates yet).</p>
+	</div>
+	<div class="notice--danger">
+		<h4 class="no_toc" id="order-is-important"><i class="fas fa-fw fa-exclamation-triangle"></i> Order is important</h4>
+		<p>The OpenLDAP documentation did not cover the detail that the private key must be added <em>before</em> the certificate. Otherwise you’ll get this response:</p>
+		<div class="language-text highlighter-rouge">
 			<div class="highlight">
-				<pre class="highlight"><code>ldapmodify <span class="nt">-Y</span> EXTERNAL <span class="nt">-H</span> ldapi:/// <span class="nt">-f</span> ssl.ldif
+				<pre class="highlight"><code>ldap_modify: Other (e.g., implementation specific) error (80)
 </code></pre>
 			</div>
-		</div>
-		<div class="notice--primary">
-			<h4 id="external-authentication-method"><i class="fas fa-fw fa-lightbulb"></i> “External” authentication method</h4>
-			<p>The “external” authentication method defers authentication to the transport layer. There are (at least) two kinds of supported methods: Unix domain socket option <code class="language-plaintext highlighter-rouge">SO_PEERCRED</code> (see <a href="https://man7.org/linux/man-pages/man7/unix.7.html">unix(7)</a>) and TLS client certificate. When connecting over UDS, the server can retrieve the client’s UID, GID and PID with that option.</p>
-			<p>The <code class="language-plaintext highlighter-rouge">-H ldapi:///</code> tells the <code class="language-plaintext highlighter-rouge">ldap*</code> commands to connect over a local Unix domain socket, which is required for <code class="language-plaintext highlighter-rouge">-Y EXTERNAL</code> (we don’t have TLS client certificates yet).</p>
-		</div>
-		<div class="notice--danger">
-			<h4 class="no_toc" id="order-is-important"><i class="fas fa-fw fa-exclamation-triangle"></i> Order is important</h4>
-			<p>The OpenLDAP documentation did not cover the detail that the private key must be added <em>before</em> the certificate. Otherwise you’ll get this response:</p>
-			<div class="language-text highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>ldap_modify: Other (e.g., implementation specific) error (80)
-</code></pre>
-				</div>
   </div>
-			<p>References: <a href="https://askubuntu.com/a/1103245/612877">1</a>, <a href="https://gist.github.com/ndlrx/edef4474ec9f5edac594cc5e37644559">2</a>, <a href="https://serverfault.com/a/1007262/450575">3</a></p>
-		</div>
-		<p>After getting the certificates ready, we can now enable LDAP-over-TLS service. Somehow the Debian <code class="language-plaintext highlighter-rouge">slapd</code> package does not come with a native systemd service, but <code class="language-plaintext highlighter-rouge">/etc/init.d/slapd</code>, so “service settings” are configured at <code class="language-plaintext highlighter-rouge">/etc/default/slapd</code>. Locate that file and add <code class="language-plaintext highlighter-rouge">ldaps:///</code> for <code class="language-plaintext highlighter-rouge">SLAPD_SERVICES</code>. Optionally, though recommended, you can remove <code class="language-plaintext highlighter-rouge">ldap://</code> to disable the plaintext port. The line should now look like this:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="nv">SLAPD_SERVICES</span><span class="o">=</span><span class="s2">"ldaps:/// ldapi:///"</span>
+		<p>References: <a href="https://askubuntu.com/a/1103245/612877">1</a>, <a href="https://gist.github.com/ndlrx/edef4474ec9f5edac594cc5e37644559">2</a>, <a href="https://serverfault.com/a/1007262/450575">3</a></p>
+	</div>
+	<p>After getting the certificates ready, we can now enable LDAP-over-TLS service. Somehow the Debian <code class="language-plaintext highlighter-rouge">slapd</code> package does not come with a native systemd service, but <code class="language-plaintext highlighter-rouge">/etc/init.d/slapd</code>, so “service settings” are configured at <code class="language-plaintext highlighter-rouge">/etc/default/slapd</code>. Locate that file and add <code class="language-plaintext highlighter-rouge">ldaps:///</code> for <code class="language-plaintext highlighter-rouge">SLAPD_SERVICES</code>. Optionally, though recommended, you can remove <code class="language-plaintext highlighter-rouge">ldap://</code> to disable the plaintext port. The line should now look like this:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="nv">SLAPD_SERVICES</span><span class="o">=</span><span class="s2">"ldaps:/// ldapi:///"</span>
 </code></pre>
-			</div>
 		</div>
-		<p>You can now use <code class="language-plaintext highlighter-rouge">systemctl restart slapd</code> to restart the server, and <code class="language-plaintext highlighter-rouge">netstat -tlpn</code> to verify that the server is listening on the correct port (TCP 636).</p>
-		<h3 id="permissions">Managing permissions</h3>
-		<p>By default,</p>
-		<ul>
-			<li>The “admin” user (using <code class="language-plaintext highlighter-rouge">-D cn=admin,dc=... -W</code>) can modify the “database”, where users, groups etc. are stored.</li>
-			<li>The local root user can modify server settings. Namely, anything under the tree <code class="language-plaintext highlighter-rouge">cn=config</code>. Note that Distinguished Name (DN) resolves from right to left, like domain names.</li>
-		</ul>
-		<p>For me, I found it a hinderance that the root user cannot edit the database directly, so I added some permissions to make this happen.</p>
-		<p>As you may have noticed, we used the same LDIF format to change TLS settings, except for the server port. In fact, the whole <code class="language-plaintext highlighter-rouge">cn=config</code> tree is another LDAP database, just like the <code class="language-plaintext highlighter-rouge">mysql</code> database in MySQL. And this “config” database also has its metadata under <code class="language-plaintext highlighter-rouge">cn=config</code>.</p>
-		<p>First we identify where the metadata for the “config” database is:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>ldapsearch <span class="nt">-Y</span> EXTERNAL <span class="nt">-b</span> <span class="nv">cn</span><span class="o">=</span>config
+	</div>
+	<p>You can now use <code class="language-plaintext highlighter-rouge">systemctl restart slapd</code> to restart the server, and <code class="language-plaintext highlighter-rouge">netstat -tlpn</code> to verify that the server is listening on the correct port (TCP 636).</p>
+	<h3 id="permissions">Managing permissions</h3>
+	<p>By default,</p>
+	<ul>
+		<li>The “admin” user (using <code class="language-plaintext highlighter-rouge">-D cn=admin,dc=... -W</code>) can modify the “database”, where users, groups etc. are stored.</li>
+		<li>The local root user can modify server settings. Namely, anything under the tree <code class="language-plaintext highlighter-rouge">cn=config</code>. Note that Distinguished Name (DN) resolves from right to left, like domain names.</li>
+	</ul>
+	<p>For me, I found it a hinderance that the root user cannot edit the database directly, so I added some permissions to make this happen.</p>
+	<p>As you may have noticed, we used the same LDIF format to change TLS settings, except for the server port. In fact, the whole <code class="language-plaintext highlighter-rouge">cn=config</code> tree is another LDAP database, just like the <code class="language-plaintext highlighter-rouge">mysql</code> database in MySQL. And this “config” database also has its metadata under <code class="language-plaintext highlighter-rouge">cn=config</code>.</p>
+	<p>First we identify where the metadata for the “config” database is:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>ldapsearch <span class="nt">-Y</span> EXTERNAL <span class="nt">-b</span> <span class="nv">cn</span><span class="o">=</span>config
 </code></pre>
-			</div>
 		</div>
-		<p>You can pipe the above command to <code class="language-plaintext highlighter-rouge">less</code> or send to a file for easier inspection. Pay attention to lines beginning with <code class="language-plaintext highlighter-rouge">dn:</code>, which describes a directory “node”. One of them will look like:</p>
-		<div class="language-yaml highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
+	</div>
+	<p>You can pipe the above command to <code class="language-plaintext highlighter-rouge">less</code> or send to a file for easier inspection. Pay attention to lines beginning with <code class="language-plaintext highlighter-rouge">dn:</code>, which describes a directory “node”. One of them will look like:</p>
+	<div class="language-yaml highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
 </code></pre>
-			</div>
 		</div>
-		<p>The <code class="language-plaintext highlighter-rouge">olc</code> prefix stands for <strong>O</strong>pen<strong>L</strong>DAP <strong>C</strong>onfiguration, and <code class="language-plaintext highlighter-rouge">{1}</code> indicates an entry from multiple of the same name. You’ll probably notice there’s <code class="language-plaintext highlighter-rouge">olcDatabase={0}config</code> as well, which we’ll cover soon.</p>
-		<p>This item has a lot of attributes, among which there are:</p>
-		<div class="language-yaml highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
+	</div>
+	<p>The <code class="language-plaintext highlighter-rouge">olc</code> prefix stands for <strong>O</strong>pen<strong>L</strong>DAP <strong>C</strong>onfiguration, and <code class="language-plaintext highlighter-rouge">{1}</code> indicates an entry from multiple of the same name. You’ll probably notice there’s <code class="language-plaintext highlighter-rouge">olcDatabase={0}config</code> as well, which we’ll cover soon.</p>
+	<p>This item has a lot of attributes, among which there are:</p>
+	<div class="language-yaml highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
 <span class="na">objectClass</span><span class="pi">:</span> <span class="s">olcDatabaseConfig</span>
 <span class="na">objectClass</span><span class="pi">:</span> <span class="s">olcMdbConfig</span>
 <span class="na">olcDatabase</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">1</span><span class="pi">}</span><span class="s">mdb</span>
@@ -1011,30 +1106,30 @@ base dc=ibug
 <span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">2</span><span class="pi">}</span><span class="s">to * by * read</span>
 <span class="na">olcRootDN</span><span class="pi">:</span> <span class="s">cn=admin,dc=ibug</span>
 </code></pre>
-			</div>
 		</div>
-		<p>The <code class="language-plaintext highlighter-rouge">olcAccess</code> key(s) describes its Access Control List (ACL), and apparently <code class="language-plaintext highlighter-rouge">{0}</code>, <code class="language-plaintext highlighter-rouge">{1}</code> and <code class="language-plaintext highlighter-rouge">{2}</code> have the same meaning as that of <code class="language-plaintext highlighter-rouge">olcDatabase={1}mdb</code>. The syntax is roughly as follows:</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>olcAccess: {&lt;index&gt;}to &lt;what&gt; by &lt;who&gt; &lt;how&gt; [by &lt;who&gt; &lt;how&gt;]...
+	</div>
+	<p>The <code class="language-plaintext highlighter-rouge">olcAccess</code> key(s) describes its Access Control List (ACL), and apparently <code class="language-plaintext highlighter-rouge">{0}</code>, <code class="language-plaintext highlighter-rouge">{1}</code> and <code class="language-plaintext highlighter-rouge">{2}</code> have the same meaning as that of <code class="language-plaintext highlighter-rouge">olcDatabase={1}mdb</code>. The syntax is roughly as follows:</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>olcAccess: {&lt;index&gt;}to &lt;what&gt; by &lt;who&gt; &lt;how&gt; [by &lt;who&gt; &lt;how&gt;]...
 </code></pre>
-			</div>
 		</div>
-		<p>Notice that there’s no explicit ACL to the “admin user”, because the admin user is registered as <code class="language-plaintext highlighter-rouge">olcRootDN</code> for this database. The next thing we need to do is to insert an all-access rule for the local root user. The next question is, how to “refer to” the root user?</p>
-		<p>If you looked through <code class="language-plaintext highlighter-rouge">olcDatabase={0}config</code>, you should have the answer now:</p>
-		<div class="language-yaml highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={0}config,cn=config</span>
+	</div>
+	<p>Notice that there’s no explicit ACL to the “admin user”, because the admin user is registered as <code class="language-plaintext highlighter-rouge">olcRootDN</code> for this database. The next thing we need to do is to insert an all-access rule for the local root user. The next question is, how to “refer to” the root user?</p>
+	<p>If you looked through <code class="language-plaintext highlighter-rouge">olcDatabase={0}config</code>, you should have the answer now:</p>
+	<div class="language-yaml highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={0}config,cn=config</span>
 <span class="nn">...</span>
 <span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">0</span><span class="pi">}</span><span class="s">to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break</span>
 <span class="nn">...</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Unfortunately LDIF does not allow modifying or inserting an item into a repeated attribute directly, so the way to do this is to replace all of them:</p>
-		<div class="language-yaml highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
+	</div>
+	<p>Unfortunately LDIF does not allow modifying or inserting an item into a repeated attribute directly, so the way to do this is to replace all of them:</p>
+	<div class="language-yaml highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
 <span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
 <span class="na">replace</span><span class="pi">:</span> <span class="s">olcAccess</span>
 <span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break</span>
@@ -1042,23 +1137,23 @@ base dc=ibug
 <span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to attrs=shadowLastChange by self write by * read</span>
 <span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to * by * read</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Seen how the <code class="language-plaintext highlighter-rouge">&lt;who&gt;</code> part is reminiscent of the “External authentication method” described above? Send this LDIF to the server and you’ll get the desired result. You can now try to modify the “user database” using root user and <code class="language-plaintext highlighter-rouge">-Y EXTERNAL</code>.</p>
-		<p>To save some typing <code class="language-plaintext highlighter-rouge">-Y EXTERNAL</code> for <code class="language-plaintext highlighter-rouge">ldap*</code> commands, keep in mind that these commands read <code class="language-plaintext highlighter-rouge">/etc/ldap/ldap.conf</code>. This means there should be some kind of configuration for this, and indeed there is:</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>SASL_MECH   EXTERNAL
+	</div>
+	<p>Seen how the <code class="language-plaintext highlighter-rouge">&lt;who&gt;</code> part is reminiscent of the “External authentication method” described above? Send this LDIF to the server and you’ll get the desired result. You can now try to modify the “user database” using root user and <code class="language-plaintext highlighter-rouge">-Y EXTERNAL</code>.</p>
+	<p>To save some typing <code class="language-plaintext highlighter-rouge">-Y EXTERNAL</code> for <code class="language-plaintext highlighter-rouge">ldap*</code> commands, keep in mind that these commands read <code class="language-plaintext highlighter-rouge">/etc/ldap/ldap.conf</code>. This means there should be some kind of configuration for this, and indeed there is:</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>SASL_MECH   EXTERNAL
 </code></pre>
-			</div>
 		</div>
-		<p>For more detailed description, you can check out the <a href="https://www.openldap.org/doc/admin24/access-control.html">slapd.access</a> help page.</p>
-		<h3 id="user-chsh">Allow users to change login shell</h3>
-		<p>Changing the login shell is a basic privilege of a normal POSIX user. Unlike <code class="language-plaintext highlighter-rouge">passwd</code> that automatically handles LDAP users, <code class="language-plaintext highlighter-rouge">chsh</code> does not, and only complains about PAM authentication failed.</p>
-		<p>It’s easy to discover that there’s a <code class="language-plaintext highlighter-rouge">chsh.ldap</code> command. It’s even easier to discover that it doesn’t work:</p>
-		<div class="language-python highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="n">ibug</span><span class="o">@</span><span class="n">ldap</span><span class="p">:</span><span class="o">~</span><span class="err">$</span> <span class="n">chsh</span><span class="p">.</span><span class="n">ldap</span>
+	</div>
+	<p>For more detailed description, you can check out the <a href="https://www.openldap.org/doc/admin24/access-control.html">slapd.access</a> help page.</p>
+	<h3 id="user-chsh">Allow users to change login shell</h3>
+	<p>Changing the login shell is a basic privilege of a normal POSIX user. Unlike <code class="language-plaintext highlighter-rouge">passwd</code> that automatically handles LDAP users, <code class="language-plaintext highlighter-rouge">chsh</code> does not, and only complains about PAM authentication failed.</p>
+	<p>It’s easy to discover that there’s a <code class="language-plaintext highlighter-rouge">chsh.ldap</code> command. It’s even easier to discover that it doesn’t work:</p>
+	<div class="language-python highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="n">ibug</span><span class="o">@</span><span class="n">ldap</span><span class="p">:</span><span class="o">~</span><span class="err">$</span> <span class="n">chsh</span><span class="p">.</span><span class="n">ldap</span>
 <span class="n">LDAP</span> <span class="n">password</span> <span class="k">for</span> <span class="n">ibug</span><span class="p">:</span>
 <span class="n">Enter</span> <span class="n">the</span> <span class="n">new</span> <span class="n">value</span><span class="p">,</span> <span class="ow">or</span> <span class="n">press</span> <span class="n">ENTER</span> <span class="k">for</span> <span class="n">the</span> <span class="n">default</span>
 <span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
@@ -1070,44 +1165,44 @@ base dc=ibug
     <span class="n">shell</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s">'  Login Shell [%s]: '</span> <span class="o">%</span> <span class="n">oldshell</span><span class="p">)</span>
 <span class="nb">UnboundLocalError</span><span class="p">:</span> <span class="n">local</span> <span class="n">variable</span> <span class="s">'input'</span> <span class="n">referenced</span> <span class="n">before</span> <span class="n">assignment</span>
 </code></pre>
-			</div>
 		</div>
-		<p>If you look at <code class="language-plaintext highlighter-rouge">/usr/bin/chsh.ldap</code>, it contains this stupid assignment:</p>
-		<div class="language-python highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="c1"># Provide Python 2 compatibility
+	</div>
+	<p>If you look at <code class="language-plaintext highlighter-rouge">/usr/bin/chsh.ldap</code>, it contains this stupid assignment:</p>
+	<div class="language-python highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="c1"># Provide Python 2 compatibility
 </span><span class="k">try</span><span class="p">:</span>
     <span class="nb">input</span> <span class="o">=</span> <span class="nb">raw_input</span>
 <span class="k">except</span> <span class="nb">NameError</span><span class="p">:</span>
     <span class="k">pass</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Removing this try-except block gets rid of the first error, but it’s still not working:</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">ibug@ldap:~$</span><span class="w"> </span>chsh.ldap
+	</div>
+	<p>Removing this try-except block gets rid of the first error, but it’s still not working:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">ibug@ldap:~$</span><span class="w"> </span>chsh.ldap
 <span class="go">LDAP password for ibug:
 Enter the new value, or press ENTER for the default
   Login Shell [/bin/bash]:
 /usr/bin/chsh.ldap: /bin/bash is an invalid shell
 </span></code></pre>
-			</div>
 		</div>
-		<p>The second one is trickier to fix because you don’t know where it’s doing wrong.</p>
-		<p>It took me some effort to find bug report <a href="https://bugs.launchpad.net/ubuntu/+source/nss-pam-ldapd/+bug/1892482">LP#1892482</a>, which provides a link to <a href="https://github.com/arthurdejong/nss-pam-ldapd/commit/1025d5de336d8c9585b79df3154b5649da344281">this commit</a> that fixes the problem. You can safely apply that commit to your local installation of <code class="language-plaintext highlighter-rouge">/usr/share/nslcd-utils</code>.</p>
-		<p>Now <code class="language-plaintext highlighter-rouge">chsh.ldap</code> seems to be working, <em>except</em> that it doesn’t save your selected shell.</p>
-		<p>Remember how there’s an ACL to allow users to change their passwords?</p>
-		<div class="language-yaml highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">0</span><span class="pi">}</span><span class="s">to attrs=userPassword by self write by anonymous auth by * none</span>
+	</div>
+	<p>The second one is trickier to fix because you don’t know where it’s doing wrong.</p>
+	<p>It took me some effort to find bug report <a href="https://bugs.launchpad.net/ubuntu/+source/nss-pam-ldapd/+bug/1892482">LP#1892482</a>, which provides a link to <a href="https://github.com/arthurdejong/nss-pam-ldapd/commit/1025d5de336d8c9585b79df3154b5649da344281">this commit</a> that fixes the problem. You can safely apply that commit to your local installation of <code class="language-plaintext highlighter-rouge">/usr/share/nslcd-utils</code>.</p>
+	<p>Now <code class="language-plaintext highlighter-rouge">chsh.ldap</code> seems to be working, <em>except</em> that it doesn’t save your selected shell.</p>
+	<p>Remember how there’s an ACL to allow users to change their passwords?</p>
+	<div class="language-yaml highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">0</span><span class="pi">}</span><span class="s">to attrs=userPassword by self write by anonymous auth by * none</span>
 </code></pre>
-			</div>
 		</div>
-		<p>That’s right, the only thing left to do is to add another ACL to allow users to change their login shells as well, replacing all <code class="language-plaintext highlighter-rouge">olcAccess</code> keys <em>again</em>:</p>
-		<div class="language-yaml highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
+	</div>
+	<p>That’s right, the only thing left to do is to add another ACL to allow users to change their login shells as well, replacing all <code class="language-plaintext highlighter-rouge">olcAccess</code> keys <em>again</em>:</p>
+	<div class="language-yaml highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
 <span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
 <span class="na">replace</span><span class="pi">:</span> <span class="s">olcAccess</span>
 <span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break</span>
@@ -1116,13 +1211,13 @@ Enter the new value, or press ENTER for the default
 <span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to attrs=shadowLastChange by self write by * read</span>
 <span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to * by * read</span>
 </code></pre>
-			</div>
 		</div>
-		<p>This time there’s no need to include <code class="language-plaintext highlighter-rouge">by anonymous auth</code> because who checks the login shell for authentication?</p>
-		<p>Now we can verify that <code class="language-plaintext highlighter-rouge">chsh.ldap</code> is working correctly:</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">ibug@ldap:~$</span><span class="w"> </span>chsh.ldap
+	</div>
+	<p>This time there’s no need to include <code class="language-plaintext highlighter-rouge">by anonymous auth</code> because who checks the login shell for authentication?</p>
+	<p>Now we can verify that <code class="language-plaintext highlighter-rouge">chsh.ldap</code> is working correctly:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">ibug@ldap:~$</span><span class="w"> </span>chsh.ldap
 <span class="go">LDAP password for ibug:
 Enter the new value, or press ENTER for the default
   Login Shell [/bin/bash]: /bin/zsh
@@ -1130,23 +1225,23 @@ Enter the new value, or press ENTER for the default
 <span class="go">ibug:x:1000:1000:iBug:/home/ibug:/bin/zsh
 </span><span class="gp">ibug@ldap:~$</span><span class="w">
 </span></code></pre>
-			</div>
 		</div>
-		<h2 id="afterword">Afterword</h2>
-		<p>LDAP is a powerful tool to manage a wide range of things, including hosts (like <code class="language-plaintext highlighter-rouge">/etc/hosts</code>) and even Sudo rules, with increasing complexity to set up. There’s also Active Directory on Windows platform that shares the same concepts and is even inter-operable with LDAP.</p>
-		<p>LDAP also supports plugins that enables automatic configuration of certain attributes, like “group membership”, where the plugin adds a corresponding <code class="language-plaintext highlighter-rouge">memberOf</code> for users when a <code class="language-plaintext highlighter-rouge">member</code> entry is created under a group. However, this plugin doesn’t work with the <code class="language-plaintext highlighter-rouge">posixGroup</code> object class and requires the conflicting <code class="language-plaintext highlighter-rouge">groupOfNames</code> object class. Fortunately, this does not affect the ability to lookup groups from users, since traditionally the user-group relationship is stored one-way only in <code class="language-plaintext highlighter-rouge">/etc/group</code>, and PAM by default tries to look it up this way.</p>
-		<p>If you need access control, OpenSSH supports <a href="https://man7.org/linux/man-pages/man5/sshd_config.5.html">an <code class="language-plaintext highlighter-rouge">AllowGroup</code> directive</a> to restrict login to certain groups, which you can then remotely configure in LDAP.</p>
-		<h2 id="references">References</h2>
-		<ul>
-			<li><a href="https://harrychen.xyz/2021/01/17/openldap-linux-auth/">使用 OpenLDAP 在 Linux 上进行中心化用户管理 - Harry Chen’s blog</a></li>
-			<li><a href="https://access.redhat.com/documentation/en-us/red_hat_directory_server/11/html/administration_guide/managing_the_nss_database_used_by_directory_server">9.3. Managing the NSS Database Used by Directory Server</a> (Red Hat Documentation)</li>
-			<li><a href="https://en.wikipedia.org/wiki/Bcrypt">Bcrypt - Wikipedia</a></li>
-			<li><a href="https://hohnstaedt.de/xca/">XCA</a></li>
-			<li>
-				<p><a href="https://github.com/arthurdejong/nss-pam-ldapd/commit/1025d5de336d8c9585b79df3154b5649da344281">The commit</a> that fixes <code class="language-plaintext highlighter-rouge">chsh.ldap</code></p>
-			</li>
-		</ul>
-		]]></content><author><name>iBug</name></author><category term="tech" /><category term="linux" /><category term="server" /><category term="ldap" /><summary type="html"><![CDATA[LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes the most serious dedication to set up and maintain, yet the slightest agitation to fail.]]></summary></entry><entry><title type="html">Install Proxmox VE on eMMC</title><link href="https://ibug.io/blog/2022/03/install-proxmox-ve-emmc/" rel="alternate" type="text/html" title="Install Proxmox VE on eMMC" /><published>2022-03-01T00:00:00+00:00</published><updated>2022-05-01T15:21:23+00:00</updated><id>https://ibug.io/blog/2022/03/install-proxmox-ve-emmc</id><content type="html" xml:base="https://ibug.io/blog/2022/03/install-proxmox-ve-emmc/"><![CDATA[<p>Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just a router”, so I figured I’d get some virtual machines to improve its utilization. Choosing the virtualization platform isn’t hard - I’m most familiar with Proxmox VE.</p>
+	</div>
+	<h2 id="afterword">Afterword</h2>
+	<p>LDAP is a powerful tool to manage a wide range of things, including hosts (like <code class="language-plaintext highlighter-rouge">/etc/hosts</code>) and even Sudo rules, with increasing complexity to set up. There’s also Active Directory on Windows platform that shares the same concepts and is even inter-operable with LDAP.</p>
+	<p>LDAP also supports plugins that enables automatic configuration of certain attributes, like “group membership”, where the plugin adds a corresponding <code class="language-plaintext highlighter-rouge">memberOf</code> for users when a <code class="language-plaintext highlighter-rouge">member</code> entry is created under a group. However, this plugin doesn’t work with the <code class="language-plaintext highlighter-rouge">posixGroup</code> object class and requires the conflicting <code class="language-plaintext highlighter-rouge">groupOfNames</code> object class. Fortunately, this does not affect the ability to lookup groups from users, since traditionally the user-group relationship is stored one-way only in <code class="language-plaintext highlighter-rouge">/etc/group</code>, and PAM by default tries to look it up this way.</p>
+	<p>If you need access control, OpenSSH supports <a href="https://man7.org/linux/man-pages/man5/sshd_config.5.html">an <code class="language-plaintext highlighter-rouge">AllowGroup</code> directive</a> to restrict login to certain groups, which you can then remotely configure in LDAP.</p>
+	<h2 id="references">References</h2>
+	<ul>
+		<li><a href="https://harrychen.xyz/2021/01/17/openldap-linux-auth/">使用 OpenLDAP 在 Linux 上进行中心化用户管理 - Harry Chen’s blog</a></li>
+		<li><a href="https://access.redhat.com/documentation/en-us/red_hat_directory_server/11/html/administration_guide/managing_the_nss_database_used_by_directory_server">9.3. Managing the NSS Database Used by Directory Server</a> (Red Hat Documentation)</li>
+		<li><a href="https://en.wikipedia.org/wiki/Bcrypt">Bcrypt - Wikipedia</a></li>
+		<li><a href="https://hohnstaedt.de/xca/">XCA</a></li>
+		<li>
+			<p><a href="https://github.com/arthurdejong/nss-pam-ldapd/commit/1025d5de336d8c9585b79df3154b5649da344281">The commit</a> that fixes <code class="language-plaintext highlighter-rouge">chsh.ldap</code></p>
+		</li>
+	</ul>
+	]]></content><author><name>iBug</name></author><category term="tech" /><category term="linux" /><category term="server" /><category term="ldap" /><summary type="html"><![CDATA[LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes the most serious dedication to set up and maintain, yet the slightest agitation to fail.]]></summary></entry><entry><title type="html">Install Proxmox VE on eMMC</title><link href="https://ibug.io/blog/2022/03/install-proxmox-ve-emmc/" rel="alternate" type="text/html" title="Install Proxmox VE on eMMC" /><published>2022-03-01T00:00:00+00:00</published><updated>2022-05-01T15:21:23+00:00</updated><id>https://ibug.io/blog/2022/03/install-proxmox-ve-emmc</id><content type="html" xml:base="https://ibug.io/blog/2022/03/install-proxmox-ve-emmc/"><![CDATA[<p>Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just a router”, so I figured I’d get some virtual machines to improve its utilization. Choosing the virtualization platform isn’t hard - I’m most familiar with Proxmox VE.</p>
 	<p>The offcial ISO installer is pretty straightforward, until the last step:</p>
 	<div class="language-text highlighter-rouge">
 		<div class="highlight">
@@ -2227,195 +2322,4 @@ git <span class="nt">-C</span> cert push
 	<p>class: center, middle
 		layout: false</p>
 	<h1 id="thank-you">Thank you!</h1>
-	]]></content><author><name>iBug</name></author><summary type="html"><![CDATA[Slides for my talk at Tunight]]></summary></entry><entry><title type="html">Setting up a GitHub webhook on AWS Lambda</title><link href="https://ibug.io/blog/2021/02/github-webhook-on-aws-lambda/" rel="alternate" type="text/html" title="Setting up a GitHub webhook on AWS Lambda" /><published>2021-02-19T00:00:00+00:00</published><updated>2022-04-30T20:00:10+00:00</updated><id>https://ibug.io/blog/2021/02/github-webhook-on-aws-lambda</id><content type="html" xml:base="https://ibug.io/blog/2021/02/github-webhook-on-aws-lambda/"><![CDATA[<p>Last month I set up my own Telegram bot for GitHub event notification. To receive GitHub events via webhook, a receiver is needed. True, it isn’t hard to write a <a href="https://palletsprojects.com/p/flask/">Flask</a> or <a href="http://sinatrarb.com/">Sinatra</a> server and throw the whole thing onto a VPS, but thinking about the complexity and maintenance efforts, serverless platforms like AWS Lambda smells like a better fit. So I decided to take this opportunity to begin my exploration to “the serverless industry”.</p>
-	<p><small><a href="/p/41-cn">There’s a Chinese version of this article / 本文还有中文版</a></small></p>
-	<h2 id="aws-lambda">Setting up AWS Lambda</h2>
-	<p>I have had an AWS account for years, so I’ll skip the sign-up process in this article and head straight to <a href="https://console.aws.amazon.com/">AWS Management Console</a>.</p>
-	<p>Locate the <a href="https://console.aws.amazon.com/lambda/home"><strong>Lambda</strong></a> entry in the list of AWS services. It’s in the first group so should be easy to spot.</p>
-	<p><img src="/image/aws/console-home-1.png" alt="AWS Management Console Home" /></p>
-	<p>And then we create a new Lambda function, selecting Python 3.8 as the runtime environment</p>
-	<p><img src="/image/aws/lambda-create-function-1.png" alt="Create new Lambda function" class="border" /></p>
-	<p>After clicking “Create”, you’ll be brought to the edit page of that function, with the following code filled in as a starting point.</p>
-	<div class="language-python highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kn">import</span> <span class="nn">json</span>
-
-<span class="k">def</span> <span class="nf">lambda_handler</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
-    <span class="c1"># TODO implement
-</span>    <span class="k">return</span> <span class="p">{</span>
-        <span class="s">'statusCode'</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
-        <span class="s">'body'</span><span class="p">:</span> <span class="n">json</span><span class="p">.</span><span class="n">dumps</span><span class="p">(</span><span class="s">'Hello from Lambda!'</span><span class="p">)</span>
-    <span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>We don’t know what this code can do for now, so let’s put it aside and turn to the API Gateway part, since eventually we’ll use it as the webhook receiver endpoint.</p>
-	<h2 id="api-gateway">Setting up AWS API Gateway</h2>
-	<p>Open the <a href="https://console.aws.amazon.com/apigateway/main">AWS API Gateway console</a> and click <strong>Create API</strong> on the top right.</p>
-	<p><img src="/image/aws/api-gateway-new-1.png" alt="Create API" class="border" /></p>
-	<p>On the next screen, we add our Lambda function created earlier as an integration here.</p>
-	<p><img src="/image/aws/api-gateway-new-2.png" alt="Configure integrations" class="border" /></p>
-	<p>Then it turns to Routes. Routes describe how HTTP endpoints are mapped to integrations (receivers). An example (default) route is pre-filled in the dialog.</p>
-	<p><img src="/image/aws/api-gateway-routes-1.png" alt="Configure routes (1)" class="border" /></p>
-	<p>Since we have our Lambda function as the only integration here, we want to process actual routes by ourselves. Delete that path <code class="language-plaintext highlighter-rouge">/myGitHubWebhook</code> and enter <code class="language-plaintext highlighter-rouge">$default</code> into that box. <code class="language-plaintext highlighter-rouge">$default</code> is a special value that once entered, the “method” dropdown greys out.</p>
-	<p><img src="/image/aws/api-gateway-routes-2.png" alt="Configure routes (2)" class="border" /></p>
-	<p>We can now visit our API to see if it works.</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">ubuntu@iBug-Server:~ $</span><span class="w"> </span>curl https://nad73szpz7.execute-api.us-east-1.amazonaws.com/
-<span class="go">"Hello from Lambda!"
-</span><span class="gp">ubuntu@iBug-Server:~ $</span><span class="w">
-</span></code></pre>
-		</div>
-	</div>
-	<h2 id="lambda-code">Coding for Lambda</h2>
-	<p>With the infrastructure set up, we should now write our code for the GitHub webhook receiver.</p>
-	<p>We need to first know how the client request is passed to our Lambda function. This is not hard to figure out with some simple code that just spits out what it receives. To save some time, I’ve done this so you don’t have to. Here’s what you’d receive via the <code class="language-plaintext highlighter-rouge">event</code> object passed to the Lambda function entry. Keep in mind that it’s a dictionary in Python.</p>
-	<details>
-		<summary>
-			<p>Example content of <code class="language-plaintext highlighter-rouge">event</code> object</p>
-		</summary>
-		<div class="language-json highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="p">{</span><span class="w">
-  </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.0"</span><span class="p">,</span><span class="w">
-  </span><span class="nl">"routeKey"</span><span class="p">:</span><span class="w"> </span><span class="s2">"$default"</span><span class="p">,</span><span class="w">
-  </span><span class="nl">"rawPath"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/api-test"</span><span class="p">,</span><span class="w">
-  </span><span class="nl">"rawQueryString"</span><span class="p">:</span><span class="w"> </span><span class="s2">"taoky=strong"</span><span class="p">,</span><span class="w">
-  </span><span class="nl">"headers"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="nl">"accept"</span><span class="p">:</span><span class="w"> </span><span class="s2">"*/*"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"accept-encoding"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gzip"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"cdn-loop"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cloudflare"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"cf-connecting-ip"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2001:db8::1"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"cf-ipcountry"</span><span class="p">:</span><span class="w"> </span><span class="s2">"XX"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"cf-pseudo-ipv4"</span><span class="p">:</span><span class="w"> </span><span class="s2">"255.255.255.255"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"cf-ray"</span><span class="p">:</span><span class="w"> </span><span class="s2">"8b8cca72b23e09a5-NRT"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"cf-request-id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"d2160d7f1100000738c5e62000000001"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"cf-visitor"</span><span class="p">:</span><span class="w"> </span><span class="s2">"{</span><span class="se">\"</span><span class="s2">scheme</span><span class="se">\"</span><span class="s2">:</span><span class="se">\"</span><span class="s2">https</span><span class="se">\"</span><span class="s2">}"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"content-length"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"host"</span><span class="p">:</span><span class="w"> </span><span class="s2">"api.example.com"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"user-agent"</span><span class="p">:</span><span class="w"> </span><span class="s2">"curl/7.68.0"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"x-amzn-trace-id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Root=1-8dab11ae-d63d4eec890259ddab5a7709"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"x-forwarded-for"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2001:db8::1, 162.158.118.243"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"x-forwarded-port"</span><span class="p">:</span><span class="w"> </span><span class="s2">"443"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"x-forwarded-proto"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"x-custom-header"</span><span class="p">:</span><span class="w"> </span><span class="s2">"hello"</span><span class="w">
-  </span><span class="p">},</span><span class="w">
-  </span><span class="nl">"queryStringParameters"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="nl">"taoky"</span><span class="p">:</span><span class="w"> </span><span class="s2">"strong"</span><span class="w">
-  </span><span class="p">},</span><span class="w">
-  </span><span class="nl">"requestContext"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="nl">"accountId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"166333366666"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"apiId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"nad73szpz7"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"domainName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"api.example.com"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"domainPrefix"</span><span class="p">:</span><span class="w"> </span><span class="s2">"api"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"http"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
-      </span><span class="nl">"method"</span><span class="p">:</span><span class="w"> </span><span class="s2">"POST"</span><span class="p">,</span><span class="w">
-      </span><span class="nl">"path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/api-test"</span><span class="p">,</span><span class="w">
-      </span><span class="nl">"protocol"</span><span class="p">:</span><span class="w"> </span><span class="s2">"HTTP/1.1"</span><span class="p">,</span><span class="w">
-      </span><span class="nl">"sourceIp"</span><span class="p">:</span><span class="w"> </span><span class="s2">" 162.158.118.243"</span><span class="p">,</span><span class="w">
-      </span><span class="nl">"userAgent"</span><span class="p">:</span><span class="w"> </span><span class="s2">"curl/7.68.0"</span><span class="w">
-    </span><span class="p">},</span><span class="w">
-    </span><span class="nl">"requestId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ZcOQCw-WICLEQdg="</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"routeKey"</span><span class="p">:</span><span class="w"> </span><span class="s2">"$default"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"stage"</span><span class="p">:</span><span class="w"> </span><span class="s2">"$default"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"20/Jan/2021:16:40:00 +0000"</span><span class="p">,</span><span class="w">
-    </span><span class="nl">"timeEpoch"</span><span class="p">:</span><span class="w"> </span><span class="mi">1611160800000</span><span class="w">
-  </span><span class="p">},</span><span class="w">
-  </span><span class="nl">"body"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Cg=="</span><span class="p">,</span><span class="w">
-  </span><span class="nl">"isBase64Encoded"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre>
-			</div>
-  </div>
-	</details>
-	<p>A few notes about the content:</p>
-	<ul>
-		<li><code class="language-plaintext highlighter-rouge">isBase64Encoded</code> refers to the <code class="language-plaintext highlighter-rouge">body</code> item. In the above example, the actual POST content is a single newline.-</li>
-		<li><code class="language-plaintext highlighter-rouge">body</code> may be absent for requests that doesn’t send data, like a GET request.</li>
-		<li><code class="language-plaintext highlighter-rouge">headers</code> are all in lowercase which is in line with HTTP/2 specifications. <strong>It could be due to me placing my custom domain behind Cloudflare.</strong></li>
-	</ul>
-	<p>With that in mind, we can expand the boilerplate Lambda function:</p>
-	<div class="language-python highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">def</span> <span class="nf">lambda_handler</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
-    <span class="n">route</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s">"rawPath"</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">route</span> <span class="o">==</span> <span class="s">"/api-test"</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">{</span>
-            <span class="s">'statusCode'</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
-            <span class="s">'headers'</span><span class="p">:</span> <span class="p">{</span><span class="s">'Content-Type'</span><span class="p">:</span> <span class="s">'application/json'</span><span class="p">},</span>
-            <span class="s">'body'</span><span class="p">:</span> <span class="n">json</span><span class="p">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">event</span><span class="p">),</span>
-        <span class="p">}</span>
-    <span class="k">elif</span> <span class="n">route</span> <span class="o">==</span> <span class="s">"/github-webhook"</span><span class="p">:</span>
-        <span class="c1"># TODO Write webhook receiver code
-</span>        <span class="k">pass</span>
-</code></pre>
-		</div>
-	</div>
-	<p>The actual webhook processing code shouldn’t be too difficult to write. For example, here’s an example of verifying GitHub via the HMAC signature:</p>
-	<div class="language-python highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kn">import</span> <span class="nn">base64</span>
-<span class="kn">import</span> <span class="nn">hashlib</span>
-<span class="kn">import</span> <span class="nn">hmac</span>
-<span class="kn">import</span> <span class="nn">os</span>
-</code></pre>
-		</div>
-	</div>
-	<div class="language-python highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="n">secret</span> <span class="o">=</span> <span class="n">os</span><span class="p">.</span><span class="n">environ</span><span class="p">[</span><span class="s">'MY_ENV_VAR'</span><span class="p">]</span>
-<span class="n">signature</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s">'headers'</span><span class="p">][</span><span class="s">'x-hub-signature'</span><span class="p">].</span><span class="n">split</span><span class="p">(</span><span class="s">"="</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-<span class="n">body</span> <span class="o">=</span> <span class="n">event</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">'body'</span><span class="p">,</span> <span class="s">""</span><span class="p">)</span>
-<span class="k">if</span> <span class="n">event</span><span class="p">[</span><span class="s">'isBase64Encoded'</span><span class="p">]:</span>
-    <span class="n">body</span> <span class="o">=</span> <span class="n">base64</span><span class="p">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">body</span><span class="p">)</span>
-
-<span class="n">hashsum</span> <span class="o">=</span> <span class="n">hmac</span><span class="p">.</span><span class="n">new</span><span class="p">(</span><span class="n">signature</span><span class="p">,</span> <span class="n">secret</span><span class="p">,</span> <span class="n">hashlib</span><span class="p">.</span><span class="n">sha1</span><span class="p">).</span><span class="n">hexdigest</span><span class="p">()</span>
-<span class="k">if</span> <span class="n">hashsum</span> <span class="o">!=</span> <span class="n">signature</span><span class="p">:</span>
-    <span class="k">return</span> <span class="p">{</span>
-        <span class="s">'statusCode'</span><span class="p">:</span> <span class="mi">401</span><span class="p">,</span>
-        <span class="s">'body'</span><span class="p">:</span> <span class="s">"Bad signature"</span><span class="p">,</span>
-    <span class="p">}</span>
-
-<span class="c1"># Do whatever you want
-</span>
-<span class="k">return</span> <span class="p">{</span>
-  <span class="s">'statusCode'</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>
-  <span class="s">'body'</span><span class="p">:</span> <span class="s">"OK"</span><span class="p">,</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<h3 id="lambda-environment-variables">Adding environment variables</h3>
-	<p>As shown in the example above, I put the webhook secret in an environment variable. We need to add it to our Lambda function before it could be used.</p>
-	<p>Doing so is straightforward. Head to Lambda console and select the function, then scroll down to <em>Environment variables</em> section, where you can manage variables for this Lambda function.</p>
-	<p><img src="/image/aws/lambda-environment-variables-1.png" alt="Lambda - Environment variables" class="border" /></p>
-	<h2 id="customization">Customizing the webhook</h2>
-	<p>Now we’ve got all the foundation established, we can do whatever we want with it. Here are some ideas that could try with:</p>
-	<ul>
-		<li>Connect to Slack and send a notification for every push or CI run result (<a href="https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads#check_run">the event is <code class="language-plaintext highlighter-rouge">check_run</code></a>)</li>
-		<li>Connect to a Telegram bot and send a message to you for your subscribed events</li>
-		<li>Start a Netlify or Vercel build or deployment</li>
-		<li>Start GitHub Actions on another repository</li>
-		<li>and many more possibilities…</li>
-	</ul>
-	<h2 id="custom-domain">Bonus: Adding a custom domain</h2>
-	<p>Before calling this an article, there’s one more thing I’d like to cover. A custom domain is handy so that you’re in full control of your API, and fortunately AWS API Gateway <em>does</em> support this.</p>
-	<p>You may have already noticed the <em>Custom Domain Names</em> on the left pane of API Gateway console, so it’s time to pay that a visit.</p>
-	<p>The box on the left with a title <em>Domain names</em> is where we need to start from. Click the big <strong>Create</strong> button and enter your custom domain dedicated for AWS API Gateway, like <code class="language-plaintext highlighter-rouge">api.example.com</code>, and click the bridge red button on the bottom right to save the settings. You don’t have to change any other things there as the defaults just work.</p>
-	<p>Now you should see this screen:</p>
-	<p><img src="/image/aws/api-gateway-custom-domain-1.png" alt="API Gateway - Custom domain" class="border" /></p>
-	<p>Head to your DNS provider and add a CNAME record for <code class="language-plaintext highlighter-rouge">api.example.com</code> pointing to the <code class="language-plaintext highlighter-rouge">execute-api</code> domain shown there. If you’re using Cloudflare, you can safely turn on the CDN setting (the orange cloud icon) to enjoy Cloudflare’s faster global network.</p>
-	<p>Next we’ll add “API mapping” for our custom domain. Select the <em>API mapping</em> tab in the center of the above image and click <strong>Configure API mappings</strong> on the right. Add a new mapping, select your API and the <code class="language-plaintext highlighter-rouge">$default</code> stage, and give it a subpath if you want, like shown below:</p>
-	<p><img src="/image/aws/api-gateway-custom-domain-2.png" alt="API Gateway - Custom domain - API mapping" class="border" /></p>
-	<div class="notice--primary">
-		<h4 class="no_toc" id="dont-worry-about-your-subpath"><i class="fas fa-fw fa-sun"></i> Don’t worry about your subpath</h4>
-		<p>API Gateway will automatically strip the path before passing it to the Lambda function. This means if you set the path to <code class="language-plaintext highlighter-rouge">/hello</code> and visit <code class="language-plaintext highlighter-rouge">https://api.example.com/hello/world</code>, your Lambda function will still see the <code class="language-plaintext highlighter-rouge">rawPath</code> key being <code class="language-plaintext highlighter-rouge">/world</code>. You don’t have to change your code to adapt this part. Very convenient, isn’t it?</p>
-	</div>
-	<p>Now our GitHub webhook receiver will start with <code class="language-plaintext highlighter-rouge">https://api.example.com/github</code>, and our “API test” endpoint will be <code class="language-plaintext highlighter-rouge">https://api.example.com/github/api-test</code>.</p>
-	<p>You may need to configure AWS Certificate Manager to obtain a valid SSL certificate for use on AWS, so that your API is accessible through HTTPS, depending on your domain settings. With Cloudflare this is unnecessary and you can safely ignore it.</p>
-	<h2 id="others">Other notes</h2>
-	<p>AWS Lambda provides 400,000 GB-seconds of execution for free each month, and this Free Tier does not expire. However, AWS API Gateway doesn’t have a perpetual Free Tier offer, and their standard pricing is US$1 per 1M API calls. The cost on this part is generally low unless you’re making a public service (that becomes popular).</p>
-	<p>Besides, AWS provides 1 GB of free outbound traffic each month, and bills you at US$0.09 per GB thereafter. This means you’ll need to be careful when generating a lot of traffic, like frequently uploading large images.</p>
-	<p>All pricing examples are based on US East 1 (N. Virginia) region. Other regions are generally more expensive than this, so watch your bills if you make something big.</p>
-	]]></content><author><name>iBug</name></author><category term="tech" /><category term="github" /><category term="aws" /><summary type="html"><![CDATA[Last month I set up my own Telegram bot for GitHub event notification. To receive GitHub events via webhook, a receiver is needed. True, it isn’t hard to write a Flask or Sinatra server and throw the whole thing onto a VPS, but thinking about the complexity and maintenance efforts, serverless platforms like AWS Lambda smells like a better fit. So I decided to take this opportunity to begin my exploration to “the serverless industry”.]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><summary type="html"><![CDATA[Slides for my talk at Tunight]]></summary></entry></feed>
