@@ -21,7 +21,7 @@
 		<meta property="og:description" content="Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections. As an innovative attempt to a lab in this semester’s Network Security course, which was designed to work over multiple Windows Server 2003 virtual machines (VM), I decided to go on my own and proceed with Linux VMs.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2021-10-23T00:00:00+00:00">
-		<meta property="article:modified_time" content="2022-05-01T15:21:23+00:00">
+		<meta property="article:modified_time" content="2022-06-22T02:38:04+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2021/10/linux-ipsec-with-ip-xfrm/">
 		<script type="application/ld+json">
 			{
@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=a913efa">
+		<link rel="stylesheet" href="/assets/css/main.css?v=686323e">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -169,7 +169,7 @@
 					<meta itemprop="headline" content="Secure site-to-site connection with Linux IPsec VPN">
 					<meta itemprop="description" content="Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections. As an innovative attempt to a lab in this semester’s Network Security course, which was designed to work over multiple Windows Server 2003 virtual machines (VM), I decided to go on my own and proceed with Linux VMs.">
 					<meta itemprop="datePublished" content="2021-10-23T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2022-05-01T15:21:23+00:00">
+					<meta itemprop="dateModified" content="2022-06-22T02:38:04+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -471,7 +471,7 @@ ip xfrm state flush
 							<p>I take the Pcap file from the container to my (Windows) computer, and open it with Wireshark:</p>
 							<p><img src="/image/linux/ipsec/wireshark-no-decryption.png" alt="Pcap file in Wireshark"></p>
 							<p>The captured packets are correct - they’re encrypted in ESP format.</p>
-							<p>I then head to <strong>Edit → Preferences</strong>, locate <strong>Protocol » ESP</strong> on the left, and add the Security Associations used in this experiment. I also tick the “<em>Attempt to detect/decode ecnrypted ESP payloads</em>” checkbox.</p>
+							<p>I then head to <strong>Edit → Preferences</strong>, locate <strong>Protocol » ESP</strong> on the left, and add the Security Associations used in this experiment. I also tick the “<em>Attempt to detect/decode encrypted ESP payloads</em>” checkbox.</p>
 							<p><img src="/image/linux/ipsec/wireshark-import-esp-sa.png" alt="Add ESP SA in Wireshark"></p>
 							<p>Now I go back to the main screen, and I can see that Wireshark decrypts the ESP payload using the SAs I just supplied. The inner packet data is revealed to be ICMP packets because I use Ping to perform the reachability test all the way.</p>
 							<p><img src="/image/linux/ipsec/wireshard-decrypted.png" alt="Wireshark showing decrypted ESP data"></p>
@@ -480,7 +480,7 @@ ip xfrm state flush
 							<h3 id="easter-egg">Easter egg</h3>
 							<p>Before loading SAs into Wireshark, I noticed it showing an interesting note for every other packet:</p>
 							<p><img src="/image/linux/ipsec/wireshark-expected-sn.png" alt="Wireshark suggesting alternative sequence number"></p>
-							<p>This is because Wireshark is identifying streams by SPI, which is normally different for every IPsec stream, including both directions between the same pair of tunnel endpoints. When I’m using the same SPI for both directions, Wireshark gets confused and mistakes them for one stream, and suggests incrementing sequence numbers for “repeated” packets.</p>
+							<p>This is because Wireshark identifies streams by SPI, which is normally different for every IPsec stream, including both directions between the same pair of tunnel endpoints. When I’m using the same SPI for both directions, Wireshark gets confused and mistakes them for one stream, and suggests incrementing sequence numbers for duplicated packets.</p>
 							<h2 id="bonus-ipsec-tunnel-mode-vs-ip-in-ip-tunneling-inside-ipsec-transport-mode">Bonus: IPsec tunnel mode vs. IP-in-IP tunneling inside IPsec transport mode</h2>
 							<p class="notice--primary">Big shoutout to my friend <a href="https://github.com/RTXUX">@RTXUX</a> who originally came up with this idea!</p>
 							<p>Notice how Wireshark shows the “decrypted data” as a complete IP packet, and that the “Next Header” field in the outer ESP packet is 4 (<a href="https://en.wikipedia.org/wiki/IP_in_IP">IP-in-IP tunneling protocol</a>):</p>
@@ -573,7 +573,7 @@ ip xfrm policy add <span class="se">\</span>
 									<a href="/tag/networking" class="page__taxonomy-item" rel="tag">networking</a>
 								</span>
 							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-05-01">May 1, 2022</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-06-22">Jun 22, 2022</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
@@ -720,7 +720,7 @@ ip xfrm policy add <span class="se">\</span>
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-717</a>
+						Site version <a href="/status" class="version-text">G-718</a>
 					</p>
 				</div>
 			</footer>
