@@ -39,7 +39,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=686323e">
+		<link rel="stylesheet" href="/assets/css/main.css?v=01f010d">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -346,133 +346,133 @@
 							<li><a href="#" class="disabled"><span aria-hidden="true"><i class="fas fa-arrow-alt-left"></i> <span class="sr-only">Previous</span></span></a></li>
 							<li><a href="/collection/cn/" class="disabled current">1</a></li>
 							<li><a href="/collection/cn/2/">2</a></li>
-							<li><a href="/collection/cn/2/"><i class="fas fa-arrow-alt-right"></i> <span class="sr-only">Next</span></span></a></li>
+							<li><a href="/collection/cn/2/"><i class="fas fa-arrow-alt-right"></i> <span class="sr-only">Next</span></a></li>
+						</ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
 					</ul>
-				</nav>
-			</div>
+				</div>
+				<div class="page__footer-copyright">
+					<p>&copy; 2022 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
+					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
+					<p>
+						Site version <a href="/status" class="version-text">G-719</a>
+					</p>
+				</div>
+			</footer>
 		</div>
-	</div>
-	<div class="search-content">
-		<div class="search-content__inner-wrap">
-			<div class="search-searchbar"></div>
-			<div class="search-hits"></div>
-		</div>
-	</div>
-	<div id="footer" class="page__footer">
-		<footer>
-			<!-- start custom footer snippets -->
-			<!-- end custom footer snippets -->
-			<div class="page__footer-follow">
-				<ul class="social-icons">
-					<li><strong>Follow:</strong></li>
-					<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
-					<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
-					<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
-				</ul>
-			</div>
-			<div class="page__footer-copyright">
-				<p>&copy; 2022 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
-				<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
-				<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
-				<p>
-					Site version <a href="/status" class="version-text">G-718</a>
-				</p>
-			</div>
-		</footer>
-	</div>
-	<script src="/assets/js/main.min.js"></script>
-	<script>
-		// Including InstantSearch.js library and styling
-		const loadSearch = function() {
-		  const loadCSS = function(src) {
-		    var link = document.createElement('link');
-		    link.rel = 'stylesheet';
-		    link.type = 'text/css';
-		    link.href = src;
-		    link.media = 'all';
-		    document.head.appendChild(link);
-		  };
+		<script src="/assets/js/main.min.js"></script>
+		<script>
+			// Including InstantSearch.js library and styling
+			const loadSearch = function() {
+			  const loadCSS = function(src) {
+			    var link = document.createElement('link');
+			    link.rel = 'stylesheet';
+			    link.type = 'text/css';
+			    link.href = src;
+			    link.media = 'all';
+			    document.head.appendChild(link);
+			  };
 
-		  var script = document.createElement('script');
-		  script.setAttribute("type", "text/javascript");
-		  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
-		  script.addEventListener("load", function() {
-		    // Instantiating InstantSearch.js with Algolia credentials
-		    const search = instantsearch({
-		      appId: '14DZKASAEJ',
-		      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
-		      indexName: 'iBug_website',
-		      searchParameters: {
-		        restrictSearchableAttributes: ['title', 'content']
-		      }
-		    });
+			  var script = document.createElement('script');
+			  script.setAttribute("type", "text/javascript");
+			  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
+			  script.addEventListener("load", function() {
+			    // Instantiating InstantSearch.js with Algolia credentials
+			    const search = instantsearch({
+			      appId: '14DZKASAEJ',
+			      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			      indexName: 'iBug_website',
+			      searchParameters: {
+			        restrictSearchableAttributes: ['title', 'content']
+			      }
+			    });
 
-		    const hitTemplate = function(hit) {
-		      const url = hit.url;
-		      const title = hit._highlightResult.title.value;
-		      const content = hit._highlightResult.html.value;
+			    const hitTemplate = function(hit) {
+			      const url = hit.url;
+			      const title = hit._highlightResult.title.value;
+			      const content = hit._highlightResult.html.value;
 
-		      return `
-		        <div class="list__item">
-		          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-		            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
-		            <div class="archive__item-excerpt" itemprop="description">${content}</div>
-		          </article>
-		        </div>
-		      `;
-		    }
+			      return `
+			        <div class="list__item">
+			          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			            <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			          </article>
+			        </div>
+			      `;
+			    }
 
-		    // Adding searchbar and results widgets
-		    search.addWidget(
-		      instantsearch.widgets.searchBox({
-		        container: '.search-searchbar',
-		        poweredBy: true,
-		        placeholder: 'Enter your search term...'
-		      })
-		    );
-		    search.addWidget(
-		      instantsearch.widgets.hits({
-		        container: '.search-hits',
-		        templates: {
-		          item: hitTemplate,
-		          empty: 'No results',
-		        }
-		      })
-		    );
+			    // Adding searchbar and results widgets
+			    search.addWidget(
+			      instantsearch.widgets.searchBox({
+			        container: '.search-searchbar',
+			        poweredBy: true,
+			        placeholder: 'Enter your search term...'
+			      })
+			    );
+			    search.addWidget(
+			      instantsearch.widgets.hits({
+			        container: '.search-hits',
+			        templates: {
+			          item: hitTemplate,
+			          empty: 'No results',
+			        }
+			      })
+			    );
 
-		    if(!search.started) {
-		      search.start();
-		    }
-		  });
-		  document.body.appendChild(script);
+			    if(!search.started) {
+			      search.start();
+			    }
+			  });
+			  document.body.appendChild(script);
 
-		  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
-		  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
-		};
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
+			};
 
-		// Starting the search only when toggle is clicked
-		$(document).ready(function() {
-		  var scriptLoaded = false;
+			// Starting the search only when toggle is clicked
+			$(document).ready(function() {
+			  var scriptLoaded = false;
 
-		  $(".search__toggle").on("click", function() {
-		    if (!scriptLoaded) {
-		      loadSearch();
-		      scriptLoaded = true;
-		    }
-		  });
-		});
-	</script>
-	<script>
-		var _gaq = _gaq || [];
-		_gaq.push(['_setAccount', 'UA-115907213-1']);
+			  $(".search__toggle").on("click", function() {
+			    if (!scriptLoaded) {
+			      loadSearch();
+			      scriptLoaded = true;
+			    }
+			  });
+			});
+		</script>
+		<script>
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-115907213-1']);
 
-		_gaq.push(['_trackPageview']);
+			_gaq.push(['_trackPageview']);
 
-		(function() {
-		  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-		  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-		  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-		})();
-	</script>
-</body>
+			(function() {
+			  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+	</body>
 </html>
