@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=d469e6c">
+		<link rel="stylesheet" href="/assets/css/main.css?v=753d3af">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -596,21 +596,21 @@
 <span class="p">};</span>
 
 <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
-<span class="n">T</span><span class="o">*</span> <span class="nf">join_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span> <span class="n">Expression</span><span class="o">*</span> <span class="n">b</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">negative</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">T</span><span class="o">*</span> <span class="n">join_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span> <span class="n">Expression</span><span class="o">*</span> <span class="n">b</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">negative</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">static_assert</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_base_of</span><span class="o">&lt;</span><span class="n">ExpressionGroup</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">,</span>
                   <span class="s">"T must be derived from ExpressionGroup"</span><span class="p">);</span>
     <span class="c1">// implementation</span>
 <span class="p">}</span>
 
 <span class="kr">inline</span> <span class="n">AdditiveGroup</span><span class="o">*</span>
-<span class="nf">join_additive_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span>
+<span class="n">join_additive_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span>
                     <span class="n">Expression</span><span class="o">*</span> <span class="n">b</span><span class="p">,</span>
                     <span class="kt">bool</span> <span class="n">negative</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">return</span> <span class="n">join_group</span><span class="o">&lt;</span><span class="n">AdditiveGroup</span><span class="o">&gt;</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">negative</span><span class="p">);</span>
 <span class="p">}</span>
 
 <span class="kr">inline</span> <span class="n">MultiplicativeGroup</span><span class="o">*</span>
-<span class="nf">join_multiplicative_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span>
+<span class="n">join_multiplicative_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span>
                           <span class="n">Expression</span><span class="o">*</span> <span class="n">b</span><span class="p">,</span>
                           <span class="kt">bool</span> <span class="n">negative</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">return</span> <span class="n">join_group</span><span class="o">&lt;</span><span class="n">MultiplicativeGroup</span><span class="o">&gt;</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">negative</span><span class="p">);</span>
@@ -926,7 +926,7 @@
     <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="n">is_top_level</span><span class="p">))</span>
         <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
     <span class="k">return</span> <span class="o">!</span><span class="n">has_negative_pairs</span><span class="p">();</span>
-<span class="err">}</span>
+<span class="p">}</span>
 </code></pre>
 								</div>
 							</div>
@@ -1125,7 +1125,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-727</a>
+						Site version <a href="/status" class="version-text">G-728</a>
 					</p>
 				</div>
 			</footer>
