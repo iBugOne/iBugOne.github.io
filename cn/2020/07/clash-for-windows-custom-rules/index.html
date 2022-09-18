@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=753d3af">
+		<link rel="stylesheet" href="/assets/css/main.css?v=bb81f1c">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -182,14 +182,6 @@
 								</nav>
 							</aside>
 							<p>自从今年年初换了机场之后，我从 <a href="https://github.com/shadowsocks/shadowsocks-windows">Shadowsocks-Windows</a> 换到了 Clash for Windows。Clash 确实比纯 SS 好用多了，尤其是订阅功能，特别是订阅里还可以自带一系列分流规则。不过我用的那个订阅规则不够完善，想要自己添加一些。以前用 SS 的时候，我<a href="https://github.com/iBug/pac">自己写了 PAC 脚本</a>用于实现分流，当然可控性也更好，这次不方便用 PAC 了，就得研究研究 CFW 的功能了，好在有个 Mixin 可以用。</p>
-							<div class="notice--success">
-								<h3 class="no_toc" id="section"><i class="fa fas fa-paper-plane"></i> 需要翻‌墙？</h3>
-								<p><a href="https://blinkload.me/">Blinkload</a> 是一家综合机场，提供全线 IEPL 线路，两会、“高考”和国庆期间绝对稳定，能跑满 200 Mbps 带宽，在 YouTube 上观看 4K 视频畅通无阻，<strong>iBug 长期自用</strong>，有需求的同学可以考虑。</p>
-								<details>
-									<summary>Blinkload 机场测速</summary>
-									<img class="block" src="/image/speedtest/blinkload-1.png" />
-								</details>
-							</div>
 							<p>首先给出 <a href="https://docs.cfw.lbyczf.com/contents/mixin.html">CFW 关于 Mixin 的说明文档</a>。</p>
 							<p>这里传入的 <code class="language-plaintext highlighter-rouge">content</code> 就是你的 YAML 配置文件（也可能是来自订阅的）。要访问该 YAML 中的内容，可以使用 <code class="language-plaintext highlighter-rouge">content.key</code> 或者 <code class="language-plaintext highlighter-rouge">content["key"]</code> 的方式。</p>
 							<p>例如我使用 OneDrive Business，上传下载的网址以 <code class="language-plaintext highlighter-rouge">sharepoint.com</code> 结尾，为了让 Clash 直连 ODB，使用 <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Array/unshift">JavaScript 的 <code class="language-plaintext highlighter-rouge">unshift()</code></a> 在订阅的规则前面插入一条新规则。</p>
@@ -287,7 +279,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-728</a>
+						Site version <a href="/status" class="version-text">G-729</a>
 					</p>
 				</div>
 			</footer>
