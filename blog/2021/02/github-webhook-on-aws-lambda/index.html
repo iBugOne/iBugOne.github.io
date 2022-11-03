@@ -21,7 +21,7 @@
 		<meta property="og:description" content="Last month I set up my own Telegram bot for GitHub event notification. To receive GitHub events via webhook, a receiver is needed. True, it isn’t hard to write a Flask or Sinatra server and throw the whole thing onto a VPS, but thinking about the complexity and maintenance efforts, serverless platforms like AWS Lambda smells like a better fit. So I decided to take this opportunity to begin my exploration to “the serverless industry”.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2021-02-19T00:00:00+00:00">
-		<meta property="article:modified_time" content="2022-11-03T15:54:35+00:00">
+		<meta property="article:modified_time" content="2022-11-03T16:14:05+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2021/02/github-webhook-on-aws-lambda/">
 		<script type="application/ld+json">
 			{
@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=a04bfd5">
+		<link rel="stylesheet" href="/assets/css/main.css?v=4ff4301">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -171,7 +171,7 @@
 					<meta itemprop="headline" content="Setting up a GitHub webhook on AWS Lambda">
 					<meta itemprop="description" content="Last month I set up my own Telegram bot for GitHub event notification. To receive GitHub events via webhook, a receiver is needed. True, it isn’t hard to write a Flask or Sinatra server and throw the whole thing onto a VPS, but thinking about the complexity and maintenance efforts, serverless platforms like AWS Lambda smells like a better fit. So I decided to take this opportunity to begin my exploration to “the serverless industry”.">
 					<meta itemprop="datePublished" content="2021-02-19T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2022-11-03T15:54:35+00:00">
+					<meta itemprop="dateModified" content="2022-11-03T16:14:05+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -317,7 +317,7 @@
 							</details>
 							<p>A few notes about the content:</p>
 							<ul>
-								<li><code class="language-plaintext highlighter-rouge">isBase64Encoded</code> refers to the <code class="language-plaintext highlighter-rouge">body</code> item. In the above example, the actual POST content is a single newline.-</li>
+								<li><code class="language-plaintext highlighter-rouge">isBase64Encoded</code> refers to the <code class="language-plaintext highlighter-rouge">body</code> item. In the above example, the actual POST content is a single newline.</li>
 								<li><code class="language-plaintext highlighter-rouge">body</code> may be absent for requests that doesn’t send data, like a GET request.</li>
 								<li><code class="language-plaintext highlighter-rouge">headers</code> are all in lowercase which is in line with HTTP/2 specifications. <strong>It could be due to me placing my custom domain behind Cloudflare.</strong></li>
 							</ul>
@@ -566,7 +566,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-740</a>
+						Site version <a href="/status" class="version-text">G-741</a>
 					</p>
 				</div>
 			</footer>
