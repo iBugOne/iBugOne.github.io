@@ -21,7 +21,7 @@
 		<meta property="og:description" content="Last month I set up my own Telegram bot for GitHub event notification. To receive GitHub events via webhook, a receiver is needed. True, it isn’t hard to write a Flask or Sinatra server and throw the whole thing onto a VPS, but thinking about the complexity and maintenance efforts, serverless platforms like AWS Lambda smells like a better fit. So I decided to take this opportunity to begin my exploration to “the serverless industry”.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2021-02-19T00:00:00+00:00">
-		<meta property="article:modified_time" content="2022-04-30T20:00:10+00:00">
+		<meta property="article:modified_time" content="2022-11-03T14:44:21+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2021/02/github-webhook-on-aws-lambda/">
 		<script type="application/ld+json">
 			{
@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=28e312a">
+		<link rel="stylesheet" href="/assets/css/main.css?v=8e2ce32">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -112,7 +112,7 @@
 						<span class="page__meta-sep"></span>
 						<span class="page__meta-readtime">
 							<i class="far fa-clock" aria-hidden="true"></i>
-							6 minute read
+							7 minute read
 						</span>
 					</p>
 				</div>
@@ -171,7 +171,7 @@
 					<meta itemprop="headline" content="Setting up a GitHub webhook on AWS Lambda">
 					<meta itemprop="description" content="Last month I set up my own Telegram bot for GitHub event notification. To receive GitHub events via webhook, a receiver is needed. True, it isn’t hard to write a Flask or Sinatra server and throw the whole thing onto a VPS, but thinking about the complexity and maintenance efforts, serverless platforms like AWS Lambda smells like a better fit. So I decided to take this opportunity to begin my exploration to “the serverless industry”.">
 					<meta itemprop="datePublished" content="2021-02-19T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2022-04-30T20:00:10+00:00">
+					<meta itemprop="dateModified" content="2022-11-03T14:44:21+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -181,30 +181,36 @@
 									</header>
 									<ul class="toc__menu">
 										<li><a href="#aws-lambda">Setting up AWS Lambda</a></li>
-										<li><a href="#api-gateway">Setting up AWS API Gateway</a></li>
-										<li><a href="#lambda-code">Coding for Lambda</a>
+										<li><a href="#api-gateway">Setting up AWS API Gateway</a>
 											<ul>
-												<li><a href="#lambda-environment-variables">Adding environment variables</a></li>
+												<li><a href="#update-2022"> Update 2022</a></li>
 											</ul>
 										</li>
-										<li><a href="#customization">Customizing the webhook</a></li>
-										<li><a href="#custom-domain">Bonus: Adding a custom domain</a></li>
-										<li><a href="#others">Other notes</a></li>
 									</ul>
-								</nav>
-							</aside>
-							<p>Last month I set up my own Telegram bot for GitHub event notification. To receive GitHub events via webhook, a receiver is needed. True, it isn’t hard to write a <a href="https://palletsprojects.com/p/flask/">Flask</a> or <a href="http://sinatrarb.com/">Sinatra</a> server and throw the whole thing onto a VPS, but thinking about the complexity and maintenance efforts, serverless platforms like AWS Lambda smells like a better fit. So I decided to take this opportunity to begin my exploration to “the serverless industry”.</p>
-							<p><small><a href="/p/41-cn">There’s a Chinese version of this article / 本文还有中文版</a></small></p>
-							<h2 id="aws-lambda">Setting up AWS Lambda</h2>
-							<p>I have had an AWS account for years, so I’ll skip the sign-up process in this article and head straight to <a href="https://console.aws.amazon.com/">AWS Management Console</a>.</p>
-							<p>Locate the <a href="https://console.aws.amazon.com/lambda/home"><strong>Lambda</strong></a> entry in the list of AWS services. It’s in the first group so should be easy to spot.</p>
-							<p><img src="/image/aws/console-home-1.png" alt="AWS Management Console Home" /></p>
-							<p>And then we create a new Lambda function, selecting Python 3.8 as the runtime environment</p>
-							<p><img src="/image/aws/lambda-create-function-1.png" alt="Create new Lambda function" class="border" /></p>
-							<p>After clicking “Create”, you’ll be brought to the edit page of that function, with the following code filled in as a starting point.</p>
-							<div class="language-python highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code><span class="kn">import</span> <span class="nn">json</span>
+								</li>
+								<li><a href="#lambda-code">Coding for Lambda</a>
+									<ul>
+										<li><a href="#lambda-environment-variables">Adding environment variables</a></li>
+									</ul>
+								</li>
+								<li><a href="#customization">Customizing the webhook</a></li>
+								<li><a href="#custom-domain">Bonus: Adding a custom domain</a></li>
+								<li><a href="#others">Other notes</a></li>
+							</ul>
+						</nav>
+					</aside>
+					<p>Last month I set up my own Telegram bot for GitHub event notification. To receive GitHub events via webhook, a receiver is needed. True, it isn’t hard to write a <a href="https://palletsprojects.com/p/flask/">Flask</a> or <a href="http://sinatrarb.com/">Sinatra</a> server and throw the whole thing onto a VPS, but thinking about the complexity and maintenance efforts, serverless platforms like AWS Lambda smells like a better fit. So I decided to take this opportunity to begin my exploration to “the serverless industry”.</p>
+					<p><small><a href="/p/41-cn">There’s a Chinese version of this article / 本文还有中文版</a></small></p>
+					<h2 id="aws-lambda">Setting up AWS Lambda</h2>
+					<p>I have had an AWS account for years, so I’ll skip the sign-up process in this article and head straight to <a href="https://console.aws.amazon.com/">AWS Management Console</a>.</p>
+					<p>Locate the <a href="https://console.aws.amazon.com/lambda/home"><strong>Lambda</strong></a> entry in the list of AWS services. It’s in the first group so should be easy to spot.</p>
+					<p><img src="/image/aws/console-home-1.png" alt="AWS Management Console Home" /></p>
+					<p>And then we create a new Lambda function, selecting Python 3.8 as the runtime environment</p>
+					<p><img src="/image/aws/lambda-create-function-1.png" alt="Create new Lambda function" class="border" /></p>
+					<p>After clicking “Create”, you’ll be brought to the edit page of that function, with the following code filled in as a starting point.</p>
+					<div class="language-python highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code><span class="kn">import</span> <span class="nn">json</span>
 
 <span class="k">def</span> <span class="nf">lambda_handler</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
     <span class="c1"># TODO implement
@@ -213,37 +219,57 @@
         <span class="s">'body'</span><span class="p">:</span> <span class="n">json</span><span class="p">.</span><span class="n">dumps</span><span class="p">(</span><span class="s">'Hello from Lambda!'</span><span class="p">)</span>
     <span class="p">}</span>
 </code></pre>
-								</div>
-							</div>
-							<p>We don’t know what this code can do for now, so let’s put it aside and turn to the API Gateway part, since eventually we’ll use it as the webhook receiver endpoint.</p>
-							<h2 id="api-gateway">Setting up AWS API Gateway</h2>
-							<p>Open the <a href="https://console.aws.amazon.com/apigateway/main">AWS API Gateway console</a> and click <strong>Create API</strong> on the top right.</p>
-							<p><img src="/image/aws/api-gateway-new-1.png" alt="Create API" class="border" /></p>
-							<p>On the next screen, we add our Lambda function created earlier as an integration here.</p>
-							<p><img src="/image/aws/api-gateway-new-2.png" alt="Configure integrations" class="border" /></p>
-							<p>Then it turns to Routes. Routes describe how HTTP endpoints are mapped to integrations (receivers). An example (default) route is pre-filled in the dialog.</p>
-							<p><img src="/image/aws/api-gateway-routes-1.png" alt="Configure routes (1)" class="border" /></p>
-							<p>Since we have our Lambda function as the only integration here, we want to process actual routes by ourselves. Delete that path <code class="language-plaintext highlighter-rouge">/myGitHubWebhook</code> and enter <code class="language-plaintext highlighter-rouge">$default</code> into that box. <code class="language-plaintext highlighter-rouge">$default</code> is a special value that once entered, the “method” dropdown greys out.</p>
-							<p><img src="/image/aws/api-gateway-routes-2.png" alt="Configure routes (2)" class="border" /></p>
-							<p>We can now visit our API to see if it works.</p>
-							<div class="language-console highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code><span class="gp">ubuntu@iBug-Server:~ $</span><span class="w"> </span>curl https://nad73szpz7.execute-api.us-east-1.amazonaws.com/
+						</div>
+					</div>
+					<p>We don’t know what this code can do for now, so let’s put it aside and turn to the API Gateway part, since eventually we’ll use it as the webhook receiver endpoint.</p>
+					<h2 id="api-gateway">Setting up AWS API Gateway</h2>
+					<p>Open the <a href="https://console.aws.amazon.com/apigateway/main">AWS API Gateway console</a> and click <strong>Create API</strong> on the top right.</p>
+					<p><img src="/image/aws/api-gateway-new-1.png" alt="Create API" class="border" /></p>
+					<p>On the next screen, we add our Lambda function created earlier as an integration here.</p>
+					<p><img src="/image/aws/api-gateway-new-2.png" alt="Configure integrations" class="border" /></p>
+					<p>Then it turns to Routes. Routes describe how HTTP endpoints are mapped to integrations (receivers). An example (default) route is pre-filled in the dialog.</p>
+					<p><img src="/image/aws/api-gateway-routes-1.png" alt="Configure routes (1)" class="border" /></p>
+					<p>Since we have our Lambda function as the only integration here, we want to process actual routes by ourselves. Delete that path <code class="language-plaintext highlighter-rouge">/myGitHubWebhook</code> and enter <code class="language-plaintext highlighter-rouge">$default</code> into that box. <code class="language-plaintext highlighter-rouge">$default</code> is a special value that once entered, the “method” dropdown greys out.</p>
+					<p><img src="/image/aws/api-gateway-routes-2.png" alt="Configure routes (2)" class="border" /></p>
+					<p>We can now visit our API to see if it works.</p>
+					<div class="language-console highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code><span class="gp">ubuntu@iBug-Server:~ $</span><span class="w"> </span>curl https://nad73szpz7.execute-api.us-east-1.amazonaws.com/
 <span class="go">"Hello from Lambda!"
 </span><span class="gp">ubuntu@iBug-Server:~ $</span><span class="w">
 </span></code></pre>
-								</div>
-							</div>
-							<h2 id="lambda-code">Coding for Lambda</h2>
-							<p>With the infrastructure set up, we should now write our code for the GitHub webhook receiver.</p>
-							<p>We need to first know how the client request is passed to our Lambda function. This is not hard to figure out with some simple code that just spits out what it receives. To save some time, I’ve done this so you don’t have to. Here’s what you’d receive via the <code class="language-plaintext highlighter-rouge">event</code> object passed to the Lambda function entry. Keep in mind that it’s a dictionary in Python.</p>
-							<details>
-								<summary>
-									<p>Example content of <code class="language-plaintext highlighter-rouge">event</code> object</p>
-								</summary>
-								<div class="language-json highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="p">{</span><span class="w">
+						</div>
+					</div>
+					<div class="notice--primary">
+						<h4 id="update-2022"><i class="fas fa-fw fa-lightbulb"></i> Update 2022</h4>
+						<p>As of April 2022, Lambda meets <a href="https://aws.amazon.com/blogs/aws/announcing-aws-lambda-function-urls-built-in-https-endpoints-for-single-function-microservices/">Function URLs</a> that acts as a direct endpoint to the function. You can use it to replace the API Gateway part.</p>
+						<p>Benefits of using Function URLs include:</p>
+						<ul>
+							<li>Zero setup, instant access possible</li>
+							<li>Zero extra cost (invocation is free, compared to API Gateway’s $1 per million requests)</li>
+						</ul>
+						<p>However, there are more advanced usages only possible with API Gateway, such as:</p>
+						<ul>
+							<li>Custom domain names (though you can put CloudFront in front of the Function URL to achieve the same effect)
+								<ul>
+									<li>In particular, multiple APIs under the same domain</li>
+								</ul>
+							</li>
+							<li>API keys and access control</li>
+							<li>Throttling</li>
+						</ul>
+						<p>Special thanks to user <strong>xxgj</strong> for pointing this out in the comments.</p>
+					</div>
+					<h2 id="lambda-code">Coding for Lambda</h2>
+					<p>With the infrastructure set up, we should now write our code for the GitHub webhook receiver.</p>
+					<p>We need to first know how the client request is passed to our Lambda function. This is not hard to figure out with some simple code that just spits out what it receives. To save some time, I’ve done this so you don’t have to. Here’s what you’d receive via the <code class="language-plaintext highlighter-rouge">event</code> object passed to the Lambda function entry. Keep in mind that it’s a dictionary in Python.</p>
+					<details>
+						<summary>
+							<p>Example content of <code class="language-plaintext highlighter-rouge">event</code> object</p>
+						</summary>
+						<div class="language-json highlighter-rouge">
+							<div class="highlight">
+								<pre class="highlight"><code><span class="p">{</span><span class="w">
   </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2.0"</span><span class="p">,</span><span class="w">
   </span><span class="nl">"routeKey"</span><span class="p">:</span><span class="w"> </span><span class="s2">"$default"</span><span class="p">,</span><span class="w">
   </span><span class="nl">"rawPath"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/api-test"</span><span class="p">,</span><span class="w">
@@ -292,19 +318,19 @@
   </span><span class="nl">"isBase64Encoded"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
 </span><span class="p">}</span><span class="w">
 </span></code></pre>
-									</div>
+							</div>
   </div>
-							</details>
-							<p>A few notes about the content:</p>
-							<ul>
-								<li><code class="language-plaintext highlighter-rouge">isBase64Encoded</code> refers to the <code class="language-plaintext highlighter-rouge">body</code> item. In the above example, the actual POST content is a single newline.-</li>
-								<li><code class="language-plaintext highlighter-rouge">body</code> may be absent for requests that doesn’t send data, like a GET request.</li>
-								<li><code class="language-plaintext highlighter-rouge">headers</code> are all in lowercase which is in line with HTTP/2 specifications. <strong>It could be due to me placing my custom domain behind Cloudflare.</strong></li>
-							</ul>
-							<p>With that in mind, we can expand the boilerplate Lambda function:</p>
-							<div class="language-python highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code><span class="k">def</span> <span class="nf">lambda_handler</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+					</details>
+					<p>A few notes about the content:</p>
+					<ul>
+						<li><code class="language-plaintext highlighter-rouge">isBase64Encoded</code> refers to the <code class="language-plaintext highlighter-rouge">body</code> item. In the above example, the actual POST content is a single newline.-</li>
+						<li><code class="language-plaintext highlighter-rouge">body</code> may be absent for requests that doesn’t send data, like a GET request.</li>
+						<li><code class="language-plaintext highlighter-rouge">headers</code> are all in lowercase which is in line with HTTP/2 specifications. <strong>It could be due to me placing my custom domain behind Cloudflare.</strong></li>
+					</ul>
+					<p>With that in mind, we can expand the boilerplate Lambda function:</p>
+					<div class="language-python highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code><span class="k">def</span> <span class="nf">lambda_handler</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
     <span class="n">route</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s">"rawPath"</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">route</span> <span class="o">==</span> <span class="s">"/api-test"</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">{</span>
@@ -316,21 +342,21 @@
         <span class="c1"># TODO Write webhook receiver code
 </span>        <span class="k">pass</span>
 </code></pre>
-								</div>
-							</div>
-							<p>The actual webhook processing code shouldn’t be too difficult to write. For example, here’s an example of verifying GitHub via the HMAC signature:</p>
-							<div class="language-python highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code><span class="kn">import</span> <span class="nn">base64</span>
+						</div>
+					</div>
+					<p>The actual webhook processing code shouldn’t be too difficult to write. For example, here’s an example of verifying GitHub via the HMAC signature:</p>
+					<div class="language-python highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code><span class="kn">import</span> <span class="nn">base64</span>
 <span class="kn">import</span> <span class="nn">hashlib</span>
 <span class="kn">import</span> <span class="nn">hmac</span>
 <span class="kn">import</span> <span class="nn">os</span>
 </code></pre>
-								</div>
-							</div>
-							<div class="language-python highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code><span class="n">secret</span> <span class="o">=</span> <span class="n">os</span><span class="p">.</span><span class="n">environ</span><span class="p">[</span><span class="s">'MY_ENV_VAR'</span><span class="p">]</span>
+						</div>
+					</div>
+					<div class="language-python highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code><span class="n">secret</span> <span class="o">=</span> <span class="n">os</span><span class="p">.</span><span class="n">environ</span><span class="p">[</span><span class="s">'MY_ENV_VAR'</span><span class="p">]</span>
 <span class="n">signature</span> <span class="o">=</span> <span class="n">event</span><span class="p">[</span><span class="s">'headers'</span><span class="p">][</span><span class="s">'x-hub-signature'</span><span class="p">].</span><span class="n">split</span><span class="p">(</span><span class="s">"="</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
 <span class="n">body</span> <span class="o">=</span> <span class="n">event</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="s">'body'</span><span class="p">,</span> <span class="s">""</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">event</span><span class="p">[</span><span class="s">'isBase64Encoded'</span><span class="p">]:</span>
@@ -350,313 +376,313 @@
   <span class="s">'body'</span><span class="p">:</span> <span class="s">"OK"</span><span class="p">,</span>
 <span class="p">}</span>
 </code></pre>
-								</div>
-							</div>
-							<h3 id="lambda-environment-variables">Adding environment variables</h3>
-							<p>As shown in the example above, I put the webhook secret in an environment variable. We need to add it to our Lambda function before it could be used.</p>
-							<p>Doing so is straightforward. Head to Lambda console and select the function, then scroll down to <em>Environment variables</em> section, where you can manage variables for this Lambda function.</p>
-							<p><img src="/image/aws/lambda-environment-variables-1.png" alt="Lambda - Environment variables" class="border" /></p>
-							<h2 id="customization">Customizing the webhook</h2>
-							<p>Now we’ve got all the foundation established, we can do whatever we want with it. Here are some ideas that could try with:</p>
-							<ul>
-								<li>Connect to Slack and send a notification for every push or CI run result (<a href="https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads#check_run">the event is <code class="language-plaintext highlighter-rouge">check_run</code></a>)</li>
-								<li>Connect to a Telegram bot and send a message to you for your subscribed events</li>
-								<li>Start a Netlify or Vercel build or deployment</li>
-								<li>Start GitHub Actions on another repository</li>
-								<li>and many more possibilities…</li>
-							</ul>
-							<h2 id="custom-domain">Bonus: Adding a custom domain</h2>
-							<p>Before calling this an article, there’s one more thing I’d like to cover. A custom domain is handy so that you’re in full control of your API, and fortunately AWS API Gateway <em>does</em> support this.</p>
-							<p>You may have already noticed the <em>Custom Domain Names</em> on the left pane of API Gateway console, so it’s time to pay that a visit.</p>
-							<p>The box on the left with a title <em>Domain names</em> is where we need to start from. Click the big <strong>Create</strong> button and enter your custom domain dedicated for AWS API Gateway, like <code class="language-plaintext highlighter-rouge">api.example.com</code>, and click the bridge red button on the bottom right to save the settings. You don’t have to change any other things there as the defaults just work.</p>
-							<p>Now you should see this screen:</p>
-							<p><img src="/image/aws/api-gateway-custom-domain-1.png" alt="API Gateway - Custom domain" class="border" /></p>
-							<p>Head to your DNS provider and add a CNAME record for <code class="language-plaintext highlighter-rouge">api.example.com</code> pointing to the <code class="language-plaintext highlighter-rouge">execute-api</code> domain shown there. If you’re using Cloudflare, you can safely turn on the CDN setting (the orange cloud icon) to enjoy Cloudflare’s faster global network.</p>
-							<p>Next we’ll add “API mapping” for our custom domain. Select the <em>API mapping</em> tab in the center of the above image and click <strong>Configure API mappings</strong> on the right. Add a new mapping, select your API and the <code class="language-plaintext highlighter-rouge">$default</code> stage, and give it a subpath if you want, like shown below:</p>
-							<p><img src="/image/aws/api-gateway-custom-domain-2.png" alt="API Gateway - Custom domain - API mapping" class="border" /></p>
-							<div class="notice--primary">
-								<h4 class="no_toc" id="dont-worry-about-your-subpath"><i class="fas fa-fw fa-sun"></i> Don’t worry about your subpath</h4>
-								<p>API Gateway will automatically strip the path before passing it to the Lambda function. This means if you set the path to <code class="language-plaintext highlighter-rouge">/hello</code> and visit <code class="language-plaintext highlighter-rouge">https://api.example.com/hello/world</code>, your Lambda function will still see the <code class="language-plaintext highlighter-rouge">rawPath</code> key being <code class="language-plaintext highlighter-rouge">/world</code>. You don’t have to change your code to adapt this part. Very convenient, isn’t it?</p>
-							</div>
-							<p>Now our GitHub webhook receiver will start with <code class="language-plaintext highlighter-rouge">https://api.example.com/github</code>, and our “API test” endpoint will be <code class="language-plaintext highlighter-rouge">https://api.example.com/github/api-test</code>.</p>
-							<p>You may need to configure AWS Certificate Manager to obtain a valid SSL certificate for use on AWS, so that your API is accessible through HTTPS, depending on your domain settings. With Cloudflare this is unnecessary and you can safely ignore it.</p>
-							<h2 id="others">Other notes</h2>
-							<p>AWS Lambda provides 400,000 GB-seconds of execution for free each month, and this Free Tier does not expire. However, AWS API Gateway doesn’t have a perpetual Free Tier offer, and their standard pricing is US$1 per 1M API calls. The cost on this part is generally low unless you’re making a public service (that becomes popular).</p>
-							<p>Besides, AWS provides 1 GB of free outbound traffic each month, and bills you at US$0.09 per GB thereafter. This means you’ll need to be careful when generating a lot of traffic, like frequently uploading large images.</p>
-							<p>All pricing examples are based on US East 1 (N. Virginia) region. Other regions are generally more expensive than this, so watch your bills if you make something big.</p>
-						</section>
-						<footer class="page__meta">
-							<p class="page__taxonomy">
-								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
-								<span itemprop="keywords">
-									<a href="/tag/aws" class="page__taxonomy-item" rel="tag">aws</a><span class="sep">, </span>
-									<a href="/tag/github" class="page__taxonomy-item" rel="tag">github</a>
-								</span>
-							</p>
-							<p class="page__taxonomy">
-								<strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
-								<span itemprop="keywords">
-									<a href="/category/tech" class="page__taxonomy-item" rel="tag">tech</a>
-								</span>
-							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-04-30">Apr 30, 2022</time></p>
-						</footer>
-						<section class="page__share">
-							<h4 class="page__share-title">Share on</h4>
-							<a href="https://twitter.com/intent/tweet?text=Setting+up+a+GitHub+webhook+on+AWS+Lambda%20https%3A%2F%2Fibug.io%2Fblog%2F2021%2F02%2Fgithub-webhook-on-aws-lambda%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
-							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F02%2Fgithub-webhook-on-aws-lambda%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
-							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F02%2Fgithub-webhook-on-aws-lambda%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
-						</section>
-						<nav class="pagination">
-							<a href="/blog/2021/02/traceroute-from-vmware/" class="pagination--pager" title="Fix traceroute not showing intermediate results in a virtual machine on Windows
-">Previous</a>
-							<a href="/blog/2021/04/tunight-talk/" class="pagination--pager" title="Tunight talk
-">Next</a>
-						</nav>
-					</div>
-					<div class="page__comments">
-						<h4 class="page__comments-title">Leave a comment</h4>
-						<section id="disqus_thread"></section>
-					</div>
-				</article>
-				<div class="page__related">
-					<h2 class="page__related-title">You may also enjoy</h2>
-					<div class="grid__wrapper">
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-teaser">
-									<img src="/image/teaser/linux-container.jpg" alt="">
-								</div>
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are w...</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											24 minute read
-										</span>
-									</p>
-								</div>
-							</article>
-						</div>
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											16 minute read
-										</span>
-									</p>
-								</div>
-							</article>
-						</div>
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-teaser">
-									<img src="/image/teaser/ldap.jpg" alt="">
-								</div>
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											14 minute read
-										</span>
-									</p>
-								</div>
-							</article>
-						</div>
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-teaser">
-									<img src="/image/teaser/vpn-imagine.jpg" alt="">
-								</div>
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											16 minute read
-										</span>
-									</p>
-								</div>
-							</article>
 						</div>
 					</div>
-				</div>
-			</div>
-		</div>
-		<div class="search-content">
-			<div class="search-content__inner-wrap">
-				<div class="search-searchbar"></div>
-				<div class="search-hits"></div>
-			</div>
-		</div>
-		<div id="footer" class="page__footer">
-			<footer>
-				<!-- start custom footer snippets -->
-				<!-- end custom footer snippets -->
-				<div class="page__footer-follow">
-					<ul class="social-icons">
-						<li><strong>Follow:</strong></li>
-						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
-						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
-						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					<h3 id="lambda-environment-variables">Adding environment variables</h3>
+					<p>As shown in the example above, I put the webhook secret in an environment variable. We need to add it to our Lambda function before it could be used.</p>
+					<p>Doing so is straightforward. Head to Lambda console and select the function, then scroll down to <em>Environment variables</em> section, where you can manage variables for this Lambda function.</p>
+					<p><img src="/image/aws/lambda-environment-variables-1.png" alt="Lambda - Environment variables" class="border" /></p>
+					<h2 id="customization">Customizing the webhook</h2>
+					<p>Now we’ve got all the foundation established, we can do whatever we want with it. Here are some ideas that could try with:</p>
+					<ul>
+						<li>Connect to Slack and send a notification for every push or CI run result (<a href="https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads#check_run">the event is <code class="language-plaintext highlighter-rouge">check_run</code></a>)</li>
+						<li>Connect to a Telegram bot and send a message to you for your subscribed events</li>
+						<li>Start a Netlify or Vercel build or deployment</li>
+						<li>Start GitHub Actions on another repository</li>
+						<li>and many more possibilities…</li>
 					</ul>
-				</div>
-				<div class="page__footer-copyright">
-					<p>&copy; 2022 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
-					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
-					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
-					<p>
-						Site version <a href="/status" class="version-text">G-736</a>
+					<h2 id="custom-domain">Bonus: Adding a custom domain</h2>
+					<p>Before calling this an article, there’s one more thing I’d like to cover. A custom domain is handy so that you’re in full control of your API, and fortunately AWS API Gateway <em>does</em> support this.</p>
+					<p>You may have already noticed the <em>Custom Domain Names</em> on the left pane of API Gateway console, so it’s time to pay that a visit.</p>
+					<p>The box on the left with a title <em>Domain names</em> is where we need to start from. Click the big <strong>Create</strong> button and enter your custom domain dedicated for AWS API Gateway, like <code class="language-plaintext highlighter-rouge">api.example.com</code>, and click the bridge red button on the bottom right to save the settings. You don’t have to change any other things there as the defaults just work.</p>
+					<p>Now you should see this screen:</p>
+					<p><img src="/image/aws/api-gateway-custom-domain-1.png" alt="API Gateway - Custom domain" class="border" /></p>
+					<p>Head to your DNS provider and add a CNAME record for <code class="language-plaintext highlighter-rouge">api.example.com</code> pointing to the <code class="language-plaintext highlighter-rouge">execute-api</code> domain shown there. If you’re using Cloudflare, you can safely turn on the CDN setting (the orange cloud icon) to enjoy Cloudflare’s faster global network.</p>
+					<p>Next we’ll add “API mapping” for our custom domain. Select the <em>API mapping</em> tab in the center of the above image and click <strong>Configure API mappings</strong> on the right. Add a new mapping, select your API and the <code class="language-plaintext highlighter-rouge">$default</code> stage, and give it a subpath if you want, like shown below:</p>
+					<p><img src="/image/aws/api-gateway-custom-domain-2.png" alt="API Gateway - Custom domain - API mapping" class="border" /></p>
+					<div class="notice--primary">
+						<h4 class="no_toc" id="dont-worry-about-your-subpath"><i class="fas fa-fw fa-sun"></i> Don’t worry about your subpath</h4>
+						<p>API Gateway will automatically strip the path before passing it to the Lambda function. This means if you set the path to <code class="language-plaintext highlighter-rouge">/hello</code> and visit <code class="language-plaintext highlighter-rouge">https://api.example.com/hello/world</code>, your Lambda function will still see the <code class="language-plaintext highlighter-rouge">rawPath</code> key being <code class="language-plaintext highlighter-rouge">/world</code>. You don’t have to change your code to adapt this part. Very convenient, isn’t it?</p>
+					</div>
+					<p>Now our GitHub webhook receiver will start with <code class="language-plaintext highlighter-rouge">https://api.example.com/github</code>, and our “API test” endpoint will be <code class="language-plaintext highlighter-rouge">https://api.example.com/github/api-test</code>.</p>
+					<p>You may need to configure AWS Certificate Manager to obtain a valid SSL certificate for use on AWS, so that your API is accessible through HTTPS, depending on your domain settings. With Cloudflare this is unnecessary and you can safely ignore it.</p>
+					<h2 id="others">Other notes</h2>
+					<p>AWS Lambda provides 400,000 GB-seconds of execution for free each month, and this Free Tier does not expire. However, AWS API Gateway doesn’t have a perpetual Free Tier offer, and their standard pricing is US$1 per 1M API calls. The cost on this part is generally low unless you’re making a public service (that becomes popular).</p>
+					<p>Besides, AWS provides 1 GB of free outbound traffic each month, and bills you at US$0.09 per GB thereafter. This means you’ll need to be careful when generating a lot of traffic, like frequently uploading large images.</p>
+					<p>All pricing examples are based on US East 1 (N. Virginia) region. Other regions are generally more expensive than this, so watch your bills if you make something big.</p>
+				</section>
+				<footer class="page__meta">
+					<p class="page__taxonomy">
+						<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+						<span itemprop="keywords">
+							<a href="/tag/aws" class="page__taxonomy-item" rel="tag">aws</a><span class="sep">, </span>
+							<a href="/tag/github" class="page__taxonomy-item" rel="tag">github</a>
+						</span>
 					</p>
+					<p class="page__taxonomy">
+						<strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+						<span itemprop="keywords">
+							<a href="/category/tech" class="page__taxonomy-item" rel="tag">tech</a>
+						</span>
+					</p>
+					<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-11-03">Nov 3, 2022</time></p>
+				</footer>
+				<section class="page__share">
+					<h4 class="page__share-title">Share on</h4>
+					<a href="https://twitter.com/intent/tweet?text=Setting+up+a+GitHub+webhook+on+AWS+Lambda%20https%3A%2F%2Fibug.io%2Fblog%2F2021%2F02%2Fgithub-webhook-on-aws-lambda%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+					<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F02%2Fgithub-webhook-on-aws-lambda%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+					<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F02%2Fgithub-webhook-on-aws-lambda%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+				</section>
+				<nav class="pagination">
+					<a href="/blog/2021/02/traceroute-from-vmware/" class="pagination--pager" title="Fix traceroute not showing intermediate results in a virtual machine on Windows
+">Previous</a>
+					<a href="/blog/2021/04/tunight-talk/" class="pagination--pager" title="Tunight talk
+">Next</a>
+				</nav>
+			</div>
+			<div class="page__comments">
+				<h4 class="page__comments-title">Leave a comment</h4>
+				<section id="disqus_thread"></section>
+			</div>
+		</article>
+		<div class="page__related">
+			<h2 class="page__related-title">You may also enjoy</h2>
+			<div class="grid__wrapper">
+				<div class="grid__item">
+					<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+						<div class="archive__item-teaser">
+							<img src="/image/teaser/linux-container.jpg" alt="">
+						</div>
+						<div class="archive__item-text">
+							<h2 class="archive__item-title no_toc" itemprop="headline">
+								<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
+								</a>
+							</h2>
+							<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are w...</p>
+							<p class="page__meta">
+								<span class="page__meta-date">
+									<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+									<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
+								</span>
+								<span class="page__meta-sep"></span>
+								<span class="page__meta-readtime">
+									<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+									24 minute read
+								</span>
+							</p>
+						</div>
+					</article>
 				</div>
-			</footer>
+				<div class="grid__item">
+					<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+						<div class="archive__item-text">
+							<h2 class="archive__item-title no_toc" itemprop="headline">
+								<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+								</a>
+							</h2>
+							<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
+							<p class="page__meta">
+								<span class="page__meta-date">
+									<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+									<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
+								</span>
+								<span class="page__meta-sep"></span>
+								<span class="page__meta-readtime">
+									<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+									16 minute read
+								</span>
+							</p>
+						</div>
+					</article>
+				</div>
+				<div class="grid__item">
+					<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+						<div class="archive__item-teaser">
+							<img src="/image/teaser/ldap.jpg" alt="">
+						</div>
+						<div class="archive__item-text">
+							<h2 class="archive__item-title no_toc" itemprop="headline">
+								<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
+								</a>
+							</h2>
+							<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
+							<p class="page__meta">
+								<span class="page__meta-date">
+									<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+									<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
+								</span>
+								<span class="page__meta-sep"></span>
+								<span class="page__meta-readtime">
+									<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+									14 minute read
+								</span>
+							</p>
+						</div>
+					</article>
+				</div>
+				<div class="grid__item">
+					<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+						<div class="archive__item-teaser">
+							<img src="/image/teaser/vpn-imagine.jpg" alt="">
+						</div>
+						<div class="archive__item-text">
+							<h2 class="archive__item-title no_toc" itemprop="headline">
+								<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
+								</a>
+							</h2>
+							<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
+							<p class="page__meta">
+								<span class="page__meta-date">
+									<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+									<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
+								</span>
+								<span class="page__meta-sep"></span>
+								<span class="page__meta-readtime">
+									<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+									16 minute read
+								</span>
+							</p>
+						</div>
+					</article>
+				</div>
+			</div>
 		</div>
-		<script src="/assets/js/main.min.js"></script>
-		<script>
-			// Including InstantSearch.js library and styling
-			const loadSearch = function() {
-			  const loadCSS = function(src) {
-			    var link = document.createElement('link');
-			    link.rel = 'stylesheet';
-			    link.type = 'text/css';
-			    link.href = src;
-			    link.media = 'all';
-			    document.head.appendChild(link);
-			  };
+	</div>
+</div>
+<div class="search-content">
+	<div class="search-content__inner-wrap">
+		<div class="search-searchbar"></div>
+		<div class="search-hits"></div>
+	</div>
+</div>
+<div id="footer" class="page__footer">
+	<footer>
+		<!-- start custom footer snippets -->
+		<!-- end custom footer snippets -->
+		<div class="page__footer-follow">
+			<ul class="social-icons">
+				<li><strong>Follow:</strong></li>
+				<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+				<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+				<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+			</ul>
+		</div>
+		<div class="page__footer-copyright">
+			<p>&copy; 2022 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+			<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
+			<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
+			<p>
+				Site version <a href="/status" class="version-text">G-737</a>
+			</p>
+		</div>
+	</footer>
+</div>
+<script src="/assets/js/main.min.js"></script>
+<script>
+	// Including InstantSearch.js library and styling
+	const loadSearch = function() {
+	  const loadCSS = function(src) {
+	    var link = document.createElement('link');
+	    link.rel = 'stylesheet';
+	    link.type = 'text/css';
+	    link.href = src;
+	    link.media = 'all';
+	    document.head.appendChild(link);
+	  };
 
-			  var script = document.createElement('script');
-			  script.setAttribute("type", "text/javascript");
-			  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
-			  script.addEventListener("load", function() {
-			    // Instantiating InstantSearch.js with Algolia credentials
-			    const search = instantsearch({
-			      appId: '14DZKASAEJ',
-			      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
-			      indexName: 'iBug_website',
-			      searchParameters: {
-			        restrictSearchableAttributes: ['title', 'content']
-			      }
-			    });
+	  var script = document.createElement('script');
+	  script.setAttribute("type", "text/javascript");
+	  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
+	  script.addEventListener("load", function() {
+	    // Instantiating InstantSearch.js with Algolia credentials
+	    const search = instantsearch({
+	      appId: '14DZKASAEJ',
+	      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+	      indexName: 'iBug_website',
+	      searchParameters: {
+	        restrictSearchableAttributes: ['title', 'content']
+	      }
+	    });
 
-			    const hitTemplate = function(hit) {
-			      const url = hit.url;
-			      const title = hit._highlightResult.title.value;
-			      const content = hit._highlightResult.html.value;
+	    const hitTemplate = function(hit) {
+	      const url = hit.url;
+	      const title = hit._highlightResult.title.value;
+	      const content = hit._highlightResult.html.value;
 
-			      return `
-			        <div class="list__item">
-			          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-			            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
-			            <div class="archive__item-excerpt" itemprop="description">${content}</div>
-			          </article>
-			        </div>
-			      `;
-			    }
+	      return `
+	        <div class="list__item">
+	          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+	            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+	            <div class="archive__item-excerpt" itemprop="description">${content}</div>
+	          </article>
+	        </div>
+	      `;
+	    }
 
-			    // Adding searchbar and results widgets
-			    search.addWidget(
-			      instantsearch.widgets.searchBox({
-			        container: '.search-searchbar',
-			        poweredBy: true,
-			        placeholder: 'Enter your search term...'
-			      })
-			    );
-			    search.addWidget(
-			      instantsearch.widgets.hits({
-			        container: '.search-hits',
-			        templates: {
-			          item: hitTemplate,
-			          empty: 'No results',
-			        }
-			      })
-			    );
+	    // Adding searchbar and results widgets
+	    search.addWidget(
+	      instantsearch.widgets.searchBox({
+	        container: '.search-searchbar',
+	        poweredBy: true,
+	        placeholder: 'Enter your search term...'
+	      })
+	    );
+	    search.addWidget(
+	      instantsearch.widgets.hits({
+	        container: '.search-hits',
+	        templates: {
+	          item: hitTemplate,
+	          empty: 'No results',
+	        }
+	      })
+	    );
 
-			    if(!search.started) {
-			      search.start();
-			    }
-			  });
-			  document.body.appendChild(script);
+	    if(!search.started) {
+	      search.start();
+	    }
+	  });
+	  document.body.appendChild(script);
 
-			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
-			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
-			};
+	  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
+	  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
+	};
 
-			// Starting the search only when toggle is clicked
-			$(document).ready(function() {
-			  var scriptLoaded = false;
+	// Starting the search only when toggle is clicked
+	$(document).ready(function() {
+	  var scriptLoaded = false;
 
-			  $(".search__toggle").on("click", function() {
-			    if (!scriptLoaded) {
-			      loadSearch();
-			      scriptLoaded = true;
-			    }
-			  });
-			});
-		</script>
-		<script>
-			var _gaq = _gaq || [];
-			_gaq.push(['_setAccount', 'UA-115907213-1']);
+	  $(".search__toggle").on("click", function() {
+	    if (!scriptLoaded) {
+	      loadSearch();
+	      scriptLoaded = true;
+	    }
+	  });
+	});
+</script>
+<script>
+	var _gaq = _gaq || [];
+	_gaq.push(['_setAccount', 'UA-115907213-1']);
 
-			_gaq.push(['_trackPageview']);
+	_gaq.push(['_trackPageview']);
 
-			(function() {
-			  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-			  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-			  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-			})();
-		</script>
-		<script>
-			var disqus_config = function () {
-			  this.page.url = "https://ibug.io/blog/2021/02/github-webhook-on-aws-lambda/";  /* Replace PAGE_URL with your page's canonical URL variable */
-			  this.page.identifier = "/blog/2021/02/github-webhook-on-aws-lambda"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
-			};
-			(function() { /* DON'T EDIT BELOW THIS LINE */
-			  var d = document, s = d.createElement('script');
-			  s.src = 'https://ibugone.disqus.com/embed.js';
-			  s.setAttribute('data-timestamp', +new Date());
-			  (d.head || d.body).appendChild(s);
-			})();
-		</script>
-		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-	</body>
+	(function() {
+	  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+	  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+	  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	})();
+</script>
+<script>
+	var disqus_config = function () {
+	  this.page.url = "https://ibug.io/blog/2021/02/github-webhook-on-aws-lambda/";  /* Replace PAGE_URL with your page's canonical URL variable */
+	  this.page.identifier = "/blog/2021/02/github-webhook-on-aws-lambda"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+	};
+	(function() { /* DON'T EDIT BELOW THIS LINE */
+	  var d = document, s = d.createElement('script');
+	  s.src = 'https://ibugone.disqus.com/embed.js';
+	  s.setAttribute('data-timestamp', +new Date());
+	  (d.head || d.body).appendChild(s);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</body>
 </html>
