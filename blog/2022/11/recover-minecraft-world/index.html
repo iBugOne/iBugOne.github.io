@@ -1,0 +1,674 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>Recovering a Minecraft world from a crash, the technician way - iBug</title>
+		<meta name="description" content="While a friend was building an automatic brewing pipeline, our Create: Astral server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.">
+		<meta name="author" content="iBug">
+		<meta property="article:author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="Recovering a Minecraft world from a crash, the technician way">
+		<meta property="og:url" content="https://ibug.io/blog/2022/11/recover-minecraft-world/">
+		<meta property="og:description" content="While a friend was building an automatic brewing pipeline, our Create: Astral server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2022-11-27T00:00:00+00:00">
+		<meta property="article:modified_time" content="2022-11-27T19:45:37+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2022/11/recover-minecraft-world/">
+		<script type="application/ld+json">
+			{
+			  "@context": "https://schema.org",
+
+			    "@type": "Person",
+			    "name": "iBug",
+			    "url": "https://ibug.io/"
+
+			}
+		</script>
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script>
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=1c227ce">
+		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<meta name="theme-color" content="#EDEDED">
+		<script>
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+	</head>
+	<body class="layout--single">
+		<nav class="skip-links">
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt="iBug"></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a href="/about/">About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/blog/">Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/projects/">Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/friends/">Friends</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/cn/">中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<i class="fas fa-search"></i>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay"
+  style=" background-image: url('/image/header/mountain-1.jpg');"
+>
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						Recovering a Minecraft world from a crash, the technician way
+					</h1>
+					<p class="page__meta">
+						<span class="page__meta-date">
+							<i class="far fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2022-11-27T00:00:00+00:00">Nov 27, 2022</time>
+						</span>
+						<span class="page__meta-sep"></span>
+						<span class="page__meta-readtime">
+							<i class="far fa-clock" aria-hidden="true"></i>
+							7 minute read
+						</span>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person">
+						<div class="author__avatar">
+							<img src="/image/avatar.png" alt="iBug" itemprop="image">
+						</div>
+						<div class="author__content">
+							<h3 class="author__name" itemprop="name">iBug</h3>
+							<div class="author__bio" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer"><i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox" />
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/bookmarks/"><i class="fas fa-fw fa-bookmark"></i> Bookmarks</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="Recovering a Minecraft world from a crash, the technician way">
+					<meta itemprop="description" content="While a friend was building an automatic brewing pipeline, our Create: Astral server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.">
+					<meta itemprop="datePublished" content="2022-11-27T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2022-11-27T19:45:37+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#gathering-information">Gathering information</a></li>
+										<li><a href="#reading-the-world-file">Reading the world file</a></li>
+										<li><a href="#replacing-the-block">Replacing the block</a></li>
+										<li><a href="#additional-verification">Additional verification</a></li>
+										<li><a href="#epilogue">Epilogue</a></li>
+									</ul>
+								</nav>
+							</aside>
+							<p>While a friend was building an automatic brewing pipeline, our <a href="https://www.curseforge.com/minecraft/modpacks/create-astral">Create: Astral</a> server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.</p>
+							<h2 id="gathering-information">Gathering information</h2>
+							<p>If at all possible, we would like to salvage this broken world, so we start with an inspection of the crash log. It appears to be an infinite recursion with Create.</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:219)
+at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
+at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
+at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
+at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
+at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
+at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
+at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
+</code></pre>
+								</div>
+							</div>
+							<p>None of us has any knowledge in Java, but fortunately the crash log gives a hint on which block is going wrong, as shown below:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>-- Block entity being ticked --
+Details:
+        Name: create:funnel // com.simibubi.create.content.logistics.block.funnel.FunnelTileEntity
+        Block: Block{create:brass_funnel}[extracting=true,facing=north,powered=false]
+        Block location: World: (-15,65,172), Section: (at 1,1,12 in -1,4,10; chunk contains blocks -16,-64,160 to -1,319,175), Region: (-1,0; contains chunks -32,0 to -1,31, blocks -512,-64,0 to -1,319,511)
+        Block: Block{create:brass_funnel}[extracting=true,facing=north,powered=false]
+        Block location: World: (-15,65,172), Section: (at 1,1,12 in -1,4,10; chunk contains blocks -16,-64,160 to -1,319,175), Region: (-1,0; contains chunks -32,0 to -1,31, blocks -512,-64,0 to -1,319,511)
+Stacktrace:
+        at net.minecraft.class_2818$class_5563.method_31703(class_2818.java:670)
+        at net.minecraft.class_2818$class_5564.method_31703(class_2818.java:713)
+        ...
+</code></pre>
+								</div>
+							</div>
+							<p>One idea now surfaces: If we can remove or replace with something else the offending block, we can probably fix the save with minimal progress loss.</p>
+							<p>The following information can be summarized from the above portion of the crash log:</p>
+							<ul>
+								<li>The offending block is a Brass Funnel from Create</li>
+								<li>It’s located at (-15,65,172), in chunk (-1,10), section 4 (a vertical 16×16×16 section)</li>
+								<li>The block coordinates are (1,1,12) <strong>within the section</strong></li>
+								<li>The region is (-1,0), meaning that the file that contains is <code class="language-plaintext highlighter-rouge">r.-1.0.mca</code>.</li>
+							</ul>
+							<p>Recalling that Minecraft worlds are also saved in NBT format, I try opening the region file with <a href="https://github.com/C4K3/nbted">nbted</a>, a tool that I previously used to tamper with player data. However, it complains:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>Error: Unable to parse r.-1.0.mca, are you sure it's an NBT file?
+        caused by: Unknown compression format where first byte is 0
+</code></pre>
+								</div>
+							</div>
+							<p>This indicates that the region file is not a single, complete NBT file, so I have to look for another tool to handle this.</p>
+							<h2 id="reading-the-world-file">Reading the world file</h2>
+							<p>Google-ing for <code class="language-plaintext highlighter-rouge">minecraft region site:github.com</code> leads me to Fenixin/Minecraft-Region-Fixer, of which an included <a href="https://github.com/Fenixin/Minecraft-Region-Fixer/tree/master/nbt">nbt library</a> seems promising. I grab this repository and take the <code class="language-plaintext highlighter-rouge">nbt</code> directory out, throwing away everything else. The <code class="language-plaintext highlighter-rouge">region.py</code> file provides a <code class="language-plaintext highlighter-rouge">RegionFile</code> class that can be used to access region files, so I start playing with it:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="kn">import</span> <span class="nn">nbt</span>
+<span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">r</span> <span class="o">=</span> <span class="n">nbt</span><span class="p">.</span><span class="n">region</span><span class="p">.</span><span class="n">RegionFile</span><span class="p">(</span><span class="s">'r.-1.0.mca'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">get_chunk</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+<span class="c"># Traceback (most recent call last):
+</span><span class="go">KeyError: (-1, 10)
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">get_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="go">&lt;NBTFile with TAG_Compound('') at 0x7f8a8d014eb0&gt;
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">c</span> <span class="o">=</span> <span class="n">_</span>
+</code></pre>
+								</div>
+							</div>
+							<p>So this Python library arranges chunks by offset <em>within the region file</em>. That’s fine.</p>
+							<p>Now that I have access to an NBT tag, it’s time to study its structure. The <a href="https://minecraft.fandom.com/wiki/Chunk_format">Chunk format</a> page from Minecraft Wiki is the ultimate reference here.</p>
+							<p>I know that <code class="language-plaintext highlighter-rouge">c</code> holds the “root tag” of the chunk I’m looking for. This is easily verified:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">c</span><span class="p">[</span><span class="s">'xPos'</span><span class="p">].</span><span class="n">value</span><span class="p">,</span> <span class="n">c</span><span class="p">[</span><span class="s">'zPos'</span><span class="p">].</span><span class="n">value</span>
+<span class="go">(-1, 10)
+</span></code></pre>
+								</div>
+							</div>
+							<p>I find the vertical section containing the offending block:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">c</span><span class="p">[</span><span class="s">'sections'</span><span class="p">]</span> <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="s">'Y'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">4</span><span class="p">]</span>
+<span class="go">[&lt;TAG_Compound('') at 0x7f8a8d44c1c0&gt;]
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">s</span> <span class="o">=</span> <span class="n">_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</code></pre>
+								</div>
+							</div>
+							<p>The <a href="https://minecraft.fandom.com/wiki/Anvil_file_format">Anvil file format</a> page shows that block data is ordered in YZX order, so I try to find the block data from the <code class="language-plaintext highlighter-rouge">data</code> key:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+<span class="go">72624976668147841
+</span></code></pre>
+								</div>
+							</div>
+							<p>… which is, unfortunately not something I can decipher.</p>
+							<p>I look closely to the description of the <code class="language-plaintext highlighter-rouge">data</code> tag:</p>
+							<blockquote>
+								<p><strong>A packed array</strong> of 4096 indices pointing to the palette, stored in an array of 64-bit integers. […] All indices are the same length: the minimum amount of bytes required to represent the largest index in the palette. […] Since 1.16, the indices are not packed across multiple elements of the array, meaning that if there is no more space in a given 64-bit integer for the next index, it starts instead at the first (lowest) bit of the next 64-bit element.</p>
+							</blockquote>
+							<p>So not only was that number <em>not</em> for a single block, but also was I looking for a wrong index. I need to inspect the block palette first:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">])</span>
+<span class="go">95
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">])</span> <span class="k">if</span> <span class="n">b</span><span class="p">[</span><span class="s">'Name'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="s">"create:brass_funnel"</span><span class="p">]</span>
+<span class="go">[(55, &lt;TAG_Compound('') at 0x7f8a8d49d120&gt;), (77, &lt;TAG_Compound('') at 0x7f8a8d49ff40&gt;)]
+</span></code></pre>
+								</div>
+							</div>
+							<p>There are two indices allotted for the funnel block, but at this point it’s cannot be determined which one is correct. I look inside the packed <code class="language-plaintext highlighter-rouge">data</code> array, recalculating the index from the block coordinates using information above:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span>
+<span class="go">3963735054717000501
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">i</span> <span class="o">=</span> <span class="n">_</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Because there are 95 blocks in the palette, 7 bits is enough to hold an index, and a 64-bit integer holds 9 indices. The caculation can be verified by the following:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">])</span>
+<span class="go">456
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="mi">456</span> <span class="o">*</span> <span class="mi">9</span>
+<span class="go">4104
+</span><span class="c"># just slightly over 4096
+</span></code></pre>
+								</div>
+							</div>
+							<p>Now I unpack that large integer into 9 indices, and try to translate them into blocks:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="p">[(</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="n">x</span><span class="p">))</span><span class="o">&amp;</span> <span class="mh">0x7F</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span>
+<span class="go">[53, 54, 46, 1, 1, 1, 1, 1, 55]
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">][((</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="n">x</span><span class="p">))</span><span class="o">&amp;</span> <span class="mh">0x7F</span><span class="p">)][</span><span class="s">'Name'</span><span class="p">].</span><span class="n">value</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span>
+<span class="go">['create:spout',
+ 'create:mechanical_pump',
+ 'tconstruct:seared_drain',
+ 'minecraft:air',
+ 'minecraft:air',
+ 'minecraft:air',
+ 'minecraft:air',
+ 'minecraft:air',
+ 'create:brass_funnel']
+</span></code></pre>
+								</div>
+							</div>
+							<p>It starts to make sense now. I can recall a <a href="https://tinkers-construct.fandom.com/wiki/Smeltery">Smeltery</a> structure that we built together near this region.</p>
+							<h2 id="replacing-the-block">Replacing the block</h2>
+							<p>The offending Brass Funnel is the last index within this packed 64-bit integer. I can replace it with air (index = 1) using bit manipulation:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">ii</span> <span class="o">=</span> <span class="n">i</span> <span class="o">^</span> <span class="p">((</span><span class="mi">55</span> <span class="o">^</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="mi">8</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">ii</span>
+<span class="go">72624976668891957
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Now I try to save the file, only to find that <code class="language-plaintext highlighter-rouge">nbt.region.RegionFile</code> offers no <code class="language-plaintext highlighter-rouge">.save()</code> or <code class="language-plaintext highlighter-rouge">.write()</code> methods:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">f</span><span class="p">.</span><span class="o">&lt;</span><span class="n">TAB</span><span class="o">&gt;&lt;</span><span class="n">TAB</span><span class="o">&gt;</span>
+<span class="go">f.STATUS_CHUNK_IN_HEADER           f.get_chunk_coords()
+f.STATUS_CHUNK_MISMATCHED_LENGTHS  f.get_chunks()
+f.STATUS_CHUNK_NOT_CREATED         f.get_metadata()
+f.STATUS_CHUNK_OK                  f.get_nbt(
+f.STATUS_CHUNK_OUT_OF_FILE         f.get_size()
+f.STATUS_CHUNK_OVERLAPPING         f.get_timestamp(
+f.STATUS_CHUNK_ZERO_LENGTH         f.header
+f.chunk_count()                    f.iter_chunks()
+f.chunk_headers                    f.iter_chunks_class()
+f.chunkclass                       f.loc
+f.close()                          f.metadata
+f.closed                           f.size
+f.file                             f.unlink_chunk(
+f.filename                         f.write_blockdata(
+f.get_blockdata(                   f.write_chunk(
+f.get_chunk(
+</span></code></pre>
+								</div>
+							</div>
+							<p class="notice--primary"><i class="fas fa-fw fa-lightbulb"></i> In my original attempt, I took a diversion from the right track, forgetting that each chunk comes in a single-root NBT tag, and that the region file <em>packs</em> multiple chunks into a single file. I only realized that the file format was different from what I expected at first after multiple failed attempts to modify the file using a hex editor.</p>
+							<p>Reading <a href="https://minecraft.fandom.com/wiki/Region_file_format">Region file format</a>, I learn that each chunk is compressed (using Zlib) separately and stored together in the region file, and that <code class="language-plaintext highlighter-rouge">f.write_chunk</code> is the method I am looking for.</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">f</span><span class="p">.</span><span class="n">write_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span><span class="w">
+</span></code></pre>
+								</div>
+							</div>
+							<p>The file size is reduced by some 60 KB. Considering that compression algorithm provides no guarantee on the size of the compressed data, this is not an indicator whether the file’s going well or not. The only way to verify is to load the world and check the result in game.</p>
+							<p>With uncertainty, I make a backup of the broken world, and replace <code class="language-plaintext highlighter-rouge">r.-1.0.mca</code> with my modified copy. The server now starts normally, and I can see the brass funnel disappeared.</p>
+							<p><img src="/image/minecraft/createastral-1.jpg" alt="Block removed" /></p>
+							<h2 id="additional-verification">Additional verification</h2>
+							<p>To convince myself that I have successfully changed the correct block, I decide that I need to replace it with something visible, not just air. I look inside the palette of the section, and found a few blocks available for use.</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">][</span><span class="mi">25</span><span class="p">][</span><span class="s">'Name'</span><span class="p">]</span>
+<span class="go">minecraft:grass_block
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">ii</span> <span class="o">=</span> <span class="n">i</span> <span class="o">^</span> <span class="p">((</span><span class="mi">55</span> <span class="o">^</span> <span class="mi">25</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="mi">8</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
+<span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">f</span><span class="p">.</span><span class="n">write_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+</code></pre>
+								</div>
+							</div>
+							<p>I then copy the file back to the server, and start it again. As expected, the block at that coordinate is now a grass block.</p>
+							<p><img src="/image/minecraft/createastral-2.jpg" alt="Block replaced with Grass Block" /></p>
+							<h2 id="epilogue">Epilogue</h2>
+							<p>Contrary to player data (<code class="language-plaintext highlighter-rouge">playerdata/*.dat</code>), the region file is a lot more complicated. Thanks to the large fan base of Minecraft, libraries for handling the file format are readily available. I am inclined to believe that a few steps taken and decisions made here are critical to the success of salvaging our save.</p>
+							<ul>
+								<li>First and foremost, checking the logs: We know which block is going wrong, and <em>have faith in ourselves that we can fix it</em>.</li>
+								<li>Looking in the correct direction: Instead of using a complete “world edit” tool, we decide to find some library on GitHub and improvise from there</li>
+								<li>Reading the documentation carefully and in detail.</li>
+								<li>Doing math correctly (LOL…)</li>
+							</ul>
+							<p>Finally, I want to credit my friend <a href="https://sirius1242.github.io/">sirius</a> for his in-depth knowledge of Minecraft, without whose help I would not have been able to take on this wonderful adventure.</p>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/games" class="page__taxonomy-item" rel="tag">games</a><span class="sep">, </span>
+									<a href="/tag/minecraft" class="page__taxonomy-item" rel="tag">minecraft</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-11-27">Nov 27, 2022</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=Recovering+a+Minecraft+world+from+a+crash%2C+the+technician+way%20https%3A%2F%2Fibug.io%2Fblog%2F2022%2F11%2Frecover-minecraft-world%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2022%2F11%2Frecover-minecraft-world%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2022%2F11%2Frecover-minecraft-world%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/blog/2022/11/paper-reading-cidr2022-crotty/" class="pagination--pager" title="Paper Reading: Are You Sure You Want to Use MMAP in Your Database Management System?
+">Previous</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+				<div class="page__related">
+					<h2 class="page__related-title">You may also enjoy</h2>
+					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/linux-container.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are w...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											24 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											16 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/ldap.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											14 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/24.png" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2022/05/programming-24-game/" rel="permalink">Taking the 24 puzzle game to the next level
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now a...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2022-05-25T00:00:00+00:00">May 25, 2022</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											19 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					<p>&copy; 2022 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
+					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
+					<p>
+						Site version <a href="/status" class="version-text">G-745</a>
+					</p>
+				</div>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<script>
+			// Including InstantSearch.js library and styling
+			const loadSearch = function() {
+			  const loadCSS = function(src) {
+			    var link = document.createElement('link');
+			    link.rel = 'stylesheet';
+			    link.type = 'text/css';
+			    link.href = src;
+			    link.media = 'all';
+			    document.head.appendChild(link);
+			  };
+
+			  var script = document.createElement('script');
+			  script.setAttribute("type", "text/javascript");
+			  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
+			  script.addEventListener("load", function() {
+			    // Instantiating InstantSearch.js with Algolia credentials
+			    const search = instantsearch({
+			      appId: '14DZKASAEJ',
+			      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			      indexName: 'iBug_website',
+			      searchParameters: {
+			        restrictSearchableAttributes: ['title', 'content']
+			      }
+			    });
+
+			    const hitTemplate = function(hit) {
+			      const url = hit.url;
+			      const title = hit._highlightResult.title.value;
+			      const content = hit._highlightResult.html.value;
+
+			      return `
+			        <div class="list__item">
+			          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			            <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			          </article>
+			        </div>
+			      `;
+			    }
+
+			    // Adding searchbar and results widgets
+			    search.addWidget(
+			      instantsearch.widgets.searchBox({
+			        container: '.search-searchbar',
+			        poweredBy: true,
+			        placeholder: 'Enter your search term...'
+			      })
+			    );
+			    search.addWidget(
+			      instantsearch.widgets.hits({
+			        container: '.search-hits',
+			        templates: {
+			          item: hitTemplate,
+			          empty: 'No results',
+			        }
+			      })
+			    );
+
+			    if(!search.started) {
+			      search.start();
+			    }
+			  });
+			  document.body.appendChild(script);
+
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
+			};
+
+			// Starting the search only when toggle is clicked
+			$(document).ready(function() {
+			  var scriptLoaded = false;
+
+			  $(".search__toggle").on("click", function() {
+			    if (!scriptLoaded) {
+			      loadSearch();
+			      scriptLoaded = true;
+			    }
+			  });
+			});
+		</script>
+		<script>
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-115907213-1']);
+
+			_gaq.push(['_trackPageview']);
+
+			(function() {
+			  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/blog/2022/11/recover-minecraft-world/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2022/11/recover-minecraft-world"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	</body>
+</html>

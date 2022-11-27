@@ -1,85 +1,416 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2022-11-04T11:58:11+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">LVM metadata exceeds maximum metadata size, now what next?</title><link href="https://ibug.io/blog/2022/06/lvm-metadata-full/" rel="alternate" type="text/html" title="LVM metadata exceeds maximum metadata size, now what next?" /><published>2022-06-19T00:00:00+00:00</published><updated>2022-06-19T22:06:07+00:00</updated><id>https://ibug.io/blog/2022/06/lvm-metadata-full</id><content type="html" xml:base="https://ibug.io/blog/2022/06/lvm-metadata-full/"><![CDATA[<p>An LVM volume group (VG) on our Proxmox VE cluster has failed to create new logical volumes, reporting that its metadata was full. At first this appears to be easy, “fine I’ll just add more space for metadata”, but it quickly revealed to be an versity to struggle through.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2022-11-27T11:47:55+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Recovering a Minecraft world from a crash, the technician way</title><link href="https://ibug.io/blog/2022/11/recover-minecraft-world/" rel="alternate" type="text/html" title="Recovering a Minecraft world from a crash, the technician way" /><published>2022-11-27T00:00:00+00:00</published><updated>2022-11-27T19:45:37+00:00</updated><id>https://ibug.io/blog/2022/11/recover-minecraft-world</id><content type="html" xml:base="https://ibug.io/blog/2022/11/recover-minecraft-world/"><![CDATA[<p>While a friend was building an automatic brewing pipeline, our <a href="https://www.curseforge.com/minecraft/modpacks/create-astral">Create: Astral</a> server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.</p>
+			<h2 id="gathering-information">Gathering information</h2>
+			<p>If at all possible, we would like to salvage this broken world, so we start with an inspection of the crash log. It appears to be an infinite recursion with Create.</p>
+			<div class="language-text highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:219)
+at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
+at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
+at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
+at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
+at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
+at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
+at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
+</code></pre>
+				</div>
+			</div>
+			<p>None of us has any knowledge in Java, but fortunately the crash log gives a hint on which block is going wrong, as shown below:</p>
+			<div class="language-text highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>-- Block entity being ticked --
+Details:
+        Name: create:funnel // com.simibubi.create.content.logistics.block.funnel.FunnelTileEntity
+        Block: Block{create:brass_funnel}[extracting=true,facing=north,powered=false]
+        Block location: World: (-15,65,172), Section: (at 1,1,12 in -1,4,10; chunk contains blocks -16,-64,160 to -1,319,175), Region: (-1,0; contains chunks -32,0 to -1,31, blocks -512,-64,0 to -1,319,511)
+        Block: Block{create:brass_funnel}[extracting=true,facing=north,powered=false]
+        Block location: World: (-15,65,172), Section: (at 1,1,12 in -1,4,10; chunk contains blocks -16,-64,160 to -1,319,175), Region: (-1,0; contains chunks -32,0 to -1,31, blocks -512,-64,0 to -1,319,511)
+Stacktrace:
+        at net.minecraft.class_2818$class_5563.method_31703(class_2818.java:670)
+        at net.minecraft.class_2818$class_5564.method_31703(class_2818.java:713)
+        ...
+</code></pre>
+				</div>
+			</div>
+			<p>One idea now surfaces: If we can remove or replace with something else the offending block, we can probably fix the save with minimal progress loss.</p>
+			<p>The following information can be summarized from the above portion of the crash log:</p>
+			<ul>
+				<li>The offending block is a Brass Funnel from Create</li>
+				<li>It’s located at (-15,65,172), in chunk (-1,10), section 4 (a vertical 16×16×16 section)</li>
+				<li>The block coordinates are (1,1,12) <strong>within the section</strong></li>
+				<li>The region is (-1,0), meaning that the file that contains is <code class="language-plaintext highlighter-rouge">r.-1.0.mca</code>.</li>
+			</ul>
+			<p>Recalling that Minecraft worlds are also saved in NBT format, I try opening the region file with <a href="https://github.com/C4K3/nbted">nbted</a>, a tool that I previously used to tamper with player data. However, it complains:</p>
+			<div class="language-text highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>Error: Unable to parse r.-1.0.mca, are you sure it's an NBT file?
+        caused by: Unknown compression format where first byte is 0
+</code></pre>
+				</div>
+			</div>
+			<p>This indicates that the region file is not a single, complete NBT file, so I have to look for another tool to handle this.</p>
+			<h2 id="reading-the-world-file">Reading the world file</h2>
+			<p>Google-ing for <code class="language-plaintext highlighter-rouge">minecraft region site:github.com</code> leads me to Fenixin/Minecraft-Region-Fixer, of which an included <a href="https://github.com/Fenixin/Minecraft-Region-Fixer/tree/master/nbt">nbt library</a> seems promising. I grab this repository and take the <code class="language-plaintext highlighter-rouge">nbt</code> directory out, throwing away everything else. The <code class="language-plaintext highlighter-rouge">region.py</code> file provides a <code class="language-plaintext highlighter-rouge">RegionFile</code> class that can be used to access region files, so I start playing with it:</p>
 			<div class="language-console highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>lvcreate <span class="nt">-L</span> 4M <span class="nt">-n</span> test-1721 <span class="nb">test</span>
+					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="kn">import</span> <span class="nn">nbt</span>
+<span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">r</span> <span class="o">=</span> <span class="n">nbt</span><span class="p">.</span><span class="n">region</span><span class="p">.</span><span class="n">RegionFile</span><span class="p">(</span><span class="s">'r.-1.0.mca'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">get_chunk</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+<span class="c"># Traceback (most recent call last):
+</span><span class="go">KeyError: (-1, 10)
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">get_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="go">&lt;NBTFile with TAG_Compound('') at 0x7f8a8d014eb0&gt;
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">c</span> <span class="o">=</span> <span class="n">_</span>
+</code></pre>
+				</div>
+			</div>
+			<p>So this Python library arranges chunks by offset <em>within the region file</em>. That’s fine.</p>
+			<p>Now that I have access to an NBT tag, it’s time to study its structure. The <a href="https://minecraft.fandom.com/wiki/Chunk_format">Chunk format</a> page from Minecraft Wiki is the ultimate reference here.</p>
+			<p>I know that <code class="language-plaintext highlighter-rouge">c</code> holds the “root tag” of the chunk I’m looking for. This is easily verified:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">c</span><span class="p">[</span><span class="s">'xPos'</span><span class="p">].</span><span class="n">value</span><span class="p">,</span> <span class="n">c</span><span class="p">[</span><span class="s">'zPos'</span><span class="p">].</span><span class="n">value</span>
+<span class="go">(-1, 10)
+</span></code></pre>
+				</div>
+			</div>
+			<p>I find the vertical section containing the offending block:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">c</span><span class="p">[</span><span class="s">'sections'</span><span class="p">]</span> <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="s">'Y'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">4</span><span class="p">]</span>
+<span class="go">[&lt;TAG_Compound('') at 0x7f8a8d44c1c0&gt;]
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">s</span> <span class="o">=</span> <span class="n">_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</code></pre>
+				</div>
+			</div>
+			<p>The <a href="https://minecraft.fandom.com/wiki/Anvil_file_format">Anvil file format</a> page shows that block data is ordered in YZX order, so I try to find the block data from the <code class="language-plaintext highlighter-rouge">data</code> key:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+<span class="go">72624976668147841
+</span></code></pre>
+				</div>
+			</div>
+			<p>… which is, unfortunately not something I can decipher.</p>
+			<p>I look closely to the description of the <code class="language-plaintext highlighter-rouge">data</code> tag:</p>
+			<blockquote>
+				<p><strong>A packed array</strong> of 4096 indices pointing to the palette, stored in an array of 64-bit integers. […] All indices are the same length: the minimum amount of bytes required to represent the largest index in the palette. […] Since 1.16, the indices are not packed across multiple elements of the array, meaning that if there is no more space in a given 64-bit integer for the next index, it starts instead at the first (lowest) bit of the next 64-bit element.</p>
+			</blockquote>
+			<p>So not only was that number <em>not</em> for a single block, but also was I looking for a wrong index. I need to inspect the block palette first:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">])</span>
+<span class="go">95
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">])</span> <span class="k">if</span> <span class="n">b</span><span class="p">[</span><span class="s">'Name'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="s">"create:brass_funnel"</span><span class="p">]</span>
+<span class="go">[(55, &lt;TAG_Compound('') at 0x7f8a8d49d120&gt;), (77, &lt;TAG_Compound('') at 0x7f8a8d49ff40&gt;)]
+</span></code></pre>
+				</div>
+			</div>
+			<p>There are two indices allotted for the funnel block, but at this point it’s cannot be determined which one is correct. I look inside the packed <code class="language-plaintext highlighter-rouge">data</code> array, recalculating the index from the block coordinates using information above:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span>
+<span class="go">3963735054717000501
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">i</span> <span class="o">=</span> <span class="n">_</span>
+</code></pre>
+				</div>
+			</div>
+			<p>Because there are 95 blocks in the palette, 7 bits is enough to hold an index, and a 64-bit integer holds 9 indices. The caculation can be verified by the following:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">])</span>
+<span class="go">456
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="mi">456</span> <span class="o">*</span> <span class="mi">9</span>
+<span class="go">4104
+</span><span class="c"># just slightly over 4096
+</span></code></pre>
+				</div>
+			</div>
+			<p>Now I unpack that large integer into 9 indices, and try to translate them into blocks:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="p">[(</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="n">x</span><span class="p">))</span><span class="o">&amp;</span> <span class="mh">0x7F</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span>
+<span class="go">[53, 54, 46, 1, 1, 1, 1, 1, 55]
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">][((</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="n">x</span><span class="p">))</span><span class="o">&amp;</span> <span class="mh">0x7F</span><span class="p">)][</span><span class="s">'Name'</span><span class="p">].</span><span class="n">value</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span>
+<span class="go">['create:spout',
+ 'create:mechanical_pump',
+ 'tconstruct:seared_drain',
+ 'minecraft:air',
+ 'minecraft:air',
+ 'minecraft:air',
+ 'minecraft:air',
+ 'minecraft:air',
+ 'create:brass_funnel']
+</span></code></pre>
+				</div>
+			</div>
+			<p>It starts to make sense now. I can recall a <a href="https://tinkers-construct.fandom.com/wiki/Smeltery">Smeltery</a> structure that we built together near this region.</p>
+			<h2 id="replacing-the-block">Replacing the block</h2>
+			<p>The offending Brass Funnel is the last index within this packed 64-bit integer. I can replace it with air (index = 1) using bit manipulation:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">ii</span> <span class="o">=</span> <span class="n">i</span> <span class="o">^</span> <span class="p">((</span><span class="mi">55</span> <span class="o">^</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="mi">8</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">ii</span>
+<span class="go">72624976668891957
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
+</code></pre>
+				</div>
+			</div>
+			<p>Now I try to save the file, only to find that <code class="language-plaintext highlighter-rouge">nbt.region.RegionFile</code> offers no <code class="language-plaintext highlighter-rouge">.save()</code> or <code class="language-plaintext highlighter-rouge">.write()</code> methods:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">f</span><span class="p">.</span><span class="o">&lt;</span><span class="n">TAB</span><span class="o">&gt;&lt;</span><span class="n">TAB</span><span class="o">&gt;</span>
+<span class="go">f.STATUS_CHUNK_IN_HEADER           f.get_chunk_coords()
+f.STATUS_CHUNK_MISMATCHED_LENGTHS  f.get_chunks()
+f.STATUS_CHUNK_NOT_CREATED         f.get_metadata()
+f.STATUS_CHUNK_OK                  f.get_nbt(
+f.STATUS_CHUNK_OUT_OF_FILE         f.get_size()
+f.STATUS_CHUNK_OVERLAPPING         f.get_timestamp(
+f.STATUS_CHUNK_ZERO_LENGTH         f.header
+f.chunk_count()                    f.iter_chunks()
+f.chunk_headers                    f.iter_chunks_class()
+f.chunkclass                       f.loc
+f.close()                          f.metadata
+f.closed                           f.size
+f.file                             f.unlink_chunk(
+f.filename                         f.write_blockdata(
+f.get_blockdata(                   f.write_chunk(
+f.get_chunk(
+</span></code></pre>
+				</div>
+			</div>
+			<p class="notice--primary"><i class="fas fa-fw fa-lightbulb"></i> In my original attempt, I took a diversion from the right track, forgetting that each chunk comes in a single-root NBT tag, and that the region file <em>packs</em> multiple chunks into a single file. I only realized that the file format was different from what I expected at first after multiple failed attempts to modify the file using a hex editor.</p>
+			<p>Reading <a href="https://minecraft.fandom.com/wiki/Region_file_format">Region file format</a>, I learn that each chunk is compressed (using Zlib) separately and stored together in the region file, and that <code class="language-plaintext highlighter-rouge">f.write_chunk</code> is the method I am looking for.</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">f</span><span class="p">.</span><span class="n">write_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt;</span><span class="w">
+</span></code></pre>
+				</div>
+			</div>
+			<p>The file size is reduced by some 60 KB. Considering that compression algorithm provides no guarantee on the size of the compressed data, this is not an indicator whether the file’s going well or not. The only way to verify is to load the world and check the result in game.</p>
+			<p>With uncertainty, I make a backup of the broken world, and replace <code class="language-plaintext highlighter-rouge">r.-1.0.mca</code> with my modified copy. The server now starts normally, and I can see the brass funnel disappeared.</p>
+			<p><img src="/image/minecraft/createastral-1.jpg" alt="Block removed" /></p>
+			<h2 id="additional-verification">Additional verification</h2>
+			<p>To convince myself that I have successfully changed the correct block, I decide that I need to replace it with something visible, not just air. I look inside the palette of the section, and found a few blocks available for use.</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">][</span><span class="mi">25</span><span class="p">][</span><span class="s">'Name'</span><span class="p">]</span>
+<span class="go">minecraft:grass_block
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">ii</span> <span class="o">=</span> <span class="n">i</span> <span class="o">^</span> <span class="p">((</span><span class="mi">55</span> <span class="o">^</span> <span class="mi">25</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="mi">8</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
+<span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">f</span><span class="p">.</span><span class="n">write_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+</code></pre>
+				</div>
+			</div>
+			<p>I then copy the file back to the server, and start it again. As expected, the block at that coordinate is now a grass block.</p>
+			<p><img src="/image/minecraft/createastral-2.jpg" alt="Block replaced with Grass Block" /></p>
+			<h2 id="epilogue">Epilogue</h2>
+			<p>Contrary to player data (<code class="language-plaintext highlighter-rouge">playerdata/*.dat</code>), the region file is a lot more complicated. Thanks to the large fan base of Minecraft, libraries for handling the file format are readily available. I am inclined to believe that a few steps taken and decisions made here are critical to the success of salvaging our save.</p>
+			<ul>
+				<li>First and foremost, checking the logs: We know which block is going wrong, and <em>have faith in ourselves that we can fix it</em>.</li>
+				<li>Looking in the correct direction: Instead of using a complete “world edit” tool, we decide to find some library on GitHub and improvise from there</li>
+				<li>Reading the documentation carefully and in detail.</li>
+				<li>Doing math correctly (LOL…)</li>
+			</ul>
+			<p>Finally, I want to credit my friend <a href="https://sirius1242.github.io/">sirius</a> for his in-depth knowledge of Minecraft, without whose help I would not have been able to take on this wonderful adventure.</p>
+			]]></content><author><name>iBug</name></author><category term="games" /><category term="minecraft" /><summary type="html"><![CDATA[While a friend was building an automatic brewing pipeline, our Create: Astral server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.]]></summary></entry><entry><title type="html">Paper Reading: Are You Sure You Want to Use MMAP in Your Database Management System?</title><link href="https://ibug.io/blog/2022/11/paper-reading-cidr2022-crotty/" rel="alternate" type="text/html" title="Paper Reading: Are You Sure You Want to Use MMAP in Your Database Management System?" /><published>2022-11-05T00:00:00+00:00</published><updated>2022-11-27T19:45:37+00:00</updated><id>https://ibug.io/blog/2022/11/paper-reading-cidr2022-crotty</id><content type="html" xml:base="https://ibug.io/blog/2022/11/paper-reading-cidr2022-crotty/"><![CDATA[<p>Paper reading for [CIDR 2022] <em>Are You Sure You Want to Use MMAP in Your Database Management System?</em> by Crotty et al.</p>
+		<p>This paper highlights the problems with using MMAP in database management systems.</p>
+		<h2 id="background">Background</h2>
+		<p>MMAP is a POSIX system call that transparently maps file content to process memory (the virtual address space of a process). This allows programmers to simplify the logical structure of program by leveraging the OS page cache as a replacement for a manually-maintained buffer pool.</p>
+		<p>A typical MMAP procedure goes as follows:</p>
+		<figure class="">
+			<img src="/image/papers/mmap-procedure.png" alt="A typical MMAP procedure" />
+			<figcaption>
+				A typical MMAP procedure
+			</figcaption>
+		</figure>
+		<ol>
+			<li>A process calls <code class="language-plaintext highlighter-rouge">mmap()</code> for an open file.</li>
+			<li>The OS reserves part of the process’s virtual address space, but does <em>not</em> load the file from disk. The process receives a pointer to the mapped address.</li>
+			<li>The process accesses the file using that pointer.</li>
+			<li>The OS tries to load the page, but no valid mapping exists, which results in a page fault.</li>
+			<li>The OS loads the file from disk to physical RAM.</li>
+			<li>The OS adds an entry to the page table of the process, mapping the virtual address to the physical address.</li>
+			<li>The initiating CPU caches this new page entry in its <a href="https://en.wikipedia.org/wiki/Translation_lookaside_buffer">Translation Lookaside Buffer (TLB)</a> for faster future accesses.</li>
+		</ol>
+		<p>A process can map as much data from files as the virtual address space permits, and the OS does all the dirty work behind the scenes.</p>
+		<p>Files loaded this way count towards the OS page cache (shows in htop as both <code class="language-plaintext highlighter-rouge">RES</code> and <code class="language-plaintext highlighter-rouge">SHR</code>), so the OS must evict pages when physical memory fills up. During page eviction, the OS must ensure that:</p>
+		<ul>
+			<li>Dirty (modified) pages are written back to disk (if applicable).</li>
+			<li>TLBs of all CPU cores are flushed. This is called <em>TLB shootdown</em>.</li>
+		</ul>
+		<p>Even though disk writes can be avoided on read-only workloads, TLB shootdowns are unavoidable. Worse, since modern CPUs do <em>not</em> provide TLB coherence, flushing TLBs is a costly operation.</p>
+		<h3 id="posix-api">Related POSIX APIs</h3>
+		<ul>
+			<li><code class="language-plaintext highlighter-rouge">mmap()</code> maps a file to memory. The <code class="language-plaintext highlighter-rouge">MAP_SHARED</code> flag allows changes to be (eventually) persisted back to disk, while the <code class="language-plaintext highlighter-rouge">MAP_PRIVATE</code> flag indicates that modifications are discarded (private to the process). These flags cannot be changed after the mapping is created.</li>
+			<li><code class="language-plaintext highlighter-rouge">madvise()</code> provides hints to the OS about how the mapped file will be accessed.
+				<ul>
+					<li>With <code class="language-plaintext highlighter-rouge">MADV_NORMAL</code>, (at least for Linux) loads 32 pages (128 KiB) for every page fault.</li>
+					<li>With <code class="language-plaintext highlighter-rouge">MADV_RANDOM</code>, the OS only loads the exact missing page.</li>
+					<li>With <code class="language-plaintext highlighter-rouge">MADV_SEQUENTIAL</code>, the OS loads more pages in advance.</li>
+				</ul>
+			</li>
+			<li><code class="language-plaintext highlighter-rouge">mlock()</code> locks the mapped file in physical memory, preventing the OS from evicting it. It does not, however, prevent the OS from flushing dirty pages to disk.</li>
+			<li><code class="language-plaintext highlighter-rouge">msync()</code> flushes any modifications to the file back to disk.</li>
+		</ul>
+		<h2 id="problems">Problems</h2>
+		<h3 id="transactional-safety">Transactional safety</h3>
+		<p>One important feature that DBMS provides is transactional safety, which is commonly referred to as <a href="https://en.wikipedia.org/wiki/ACID">the <em>ACID</em> properties</a>. Using MMAP on database files poses a threat to theses properties, as OS can transparently flush dirty pages to disk at any time, which the DBMS is has no control over.</p>
+		<p>To work around this problem, the paper summarizes three kinds of approaches:</p>
+		<ol>
+			<li>
+				<p><strong>OS copy-on-write</strong></p>
+				<p>The first approach maps the same file twice, one with <code class="language-plaintext highlighter-rouge">MAP_SHARED</code> and the other with <code class="language-plaintext highlighter-rouge">MAP_PRIVATE</code>. Any modification is first made to the private mapping, and then synchronized to the shared mapping. To maintain consistency, extra measures like a <a href="https://en.wikipedia.org/wiki/Write-ahead_logging">write-ahead log (WAL)</a> are often used together.</p>
+				<p>A noticeable problem with this approach is that as the database is being accessed, the DBMS will eventually end up with two full copies of the file in memory. While it’s possible to periodically shrink the private workspace, it adds extra complexity to the DBMS.</p>
+			</li>
+			<li>
+				<p><strong>Userspace copy-on-write</strong></p>
+				<p>The second approach is similar to the first, but instead of <code class="language-plaintext highlighter-rouge">mmap</code>-ing the file twice, the “private workspace” is maintained manually as a separate buffer. This approach is more flexible in terms of memory efficiency and manageability.</p>
+			</li>
+			<li>
+				<p><a href="https://en.wikipedia.org/wiki/Shadow_paging"><strong>Shadow paging</strong></a></p>
+				<p>Shadow paging is a traditional copy-on-write technique. The DBMS keeps two copies of the database file, one for the current version and the other for the next version. When a transaction is committed, the DBMS simply swaps the files.</p>
+				<p>One downside is obvious: the DBMS must maintain two copies of the database file, which is not ideal for large databases. Even though it is possible to keep only the delta between the two versions, and only maintain the primary and shadow page tables, it introduces more fragmentation and requires careful bookkeeping.</p>
+				<p>Additionally, as commitments happens on the whole-file level, this method does not scale well with write concurrency.</p>
+			</li>
+		</ol>
+		<h3 id="io-stalls">I/O stalls</h3>
+		<p>With traditional file I/O, the DBMS can use asynchronous I/O to avoid blocking the CPU.</p>
+		<p>However, with MMAP, as the OS evict pages in the background transparently, any access to the mapped file may block the thread. Despite having <code class="language-plaintext highlighter-rouge">mlock()</code>, it provides limited mitigation as the amount of locked pages is bounded. While <code class="language-plaintext highlighter-rouge">madvise()</code> helps with OS prefetching decisions, the control is still very coarse.</p>
+		<p>Last but not least, while it’s possible to spawn an extra background thread to prefetch pages, the added complexity defeats the purpose of using MMAP in the first place.</p>
+		<h3 id="error-handling">Error handling</h3>
+		<p>For DBMS with page-level checksums (to prevent disk corruption), the DBMS must revalidate the checksums after <em>every</em> read, as it has no way to know whether the same page has been evicted and re-read from disk.</p>
+		<p>For DBMS written in memory-unsafe languages like C (which is quite common), a bad pointer write can silently corrupt the database. With a traditional buffer pool, defensive measures can be implemented to avoid writing corrupted data to disk.</p>
+		<p>Finally, with traditional <code class="language-plaintext highlighter-rouge">read()</code>/<code class="language-plaintext highlighter-rouge">write()</code>, error handling resides in the same place as the I/O code. With MMAP, however, error handling must be done through a cumbersome <code class="language-plaintext highlighter-rouge">SIGBUS</code> handler.</p>
+		<h3 id="performance-issues">Performance issues</h3>
+		<p>While it is a common sense that MMAP is more performant than traditional file I/O by eliminating the system calls and extra memory copies, experiments suggest otherwise. Three issues are pointed out:</p>
+		<ul>
+			<li>Page table contention (it’s one single data structure for the whole process)</li>
+			<li>Single-threaded page eviction (Linux: <code class="language-plaintext highlighter-rouge">kswapd</code>)</li>
+			<li>TLB shootdowns (see above)</li>
+		</ul>
+		<h2 id="experimental-results">Experimental results</h2>
+		<div class="notice--primary">
+			<h4 class="no_toc" id="note-on-odirect"><i class="fas fa-fw fa-lightbulb"></i> Note on <code class="language-plaintext highlighter-rouge">O_DIRECT</code></h4>
+			<p>The FIO test uses the <code class="language-plaintext highlighter-rouge">O_DIRECT</code> flag to bypass the OS page cache. For a more detailed explanation, see <a href="https://stackoverflow.com/q/5055859/5958455">this Stack Overflow question</a>.</p>
+		</div>
+		<p>The paper presents two kinds of tasks: Random reading and sequential reading, to represent two typical kinds of database workload: <a href="https://www.ibm.com/cloud/blog/olap-vs-oltp">OLTP and OLAP</a>.</p>
+		<figure class="">
+			<img src="/image/papers/crotty-randread-iops.png" alt="IOPS by time for random read" />
+			<figcaption>
+				Random read - IOPS
+			</figcaption>
+		</figure>
+		<figure class="">
+			<img src="/image/papers/crotty-randread-tlbshootdowns.png" alt="TLB shootdowns by time for random read" />
+			<figcaption>
+				Random read - TLBshootdowns
+			</figcaption>
+		</figure>
+		<p>It is apparent that it doesn’t take long before MMAP can’t sustain its performance, which is due to the page cache filling up. The OS must work hard on evicting pages, which worsens the situation.</p>
+		<figure class="">
+			<img src="/image/papers/crotty-seqread-1ssd.png" alt="Bandwidth by time for single-SSD sequential read" />
+			<figcaption>
+				Sequential read - 1 SSD
+			</figcaption>
+		</figure>
+		<figure class="">
+			<img src="/image/papers/crotty-seqread-10ssds.png" alt="Bandwidth by time for 10-SSD sequential read" />
+			<figcaption>
+				Sequential read - 10 SSDs
+			</figcaption>
+		</figure>
+		<p>With sequential read, the performance gap is larger as disk bandwidth grows. While <code class="language-plaintext highlighter-rouge">fio</code> can almost saturate the bandwidth from 10 SSDs, MMAP’s performance stayed nearly the same. The authors attribute this to the single-threaded page eviction.</p>
+		<h2 id="conclusion">Conclusion</h2>
+		<p>In the final section, the paper makes an ironic comment, suggesting two cases when you <em>maybe</em> can use MMAP in a database product:</p>
+		<ul>
+			<li>Your working set (or the entire database) fits in memory and the workload is read-only.</li>
+			<li>
+				<p>You need to rush a product to the market and do not care about data consistency or long-term engineering headaches.</p>
+			</li>
+		</ul>
+		]]></content><author><name>iBug</name></author><category term="paper-reading" /><summary type="html"><![CDATA[Paper reading for [CIDR 2022] Are You Sure You Want to Use MMAP in Your Database Management System? by Crotty et al.]]></summary></entry><entry><title type="html">LVM metadata exceeds maximum metadata size, now what next?</title><link href="https://ibug.io/blog/2022/06/lvm-metadata-full/" rel="alternate" type="text/html" title="LVM metadata exceeds maximum metadata size, now what next?" /><published>2022-06-19T00:00:00+00:00</published><updated>2022-06-19T22:06:07+00:00</updated><id>https://ibug.io/blog/2022/06/lvm-metadata-full</id><content type="html" xml:base="https://ibug.io/blog/2022/06/lvm-metadata-full/"><![CDATA[<p>An LVM volume group (VG) on our Proxmox VE cluster has failed to create new logical volumes, reporting that its metadata was full. At first this appears to be easy, “fine I’ll just add more space for metadata”, but it quickly revealed to be an versity to struggle through.</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>lvcreate <span class="nt">-L</span> 4M <span class="nt">-n</span> test-1721 <span class="nb">test</span>
 <span class="go">  VG test 1723 metadata on /dev/sdc1 (521759 bytes) exceeds maximum metadata size (521472 bytes)
   Failed to write VG test.
 </span><span class="gp">root@iBug-Server:~#</span><span class="w"> </span><span class="c"># wut?</span>
 </code></pre>
-				</div>
-			</div>
-			<h2 id="problems">Problems</h2>
-			<p>It isn’t hard to imagine that, just like regular disks need a partition table, LVM also needs its “partition table”, called <em>LVM metadata</em>, to store its information about PVs, VGs and LVs. It grows with the complexity of a VG, like number of PVs and configuration of LVs.</p>
-			<p>The metadata size and capacity of a PV and a VG can be inspected with <code class="language-plaintext highlighter-rouge">pvdisplay</code> and <code class="language-plaintext highlighter-rouge">vgdisplay</code>, respectively.</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>pvdisplay <span class="nt">-C</span> <span class="nt">-o</span> name,mda_size,mda_free
+		</div>
+	</div>
+	<h2 id="problems">Problems</h2>
+	<p>It isn’t hard to imagine that, just like regular disks need a partition table, LVM also needs its “partition table”, called <em>LVM metadata</em>, to store its information about PVs, VGs and LVs. It grows with the complexity of a VG, like number of PVs and configuration of LVs.</p>
+	<p>The metadata size and capacity of a PV and a VG can be inspected with <code class="language-plaintext highlighter-rouge">pvdisplay</code> and <code class="language-plaintext highlighter-rouge">vgdisplay</code>, respectively.</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>pvdisplay <span class="nt">-C</span> <span class="nt">-o</span> name,mda_size,mda_free
 <span class="go">  PV         PMdaSize  PMdaFree
   /dev/sdc1   1020.00k        0
 </span><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>vgdisplay <span class="nt">-C</span> <span class="nt">-o</span> name,mda_size,mda_free
 <span class="go">  VG   VMdaSize  VMdaFree
   test  1020.00k        0
 </span></code></pre>
-				</div>
-			</div>
-			<p>The metadata area (whence <code class="language-plaintext highlighter-rouge">mda</code>) is where LVM stores volume information. The trouble comes from the fact that LVM MDA has multiple oddities going against intuition, which adds to the complexity of findin a solution.</p>
-			<h3 id="1-metadata-is-an-ambiguous-term">1. “Metadata” is an ambiguous term</h3>
-			<p>If you just go ahead and search for “LVM metadata size”, you’ll be surprised to see how irrelevant the search results are. In fact, they’re about “thin pool metadata”, which is a discrete LV usually named <code class="language-plaintext highlighter-rouge">poolname_tmeta</code>.</p>
-			<p>In fact, the correct answer is in the man page, which should show up as the first Google result, <a href="https://man7.org/linux/man-pages/man8/pvcreate.8.html"><code class="language-plaintext highlighter-rouge">pvcreate(8)</code></a>. This is where I discovered the use of <code class="language-plaintext highlighter-rouge">pvs</code> and <code class="language-plaintext highlighter-rouge">vgs</code> to get the sizes.</p>
-			<h3 id="2-the-default-mda-size-is-fixed">2. The default MDA size is fixed</h3>
-			<p>Contrary to common expectations, the default value for MDA size is <em>fixed</em> and does not scale with PV size or VG size. This is explained in the man page, right above <code class="language-plaintext highlighter-rouge">pvs -o mda_size</code>.</p>
-			<p>This is not the case, however, for LVM Thin Pools. It’s not known what the design considerations are behind this.</p>
-			<h3 id="3-the-size-of-the-mda-cannot-be-changed-after-creation">3. The size of the MDA cannot be changed after creation</h3>
-			<p>As many would probably have, I also thought that “fine, I’ll just expand the size for the MDA”, and started digging through Google and relevant man pages. Another quarter-hour was spent trying to find how to do this, only to find that it can only be set at the creation of the PV. This was confirmed by <a href="https://forum.proxmox.com/threads/cannot-create-more-snapshot-without-deleting-some-olds-one.110112/">this Proxmox forum post</a>.</p>
-			<h3 id="4-reducing-metadata-copies-does-not-free-up-space">4. Reducing “metadata copies” does not free up space</h3>
-			<p>There’s also a <code class="language-plaintext highlighter-rouge">pvmetadatacopies</code> option listed in both <code class="language-plaintext highlighter-rouge">vgchange(8)</code> and <code class="language-plaintext highlighter-rouge">pvchange(8)</code>, which appears tempting to give a try. Unfortunately, opposite to intuition again, this does not free up half of the MDA space. Setting it to 1 down from the default 2 produces no visible changes.</p>
-			<h2 id="finding-the-solution">Finding the solution</h2>
-			<p>At this point I had figured out a silhouette for the problem I was facing: A VG on a single PV, fixed MDA size, no room to free up any metadata.</p>
-			<p>Fortunately, the shared SAN target supports “overcommitting”, meaning I can have an extra LUN with little effort. Given that the utilized storage is slightly over 50%, it’s not possible to move data onto the new LUN. Even if there were enough free space, moving data would take an infeasible amount of time. Ideally this new LUN shouldn’t be too large, to minimize possible aftermath should the underlying disk group goes full.</p>
-			<p>So, how can this trouble be overcome, with the help of a new LUN?</p>
-			<hr />
-			<p>Digging into this level of details, Google is unable to help, so I had to resort to man pages, if I did not have to check the source codes.</p>
-			<p>Looking at <code class="language-plaintext highlighter-rouge">pvchange(8)</code>, the only modifiable property of an existing PV is <code class="language-plaintext highlighter-rouge">metadataignore</code>. It instructs LVM to ignore the MDA for a PV.</p>
-			<p>A possible solution has arisen: Create a new PV with large enough MDA, merge it into the VG, and disable metadata storage on the old PV.</p>
-			<h2 id="solution">Solution</h2>
-			<p>I created a new LUN in the storage server’s dashboard and loaded it onto all servers in the cluster using <code class="language-plaintext highlighter-rouge">iscsiadm</code>:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>iscsiadm <span class="nt">-m</span> session <span class="nt">--rescan</span>
+		</div>
+	</div>
+	<p>The metadata area (whence <code class="language-plaintext highlighter-rouge">mda</code>) is where LVM stores volume information. The trouble comes from the fact that LVM MDA has multiple oddities going against intuition, which adds to the complexity of findin a solution.</p>
+	<h3 id="1-metadata-is-an-ambiguous-term">1. “Metadata” is an ambiguous term</h3>
+	<p>If you just go ahead and search for “LVM metadata size”, you’ll be surprised to see how irrelevant the search results are. In fact, they’re about “thin pool metadata”, which is a discrete LV usually named <code class="language-plaintext highlighter-rouge">poolname_tmeta</code>.</p>
+	<p>In fact, the correct answer is in the man page, which should show up as the first Google result, <a href="https://man7.org/linux/man-pages/man8/pvcreate.8.html"><code class="language-plaintext highlighter-rouge">pvcreate(8)</code></a>. This is where I discovered the use of <code class="language-plaintext highlighter-rouge">pvs</code> and <code class="language-plaintext highlighter-rouge">vgs</code> to get the sizes.</p>
+	<h3 id="2-the-default-mda-size-is-fixed">2. The default MDA size is fixed</h3>
+	<p>Contrary to common expectations, the default value for MDA size is <em>fixed</em> and does not scale with PV size or VG size. This is explained in the man page, right above <code class="language-plaintext highlighter-rouge">pvs -o mda_size</code>.</p>
+	<p>This is not the case, however, for LVM Thin Pools. It’s not known what the design considerations are behind this.</p>
+	<h3 id="3-the-size-of-the-mda-cannot-be-changed-after-creation">3. The size of the MDA cannot be changed after creation</h3>
+	<p>As many would probably have, I also thought that “fine, I’ll just expand the size for the MDA”, and started digging through Google and relevant man pages. Another quarter-hour was spent trying to find how to do this, only to find that it can only be set at the creation of the PV. This was confirmed by <a href="https://forum.proxmox.com/threads/cannot-create-more-snapshot-without-deleting-some-olds-one.110112/">this Proxmox forum post</a>.</p>
+	<h3 id="4-reducing-metadata-copies-does-not-free-up-space">4. Reducing “metadata copies” does not free up space</h3>
+	<p>There’s also a <code class="language-plaintext highlighter-rouge">pvmetadatacopies</code> option listed in both <code class="language-plaintext highlighter-rouge">vgchange(8)</code> and <code class="language-plaintext highlighter-rouge">pvchange(8)</code>, which appears tempting to give a try. Unfortunately, opposite to intuition again, this does not free up half of the MDA space. Setting it to 1 down from the default 2 produces no visible changes.</p>
+	<h2 id="finding-the-solution">Finding the solution</h2>
+	<p>At this point I had figured out a silhouette for the problem I was facing: A VG on a single PV, fixed MDA size, no room to free up any metadata.</p>
+	<p>Fortunately, the shared SAN target supports “overcommitting”, meaning I can have an extra LUN with little effort. Given that the utilized storage is slightly over 50%, it’s not possible to move data onto the new LUN. Even if there were enough free space, moving data would take an infeasible amount of time. Ideally this new LUN shouldn’t be too large, to minimize possible aftermath should the underlying disk group goes full.</p>
+	<p>So, how can this trouble be overcome, with the help of a new LUN?</p>
+	<hr />
+	<p>Digging into this level of details, Google is unable to help, so I had to resort to man pages, if I did not have to check the source codes.</p>
+	<p>Looking at <code class="language-plaintext highlighter-rouge">pvchange(8)</code>, the only modifiable property of an existing PV is <code class="language-plaintext highlighter-rouge">metadataignore</code>. It instructs LVM to ignore the MDA for a PV.</p>
+	<p>A possible solution has arisen: Create a new PV with large enough MDA, merge it into the VG, and disable metadata storage on the old PV.</p>
+	<h2 id="solution">Solution</h2>
+	<p>I created a new LUN in the storage server’s dashboard and loaded it onto all servers in the cluster using <code class="language-plaintext highlighter-rouge">iscsiadm</code>:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>iscsiadm <span class="nt">-m</span> session <span class="nt">--rescan</span>
 </code></pre>
-				</div>
-			</div>
-			<p>The rescan may have some delay so I continued monitoring it for a minute before <code class="language-plaintext highlighter-rouge">/dev/sdd</code> showed up on all hosts.</p>
-			<p>Now I turn the new block device into a PV and add it to the problematic VG:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>pvcreate <span class="nt">--metadatasize</span> 64m /dev/sdd
+		</div>
+	</div>
+	<p>The rescan may have some delay so I continued monitoring it for a minute before <code class="language-plaintext highlighter-rouge">/dev/sdd</code> showed up on all hosts.</p>
+	<p>Now I turn the new block device into a PV and add it to the problematic VG:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>pvcreate <span class="nt">--metadatasize</span> 64m /dev/sdd
 vgextend <span class="nb">test</span> /dev/sdd
 </code></pre>
-				</div>
-			</div>
-			<p>Partly to my surprise, a warning popped up:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>VG <span class="nb">test </span>1723 metadata on /dev/sdc1 <span class="o">(</span>521615 bytes<span class="o">)</span> exceeds maximum metadata size <span class="o">(</span>521472 bytes<span class="o">)</span>
+		</div>
+	</div>
+	<p>Partly to my surprise, a warning popped up:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>VG <span class="nb">test </span>1723 metadata on /dev/sdc1 <span class="o">(</span>521615 bytes<span class="o">)</span> exceeds maximum metadata size <span class="o">(</span>521472 bytes<span class="o">)</span>
 WARNING: Failed to write an MDA of VG test.
 Volume group <span class="s2">"test"</span> successfully extended
 </code></pre>
-				</div>
-			</div>
-			<p>This one isn’t hard to understand: The VG metadata must record the identifiers of all participating PVs, so adding a PV means more metadata to be stored.</p>
-			<p>So before pulling this off, I had to remove a LV temporarily. I had a few laying around for testing purposes, so finding one to get rid of was not hard. After that I could repeat the <code class="language-plaintext highlighter-rouge">vgextend</code> command without a single warning.</p>
-			<p>Next I exclude the original PV from storing metadata:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>pvchange <span class="nt">--metadataignore</span> y /dev/sdc1
+		</div>
+	</div>
+	<p>This one isn’t hard to understand: The VG metadata must record the identifiers of all participating PVs, so adding a PV means more metadata to be stored.</p>
+	<p>So before pulling this off, I had to remove a LV temporarily. I had a few laying around for testing purposes, so finding one to get rid of was not hard. After that I could repeat the <code class="language-plaintext highlighter-rouge">vgextend</code> command without a single warning.</p>
+	<p>Next I exclude the original PV from storing metadata:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>pvchange <span class="nt">--metadataignore</span> y /dev/sdc1
 </code></pre>
-				</div>
-			</div>
-			<p>Now I can add another LV inside this VG without error:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>lvcreate <span class="nt">-L</span> 1M <span class="nt">-n</span> test-1721 <span class="nb">test</span>
+		</div>
+	</div>
+	<p>Now I can add another LV inside this VG without error:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>lvcreate <span class="nt">-L</span> 1M <span class="nt">-n</span> test-1721 <span class="nb">test</span>
 <span class="go">  Rounding up size to full physical extent 4.00 MiB
   Logical volume "test-1721" created.
 </span><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>pvs <span class="nt">-o</span> name,mda_size,mda_free
@@ -87,23 +418,23 @@ Volume group <span class="s2">"test"</span> successfully extended
   /dev/sdc1   1020.00k        0
   /dev/sdd     &lt;65.00m   &lt;32.00m
 </span></code></pre>
-				</div>
-			</div>
-			<h2 id="caveats">Caveats</h2>
-			<p>LVM by default stores an identical copy of the metadata on every PV that belongs to the same VG. Using this “solution”, the complete metadata is only stored on the newly created PV. You certainly want to use reliable storage for this new PV as it’s now a <a href="https://en.wikipedia.org/wiki/Single_point_of_failure">SPOF</a> of the whole VG.</p>
-			<p>If in any case you want a copy of the metadata for inspection or to recover a failed VG (hope you don’t need to do that), LVM maintains automatic backups under <code class="language-plaintext highlighter-rouge">/etc/lvm/backup</code>. They’re in their original form, are text-based (so easily readable), and are ready for use with <code class="language-plaintext highlighter-rouge">vgcfgrestore</code>.</p>
-			<p>Indeed, the recommended solution is to create a new, larger VG and migrate your data ASAP. After all, data security matters the most.</p>
-			]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><summary type="html"><![CDATA[An LVM volume group (VG) on our Proxmox VE cluster has failed to create new logical volumes, reporting that its metadata was full. At first this appears to be easy, “fine I’ll just add more space for metadata”, but it quickly revealed to be an versity to struggle through.]]></summary></entry><entry><title type="html">Taking the 24 puzzle game to the next level</title><link href="https://ibug.io/blog/2022/05/programming-24-game/" rel="alternate" type="text/html" title="Taking the 24 puzzle game to the next level" /><published>2022-05-25T00:00:00+00:00</published><updated>2022-06-02T00:13:13+00:00</updated><id>https://ibug.io/blog/2022/05/programming-24-game</id><content type="html" xml:base="https://ibug.io/blog/2022/05/programming-24-game/"><![CDATA[<p>The <a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 game</a> is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.</p>
-		<p>Getting a program that determines whether a set of 4 numbers is solvable is easy, as there are only as many possible combinations as 4 numbers can form. Even a simple brute-force search won’t take long to determine the solution. So I will go through the search algorithm and see how much improvement can be made.</p>
-		<h2 id="searching">Searching for answers</h2>
-		<p>Obviously it’s not going to be a good idea to enumerate all the arrangements and search by filling in the numbers, so we’re going to think about this from bottom-up.</p>
-		<p>Starting from two numbers, it’s easy to enumerate all 4 arithmetic operators for <code class="language-plaintext highlighter-rouge">a?b</code> and <code class="language-plaintext highlighter-rouge">b?a</code>, with addition and multiplication being <a href="https://en.wikipedia.org/wiki/Commutative_property">commutative</a> (i.e. <code class="language-plaintext highlighter-rouge">a+b</code> and <code class="language-plaintext highlighter-rouge">b+a</code> are identical), resulting in a total of 6 operations.</p>
-		<p>Taking this to a three-number setup. We can reduce it to the two-number case by picking two of the numbers and applying an operation. This can be generalized to an arbitrary number of inputs. As long as we’re cutting down a number at every recursion, we’ll eventually cover all possible combinations of all inputs and come to a conclusion.</p>
-		<p>With only one input number, we compare it with our search target to see if it’s an answer we want. One little note here is that <a href="https://stackoverflow.com/q/588004/5958455"><code class="language-plaintext highlighter-rouge">0.1 + 0.2 != 0.3</code></a>, so floating-point number equality must be handled with caution.</p>
-		<p>I wrote my initial versions of the 24 program in Go, and here’s the snippet on recursive searching:</p>
-		<div class="language-go highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">var</span> <span class="n">target</span> <span class="kt">float64</span>
+		</div>
+	</div>
+	<h2 id="caveats">Caveats</h2>
+	<p>LVM by default stores an identical copy of the metadata on every PV that belongs to the same VG. Using this “solution”, the complete metadata is only stored on the newly created PV. You certainly want to use reliable storage for this new PV as it’s now a <a href="https://en.wikipedia.org/wiki/Single_point_of_failure">SPOF</a> of the whole VG.</p>
+	<p>If in any case you want a copy of the metadata for inspection or to recover a failed VG (hope you don’t need to do that), LVM maintains automatic backups under <code class="language-plaintext highlighter-rouge">/etc/lvm/backup</code>. They’re in their original form, are text-based (so easily readable), and are ready for use with <code class="language-plaintext highlighter-rouge">vgcfgrestore</code>.</p>
+	<p>Indeed, the recommended solution is to create a new, larger VG and migrate your data ASAP. After all, data security matters the most.</p>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><summary type="html"><![CDATA[An LVM volume group (VG) on our Proxmox VE cluster has failed to create new logical volumes, reporting that its metadata was full. At first this appears to be easy, “fine I’ll just add more space for metadata”, but it quickly revealed to be an versity to struggle through.]]></summary></entry><entry><title type="html">Taking the 24 puzzle game to the next level</title><link href="https://ibug.io/blog/2022/05/programming-24-game/" rel="alternate" type="text/html" title="Taking the 24 puzzle game to the next level" /><published>2022-05-25T00:00:00+00:00</published><updated>2022-06-02T00:13:13+00:00</updated><id>https://ibug.io/blog/2022/05/programming-24-game</id><content type="html" xml:base="https://ibug.io/blog/2022/05/programming-24-game/"><![CDATA[<p>The <a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 game</a> is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.</p>
+	<p>Getting a program that determines whether a set of 4 numbers is solvable is easy, as there are only as many possible combinations as 4 numbers can form. Even a simple brute-force search won’t take long to determine the solution. So I will go through the search algorithm and see how much improvement can be made.</p>
+	<h2 id="searching">Searching for answers</h2>
+	<p>Obviously it’s not going to be a good idea to enumerate all the arrangements and search by filling in the numbers, so we’re going to think about this from bottom-up.</p>
+	<p>Starting from two numbers, it’s easy to enumerate all 4 arithmetic operators for <code class="language-plaintext highlighter-rouge">a?b</code> and <code class="language-plaintext highlighter-rouge">b?a</code>, with addition and multiplication being <a href="https://en.wikipedia.org/wiki/Commutative_property">commutative</a> (i.e. <code class="language-plaintext highlighter-rouge">a+b</code> and <code class="language-plaintext highlighter-rouge">b+a</code> are identical), resulting in a total of 6 operations.</p>
+	<p>Taking this to a three-number setup. We can reduce it to the two-number case by picking two of the numbers and applying an operation. This can be generalized to an arbitrary number of inputs. As long as we’re cutting down a number at every recursion, we’ll eventually cover all possible combinations of all inputs and come to a conclusion.</p>
+	<p>With only one input number, we compare it with our search target to see if it’s an answer we want. One little note here is that <a href="https://stackoverflow.com/q/588004/5958455"><code class="language-plaintext highlighter-rouge">0.1 + 0.2 != 0.3</code></a>, so floating-point number equality must be handled with caution.</p>
+	<p>I wrote my initial versions of the 24 program in Go, and here’s the snippet on recursive searching:</p>
+	<div class="language-go highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">var</span> <span class="n">target</span> <span class="kt">float64</span>
 
 <span class="k">func</span> <span class="n">CompareFloat</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">threshold</span> <span class="kt">float64</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
     <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">Abs</span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">b</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">threshold</span>
@@ -146,15 +477,15 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="k">return</span> <span class="n">result</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<h2 id="stringify">Generating the solution</h2>
-		<p>Without displaying the solution, the program can only get as far as a simple <a href="https://leetcode.com/problems/24-game/">LeetCode challenge</a> or another online judger. For anything to make the programming quiz more suitable as a school assignment, printing out the found solution is the next thing.</p>
-		<p>Apparently just joining the numbers and the operators together is not enough, as in many cases parentheses are required to denote specific order of operations over normal operator precedence. For example, <code class="language-plaintext highlighter-rouge">6*2+2</code> is not 24, but <code class="language-plaintext highlighter-rouge">6*(2+2)</code> is. Fortunately, blindly adding parentheses works just well, though duplicate or equivalent answers would be <em>extremely</em> common. No one would think that <code class="language-plaintext highlighter-rouge">(1+2)+3</code> and <code class="language-plaintext highlighter-rouge">1+(2+3)</code> makes any sensical difference, right? That’s because addition and multiplication are <a href="https://en.wikipedia.org/wiki/Associative_property">associative</a>. We also need to avoid adding parentheses around plain numbers, assuming we’re not dealing with negative inputs at this moment.</p>
-		<p>By enumerating all four operators and writing rules to carefully add parentheses when needed, we have a relatively logical <code class="language-plaintext highlighter-rouge">JoinExpression</code> function.</p>
-		<div class="language-go highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">type</span> <span class="n">Expression</span> <span class="k">struct</span> <span class="p">{</span>
+	</div>
+	<h2 id="stringify">Generating the solution</h2>
+	<p>Without displaying the solution, the program can only get as far as a simple <a href="https://leetcode.com/problems/24-game/">LeetCode challenge</a> or another online judger. For anything to make the programming quiz more suitable as a school assignment, printing out the found solution is the next thing.</p>
+	<p>Apparently just joining the numbers and the operators together is not enough, as in many cases parentheses are required to denote specific order of operations over normal operator precedence. For example, <code class="language-plaintext highlighter-rouge">6*2+2</code> is not 24, but <code class="language-plaintext highlighter-rouge">6*(2+2)</code> is. Fortunately, blindly adding parentheses works just well, though duplicate or equivalent answers would be <em>extremely</em> common. No one would think that <code class="language-plaintext highlighter-rouge">(1+2)+3</code> and <code class="language-plaintext highlighter-rouge">1+(2+3)</code> makes any sensical difference, right? That’s because addition and multiplication are <a href="https://en.wikipedia.org/wiki/Associative_property">associative</a>. We also need to avoid adding parentheses around plain numbers, assuming we’re not dealing with negative inputs at this moment.</p>
+	<p>By enumerating all four operators and writing rules to carefully add parentheses when needed, we have a relatively logical <code class="language-plaintext highlighter-rouge">JoinExpression</code> function.</p>
+	<div class="language-go highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">type</span> <span class="n">Expression</span> <span class="k">struct</span> <span class="p">{</span>
     <span class="n">value</span> <span class="kt">float64</span>
     <span class="n">op</span>    <span class="kt">rune</span>
     <span class="n">repr</span>  <span class="kt">string</span>
@@ -200,14 +531,14 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="k">return</span> <span class="o">&amp;</span><span class="n">Expression</span><span class="p">{</span><span class="n">value</span><span class="o">:</span> <span class="n">value</span><span class="p">,</span> <span class="n">op</span><span class="o">:</span> <span class="n">op</span><span class="p">,</span> <span class="n">repr</span><span class="o">:</span> <span class="n">repr</span><span class="p">}</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Since plain numbers never need parantheses, their “operator” is assigned to a single dot (or any character not used in the code).</p>
-		<p>At this point, all that’s missing for a complete program is a <code class="language-plaintext highlighter-rouge">main()</code> function. To add a little bit of flexibility of changing the target value, I used Go’s standard library <code class="language-plaintext highlighter-rouge">flag</code> for parsing command-line arguments, though only a single option is needed now.</p>
-		<p>To avoid generating the same answer for any particular set of inputs, I shuffled the input numbers before doing the search.</p>
-		<div class="language-go highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
+	</div>
+	<p>Since plain numbers never need parantheses, their “operator” is assigned to a single dot (or any character not used in the code).</p>
+	<p>At this point, all that’s missing for a complete program is a <code class="language-plaintext highlighter-rouge">main()</code> function. To add a little bit of flexibility of changing the target value, I used Go’s standard library <code class="language-plaintext highlighter-rouge">flag</code> for parsing command-line arguments, though only a single option is needed now.</p>
+	<p>To avoid generating the same answer for any particular set of inputs, I shuffled the input numbers before doing the search.</p>
+	<div class="language-go highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">flag</span><span class="o">.</span><span class="n">Float64Var</span><span class="p">(</span><span class="o">&amp;</span><span class="n">target</span><span class="p">,</span> <span class="s">"t"</span><span class="p">,</span> <span class="m">24.0</span><span class="p">,</span> <span class="s">"target value"</span><span class="p">)</span>
     <span class="n">flag</span><span class="o">.</span><span class="n">Parse</span><span class="p">()</span>
 
@@ -231,29 +562,29 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="p">}</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<div class="notice--primary">
-			<p>The complete program can be found <a href="https://gist.github.com/iBug/62610c759f7702071baaf884301ae067">here</a> and is ready to compile &amp; run.</p>
-			<p>This program can output lines among <code class="language-plaintext highlighter-rouge">(1+3)*(2+4) = 24</code> and <code class="language-plaintext highlighter-rouge">1*2*3*4 = 24</code>, which looks good so far.</p>
-		</div>
-		<h2 id="next-level">Next level: Reducing duplicate answers</h2>
-		<p>It’s easy to add a “show all answers” flag:</p>
-		<div class="language-go highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">var</span> <span class="n">allAnswers</span> <span class="kt">bool</span>
+	</div>
+	<div class="notice--primary">
+		<p>The complete program can be found <a href="https://gist.github.com/iBug/62610c759f7702071baaf884301ae067">here</a> and is ready to compile &amp; run.</p>
+		<p>This program can output lines among <code class="language-plaintext highlighter-rouge">(1+3)*(2+4) = 24</code> and <code class="language-plaintext highlighter-rouge">1*2*3*4 = 24</code>, which looks good so far.</p>
+	</div>
+	<h2 id="next-level">Next level: Reducing duplicate answers</h2>
+	<p>It’s easy to add a “show all answers” flag:</p>
+	<div class="language-go highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">var</span> <span class="n">allAnswers</span> <span class="kt">bool</span>
 
 <span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">flag</span><span class="o">.</span><span class="n">BoolVar</span><span class="p">(</span><span class="o">&amp;</span><span class="n">allAnswers</span><span class="p">,</span> <span class="s">"a"</span><span class="p">,</span> <span class="no">false</span><span class="p">,</span> <span class="s">"find all solutions"</span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>And replace all <code class="language-plaintext highlighter-rouge">return result</code> with <code class="language-plaintext highlighter-rouge">return result &amp;&amp; !allAnswers</code> so that short-circuit expressions continue to run after finding an answer.</p>
-		<p>It does, however, prints a <em>lot</em> of redundant answers:</p>
-		<div class="language-plaintext highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>1*2*4*3 = 24
+	</div>
+	<p>And replace all <code class="language-plaintext highlighter-rouge">return result</code> with <code class="language-plaintext highlighter-rouge">return result &amp;&amp; !allAnswers</code> so that short-circuit expressions continue to run after finding an answer.</p>
+	<p>It does, however, prints a <em>lot</em> of redundant answers:</p>
+	<div class="language-plaintext highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>1*2*4*3 = 24
 1*3*2*4 = 24
 1*3*2*4 = 24
 1*4*2*3 = 24
@@ -263,16 +594,16 @@ Volume group <span class="s2">"test"</span> successfully extended
 2*3*1*4 = 24
 2*3*1*4 = 24
 </code></pre>
-			</div>
 		</div>
-		<p>Under the hood it could just be <code class="language-plaintext highlighter-rouge">(1*4)*(2*3)</code> and <code class="language-plaintext highlighter-rouge">1*(4*(2*3))</code>, which we don’t know for sure since we only omitted the parentheses.</p>
-		<h3 id="data-structures">Redesigning data structure</h3>
-		<p>We could fix this by flattening expressions so each addition and multiplication operator can have multiple operands. This also enables reliable sorting of elements, which is also pretty obvious.</p>
-		<p>There’s still more. We need to handle nested negativity. For example, <code class="language-plaintext highlighter-rouge">1-2+3</code> and <code class="language-plaintext highlighter-rouge">1-(2-3)</code> are really no different, and special care is to be taken when flattening. It also poses the challenge of sorting elements with mixed signs, as well as when parenthesizing them.</p>
-		<p>To keep the logic straightforward, instead of binary trees, we can use lists to store the operands. Subtracted elements can then be stored in another list under the same “group of additions”, and likewise is division. Finally, plain numbers still require their specialized handling.</p>
-		<div class="language-go highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">type</span> <span class="n">Expression</span> <span class="k">interface</span> <span class="p">{</span>
+	</div>
+	<p>Under the hood it could just be <code class="language-plaintext highlighter-rouge">(1*4)*(2*3)</code> and <code class="language-plaintext highlighter-rouge">1*(4*(2*3))</code>, which we don’t know for sure since we only omitted the parentheses.</p>
+	<h3 id="data-structures">Redesigning data structure</h3>
+	<p>We could fix this by flattening expressions so each addition and multiplication operator can have multiple operands. This also enables reliable sorting of elements, which is also pretty obvious.</p>
+	<p>There’s still more. We need to handle nested negativity. For example, <code class="language-plaintext highlighter-rouge">1-2+3</code> and <code class="language-plaintext highlighter-rouge">1-(2-3)</code> are really no different, and special care is to be taken when flattening. It also poses the challenge of sorting elements with mixed signs, as well as when parenthesizing them.</p>
+	<p>To keep the logic straightforward, instead of binary trees, we can use lists to store the operands. Subtracted elements can then be stored in another list under the same “group of additions”, and likewise is division. Finally, plain numbers still require their specialized handling.</p>
+	<div class="language-go highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">type</span> <span class="n">Expression</span> <span class="k">interface</span> <span class="p">{</span>
     <span class="n">Value</span><span class="p">()</span> <span class="kt">float64</span>
     <span class="n">Repr</span><span class="p">()</span> <span class="kt">string</span>
 <span class="p">}</span>
@@ -292,12 +623,12 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="n">Str</span> <span class="kt">string</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Sorting is easy as long as there’s a well-defined “order”:</p>
-		<div class="language-go highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">func</span> <span class="n">CompareExpression</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="n">Expression</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+	</div>
+	<p>Sorting is easy as long as there’s a well-defined “order”:</p>
+	<div class="language-go highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">func</span> <span class="n">CompareExpression</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="n">Expression</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
     <span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">e2</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="p">{</span>
         <span class="k">return</span> <span class="no">true</span>
     <span class="p">}</span>
@@ -313,12 +644,12 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="p">})</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Calculating the value is also easy:</p>
-		<div class="language-go highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">AddGroup</span><span class="p">)</span> <span class="n">Value</span><span class="p">()</span> <span class="kt">float64</span> <span class="p">{</span>
+	</div>
+	<p>Calculating the value is also easy:</p>
+	<div class="language-go highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">AddGroup</span><span class="p">)</span> <span class="n">Value</span><span class="p">()</span> <span class="kt">float64</span> <span class="p">{</span>
     <span class="k">var</span> <span class="n">s</span> <span class="kt">float64</span> <span class="o">=</span> <span class="m">0</span>
     <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
         <span class="n">s</span> <span class="o">+=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
@@ -340,12 +671,12 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="k">return</span> <span class="n">s</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Generating representations for expressions has also been made easier and more consistent, as we no longer need to add parentheses for additions around subtractions, or multiplications around divisions. We only need parentheses around “groups of addition” among “groups of multiplication”. To ensure consistency, sort the expressions before producing strings.</p>
-		<div class="language-go highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">AddGroup</span><span class="p">)</span> <span class="n">Repr</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
+	</div>
+	<p>Generating representations for expressions has also been made easier and more consistent, as we no longer need to add parentheses for additions around subtractions, or multiplications around divisions. We only need parentheses around “groups of addition” among “groups of multiplication”. To ensure consistency, sort the expressions before producing strings.</p>
+	<div class="language-go highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">AddGroup</span><span class="p">)</span> <span class="n">Repr</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
     <span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">)</span>
     <span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">)</span>
     <span class="k">var</span> <span class="n">s</span> <span class="n">strings</span><span class="o">.</span><span class="n">Builder</span>
@@ -379,12 +710,12 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">String</span><span class="p">()[</span><span class="m">1</span><span class="o">:</span><span class="p">]</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Joining two elements into a new expression is now a little bit more complex, since we want to avoid nesting the same kind of groups. We need to check the types of the joining operands to determine whether we should append as a single element, or extract the lists and concatenate them. This also helps ensure that every group has at least one “positive” element, so it doesn’t begin with a minus sign or division.</p>
-		<div class="language-go highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">func</span> <span class="n">JoinAddGroup</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="n">Expression</span><span class="p">,</span> <span class="n">neg2</span> <span class="kt">bool</span><span class="p">)</span> <span class="o">*</span><span class="n">AddGroup</span> <span class="p">{</span>
+	</div>
+	<p>Joining two elements into a new expression is now a little bit more complex, since we want to avoid nesting the same kind of groups. We need to check the types of the joining operands to determine whether we should append as a single element, or extract the lists and concatenate them. This also helps ensure that every group has at least one “positive” element, so it doesn’t begin with a minus sign or division.</p>
+	<div class="language-go highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">func</span> <span class="n">JoinAddGroup</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="n">Expression</span><span class="p">,</span> <span class="n">neg2</span> <span class="kt">bool</span><span class="p">)</span> <span class="o">*</span><span class="n">AddGroup</span> <span class="p">{</span>
     <span class="n">e</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="n">AddGroup</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">a1</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">e1</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">AddGroup</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
         <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">a1</span><span class="o">.</span><span class="n">Pos</span><span class="o">...</span><span class="p">)</span>
@@ -410,15 +741,15 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="k">return</span> <span class="n">e</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>A <code class="language-plaintext highlighter-rouge">neg2</code> switch is provided to determine between <code class="language-plaintext highlighter-rouge">e1+e2</code> and <code class="language-plaintext highlighter-rouge">e1-e2</code> as we don’t want separate code for handling subtraction.</p>
-		<p>The exact same code is used for <code class="language-plaintext highlighter-rouge">JoinMulGroup</code> with only the types replaced. (This is why I switched to C++ after this point: Function templates are much more friendly for this kind of repeated logic.)</p>
-		<h3 id="deduplicating">Deduplicating</h3>
-		<p>With reliable expression flattening and sorting in place, we can now deduplicate results by comparing string representation:</p>
-		<div class="language-go highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">var</span> <span class="n">answers</span> <span class="p">[]</span><span class="kt">string</span>
+	</div>
+	<p>A <code class="language-plaintext highlighter-rouge">neg2</code> switch is provided to determine between <code class="language-plaintext highlighter-rouge">e1+e2</code> and <code class="language-plaintext highlighter-rouge">e1-e2</code> as we don’t want separate code for handling subtraction.</p>
+	<p>The exact same code is used for <code class="language-plaintext highlighter-rouge">JoinMulGroup</code> with only the types replaced. (This is why I switched to C++ after this point: Function templates are much more friendly for this kind of repeated logic.)</p>
+	<h3 id="deduplicating">Deduplicating</h3>
+	<p>With reliable expression flattening and sorting in place, we can now deduplicate results by comparing string representation:</p>
+	<div class="language-go highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">var</span> <span class="n">answers</span> <span class="p">[]</span><span class="kt">string</span>
 
 <span class="k">func</span> <span class="n">EvalResult</span><span class="p">(</span><span class="n">e</span> <span class="n">Expression</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
     <span class="n">result</span> <span class="o">:=</span> <span class="n">CompareFloat</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Value</span><span class="p">(),</span> <span class="n">target</span><span class="p">,</span> <span class="m">1e-6</span><span class="p">)</span>
@@ -439,39 +770,39 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="k">return</span> <span class="n">result</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">allAnswers</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>This is about as far as the new data structure can bring us. The current program handles structural duplicates very well: Running on input <code class="language-plaintext highlighter-rouge">1 2 3 4</code> produces only 4 results:</p>
-		<div class="language-plaintext highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>4*(1+2+3) = 24
+	</div>
+	<p>This is about as far as the new data structure can bring us. The current program handles structural duplicates very well: Running on input <code class="language-plaintext highlighter-rouge">1 2 3 4</code> produces only 4 results:</p>
+	<div class="language-plaintext highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>4*(1+2+3) = 24
 1*2*3*4 = 24
 2*3*4/1 = 24
 (1+3)*(2+4) = 24
 </code></pre>
-			</div>
 		</div>
-		<p class="notice--primary">The complete code so far can be found <a href="https://gist.github.com/iBug/b0e3d7dc11e53ac53df5f6d0438ad3b5">here</a>.</p>
-		<h2 id="advanced">Advanced level: More deduplication, and optimization</h2>
-		<p>On a side note, I switched to C++ at this point because I found Go’s comprehensive runtime <em>cumbersome</em>, and its lack of compiler optimization is specifically detrimental for such computing tasks. C++ has everything I need, including dynamic arrays (<code class="language-plaintext highlighter-rouge">vector</code>), dynamic typing (RTTI via <code class="language-plaintext highlighter-rouge">virtual</code> functions and <code class="language-plaintext highlighter-rouge">dynamic_cast</code>) and hash sets (<code class="language-plaintext highlighter-rouge">unordered_set</code>). C++ also has the advantage of supporting function templates and inheritance, which helps greatly with duplicate logic. The only thing missing from Go is a standard library for parsing command-line arguments, which bothers very little as I don’t need complex parsing rules. (There are external libraries that I want to avoid, such as POSIX <code class="language-plaintext highlighter-rouge">getopt()</code>.)</p>
-		<h3 id="cpp">Switching to C++</h3>
-		<p>To mimic the <code class="language-plaintext highlighter-rouge">Expression</code> interface in Go, I created an abstract base class:</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
+	</div>
+	<p class="notice--primary">The complete code so far can be found <a href="https://gist.github.com/iBug/b0e3d7dc11e53ac53df5f6d0438ad3b5">here</a>.</p>
+	<h2 id="advanced">Advanced level: More deduplication, and optimization</h2>
+	<p>On a side note, I switched to C++ at this point because I found Go’s comprehensive runtime <em>cumbersome</em>, and its lack of compiler optimization is specifically detrimental for such computing tasks. C++ has everything I need, including dynamic arrays (<code class="language-plaintext highlighter-rouge">vector</code>), dynamic typing (RTTI via <code class="language-plaintext highlighter-rouge">virtual</code> functions and <code class="language-plaintext highlighter-rouge">dynamic_cast</code>) and hash sets (<code class="language-plaintext highlighter-rouge">unordered_set</code>). C++ also has the advantage of supporting function templates and inheritance, which helps greatly with duplicate logic. The only thing missing from Go is a standard library for parsing command-line arguments, which bothers very little as I don’t need complex parsing rules. (There are external libraries that I want to avoid, such as POSIX <code class="language-plaintext highlighter-rouge">getopt()</code>.)</p>
+	<h3 id="cpp">Switching to C++</h3>
+	<p>To mimic the <code class="language-plaintext highlighter-rouge">Expression</code> interface in Go, I created an abstract base class:</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
     <span class="k">virtual</span> <span class="o">~</span><span class="n">Expression</span><span class="p">()</span> <span class="p">{}</span>
     <span class="k">virtual</span> <span class="kt">void</span> <span class="n">normalize</span><span class="p">()</span> <span class="p">{}</span>
     <span class="k">virtual</span> <span class="k">operator</span> <span class="n">string</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
     <span class="k">virtual</span> <span class="k">operator</span> <span class="kt">double</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">};</span>
 </code></pre>
-			</div>
 		</div>
-		<p>I also took this chance to separate <code class="language-plaintext highlighter-rouge">string()</code> from <code class="language-plaintext highlighter-rouge">normalize()</code>, since they really could do different things and not necessarily together.</p>
-		<p>The additive group and multiplicative group can also have some commonalities extracted into a new base class, to allow even more shared code.</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">struct</span> <span class="nc">ExpressionGroup</span> <span class="o">:</span> <span class="n">Expression</span> <span class="p">{</span>
+	</div>
+	<p>I also took this chance to separate <code class="language-plaintext highlighter-rouge">string()</code> from <code class="language-plaintext highlighter-rouge">normalize()</code>, since they really could do different things and not necessarily together.</p>
+	<p>The additive group and multiplicative group can also have some commonalities extracted into a new base class, to allow even more shared code.</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">struct</span> <span class="nc">ExpressionGroup</span> <span class="o">:</span> <span class="n">Expression</span> <span class="p">{</span>
     <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;</span> <span class="n">positive</span><span class="p">;</span>
     <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;</span> <span class="n">negative</span><span class="p">;</span>
 
@@ -506,22 +837,22 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="k">return</span> <span class="n">join_group</span><span class="o">&lt;</span><span class="n">MultiplicativeGroup</span><span class="o">&gt;</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">negative</span><span class="p">);</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<h3 id="double-negativity">Double-negativity in multiplicative groups</h3>
-		<p>When fed with input <code class="language-plaintext highlighter-rouge">1 1 4 9</code>, the above Go program produces 2 results:</p>
-		<div class="language-plaintext highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>(4-1)*(9-1) = 24
+	</div>
+	<h3 id="double-negativity">Double-negativity in multiplicative groups</h3>
+	<p>When fed with input <code class="language-plaintext highlighter-rouge">1 1 4 9</code>, the above Go program produces 2 results:</p>
+	<div class="language-plaintext highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>(4-1)*(9-1) = 24
 (1-9)*(1-4) = 24
 </code></pre>
-			</div>
 		</div>
-		<p>To fix this, we examine how many additive groups that can be “inverted” under a multiplicative group, and invert them in pairs.</p>
-		<p>We consider an additive group <em>invertible</em> if it evaluates to a negative value and has at least one subtracted element:</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
+	</div>
+	<p>To fix this, we examine how many additive groups that can be “inverted” under a multiplicative group, and invert them in pairs.</p>
+	<p>We consider an additive group <em>invertible</em> if it evaluates to a negative value and has at least one subtracted element:</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
     <span class="k">virtual</span> <span class="kt">void</span> <span class="n">invert</span><span class="p">()</span> <span class="p">{}</span>
     <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">is_invertible</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="nb">false</span><span class="p">;</span> <span class="p">}</span>
 <span class="p">};</span>
@@ -542,13 +873,13 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="p">}</span>
 <span class="p">};</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Note that the default implementation for <code class="language-plaintext highlighter-rouge">invert()</code> and <code class="language-plaintext highlighter-rouge">is_invertible()</code> applies to plain numbers as they can’t just grab a minus sign and become inverted.</p>
-		<p>Now we have the necessary APIs for fixing multiplicative groups:</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="kt">void</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+	</div>
+	<p>Note that the default implementation for <code class="language-plaintext highlighter-rouge">invert()</code> and <code class="language-plaintext highlighter-rouge">is_invertible()</code> applies to plain numbers as they can’t just grab a minus sign and become inverted.</p>
+	<p>Now we have the necessary APIs for fixing multiplicative groups:</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="kt">void</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
     <span class="kt">int</span> <span class="n">neg_count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
     <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
         <span class="n">neg_count</span> <span class="o">+=</span> <span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">();</span>
@@ -572,12 +903,12 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="k">this</span><span class="o">-&gt;</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">();</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Because normalization doesn’t change the value of an expression, we call it only when we need a string representation. This means we can normalize after determining whether it’s a solution.</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">answers</span><span class="p">;</span>
+	</div>
+	<p>Because normalization doesn’t change the value of an expression, we call it only when we need a string representation. This means we can normalize after determining whether it’s a solution.</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">answers</span><span class="p">;</span>
 
 <span class="kt">bool</span> <span class="nf">eval_result</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">node</span><span class="p">)</span> <span class="p">{</span>
     <span class="kt">bool</span> <span class="n">result</span> <span class="o">=</span> <span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="n">node</span><span class="p">,</span> <span class="n">target</span><span class="p">);</span>
@@ -591,22 +922,22 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<h3 id="negative-subtraction">Subtracting negative values</h3>
-		<p>When fed with input <code class="language-plaintext highlighter-rouge">1 1 4 9</code>, the above Go program produces 7 results, among which are these two:</p>
-		<div class="language-plaintext highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>4+(7-3)*5 = 24
+	</div>
+	<h3 id="negative-subtraction">Subtracting negative values</h3>
+	<p>When fed with input <code class="language-plaintext highlighter-rouge">1 1 4 9</code>, the above Go program produces 7 results, among which are these two:</p>
+	<div class="language-plaintext highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>4+(7-3)*5 = 24
 4-(3-7)*5 = 24
 </code></pre>
-			</div>
 		</div>
-		<p>Apparently they are no more than a pair of <code class="language-plaintext highlighter-rouge">a+b</code> and <code class="language-plaintext highlighter-rouge">a-(-b)</code> variants. The latter form is just boring.</p>
-		<p>Now, in addition to additive groups, we need to implement inversion for multiplicative groups as well. This one isn’t hard either, just iterate through its children and see if any of them is invertible:</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">struct</span> <span class="nc">MultiplicativeGroup</span> <span class="o">:</span> <span class="n">ExpressionGroup</span> <span class="p">{</span>
+	</div>
+	<p>Apparently they are no more than a pair of <code class="language-plaintext highlighter-rouge">a+b</code> and <code class="language-plaintext highlighter-rouge">a-(-b)</code> variants. The latter form is just boring.</p>
+	<p>Now, in addition to additive groups, we need to implement inversion for multiplicative groups as well. This one isn’t hard either, just iterate through its children and see if any of them is invertible:</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">struct</span> <span class="nc">MultiplicativeGroup</span> <span class="o">:</span> <span class="n">ExpressionGroup</span> <span class="p">{</span>
     <span class="kt">bool</span> <span class="n">is_invertible</span><span class="p">()</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
         <span class="k">if</span> <span class="p">(</span><span class="kt">double</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
             <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
@@ -633,12 +964,12 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="p">}</span>
 <span class="p">};</span>
 </code></pre>
-			</div>
 		</div>
-		<p>We also have extra things to do than sorting when normalizing an additive group. That is, to move all invertible children from the negative list to the positive list, inverting all involved.</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="kt">void</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+	</div>
+	<p>We also have extra things to do than sorting when normalizing an additive group. That is, to move all invertible children from the negative list to the positive list, inverting all involved.</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="kt">void</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
     <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">negative</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">negative</span><span class="p">.</span><span class="n">end</span><span class="p">();)</span> <span class="p">{</span>
         <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">=</span> <span class="o">*</span><span class="n">it</span><span class="p">;</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span> <span class="p">{</span>
@@ -652,13 +983,13 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="k">this</span><span class="o">-&gt;</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">();</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<h3 id="identity-elements">Substracting zeros and dividing by ones</h3>
-		<p>Zero is the <a href="https://en.wikipedia.org/wiki/Identity_element">identity element</a> of addition, and one is that of multiplication. This means <code class="language-plaintext highlighter-rouge">a+0=a-0=a</code> and <code class="language-plaintext highlighter-rouge">a*1=a/1=a</code>. We can normalize <code class="language-plaintext highlighter-rouge">-0</code> into <code class="language-plaintext highlighter-rouge">+0</code> and <code class="language-plaintext highlighter-rouge">/1</code> into <code class="language-plaintext highlighter-rouge">*1</code>. This one’s even easier since it only moves elements from the negative list to the positive list.</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="kt">void</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+	</div>
+	<h3 id="identity-elements">Substracting zeros and dividing by ones</h3>
+	<p>Zero is the <a href="https://en.wikipedia.org/wiki/Identity_element">identity element</a> of addition, and one is that of multiplication. This means <code class="language-plaintext highlighter-rouge">a+0=a-0=a</code> and <code class="language-plaintext highlighter-rouge">a*1=a/1=a</code>. We can normalize <code class="language-plaintext highlighter-rouge">-0</code> into <code class="language-plaintext highlighter-rouge">+0</code> and <code class="language-plaintext highlighter-rouge">/1</code> into <code class="language-plaintext highlighter-rouge">*1</code>. This one’s even easier since it only moves elements from the negative list to the positive list.</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="kt">void</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
     <span class="c1">// ...</span>
     <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span> <span class="p">{</span>
         <span class="n">positive</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
@@ -667,12 +998,12 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="c1">// ...</span>
 <span class="p">}</span> 
 </code></pre>
-			</div>
 		</div>
-		<p>For multiplicative groups, we can go one step further and take care of <code class="language-plaintext highlighter-rouge">/(-1)</code> as well:</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="kt">void</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+	</div>
+	<p>For multiplicative groups, we can go one step further and take care of <code class="language-plaintext highlighter-rouge">/(-1)</code> as well:</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="kt">void</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
     <span class="c1">// ...</span>
     <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">negative</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">negative</span><span class="p">.</span><span class="n">end</span><span class="p">();)</span> <span class="p">{</span>
         <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">=</span> <span class="o">*</span><span class="n">it</span><span class="p">;</span>
@@ -686,14 +1017,14 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="c1">// ...</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<h3 id="memoization">Memoizing intermediate results</h3>
-		<p>For small inputs like only 4 numbers, there are only up to 36×18×6=3,888 leaf nodes to search, so any working algorithm shouldn’t run for more than tens of milliseconds. But why limit to 4 input numbers, a pretty artificial value, when the algorithm is designed to scale and handle inputs of any sizes?</p>
-		<p>With 8 input numbers, the latest Go program runs from 20 seconds to more than a minute. It’s easily imaginable that there are a lot of duplicate intermediate search nodes, like <code class="language-plaintext highlighter-rouge">(a+b) (c+d)</code> and <code class="language-plaintext highlighter-rouge">(c+d) (a+b)</code>. Searching further down these states wastes a lot of time. Given that we already have normalization and sorting facilities, it’s straightforward to serialize an intermediate state, save it in a set, and prune repeated search branches.</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">states</span><span class="p">;</span>
+	</div>
+	<h3 id="memoization">Memoizing intermediate results</h3>
+	<p>For small inputs like only 4 numbers, there are only up to 36×18×6=3,888 leaf nodes to search, so any working algorithm shouldn’t run for more than tens of milliseconds. But why limit to 4 input numbers, a pretty artificial value, when the algorithm is designed to scale and handle inputs of any sizes?</p>
+	<p>With 8 input numbers, the latest Go program runs from 20 seconds to more than a minute. It’s easily imaginable that there are a lot of duplicate intermediate search nodes, like <code class="language-plaintext highlighter-rouge">(a+b) (c+d)</code> and <code class="language-plaintext highlighter-rouge">(c+d) (a+b)</code>. Searching further down these states wastes a lot of time. Given that we already have normalization and sorting facilities, it’s straightforward to serialize an intermediate state, save it in a set, and prune repeated search branches.</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">states</span><span class="p">;</span>
 
 <span class="kt">bool</span> <span class="nf">dedup_state</span><span class="p">(</span><span class="k">const</span> <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;&amp;</span> <span class="n">nodes</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">use_states</span><span class="p">)</span>
@@ -708,57 +1039,57 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="k">return</span> <span class="o">!</span><span class="n">states</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">ss</span><span class="p">.</span><span class="n">str</span><span class="p">()).</span><span class="n">second</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Then at the beginning of the recursive <code class="language-plaintext highlighter-rouge">search()</code> function, right after the evaluation branch, we add the pruning logic:</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="kt">bool</span> <span class="nf">search</span><span class="p">(</span><span class="k">const</span> <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;&amp;</span> <span class="n">nodes</span><span class="p">)</span> <span class="p">{</span>
+	</div>
+	<p>Then at the beginning of the recursive <code class="language-plaintext highlighter-rouge">search()</code> function, right after the evaluation branch, we add the pruning logic:</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="kt">bool</span> <span class="nf">search</span><span class="p">(</span><span class="k">const</span> <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;&amp;</span> <span class="n">nodes</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">nodes</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">eval_result</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">all_answers</span><span class="p">;</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">dedup_state</span><span class="p">(</span><span class="n">nodes</span><span class="p">))</span>
         <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
 </code></pre>
-			</div>
 		</div>
-		<p>My testing shows that this optimization brings a speedup of 1.5× to 2×, depending on input pattern. On extreme cases like 8 ones, the speedup even goes over 4×.</p>
-		<p>Finally, to use the right tool for the right job:</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="n">use_states</span> <span class="o">=</span> <span class="n">nums</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">;</span>
+	</div>
+	<p>My testing shows that this optimization brings a speedup of 1.5× to 2×, depending on input pattern. On extreme cases like 8 ones, the speedup even goes over 4×.</p>
+	<p>Finally, to use the right tool for the right job:</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="n">use_states</span> <span class="o">=</span> <span class="n">nums</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">;</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Because generating and hashing strings could be expensive, and there aren’t enough duplicates for small inputs, I chose to enable mid-way deduplication only for inputs with 5 or more numbers.</p>
-		<h3 id="placement">Placement of zeros and ones</h3>
-		<p>The last thing to handle is the placement of no-ops, like <code class="language-plaintext highlighter-rouge">*1</code> and <code class="language-plaintext highlighter-rouge">+3-3</code>. While it could be arithmetically different between <code class="language-plaintext highlighter-rouge">a+b-b</code> and <code class="language-plaintext highlighter-rouge">a*b/b</code>, or between <code class="language-plaintext highlighter-rouge">a*1+b</code> and <code class="language-plaintext highlighter-rouge">(a+b)*1</code>, one would think the difference is minimal when playing with cards in reality.</p>
-		<p>Taking the same convention as on the <a href="https://www.4nums.com/theory/"><em>4 Numbers</em></a> website, points 7 and 8, the following rules is defined as “preferences for duplicates”:</p>
-		<ul>
-			<li>Multiplying by ±1 happens on the topmost multiplication group, so <code class="language-plaintext highlighter-rouge">1*2+3*4</code> becomes <code class="language-plaintext highlighter-rouge">1*(2+3*4)</code>, except when there’s a pair of additive no-ops: <code class="language-plaintext highlighter-rouge">(a+b)*1+c-c</code> is preferred over <code class="language-plaintext highlighter-rouge">(a+b+c-c)*1</code>.</li>
-			<li>A pair of same numbers cancelling each other must be done with addition and subtraction, and must happen at the topmost layer, so <code class="language-plaintext highlighter-rouge">a*b/b+c</code> becomes <code class="language-plaintext highlighter-rouge">a+c+b-b</code>. This applies to ones.</li>
-		</ul>
-		<p>Now put them into code. If we try to fix it the same way as normalizing, there’s a fundamental difference from previous deduplication methods: The other normalization don’t modify the components (structurally) but only move them around, while the handling of zeros and ones will have to extract numbers from sub-expressions and place them elsewhere. This breaks two things:</p>
-		<ul>
-			<li>The searching algorithm assumes numbers and expressions aren’t modified in recursions. Continuing to do so might cause the search to miss potential solutions.</li>
-			<li>After cleaning up <code class="language-plaintext highlighter-rouge">shared_ptr</code>s, memory allocation is handled manually. Breaking the existing tree structure makes tracking objects <em>much</em> harder, and it’s easier to reach a memory leak or whatever.</li>
-		</ul>
-		<p>So I had to give up normalizing this one. But there must be a solution.</p>
-		<p>Turning our attention back to the recursive searching. It performs a comprehensive enumeration of possible combinations of every pair of numbers, and therefore must be able to form every possible expression tree from the given numbers.</p>
-		<p>Right, we could just define the “canonical forms” and reject solutions coming in non-canonical forms.</p>
-		<p>Starting off with the base form. The sole boolean argument is necessary because certain structures should live in the top layer, and they need special treatment.</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
+	</div>
+	<p>Because generating and hashing strings could be expensive, and there aren’t enough duplicates for small inputs, I chose to enable mid-way deduplication only for inputs with 5 or more numbers.</p>
+	<h3 id="placement">Placement of zeros and ones</h3>
+	<p>The last thing to handle is the placement of no-ops, like <code class="language-plaintext highlighter-rouge">*1</code> and <code class="language-plaintext highlighter-rouge">+3-3</code>. While it could be arithmetically different between <code class="language-plaintext highlighter-rouge">a+b-b</code> and <code class="language-plaintext highlighter-rouge">a*b/b</code>, or between <code class="language-plaintext highlighter-rouge">a*1+b</code> and <code class="language-plaintext highlighter-rouge">(a+b)*1</code>, one would think the difference is minimal when playing with cards in reality.</p>
+	<p>Taking the same convention as on the <a href="https://www.4nums.com/theory/"><em>4 Numbers</em></a> website, points 7 and 8, the following rules is defined as “preferences for duplicates”:</p>
+	<ul>
+		<li>Multiplying by ±1 happens on the topmost multiplication group, so <code class="language-plaintext highlighter-rouge">1*2+3*4</code> becomes <code class="language-plaintext highlighter-rouge">1*(2+3*4)</code>, except when there’s a pair of additive no-ops: <code class="language-plaintext highlighter-rouge">(a+b)*1+c-c</code> is preferred over <code class="language-plaintext highlighter-rouge">(a+b+c-c)*1</code>.</li>
+		<li>A pair of same numbers cancelling each other must be done with addition and subtraction, and must happen at the topmost layer, so <code class="language-plaintext highlighter-rouge">a*b/b+c</code> becomes <code class="language-plaintext highlighter-rouge">a+c+b-b</code>. This applies to ones.</li>
+	</ul>
+	<p>Now put them into code. If we try to fix it the same way as normalizing, there’s a fundamental difference from previous deduplication methods: The other normalization don’t modify the components (structurally) but only move them around, while the handling of zeros and ones will have to extract numbers from sub-expressions and place them elsewhere. This breaks two things:</p>
+	<ul>
+		<li>The searching algorithm assumes numbers and expressions aren’t modified in recursions. Continuing to do so might cause the search to miss potential solutions.</li>
+		<li>After cleaning up <code class="language-plaintext highlighter-rouge">shared_ptr</code>s, memory allocation is handled manually. Breaking the existing tree structure makes tracking objects <em>much</em> harder, and it’s easier to reach a memory leak or whatever.</li>
+	</ul>
+	<p>So I had to give up normalizing this one. But there must be a solution.</p>
+	<p>Turning our attention back to the recursive searching. It performs a comprehensive enumeration of possible combinations of every pair of numbers, and therefore must be able to form every possible expression tree from the given numbers.</p>
+	<p>Right, we could just define the “canonical forms” and reject solutions coming in non-canonical forms.</p>
+	<p>Starting off with the base form. The sole boolean argument is necessary because certain structures should live in the top layer, and they need special treatment.</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
     <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">is_top_level</span> <span class="o">=</span> <span class="nb">true</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span> <span class="p">}</span>
 <span class="p">};</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Obviously for plain numbers there’s nothing we can do, so this virtual function is not overridden for <code class="language-plaintext highlighter-rouge">struct Number</code>.</p>
-		<p>Now for the expression groups. Recursive checking is required, and more specific rules are to be provided by further overrides in the two kinds of specialized groups.</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">struct</span> <span class="nc">ExpressionGroup</span> <span class="o">:</span> <span class="n">Expression</span> <span class="p">{</span>
+	</div>
+	<p>Obviously for plain numbers there’s nothing we can do, so this virtual function is not overridden for <code class="language-plaintext highlighter-rouge">struct Number</code>.</p>
+	<p>Now for the expression groups. Recursive checking is required, and more specific rules are to be provided by further overrides in the two kinds of specialized groups.</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">struct</span> <span class="nc">ExpressionGroup</span> <span class="o">:</span> <span class="n">Expression</span> <span class="p">{</span>
     <span class="kt">bool</span> <span class="n">has_negative_pairs</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span>
         <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e1</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
             <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e2</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
@@ -778,13 +1109,13 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="p">}</span>
 <span class="p">};</span>
 </code></pre>
-			</div>
 		</div>
-		<p>The extra function is provided as a helper to shorten specialized code for descendants.</p>
-		<p>Multiplicative groups are easier to deal with: A top-level MG permits multiplying by ones, but only a single one.</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="kt">bool</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">allow_ones</span> <span class="o">=</span> <span class="nb">true</span><span class="p">)</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
+	</div>
+	<p>The extra function is provided as a helper to shorten specialized code for descendants.</p>
+	<p>Multiplicative groups are easier to deal with: A top-level MG permits multiplying by ones, but only a single one.</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="kt">bool</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">allow_ones</span> <span class="o">=</span> <span class="nb">true</span><span class="p">)</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="n">allow_ones</span><span class="p">))</span>
         <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
     <span class="kt">int</span> <span class="n">ones</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
@@ -797,12 +1128,12 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="k">return</span> <span class="o">!</span><span class="n">has_negative_pairs</span><span class="p">();</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Additive groups are a bit complicated, as they could contain a (technically) second-level MG while still permitting them to have multiply-by-ones. So instead of calling their <code class="language-plaintext highlighter-rouge">is_canonical()</code> with <code class="language-plaintext highlighter-rouge">false</code>, the argument should be inherited from the AG itself.</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="kt">bool</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">is_top_level</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+	</div>
+	<p>Additive groups are a bit complicated, as they could contain a (technically) second-level MG while still permitting them to have multiply-by-ones. So instead of calling their <code class="language-plaintext highlighter-rouge">is_canonical()</code> with <code class="language-plaintext highlighter-rouge">false</code>, the argument should be inherited from the AG itself.</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="kt">bool</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">is_top_level</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">is_top_level</span><span class="p">)</span> <span class="p">{</span>
         <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
             <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_canonical</span><span class="p">(</span><span class="k">dynamic_cast</span><span class="o">&lt;</span><span class="n">MultiplicativeGroup</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">nullptr</span><span class="p">))</span>
@@ -818,47 +1149,47 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="k">return</span> <span class="o">!</span><span class="n">has_negative_pairs</span><span class="p">();</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Unfortunately, this is practically ineffective. Solutions like <code class="language-plaintext highlighter-rouge">1*4+4*5</code> keep popping up. The missing details are:</p>
-		<ul>
-			<li>A sub-MG inherits its top-level-like behavior if it’s the only MG among all children of a top-level AG</li>
-			<li>An AG permits a top-level child MG if it’s otherwise a no-op. For example, <code class="language-plaintext highlighter-rouge">24*1+5-5</code> but not <code class="language-plaintext highlighter-rouge">8*1+8+8</code></li>
-		</ul>
-		<p>For the first point, we need to count all children and see how many of them are MGs, and for the second point we can check if the value of the AG equals to its only child MG. So wrap that up:</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">mg_count</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">,</span> <span class="o">*</span><span class="n">mg</span><span class="p">))</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
+	</div>
+	<p>Unfortunately, this is practically ineffective. Solutions like <code class="language-plaintext highlighter-rouge">1*4+4*5</code> keep popping up. The missing details are:</p>
+	<ul>
+		<li>A sub-MG inherits its top-level-like behavior if it’s the only MG among all children of a top-level AG</li>
+		<li>An AG permits a top-level child MG if it’s otherwise a no-op. For example, <code class="language-plaintext highlighter-rouge">24*1+5-5</code> but not <code class="language-plaintext highlighter-rouge">8*1+8+8</code></li>
+	</ul>
+	<p>For the first point, we need to count all children and see how many of them are MGs, and for the second point we can check if the value of the AG equals to its only child MG. So wrap that up:</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">mg_count</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">,</span> <span class="o">*</span><span class="n">mg</span><span class="p">))</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Now the program is correctly reporting that <code class="language-plaintext highlighter-rouge">1 8 8 8</code> has a single solution <code class="language-plaintext highlighter-rouge">(8+8+8)*1</code>, except that it stops producing solutions for <code class="language-plaintext highlighter-rouge">5 6 7 7</code>.</p>
-		<p>Notice that the only solution is <code class="language-plaintext highlighter-rouge">(5-7/7)*6</code>, and that we’re rejecting instead of normalizing this kind of “non-canonical” forms. The problem is that <code class="language-plaintext highlighter-rouge">7/7</code> acts as a concrete one for subtraction, instead of a no-op. Should have checked if there are other operands for multiplying…</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">return</span> <span class="o">!</span><span class="p">(</span><span class="n">positive</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">has_negative_pairs</span><span class="p">());</span>
+	</div>
+	<p>Now the program is correctly reporting that <code class="language-plaintext highlighter-rouge">1 8 8 8</code> has a single solution <code class="language-plaintext highlighter-rouge">(8+8+8)*1</code>, except that it stops producing solutions for <code class="language-plaintext highlighter-rouge">5 6 7 7</code>.</p>
+	<p>Notice that the only solution is <code class="language-plaintext highlighter-rouge">(5-7/7)*6</code>, and that we’re rejecting instead of normalizing this kind of “non-canonical” forms. The problem is that <code class="language-plaintext highlighter-rouge">7/7</code> acts as a concrete one for subtraction, instead of a no-op. Should have checked if there are other operands for multiplying…</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">return</span> <span class="o">!</span><span class="p">(</span><span class="n">positive</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">has_negative_pairs</span><span class="p">());</span>
 </code></pre>
-			</div>
 		</div>
-		<p>The program is still reporting “No solutions” for <code class="language-plaintext highlighter-rouge">1 5 5 5</code>, which has the same root cause. In the sole solution <code class="language-plaintext highlighter-rouge">(5-1/5)*5</code>, the 1 in the MG doesn’t act as a no-op, either. Time to wrap up with another guard.</p>
-		<div class="language-cpp highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">positive</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="cm">/* check for ones */</span> <span class="p">}</span>
+	</div>
+	<p>The program is still reporting “No solutions” for <code class="language-plaintext highlighter-rouge">1 5 5 5</code>, which has the same root cause. In the sole solution <code class="language-plaintext highlighter-rouge">(5-1/5)*5</code>, the 1 in the MG doesn’t act as a no-op, either. Time to wrap up with another guard.</p>
+	<div class="language-cpp highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">positive</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="cm">/* check for ones */</span> <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<h2 id="postface">Postface</h2>
-		<p>The <em>4 Numbers</em> website provides a comprehensive list of all 1362 solvable quadruples from 1 to 13 (i.e. formed with a standard 52-card set). Just grab the page and do some HTML processing, and a good test suite is readily available.</p>
-		<p><a href="https://gist.github.com/iBug/ea958ca7f1270128d58b5176858d71cb">Here</a>’s the final version of the C++ code. It gives solutions to 1362 test cases where all of them are identical to those on the <em>4 Numbers</em> website.</p>
-		<p>The problem originates from a course <em>Program Design II</em> where a friend of mine works as a TA this semester.</p>
-		<h2 id="references">References</h2>
-		<ul>
-			<li><a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 (puzzle) - Wikipedia</a></li>
-			<li>
-				<p><a href="https://www.4nums.com/theory/">Definition of “distinct” by <em>4 Numbers</em> website</a></p>
-			</li>
-		</ul>
-		]]></content><author><name>iBug</name></author><category term="development" /><category term="c++" /><category term="algorithm" /><summary type="html"><![CDATA[The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.]]></summary></entry><entry><title type="html">Centralized Linux authentication with OpenLDAP</title><link href="https://ibug.io/blog/2022/03/linux-openldap-server/" rel="alternate" type="text/html" title="Centralized Linux authentication with OpenLDAP" /><published>2022-03-18T00:00:00+00:00</published><updated>2022-05-01T15:21:23+00:00</updated><id>https://ibug.io/blog/2022/03/linux-openldap-server</id><content type="html" xml:base="https://ibug.io/blog/2022/03/linux-openldap-server/"><![CDATA[<p>LDAP, <del>the #1 way to get your graduation delayed</del> (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes the most serious dedication to set up and maintain, yet the slightest agitation to fail.</p>
+	</div>
+	<h2 id="postface">Postface</h2>
+	<p>The <em>4 Numbers</em> website provides a comprehensive list of all 1362 solvable quadruples from 1 to 13 (i.e. formed with a standard 52-card set). Just grab the page and do some HTML processing, and a good test suite is readily available.</p>
+	<p><a href="https://gist.github.com/iBug/ea958ca7f1270128d58b5176858d71cb">Here</a>’s the final version of the C++ code. It gives solutions to 1362 test cases where all of them are identical to those on the <em>4 Numbers</em> website.</p>
+	<p>The problem originates from a course <em>Program Design II</em> where a friend of mine works as a TA this semester.</p>
+	<h2 id="references">References</h2>
+	<ul>
+		<li><a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 (puzzle) - Wikipedia</a></li>
+		<li>
+			<p><a href="https://www.4nums.com/theory/">Definition of “distinct” by <em>4 Numbers</em> website</a></p>
+		</li>
+	</ul>
+	]]></content><author><name>iBug</name></author><category term="development" /><category term="c++" /><category term="algorithm" /><summary type="html"><![CDATA[The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.]]></summary></entry><entry><title type="html">Centralized Linux authentication with OpenLDAP</title><link href="https://ibug.io/blog/2022/03/linux-openldap-server/" rel="alternate" type="text/html" title="Centralized Linux authentication with OpenLDAP" /><published>2022-03-18T00:00:00+00:00</published><updated>2022-05-01T15:21:23+00:00</updated><id>https://ibug.io/blog/2022/03/linux-openldap-server</id><content type="html" xml:base="https://ibug.io/blog/2022/03/linux-openldap-server/"><![CDATA[<p>LDAP, <del>the #1 way to get your graduation delayed</del> (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes the most serious dedication to set up and maintain, yet the slightest agitation to fail.</p>
 	<p>The <em>correct</em> story behind this opens up with our lab’s messy machine management. While home directories across machines are shared from a common NFS server, user and group information is managed manually. To start with, whenever someone joins our lab, the other admin (thankfully not yet me) creates a user for them on <em>every</em> machine they’d access, while paying attention to the consistency of UID and GID. What’s worse, we often grant temporary access to a selected set of machines to guest students to enable them to work on certain projects, or to participate in competitions on behalf of our lab. Not to mention the other admin himself has literally 5 different UIDs on different hosts.</p>
 	<p>LDAP solves this agony and saves a lot of sysadmins’ souls by providing centralized management to users, groups and some other organizational resources using a directory-structured database. While I previously used an existing GOsa² setup for simple management tasks, our lab’s new cluster provides an excellent opportunity to try out LDAP anew.</p>
 	<h2 id="prerequisites">Prerequisites</h2>
@@ -1921,405 +2252,4 @@ mount <span class="nt">-t</span> sysfs _ /sys
 	<p>Google search for “raid: failed to run raid array” brings me to <a href="https://askubuntu.com/q/292092/612877">this Ask Ubuntu question</a>. Checking the answers and the comments, I reboot again into Debian Live CD, mount the rootfs, install <code class="language-plaintext highlighter-rouge">mdadm</code>, and <code class="language-plaintext highlighter-rouge">update-initramfs</code> again. The next reboot proved correct, and the Proxmox VE server is back up now.</p>
 	<h2 id="other-stuff">Other stuff</h2>
 	<p>At this point, this server maintenance job has been concluded. If you’re stumbling upon this article and find a mistake or have other questions, feel free to leave a comment below.</p>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><summary type="html"><![CDATA[Yesterday in a server maintenance period, we decided to tune the storage layout of our Proxmox VE server, which included disassembling a RAID 1 array and adjusting the size of the root filesystem.]]></summary></entry><entry><title type="html">I switched from Google Chrome to Microsoft Edge</title><link href="https://ibug.io/blog/2021/06/switch-from-google-chrome-to-microsoft-edge/" rel="alternate" type="text/html" title="I switched from Google Chrome to Microsoft Edge" /><published>2021-06-12T00:00:00+00:00</published><updated>2022-05-01T15:21:23+00:00</updated><id>https://ibug.io/blog/2021/06/switch-from-google-chrome-to-microsoft-edge</id><content type="html" xml:base="https://ibug.io/blog/2021/06/switch-from-google-chrome-to-microsoft-edge/"><![CDATA[<p>Last year (maybe September? I don’t remember now) I switched my primary browser from Google Chrome to the new Microsoft Edge. It turned out to be a wise move and I’ve been with Edge for more than half a year now. In this article I’ll share my ideas with this move.</p>
-	<h3 id="same-chromium-kernel">Same Chromium kernel</h3>
-	<p>The moment Microsoft Edge went attractive was when I learned that <a href="https://www.browserstack.com/blog/chromium-based-edge/"><strong>it started to be based on Chromium</strong></a>, so that web pages will behave identially as if they were on Google Chrome or the Chromium browser. This is particularly important as I often engineer for Chrome when developing front-end applications.</p>
-	<p>Beside that, the seamless availability of existing Chrome extensions is also a great plus. I rely heavily on several extensions to enhance my surfing experience, some of which are:</p>
-	<ul>
-		<li><a href="https://microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd">Tampermonkey</a></li>
-		<li><a href="https://microsoftedge.microsoft.com/addons/detail/ublock-origin/odfafepnkmbhccpbejgmiehpchacaeak">uBlock Origin</a></li>
-		<li>Proxy SwitchyOmega</li>
-		<li><a href="https://microsoftedge.microsoft.com/addons/detail/https-everywhere/fchjpkplmbeeeaaogdbhjbgbknjobohb">HTTPS Everywhere</a></li>
-	</ul>
-	<p>Needless to say, the old EdgeHTML Edge browser was just disappointing, lacking many common browser features and a buggy rendering engine. I surely take it as a sensible move to replace the old kernel.</p>
-	<h3 id="windows-integration">Integration with Windows</h3>
-	<p>As for everything else designed for or ships with Windows, Microsoft Edge integrates excellently into Windows and other Microsoft online products.</p>
-	<p>You can log in to Microsoft Edge with your Microsoft account with just one click, if you have the account set up with your Windows user. Then the syncing launches automatically, and your saved bookmarks, histories, forms etc. are readily available.</p>
-	<p>A logged-in Microsoft Edge browser also eases the login process of most Microsoft products, like Office Online, OneDrive, or whatever web application using Microsoft OAuth login. As long as the browser is authenticated, the <code class="language-plaintext highlighter-rouge">login.microsoftonline.com</code> page proceeds automatically. This comes in handy when you want to maximize your operation on the web.</p>
-	<p>For sensitive access like <code class="language-plaintext highlighter-rouge">account.microsoft.com</code>, Microsoft Edge will prompt you for your PIN (if you have it set up on the computer) or password via the native Windows authentication system, bringing the same level of security of your Windows login to browser Microsoft account access.</p>
-	<h3 id="data-syncing">Data syncing</h3>
-	<p>Since I’m already using OneDrive for my document storage and syncing, I feel my data safer with Microsoft, and so does my browser information. Just like Google Chrome, the new Microsoft Edge syncs everything across computers and mobile devices. For the best connected experience, I also fetched Microsoft Edge (Android) from Google Play Store and signed in there. This enabled me to continue where I left off from my computer right on my phone.</p>
-	<p>One extra bonus point for mainland China users: Browser data sync for Microsoft Edge doesn’t require “over-the-wall” internet access. But for power users of Google Chrome (and Google search), I believe this isn’t an issue already.</p>
-	<h3 id="better-pdf-reader">Better PDF reader</h3>
-	<p>As with the old EdgeHTML version, the built-in PDF reader of Microsoft Edge outperforms that of all other browsers. Given its good performance and lower power consumption, it’s my PDF reader of choice on a business laptop that focuses on battery-run duration, so that I don’t need Adobe Acrobat for all its fancy features and battery hogging. Microsoft Edge provides all the basic functionalities I need on-the-go, like bookmarks nagivation and pen drawing.</p>
-	<h3 id="better-performance">Better performance</h3>
-	<p>Microsoft Edge, as promised, eats around 20% to 30% less memory than Google Chrome under the same load. This may not be a problem for beefy workstations with a lot of memory, but it surely plays a role in common househeld desktops and laptops. At a minimum, even if you don’t need to keep more tabs at the same time, the extra memory allows you to run other applications, or simply gives the computer a breath.</p>
-	<h2 id="disadvantages">Disadvantages</h2>
-	<p>Being relatively new as a consumer product, the new Microsoft Edge is still distant from perfection. There are quite a number of bugs or incomplete functionalities to spot.</p>
-	<h3 id="missing-favicons">Missing favicons</h3>
-	<p>The first thing it should fix is loading favicons for Favorites website. <strong>It doesn’t, at all.</strong> With a newly imported Favorites library from another browser, <strong>all favicons are missing</strong>. On contrary, Google Chrome tries to load as many as possible after importing bookmarks, which is usually done in a few minutes. This makes the initial setup particularly bothersome, as you now have to read every bookmark title to determine its target, when you <em>could have</em> done so just by skimming through the icons.</p>
-	<p><img src="/image/microsoft-edge/missing-favicons.png" alt="image" /></p>
-	<p>I really appreciate these blank icons. Thank you for reminding me of the 90’s nostagia of the web’s simplicity, Microsoft.</p>
-	<h3 id="new-tab-page-search-locked-to-bing">“New Tab” page search locked to Bing</h3>
-	<p>This one is obvious: Whatever you enter into the most noticeable input form will be searches <strong>via Bing</strong>. While in the settings Edge does allow you to choose a search provider for the <em>address bar</em>, it doesn’t, however, for the New Tab page. Google Chrome, however, does this with more sanity: The search provider for the address bar is also used for the New Tab page, giving you a consistent experience for searching.</p>
-	<p>To be honest, I would’ve stood with it had Chrome also locked the New Tab page search to Google, which is what I’m using extensively. But Bing just never gives the same level of precision with its search results, so locking a search form to Bing gives me the impression that Microsoft is <em>condescending</em>.</p>
-	<h2 id="summary">Summary</h2>
-	<p>So far so good. I’ve stayed with Microsoft Edge since and overall it’s quite satisfactory. There are many other differences that makes my experiences with Edge subtly better than with Chrome, like larger UI buttons and menus. So unless you’re a 100% Google power user, I’d recommend the new Microsoft Edge to you, too.</p>
-	]]></content><author><name>iBug</name></author><category term="life" /><category term="software" /><category term="web" /><summary type="html"><![CDATA[Last year (maybe September? I don’t remember now) I switched my primary browser from Google Chrome to the new Microsoft Edge. It turned out to be a wise move and I’ve been with Edge for more than half a year now. In this article I’ll share my ideas with this move.]]></summary></entry><entry><title type="html">Tunight talk</title><link href="https://ibug.io/blog/2021/04/tunight-talk/" rel="alternate" type="text/html" title="Tunight talk" /><published>2021-04-17T00:00:00+00:00</published><updated>2021-04-17T21:55:43+00:00</updated><id>https://ibug.io/blog/2021/04/tunight-talk</id><content type="html" xml:base="https://ibug.io/blog/2021/04/tunight-talk/"><![CDATA[<p>class: center, middle</p>
-	<h1 id="tech-talk">Tech Talk</h1>
-	<p><a href="//ibug.io">iBug</a>
-		<br />
-		<a href="https://lug.ustc.edu.cn">LUG @ USTC</a>
-		<br />
-		April 17, 2021</p>
-	<hr />
-	<h2 id="overview">Overview</h2>
-	<ul>
-		<li>Intranet of USTCLUG</li>
-		<li>Auto SSL certificate</li>
-		<li>Vlab</li>
-		<li>Miscellaneous</li>
-	</ul>
-	<hr />
-	<h2 id="intranet-of-ustclug">Intranet of USTCLUG</h2>
-	<ul>
-		<li>Multiple cloud and on-premises servers in different datacenters</li>
-		<li>Public and internal services
-			<ul>
-				<li>Public: Mirrors, Auth DNS, Homepage</li>
-				<li>Internal: LDAP, Mail gateway, InfluxDB</li>
-			</ul>
-		</li>
-	</ul>
-	<p>–</p>
-	<!-- -->
-	<ul>
-		<li>Layer 2 overlay network
-			<ul>
-				<li><a href="//www.tinc-vpn.org">Tinc VPN</a></li>
-			</ul>
-		</li>
-	</ul>
-	<hr />
-	<h2 id="tinc-vpn">Tinc VPN</h2>
-	<ul>
-		<li>Configured in switch mode</li>
-		<li>Mesh layout</li>
-		<li><strong>Bridged within one datacenter (cluster)</strong></li>
-		<li>Secured over the Internet</li>
-	</ul>
-	<hr />
-	<iframe src="https://www.draw.io/?lightbox=1&amp;highlight=0000ff&amp;edit=_blank&amp;layers=1&amp;nav=1&amp;title=LUG%20Network.html#Uhttps%3A%2F%2Fdrive.google.com%2Fa%2F0x01.me%2Fuc%3Fid%3D1WAROAPB8ThTkIjMyFnGvtGgbH-TV4FWh%26export%3Ddownload" frameborder="0" style="width: 100%; height: 100%;"></iframe>
-	<hr />
-	<p>layout: true</p>
-	<h2 id="automatic-ssl-certificate-issue--renewal">Automatic SSL certificate issue &amp; renewal</h2>
-	<hr />
-	<hr />
-	<p>Compliance:</p>
-	<ul>
-		<li>Our friend sponsored us a Japan VPS so we resolve most of <code class="language-plaintext highlighter-rouge">ustclug.org</code> (from outside USTCnet) to it
-			<ul>
-				<li>We resolve <code class="language-plaintext highlighter-rouge">ustclug.org</code> to USTCnet when source is also in USTCnet</li>
-			</ul>
-		</li>
-	</ul>
-	<!-- -->
-	<ul>
-		<li>USTC Mirrors has 4 ISP connections (CERNET, Telecom, Mobile, Unicom) and we want to route users by source</li>
-	</ul>
-	<p>–</p>
-	<!-- -->
-	<ul>
-		<li>Solution: Self-hosted Bind9 server
-			<ul>
-				<li>Return different answers based on source IP (views)</li>
-			</ul>
-		</li>
-	</ul>
-	<hr />
-	<ul>
-		<li>Solution: Self-hosted Bind9 server
-			<ul>
-				<li>Return different answers based on source IP (views)</li>
-			</ul>
-		</li>
-		<li>Custom authoritative DNS servers</li>
-	</ul>
-	<p>–</p>
-	<ul>
-		<li>Git-based DNS management</li>
-		<li>Integration into existing applications?
-			<ul>
-				<li>We have no easy-to-use API</li>
-			</ul>
-		</li>
-	</ul>
-	<hr />
-	<p>layout: true</p>
-	<h2 id="automatic-ssl-certificate-issue--renewal-1">Automatic SSL certificate issue &amp; renewal</h2>
-	<p>Use an existing API!</p>
-	<hr />
-	<hr />
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="c"># apt list ~npython3-certbot-dns</span>
-python3-certbot-dns-cloudflare    - Doesn<span class="s1">'t support sub-zones
-python3-certbot-dns-digitalocean  - [OK]
-python3-certbot-dns-dnsimple      - Paid
-python3-certbot-dns-gandi         - Doesn'</span>t support sub-zones
-python3-certbot-dns-gehirn        - <span class="o">[</span>Couldn<span class="s1">'t determine]
-python3-certbot-dns-google        - Doesn'</span>t support sub-zones
-python3-certbot-dns-linode        - No account, couldn<span class="s1">'t determine
-python3-certbot-dns-ovh           - Could not register account
-python3-certbot-dns-rfc2136       - Performance?
-python3-certbot-dns-route53       - Paid
-python3-certbot-dns-sakuracloud   - Could not register account
-</span></code></pre>
-		</div>
-	</div>
-	<p><code class="language-plaintext highlighter-rouge">acme.sh</code>?</p>
-	<hr />
-	<pre><code class="language-dns">_acme-challenge.lug.ustc.edu.cn.     600 IN CNAME  lug.ssl-digitalocean.ustclug.org.
-_acme-challenge.ustclug.org.         600 IN CNAME  lug.ssl-digitalocean.ustclug.org.
-_acme-challenge.proxy.ustclug.org.   600 IN CNAME  lug.ssl-digitalocean.ustclug.org.
-_acme-challenge.mirrors.ustc.edu.cn. 600 IN CNAME  mirrors.ssl-digitalocean.ustclug.org.
-</code></pre>
-	<pre><code class="language-dns">ssl-digitalocean.ustclug.org.  86400 IN NS  ns1.digitalocean.com.
-                               86400 IN NS  ns2.digitalocean.com.
-                               86400 IN NS  ns3.digitalocean.com.
-</code></pre>
-	<hr />
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>acme.sh <span class="nt">--issue</span> <span class="se">\</span>
-  <span class="nt">--dns</span> dns_dgon <span class="se">\</span>
-  <span class="nt">--domain-alias</span> lug.ssl-digitalocean.ustclug.org <span class="se">\</span>
-  <span class="nt">-d</span> lug.ustc.edu.cn <span class="se">\</span>
-  <span class="nt">-d</span> <span class="se">\*</span>.lug.ustc.edu.cn <span class="se">\</span>
-  <span class="nt">-d</span> ustclug.org <span class="se">\</span>
-  <span class="nt">-d</span> <span class="se">\*</span>.ustclug.org <span class="se">\</span>
-  <span class="nt">-d</span> <span class="se">\*</span>.proxy.ustclug.org <span class="se">\</span>
-  <span class="nt">--cert-file</span> cert/lug/cert.pem <span class="se">\</span>
-  <span class="nt">--key-file</span> cert/lug/privkey.pem <span class="se">\</span>
-  <span class="nt">--fullchain-file</span> cert/lug/fullchain.pem
-</code></pre>
-		</div>
-	</div>
-	<hr />
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>acme.sh <span class="nt">--issue</span> <span class="se">\</span>
-  <span class="nt">--dns</span> dns_dgon <span class="se">\</span>
-  <span class="nt">--domain-alias</span> mirrors.ssl-digitalocean.ustclug.org <span class="se">\</span>
-  <span class="nt">-d</span> mirrors.ustc.edu.cn <span class="se">\</span>
-  <span class="nt">-d</span> <span class="se">\*</span>.mirrors.ustc.edu.cn <span class="se">\</span>
-  <span class="nt">--cert-file</span> cert/mirrors/cert.pem <span class="se">\</span>
-  <span class="nt">--key-file</span> cert/mirrors/privkey.pem <span class="se">\</span>
-  <span class="nt">--fullchain-file</span> cert/mirrors/fullchain.pem
-</code></pre>
-		</div>
-	</div>
-	<hr />
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>git <span class="nt">-C</span> cert add <span class="nt">--all</span>
-git <span class="nt">-C</span> cert <span class="nt">-c</span> user.name<span class="o">=</span>GitHub <span class="nt">-c</span> user.email<span class="o">=</span>noreply@github.com commit <span class="se">\</span>
-    <span class="nt">-m</span> <span class="s2">"Update certificates on </span><span class="si">$(</span><span class="nb">date</span> +%Y-%m-%d<span class="si">)</span><span class="s2">"</span> <span class="se">\</span>
-    <span class="nt">-m</span> <span class="s2">"</span><span class="si">$(</span>git log <span class="nt">-1</span> <span class="nt">--pretty</span><span class="o">=</span><span class="s1">'tformat:[%h] %an: %s'</span> HEAD<span class="si">)</span><span class="s2">"</span>
-git <span class="nt">-C</span> cert push
-</code></pre>
-		</div>
-	</div>
-	<hr />
-	<p>layout: true</p>
-	<h2 id="vlab">Vlab</h2>
-	<hr />
-	<p><img src="https://vlab.ustc.edu.cn/docs/images/home.png" alt="" /></p>
-	<hr />
-	<p>layout: false
-		class: center, middle</p>
-	<div><img src="https://vlab.ustc.edu.cn/docs/images/vlab-in-browser.jpg" /></div>
-	<hr />
-	<p>layout: true</p>
-	<h2 id="vlab-1">Vlab</h2>
-	<hr />
-	<ul>
-		<li>Xilinx Vivado
-			<ul>
-				<li>Multiple GBs of <em>slow</em> downloading</li>
-				<li>Hard to setup and maintain</li>
-			</ul>
-		</li>
-		<li>Other software (MATLAB, Wolfram Mathematica etc.)
-			<ul>
-				<li>Same size &amp; complexity issues</li>
-			</ul>
-		</li>
-	</ul>
-	<p>–</p>
-	<!-- -->
-	<ul>
-		<li>
-			<s>Another VPS provider</s>
-		</li>
-		<li>LXC containers
-			<ul>
-				<li>Lightweight</li>
-				<li>Host-manageable</li>
-				<li>System container (<s>application container</s>)</li>
-			</ul>
-		</li>
-	</ul>
-	<hr />
-	<ul>
-		<li>Sharing &amp; Isolation</li>
-	</ul>
-	<p>–</p>
-	<!-- -->
-	<ul>
-		<li>Storage allocation: LVM
-			<ul>
-				<li>iSCSI isn’t multi-mount-aware</li>
-				<li>ZFS doesn’t support</li>
-				<li>NFS = SPOF</li>
-			</ul>
-		</li>
-	</ul>
-	<p>–</p>
-	<ul>
-		<li>But why does LVM work?</li>
-	</ul>
-	<p>–</p>
-	<ul>
-		<li><strong>“Activated volume”</strong>
-			<ul>
-				<li>PVE native support: Only activate volumes in use by VMs/CTs</li>
-			</ul>
-		</li>
-	</ul>
-	<p>–</p>
-	<!-- -->
-	<ul>
-		<li>Network isolation: VXLAN
-			<ul>
-				<li><span style="color: salmon;">❤</span> -50</li>
-				<li>Solution: Increase host <span style="color: salmon;">❤</span> to 1550</li>
-			</ul>
-		</li>
-	</ul>
-	<hr />
-	<p>User access:</p>
-	<ul>
-		<li>VNC unified login
-			<ul>
-				<li>10,000 lines of C++ (by <a href="//github.com/pdlan">pdlan</a>)
-					<ul>
-						<li>Identify users via VNC login username
-							<ul>
-								<li>Multi VM selection: <code class="language-plaintext highlighter-rouge">username:id</code></li>
-							</ul>
-						</li>
-						<li>Queries Django for VM information</li>
-					</ul>
-				</li>
-			</ul>
-		</li>
-		<li>Browser login: noVNC</li>
-	</ul>
-	<p>–</p>
-	<ul>
-		<li>SSH unified login
-			<ul>
-				<li>Modified from <a href="//github.com/tg123/sshpiper">tg123/sshpiper</a></li>
-				<li>Pubkey-based user identificaion
-					<ul>
-						<li>Certificate-based VM access</li>
-					</ul>
-				</li>
-			</ul>
-		</li>
-		<li>Browser login: Wetty (alpha)</li>
-	</ul>
-	<hr />
-	<p>layout: false</p>
-	<iframe src="https://vlab.ustc.edu.cn/grafana/d-solo/2/vlab-usage-statistics?orgId=1&amp;from=1587065070291&amp;to=1618601070291&amp;theme=light&amp;panelId=2" frameborder="0" style="width: 100%; height: 100%;"></iframe>
-	<hr />
-	<p>layout: true</p>
-	<h2 id="miscellaneous">Miscellaneous</h2>
-	<hr />
-	<ul>
-		<li>Protect ports of VM from host (iptables)
-			<ul>
-				<li>SSH-based “authentication” ✔</li>
-			</ul>
-		</li>
-	</ul>
-	<hr />
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>:INPUT DROP <span class="o">[</span>0:0]
-<span class="c"># ...</span>
-:iBug - <span class="o">[</span>0:0]
-<span class="nt">-A</span> INPUT <span class="nt">-m</span> conntrack <span class="nt">--ctstate</span> RELATED,ESTABLISHED <span class="nt">-j</span> ACCEPT
-<span class="nt">-A</span> INPUT <span class="nt">-i</span> lo <span class="nt">-j</span> ACCEPT
-<span class="nt">-A</span> INPUT <span class="nt">-j</span> iBug
-<span class="nt">-A</span> INPUT <span class="nt">-g</span> BLOCK
-
-<span class="c"># ...</span>
-<span class="nt">-A</span> iBug <span class="nt">-p</span> icmp <span class="nt">-j</span> ACCEPT
-<span class="nt">-A</span> iBug <span class="nt">-p</span> tcp <span class="nt">-m</span> multiport <span class="nt">--dports</span> 22,80,443,8888,25565 <span class="nt">-j</span> ACCEPT
-<span class="nt">-A</span> iBug <span class="nt">-m</span> <span class="nb">set</span> <span class="o">!</span> <span class="nt">--match-set</span> home src <span class="nt">-p</span> tcp <span class="nt">--dport</span> 3389 <span class="nt">-j</span> BLOCK
-</code></pre>
-		</div>
-	</div>
-	<p><code class="language-plaintext highlighter-rouge">/etc/iptables/ipsets</code>:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>create home <span class="nb">hash</span>:ip family inet <span class="nb">timeout </span>600
-</code></pre>
-		</div>
-	</div>
-	<hr />
-	<p><code class="language-plaintext highlighter-rouge">~/.ssh/rc</code>:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="c">#!/bin/bash</span>
-
-<span class="k">if</span> <span class="o">[</span> <span class="nt">-z</span> <span class="s2">"</span><span class="nv">$BASH</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
-  </span><span class="nb">exec</span> /bin/bash <span class="nt">--</span> <span class="s2">"</span><span class="nv">$0</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span>
-  <span class="nb">exit </span>1
-<span class="k">fi
-
-</span><span class="nv">_ssh_client</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">SSH_CONNECTION</span><span class="p">%% *</span><span class="k">}</span><span class="s2">"</span>
-<span class="nv">_ppid</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>ps <span class="nt">-o</span> <span class="nv">ppid</span><span class="o">=</span> <span class="si">$(</span>ps <span class="nt">-o</span> <span class="nv">ppid</span><span class="o">=</span> <span class="nv">$PPID</span><span class="si">))</span><span class="s2">"</span>
-
-<span class="nb">nohup</span> /home/ubuntu/.local/bin/_ssh_refresh_client <span class="s2">"</span><span class="nv">$_ssh_client</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$_ppid</span><span class="s2">"</span> &amp;&gt;/dev/null &amp; <span class="nb">exit </span>0
-</code></pre>
-		</div>
-	</div>
-	<hr />
-	<p><code class="language-plaintext highlighter-rouge">_ssh_refresh_client</code>:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="c">#!/bin/bash</span>
-
-<span class="k">if</span> <span class="o">[</span> <span class="nt">-z</span> <span class="s2">"</span><span class="nv">$BASH</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
-  </span><span class="nb">exec</span> /bin/bash <span class="nt">--</span> <span class="s2">"</span><span class="nv">$0</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span>
-<span class="k">fi
-
-</span><span class="nv">_ssh_client</span><span class="o">=</span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>
-<span class="nv">_ppid</span><span class="o">=</span><span class="s2">"</span><span class="nv">$2</span><span class="s2">"</span>
-
-<span class="k">while </span><span class="nb">kill</span> <span class="nt">-0</span> <span class="s2">"</span><span class="nv">$_ppid</span><span class="s2">"</span> 2&gt;/dev/null<span class="p">;</span> <span class="k">do
-  </span><span class="nb">sudo </span>ipset <span class="nt">-exist</span> add home <span class="s2">"</span><span class="nv">$_ssh_client</span><span class="s2">"</span> <span class="nb">timeout </span>300
-  <span class="nb">sleep </span>60
-<span class="k">done
-</span><span class="nb">exit </span>0
-</code></pre>
-		</div>
-	</div>
-	<hr />
-	<p>layout: false</p>
-	<h2 id="your-notification-center"><em>Your</em> notification center</h2>
-	<p><a href="https://github.com/iBug/rss-to-telegram">iBug/rss-to-telegram</a></p>
-	<p><img src="/image/rss-to-telegram.png" alt="" /></p>
-	<hr />
-	<h2 id="cloudflare-worker-makes-free-file-sharing-site">Cloudflare Worker makes free file sharing site</h2>
-	<p><a href="https://github.com/iBug/cf-github-releases">iBug/cf-github-releases</a></p>
-	<p><a href="https://download.ibugone.com">My demo site</a> (<a href="https://github.com/iBug/Archive/releases">Repository</a>)</p>
-	<p><img src="/image/cloudflare/cf-github-releases.png" alt="" /></p>
-	<hr />
-	<p>class: center, middle
-		layout: false</p>
-	<h1 id="thank-you">Thank you!</h1>
-	]]></content><author><name>iBug</name></author><summary type="html"><![CDATA[Slides for my talk at Tunight]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><summary type="html"><![CDATA[Yesterday in a server maintenance period, we decided to tune the storage layout of our Proxmox VE server, which included disassembling a RAID 1 array and adjusting the size of the root filesystem.]]></summary></entry></feed>

@@ -281,6 +281,14 @@
 			<lastmod>2022-06-19T22:06:07+00:00</lastmod>
 		</url>
 		<url>
+			<loc>https://ibug.io/blog/2022/11/paper-reading-cidr2022-crotty/</loc>
+			<lastmod>2022-11-27T19:45:37+00:00</lastmod>
+		</url>
+		<url>
+			<loc>https://ibug.io/blog/2022/11/recover-minecraft-world/</loc>
+			<lastmod>2022-11-27T19:45:37+00:00</lastmod>
+		</url>
+		<url>
 			<loc>https://ibug.io/project/OJSandbox/</loc>
 			<lastmod>2021-12-21T04:11:24+00:00</lastmod>
 		</url>
@@ -382,6 +390,10 @@
 			<lastmod>2021-02-26T00:17:56+00:00</lastmod>
 		</url>
 		<url>
+			<loc>https://ibug.io/blog/8/</loc>
+			<lastmod>2021-02-26T00:17:56+00:00</lastmod>
+		</url>
+		<url>
 			<loc>https://ibug.io/cn/</loc>
 			<lastmod>2021-12-24T21:43:15+00:00</lastmod>
 		</url>
@@ -466,6 +478,15 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/tag/ldap/</loc>
+		</url>
+		<url>
+			<loc>https://ibug.io/tag/paper-reading/</loc>
+		</url>
+		<url>
+			<loc>https://ibug.io/tag/games/</loc>
+		</url>
+		<url>
+			<loc>https://ibug.io/tag/minecraft/</loc>
 		</url>
 		<url>
 			<loc>https://ibug.io/tag/study-notes/</loc>
