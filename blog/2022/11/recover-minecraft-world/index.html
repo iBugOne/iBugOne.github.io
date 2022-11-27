@@ -21,7 +21,7 @@
 		<meta property="og:description" content="While a friend was building an automatic brewing pipeline, our Create: Astral server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2022-11-27T00:00:00+00:00">
-		<meta property="article:modified_time" content="2022-11-28T01:02:18+00:00">
+		<meta property="article:modified_time" content="2022-11-28T02:16:36+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2022/11/recover-minecraft-world/">
 		<script type="application/ld+json">
 			{
@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=2750a6e">
+		<link rel="stylesheet" href="/assets/css/main.css?v=84a7bd4">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -112,7 +112,7 @@
 						<span class="page__meta-sep"></span>
 						<span class="page__meta-readtime">
 							<i class="far fa-clock" aria-hidden="true"></i>
-							7 minute read
+							8 minute read
 						</span>
 					</p>
 				</div>
@@ -171,7 +171,7 @@
 					<meta itemprop="headline" content="Recovering a Minecraft world from a crash, the technician way">
 					<meta itemprop="description" content="While a friend was building an automatic brewing pipeline, our Create: Astral server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.">
 					<meta itemprop="datePublished" content="2022-11-27T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2022-11-28T01:02:18+00:00">
+					<meta itemprop="dateModified" content="2022-11-28T02:16:36+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -184,13 +184,14 @@
 										<li><a href="#reading-the-world-file">Reading the world file</a></li>
 										<li><a href="#replacing-the-block">Replacing the block</a></li>
 										<li><a href="#extra-tests">Extra tests</a></li>
+										<li><a href="#additional-information">Additional information</a></li>
 										<li><a href="#epilogue">Epilogue</a></li>
 									</ul>
 								</nav>
 							</aside>
 							<p>While a friend was building an automatic brewing pipeline, our <a href="https://www.curseforge.com/minecraft/modpacks/create-astral">Create: Astral</a> server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.</p>
 							<h2 id="gathering-information">Gathering information</h2>
-							<p>If at all possible, we would like to salvage this broken world, so we start with an inspection of the crash log. It appears to be an infinite recursion with Create.</p>
+							<p>If at all possible, we would like to salvage this broken world, so we start with an investigation of the crash log. It appears to be an infinite recursion with Create.</p>
 							<div class="language-text highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code>at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:219)
@@ -394,16 +395,74 @@ f.get_chunk(
 							</div>
 							<p>I then copy the file back to the server, and start it again. As expected, the block at that coordinate is now a grass block.</p>
 							<p><img src="/image/minecraft/createastral-2.jpg" alt="Block replaced with Grass Block" /></p>
+							<h2 id="additional-information">Additional information</h2>
+							<p>According to <a href="https://minecraft.fandom.com/wiki/Chunk_format">Chunk format</a>, block entities are stored in a <code class="language-plaintext highlighter-rouge">block_entity</code> tag under the root tag of the chunk. It’s possible to inspect the block entity data for the offending Brass Funnel, using information provided under the <a href="https://minecraft.fandom.com/wiki/Chunk_format#Block_entity_format">Block entity format</a> section.</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s">'block_entities'</span><span class="p">])</span>
+<span class="go">420
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">c</span><span class="p">[</span><span class="s">'block_entities'</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">'x'</span><span class="p">].</span><span class="n">value</span>
+<span class="go">-14
+</span></code></pre>
+								</div>
+							</div>
+							<p>So the coordinates for block entities are absolute, not relative to the chunk. Now find the Brass Funnel:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">be</span> <span class="k">for</span> <span class="n">be</span> <span class="ow">in</span> <span class="n">c</span><span class="p">[</span><span class="s">'block_entities'</span><span class="p">]</span>
+<span class="gp">...</span><span class="w">  </span><span class="k">if</span> <span class="n">be</span><span class="p">[</span><span class="s">'x'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="o">-</span><span class="mi">15</span> <span class="ow">and</span> <span class="n">be</span><span class="p">[</span><span class="s">'y'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">65</span> <span class="ow">and</span> <span class="n">be</span><span class="p">[</span><span class="s">'z'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">172</span><span class="p">]</span>
+<span class="go">[&lt;TAG_Compound('') at 0x7f8a8d4afd30&gt;]
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span> <span class="o">=</span> <span class="n">_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">.</span><span class="n">keys</span><span class="p">()</span>
+<span class="go">['z', 'x', 'TransferCooldown', 'id', 'y', 'FilterAmount', 'keepPacked', 'Filter']
+</span></code></pre>
+								</div>
+							</div>
+							<p>More than half of these keys are familiar: They are common to all block entities. Another one <code class="language-plaintext highlighter-rouge">TransferCooldown</code> is also present for Hoppers. The names of the remaining two tags are self-explanatory.</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'FilterAmount'</span><span class="p">].</span><span class="n">value</span>
+<span class="go">2
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">]</span>
+<span class="go">&lt;TAG_Compound('Filter') at 0x7f8a8d1000a0&gt;
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">].</span><span class="n">keys</span><span class="p">()</span>
+<span class="go">['id', 'tag', 'Count']
+</span></code></pre>
+								</div>
+							</div>
+							<p>So the <code class="language-plaintext highlighter-rouge">Filter</code> key is an item. In my case it’s a <a href="https://create.fandom.com/wiki/Filter">Filter</a> (normal filter, with Iron Nuggets). The contents of the filter can be further inspected:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">].</span><span class="n">keys</span><span class="p">()</span>
+<span class="go">['RespectNBT', 'Blacklist', 'Items']
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Blacklist'</span><span class="p">].</span><span class="n">value</span>
+<span class="go">1
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">]</span>
+<span class="go">&lt;TAG_Compound('Items') at 0x7f8a8d100070&gt;
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">].</span><span class="n">keys</span><span class="p">()</span>
+<span class="go">['Size', 'Items']
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">]</span>
+<span class="go">2 entries of type TAG_Compound
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">&lt;TAG_Compound('') at 0x7f8a8d1003d0&gt;
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="n">keys</span><span class="p">()</span>
+<span class="go">['Slot', 'id', 'Count']
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="p">[</span><span class="n">it</span><span class="p">[</span><span class="s">'id'</span><span class="p">]</span> <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">]]</span>
+<span class="go">[create:cinder_flour, minecraft:glass_bottle]
+</span></code></pre>
+								</div>
+							</div>
+							<p>Now the mystery has been completely uncovered. The Brass Funnel is configured to take everything but Cinder Flour and Glass Bottles. Considering that the Depot behind is part of a brewing system, there will be brewed Potions, which are unstackable. A friend helped us find the GitHub issue <a href="https://github.com/Fabricators-of-Create/Create/issues/570"><i class="fab fa-github"></i> Create#570</a>, confirming that we hit the same bug as reported in that thread.</p>
 							<h2 id="epilogue">Epilogue</h2>
 							<p>The use of block/item names since Java Edition 1.7.2 (<a href="https://minecraft.fandom.com/wiki/Java_Edition_13w37a">13w37a</a>) hinted that block/item IDs would eventually become dynamic, which actually took place in <a href="https://minecraft.fandom.com/wiki/Java_Edition_1.13/Flattening">the Flattening</a> in Java Edition 1.13. The smart use of the “palette + array of indices” paves the way for mods and future expansions to add new blocks without having to worry about the block ID limit, which is also reminiscent of the <a href="https://en.wikipedia.org/wiki/BMP_file_format#Color_table">Color table</a> in 8-bit (256 colors) BMP bitmap images.</p>
 							<p>Contrary to player data (<code class="language-plaintext highlighter-rouge">playerdata/*.dat</code>), the region file is a lot more complicated. Thanks to the large fan base of Minecraft, libraries for handling the file format are readily available. I am inclined to believe that a few steps taken and decisions made here are critical to the success of salvaging our save.</p>
 							<ul>
 								<li>First and foremost, checking the logs: We know which block is going wrong, and <em>have faith in ourselves that we can fix it</em>.</li>
-								<li>Looking in the correct direction: Instead of using a complete “world edit” tool, we decide to find some library on GitHub and improvise from there</li>
+								<li>Looking in the correct direction: Instead of using a complete “world edit” tool, we decide to find some library on GitHub and improvise from there.</li>
 								<li>Reading the documentation carefully and in detail.</li>
 								<li>Doing math correctly (LOL…)</li>
 							</ul>
-							<p>Finally, I want to credit my friend <a href="https://sirius1242.github.io/">sirius</a> for his in-depth knowledge of Minecraft, without whose help I would not have been able to take on this wonderful adventure.</p>
+							<p>Finally, I want to credit my friend <a href="https://sirius1242.github.io/">sirius</a> for his unsurpassed knowledge of Minecraft, without whose help I would not have been able to take on this wonderful adventure.</p>
 						</section>
 						<footer class="page__meta">
 							<p class="page__taxonomy">
@@ -559,7 +618,7 @@ f.get_chunk(
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-747</a>
+						Site version <a href="/status" class="version-text">G-748</a>
 					</p>
 				</div>
 			</footer>
