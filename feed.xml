@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2022-11-27T18:36:48+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Recovering a Minecraft world from a crash, the technician way</title><link href="https://ibug.io/blog/2022/11/recover-minecraft-world/" rel="alternate" type="text/html" title="Recovering a Minecraft world from a crash, the technician way" /><published>2022-11-27T00:00:00+00:00</published><updated>2022-11-28T02:36:03+00:00</updated><id>https://ibug.io/blog/2022/11/recover-minecraft-world</id><content type="html" xml:base="https://ibug.io/blog/2022/11/recover-minecraft-world/"><![CDATA[<p>While a friend was building an automatic brewing pipeline, our <a href="https://www.curseforge.com/minecraft/modpacks/create-astral">Create: Astral</a> server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2022-11-27T18:44:56+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Recovering a Minecraft world from a crash, the technician way</title><link href="https://ibug.io/blog/2022/11/recover-minecraft-world/" rel="alternate" type="text/html" title="Recovering a Minecraft world from a crash, the technician way" /><published>2022-11-27T00:00:00+00:00</published><updated>2022-11-28T02:43:59+00:00</updated><id>https://ibug.io/blog/2022/11/recover-minecraft-world</id><content type="html" xml:base="https://ibug.io/blog/2022/11/recover-minecraft-world/"><![CDATA[<p>While a friend was building an automatic brewing pipeline, our <a href="https://www.curseforge.com/minecraft/modpacks/create-astral">Create: Astral</a> server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.</p>
 			<h2 id="gathering-information">Gathering information</h2>
 			<p>If at all possible, we would like to salvage this broken world, so we start with an investigation of the crash log. It appears to be an infinite recursion with Create.</p>
 			<div class="language-text highlighter-rouge">
@@ -14,7 +14,7 @@ at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
 </code></pre>
 				</div>
 			</div>
-			<p>None of us has any knowledge in Java, but fortunately the crash log gives a hint on which block is going wrong, as shown below:</p>
+			<p>None of us has any knowledge in Java, but fortunately with <a href="https://www.curseforge.com/minecraft/mc-mods/not-enough-crashes">Not Enough Crashes (Fabric)</a>, the crash log gives a hint on which block is going wrong, as shown below:</p>
 			<div class="language-text highlighter-rouge">
 				<div class="highlight">
 					<pre class="highlight"><code>-- Block entity being ticked --
@@ -105,7 +105,7 @@ Stacktrace:
 </span></code></pre>
 				</div>
 			</div>
-			<p>There are two indices allotted for the funnel block, but at this point it’s cannot be determined which one is correct. I look inside the packed <code class="language-plaintext highlighter-rouge">data</code> array, recalculating the index from the block coordinates using information above:</p>
+			<p>There are two indices allotted for the funnel block, but at this point it cannot be determined which one is correct. I look inside the packed <code class="language-plaintext highlighter-rouge">data</code> array, recalculating the index from the block coordinates using information above:</p>
 			<div class="language-console highlighter-rouge">
 				<div class="highlight">
 					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span>
@@ -239,7 +239,7 @@ f.get_chunk(
 </span></code></pre>
 				</div>
 			</div>
-			<p>So the <code class="language-plaintext highlighter-rouge">Filter</code> key is an item. In my case it’s a <a href="https://create.fandom.com/wiki/Filter">Filter</a> (normal filter, with Iron Nuggets). The contents of the filter can be further inspected:</p>
+			<p>So the <code class="language-plaintext highlighter-rouge">Filter</code> key is an item. In my case it’s a <a href="https://create.fandom.com/wiki/Filter">Filter</a> (normal filter, crafted with Iron Nuggets). The contents of the filter can be further inspected:</p>
 			<div class="language-console highlighter-rouge">
 				<div class="highlight">
 					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">].</span><span class="n">keys</span><span class="p">()</span>
