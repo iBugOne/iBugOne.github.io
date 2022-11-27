@@ -21,7 +21,7 @@
 		<meta property="og:description" content="While a friend was building an automatic brewing pipeline, our Create: Astral server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2022-11-27T00:00:00+00:00">
-		<meta property="article:modified_time" content="2022-11-28T02:53:06+00:00">
+		<meta property="article:modified_time" content="2022-11-28T02:57:03+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2022/11/recover-minecraft-world/">
 		<script type="application/ld+json">
 			{
@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=5c9d05a">
+		<link rel="stylesheet" href="/assets/css/main.css?v=f09b837">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -171,7 +171,7 @@
 					<meta itemprop="headline" content="Recovering a Minecraft world from a crash, the technician way">
 					<meta itemprop="description" content="While a friend was building an automatic brewing pipeline, our Create: Astral server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.">
 					<meta itemprop="datePublished" content="2022-11-27T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2022-11-28T02:53:06+00:00">
+					<meta itemprop="dateModified" content="2022-11-28T02:57:03+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -240,7 +240,8 @@ Stacktrace:
 							</div>
 							<p>This indicates that the region file is not a single, complete NBT file, so I have to look for another tool to handle this.</p>
 							<h2 id="reading-the-world-file">Reading the world file</h2>
-							<p>Google-ing for <code class="language-plaintext highlighter-rouge">minecraft region site:github.com</code> leads me to Fenixin/Minecraft-Region-Fixer, of which an included <a href="https://github.com/Fenixin/Minecraft-Region-Fixer/tree/master/nbt">NBT library</a> seems promising. I grab this repository and take the <code class="language-plaintext highlighter-rouge">nbt</code> directory out, throwing away everything else. The <code class="language-plaintext highlighter-rouge">region.py</code> file provides a <code class="language-plaintext highlighter-rouge">RegionFile</code> class that can be used to access region files, so I start playing with it:</p>
+							<p>Google-ing for <code class="language-plaintext highlighter-rouge">minecraft region site:github.com</code> leads me to Fenixin/Minecraft-Region-Fixer, of which an included <a href="https://github.com/Fenixin/Minecraft-Region-Fixer/tree/master/nbt">NBT library</a> seems promising. I grab this repository and take the <code class="language-plaintext highlighter-rouge">nbt</code> directory out, throwing away everything else.</p>
+							<p>The <code class="language-plaintext highlighter-rouge">region.py</code> file provides a <code class="language-plaintext highlighter-rouge">RegionFile</code> class that can be used to access region files, so I start playing with it:</p>
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nbt</span>
@@ -618,7 +619,7 @@ f.get_chunk(
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-752</a>
+						Site version <a href="/status" class="version-text">G-753</a>
 					</p>
 				</div>
 			</footer>
