@@ -40,7 +40,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=5ac95fd">
+		<link rel="stylesheet" href="/assets/css/main.css?v=f7e06be">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -160,6 +160,28 @@
 				<div class="archive">
 					<h3 class="archive__subtitle">Recent posts</h3>
 					<div class="entries-list">
+						<div class="list__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2020/02/use-mysql-cli-without-password/" rel="permalink">3 ways to use MySQL / MariaDB CLI without password
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">For all of us who are learning to use or developing with MySQL or MariaDB, it’s a common task to manually log in to the database for inspection. This is usually done with the mysql command line cli...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2020-02-04T00:00:00+00:00">Feb 4, 2020</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-clock" aria-hidden="true"></i>
+											4 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
 						<div class="list__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<div class="archive__item-text">
@@ -317,29 +339,6 @@
 								</div>
 							</article>
 						</div>
-						<div class="list__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/cn/2019/08/speech-at-msc-2019/" rel="permalink">我在微软夏令营 2019 的分享
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">English Version and 本文在微软学术合作官方微信公众号上的推送
-									</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2019-08-14T00:00:00+00:00">Aug 14, 2019</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-clock" aria-hidden="true"></i>
-											11 minute read
-										</span>
-									</p>
-								</div>
-							</article>
-						</div>
 					</div>
 					<nav class="pagination">
 						<ul>
@@ -381,7 +380,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-768</a>
+						Site version <a href="/status" class="version-text">G-769</a>
 					</p>
 				</div>
 			</footer>

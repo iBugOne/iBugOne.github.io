@@ -293,6 +293,10 @@
 			<lastmod>2022-12-18T23:54:35+00:00</lastmod>
 		</url>
 		<url>
+			<loc>https://ibug.io/blog/2023/01/overengineering-adventofcode/</loc>
+			<lastmod>2023-01-08T16:04:05+00:00</lastmod>
+		</url>
+		<url>
 			<loc>https://ibug.io/project/OJSandbox/</loc>
 			<lastmod>2021-12-21T04:11:24+00:00</lastmod>
 		</url>
@@ -364,6 +368,9 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/year/2022/</loc>
+		</url>
+		<url>
+			<loc>https://ibug.io/year/2023/</loc>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/</loc>
@@ -548,6 +555,9 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/collection/posts/6/</loc>
+		</url>
+		<url>
+			<loc>https://ibug.io/collection/posts/7/</loc>
 		</url>
 		<url>
 			<loc>https://ibug.io/collection/home/</loc>

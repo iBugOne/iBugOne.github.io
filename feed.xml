@@ -1,9 +1,150 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2023-01-07T18:53:10+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Recovering a Minecraft world from a crash, the technician way</title><link href="https://ibug.io/blog/2022/11/recover-minecraft-world/" rel="alternate" type="text/html" title="Recovering a Minecraft world from a crash, the technician way" /><published>2022-11-27T00:00:00+00:00</published><updated>2022-12-18T23:54:35+00:00</updated><id>https://ibug.io/blog/2022/11/recover-minecraft-world</id><content type="html" xml:base="https://ibug.io/blog/2022/11/recover-minecraft-world/"><![CDATA[<p>While a friend was building an automatic brewing pipeline, our <a href="https://www.curseforge.com/minecraft/modpacks/create-astral">Create: Astral</a> server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.</p>
-			<h2 id="gathering-information">Gathering information</h2>
-			<p>If at all possible, we would like to salvage this broken world, so we start with an investigation of the crash log. It appears to be an infinite recursion with Create.</p>
-			<div class="language-text highlighter-rouge">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2023-01-08T08:04:41+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Overengineering Advent of Code 2022</title><link href="https://ibug.io/blog/2023/01/overengineering-adventofcode/" rel="alternate" type="text/html" title="Overengineering Advent of Code 2022" /><published>2023-01-08T00:00:00+00:00</published><updated>2023-01-08T16:04:05+00:00</updated><id>https://ibug.io/blog/2023/01/overengineering-adventofcode</id><content type="html" xml:base="https://ibug.io/blog/2023/01/overengineering-adventofcode/"><![CDATA[<p><em>Advent of Code</em> (<a href="https://en.wikipedia.org/wiki/Advent_of_Code">Wikipedia</a>, <a href="https://adventofcode.com/">link</a>) is an annual event that releases a programming puzzle every day from December 1 to December 25. It’s a great chance to learn a new language or practice your skills.</p>
+			<p>Considering that all the puzzles are designed to be lightweight, meaning that if implemented correctly, they’re solvable in no more than a few seconds with a reasonably small memory footprint, I picked Go as my language of choice. Go has been my preference over Python for a while, for being compiled into machine code and thus more performant, and a decent set of standard libraries.</p>
+			<h2 id="puzzles">Notes on puzzles</h2>
+			<p>The first 10 puzzles are very easy and doesn’t even require special knowledge. They’re practically just text processing and simulation, so there aren’t many comments to be made.</p>
+			<ul>
+				<li>
+					<p>Day 2: While it’s straightforward to implement a rock-paper-scissors game using <code class="language-plaintext highlighter-rouge">switch</code>es or lookup tables, noticing that shape <code class="language-plaintext highlighter-rouge">i+1</code> beats shape <code class="language-plaintext highlighter-rouge">i</code> allows us to simplify the code in an obscure way.</p>
+					<p>For example, I implemented the “shape score” as <code class="language-plaintext highlighter-rouge">int(s[2] - 'W')</code>, and the “outcome score” as <code class="language-plaintext highlighter-rouge">(4 + int(s[2]-'X') - int(s[0]-'A')) % 3 * 3</code> for the first part. For the second part, the “shape score” is now <code class="language-plaintext highlighter-rouge">1 + (int(s[0]-'A')+int(s[2]-'X')+2)%3</code>, and the “outcome score” is <code class="language-plaintext highlighter-rouge">int(s[2]-'X') * 3</code>.</p>
+					<p>This is certainly not the most readable code, but it’s a good example of how to use math to simplify code. Less code = less bugs, and if you’re really crazy about that, you can always add unit tests to ensure that the code doesn’t break unexpectedly. That’s not my style, though.</p>
+				</li>
+			</ul>
+			<p>Starting from Day 11, the puzzles become more interesting. Some math or data structures are required to solve them.</p>
+			<ul>
+				<li>Day 11: The first part is plain simulation, but the second part can easily run the numbers out of range if you don’t manage them properly. Actually, modulo by the <a href="https://en.wikipedia.org/wiki/Least_common_multiple">least common multiple</a> of the divisors is a good way to keep them down.</li>
+				<li>Day 14, 15 and 23: With a large coordinate space but limited elements, it’s a better idea to use a map or set instead of contiguous memory.</li>
+				<li>Day 17 part 2: Running a simulation for 1000000000000 rounds is certainly not feasible, but it’s possible to find a pattern from the first 10000 or so rounds, and calculate the result from there.</li>
+				<li>Day 18 part 2: Finding internal holes would be difficult, but <a href="https://en.wikipedia.org/wiki/Flood_fill">flood filling</a> from the outside is an alternative approach.</li>
+				<li>Day 19 part 2: Even if searching for the “next robot to make” can’t keep the search space small, pruning near the leaves (i.e. stop searching in the last few minutes) can still cut it down by a large factor. This is the only way that I managed to bring the run time below 1 second.</li>
+				<li>Day 20 part 2: Again simulating for so many 811589153 steps is not feasible, so like Day 11 part 2, it’s important to find a correct modulo.</li>
+				<li>Day 21 part 2: At first this seems like tremendous work, but I made a bold assumption that the equation is linear (degree = 1), which turned out to be true. This enabled me to use very simple math to solve it.</li>
+				<li>Day 22 is my favorite puzzle. Finding an algorithm to fold a flat layout into a cube is far from easy, so I hard-coded it for my input. (It seems like everyone is getting the same layout.) Such a two-layer <code class="language-plaintext highlighter-rouge">switch</code> statement is prone to bugs and took me the longest time to debug.</li>
+				<li>Day 25: To my surprise, the puzzle is missing a part 2. Maybe the author is getting on a vacation?</li>
+			</ul>
+			<p>Finally, a magic trick that I discovered from Reddit for Day 15 part 2: Observing that the only uncovered space must be adjacent to multiple covered areas, examining the intersections of the edges of the beacons’ coverage areas produces a tiny search space. While it’s intuitive to build upon part 1’s solution, this discovery leads to a lightspeed solution.</p>
+			<h2 id="engineering">Engineering the project</h2>
+			<p>In fact, rushing to the puzzles was not even the first thing. I did not come across the event until my friend <a href="https://www.taoky.moe/">taoky</a> recommended it to me. He was already halfway through the puzzles (<a href="https://github.com/taoky/adventofcode">his <i class="fab fa-fw fa-github"></i> repository</a>) and had set himself a set of rules, including one where “<em>all solutions should take reasonable time and memory usage</em>”. We discussed various methods to measure the time and memory usage, when he set it forth that it was not easy to add measurements to every single program.</p>
+			<p>Based on our discussion, I decided I would leave room for measurements when designing the project. So the first decision was to reuse code as much as possible within the project. For example, I’d like all solutions to share the same “peripherals” like the <code class="language-plaintext highlighter-rouge">main</code> function. This way if I want to add an extra feasure like performance measurement, I only need to do it once.</p>
+			<p>The next decision was to compile solutions for all puzzles into a single binary. Go is not known for producing small binaries due to static linking, so having separate binaries for each solutions implies a non-trivial amount of unnecessary disk space. Another reason is that due to Go’s package design, it’s more complex to selectively compile individual files than to compile all files together (the “package”). With a <code class="language-plaintext highlighter-rouge">go.mod</code> file present, <code class="language-plaintext highlighter-rouge">go build</code> conveniently compiles all files in the same directory.</p>
+			<p>With that in mind, <a href="https://github.com/iBug/AdventOfCode/commit/73715a64f7e860dffa63382ed3dff14b8d4ae60d">here</a>’s the first commit of the project. In addition to the code itself, two more design ideas can be seen:</p>
+			<ul>
+				<li>Individual solutions are in their own files, calling <code class="language-plaintext highlighter-rouge">RegisterSolution</code> in their <code class="language-plaintext highlighter-rouge">init</code> functions to register themselves. Also, the solution function takes a single <code class="language-plaintext highlighter-rouge">io.Reader</code> interface as input, so that providing input can be more flexible if needed.</li>
+				<li>If multiple input files are provided, the solution function sees a concatenation of all of them, similar to a number of common Unix tools. However, this little care was later decided to be unnecessary, and only a single input file would be processed.</li>
+			</ul>
+			<p>Now with the project structure in place, I started working on the solutions. <a href="https://github.com/iBug/AdventOfCode/commit/4b695648807b47818e60ab19d246ff61183c7ce2">The second commit</a> added my solution for Day 1 part 1, and it followed the designed structure like this:</p>
+			<div class="language-go highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code>at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:219)
+					<pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span> <span class="o">...</span> <span class="p">)</span>
+
+<span class="k">func</span> <span class="n">Solution1_1</span><span class="p">(</span><span class="n">r</span> <span class="n">io</span><span class="o">.</span><span class="n">reader</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+
+<span class="k">func</span> <span class="n">init</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">RegisterSolution</span><span class="p">(</span><span class="s">"1-1"</span><span class="p">,</span> <span class="n">Solution1_1</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre>
+				</div>
+			</div>
+			<p>While the first few days’ solutions were pretty ordinary, my design began to prosper when I started working on Day 5 part 2. The only difference between part 1 and part 2 is whether moving a stack of crates maintains or reverses their order. Compared to the common one-source-file-per-solution design, I can now reuse almost the whole function from part 1, and abstract the difference into a function parameter. This is how <code class="language-plaintext highlighter-rouge">day5.go</code> looks like after <a href="https://github.com/iBug/AdventOfCode/commit/fe63dc98e36b70c0f9ffb779eadffc34d2a7b80b">adding part 2</a>:</p>
+			<div class="language-go highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+
+<span class="k">import</span> <span class="p">(</span> <span class="o">...</span> <span class="p">)</span>
+
+<span class="k">func</span> <span class="n">init</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">RegisterSolution</span><span class="p">(</span><span class="s">"5-1"</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">r</span> <span class="n">io</span><span class="o">.</span><span class="n">Reader</span><span class="p">)</span> <span class="p">{</span> <span class="n">Solution5</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">Move5_1</span><span class="p">)</span> <span class="p">})</span>
+    <span class="n">RegisterSolution</span><span class="p">(</span><span class="s">"5-2"</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">r</span> <span class="n">io</span><span class="o">.</span><span class="n">Reader</span><span class="p">)</span> <span class="p">{</span> <span class="n">Solution5</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">Move5_2</span><span class="p">)</span> <span class="p">})</span>
+<span class="p">}</span>
+
+<span class="k">func</span> <span class="n">Move5_1</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+<span class="k">func</span> <span class="n">Move5_2</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+
+<span class="k">func</span> <span class="n">Solution5</span><span class="p">(</span><span class="n">r</span> <span class="n">io</span><span class="o">.</span><span class="n">Reader</span><span class="p">,</span> <span class="n">moveFunc</span> <span class="k">func</span><span class="p">(</span><span class="o">...</span><span class="p">))</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+</code></pre>
+				</div>
+			</div>
+			<p>For Day 6, <a href="https://github.com/iBug/AdventOfCode/commit/cf19fad5b05e992dfdab9f6abcf2a87c4b808d7a">the benefit</a> is even more prominent:</p>
+			<div class="language-go highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="k">func</span> <span class="n">init</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">RegisterSolution</span><span class="p">(</span><span class="s">"6-1"</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">r</span> <span class="n">io</span><span class="o">.</span><span class="n">Reader</span><span class="p">)</span> <span class="p">{</span> <span class="n">Solution6</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="m">4</span><span class="p">)</span> <span class="p">})</span>
+    <span class="n">RegisterSolution</span><span class="p">(</span><span class="s">"6-2"</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">r</span> <span class="n">io</span><span class="o">.</span><span class="n">Reader</span><span class="p">)</span> <span class="p">{</span> <span class="n">Solution6</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="m">14</span><span class="p">)</span> <span class="p">})</span>
+<span class="p">}</span>
+</code></pre>
+				</div>
+			</div>
+			<p>Had I not designed the project this way, I would have to duplicate the whole function for part 2 only to change a single parameter, making things much more error-prone.</p>
+			<h3 id="measurements">Adding measurements</h3>
+			<p>Given the project design above, adding measurements is much simpler than it would have been if I had adopted the one-source-file-per-solution layout. It boils down to just two things:</p>
+			<ul>
+				<li>
+					<p>A command-line flag to enable measurements:</p>
+					<div class="language-go highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code><span class="n">flag</span><span class="o">.</span><span class="n">BoolVar</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fShowPerformance</span><span class="p">,</span> <span class="s">"p"</span><span class="p">,</span> <span class="no">false</span><span class="p">,</span> <span class="s">"show performance information"</span><span class="p">)</span>
+</code></pre>
+						</div>
+    </div>
+				</li>
+				<li>
+					<p>Adding <code class="language-plaintext highlighter-rouge">time.Now()</code> and <code class="language-plaintext highlighter-rouge">time.Since()</code> around the call to the solution function:</p>
+					<div class="language-go highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code><span class="n">start</span> <span class="o">:=</span> <span class="n">time</span><span class="o">.</span><span class="n">Now</span><span class="p">()</span>
+<span class="n">fn</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+<span class="n">duration</span> <span class="o">:=</span> <span class="n">time</span><span class="o">.</span><span class="n">Since</span><span class="p">(</span><span class="n">startTime</span><span class="p">)</span>
+</code></pre>
+						</div>
+    </div>
+					<p>… as well as displaying the result:</p>
+					<div class="language-go highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code><span class="k">if</span> <span class="n">fShowPerformance</span> <span class="p">{</span>
+    <span class="n">fmt</span><span class="o">.</span><span class="n">Fprintf</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">Stderr</span><span class="p">,</span> <span class="s">"</span><span class="se">\n</span><span class="s">Duration: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre>
+						</div>
+    </div>
+				</li>
+			</ul>
+			<p>Measuring memory usage is a bit more complicated. Go’s memory profiling doesn’t provide a simple “max usage in this session” metric, so I have to resort to OS-specific methods. On Linux, for the time being, I use <code class="language-plaintext highlighter-rouge">getrusage(2)</code> with <code class="language-plaintext highlighter-rouge">RUSAGE_SELF</code>, as two other known methods (using Cgroup and polling <code class="language-plaintext highlighter-rouge">/proc/self/status</code>) either require forking an extra process or add significant overhead and engineering complexity.</p>
+			<p>Now the program can produce a short summary of the performance when running a solution:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>./adventofcode <span class="nt">-p</span> 1-1 2022/inputs/1.txt
+<span class="go">71780
+
+Time: 875µs, Memory: 7.8 MiB
+</span></code></pre>
+				</div>
+			</div>
+			<p>There’s one caveat here: The “Max RSS” value returned by <code class="language-plaintext highlighter-rouge">getrsage(2)</code> is the peak memory usage during the whole program’s lifetime, starting from when it’s forked from the parent process, when it inherits all mapped pages (resident set). Using an interactive Bash gives a minimum value of around 7.7 MiB, while using <code class="language-plaintext highlighter-rouge">sh -c './adventofcode -p'</code>, adding a level indirection, reduces the starting size to 1.2 MiB.</p>
+			<h3 id="multi-year">Adding multi-year support</h3>
+			<p>Up until now, the project has a flat layout with no subdirectories, and all Go source files start with <code class="language-plaintext highlighter-rouge">package main</code>. This is because I did not plan to support multiple years at the beginning. However, as I started working on puzzles from 2021, I realized that I need a better structure to support multiple years without worrying about namespace issues, like both years having a <code class="language-plaintext highlighter-rouge">Solution1_1</code> function.</p>
+			<p>Moving each year’s solutions into a subdirectory is a natural choice. However, <code class="language-plaintext highlighter-rouge">go build</code> doesn’t pick up subdirectories by default, so I have to find a way to make it work. There are also some minor name searching issues, like <code class="language-plaintext highlighter-rouge">RegisterSolution</code> being defined in <code class="language-plaintext highlighter-rouge">main.go</code> but used in every solution file.</p>
+			<p>After a bit of trial-and-error, I <a href="https://github.com/iBug/AdventOfCode/commit/36b256c41897633bae53a1ca4c39476e0af9d858">carried out</a> the following changes:</p>
+			<ul>
+				<li>Split out the “solution registry” into a <code class="language-plaintext highlighter-rouge">common</code> subdirectory, making it a separate package that can be imported by each year’s package.
+					<ul>
+						<li>Each year’s package should import just <code class="language-plaintext highlighter-rouge">common.RegisterSolution</code>, possibly wrapping it up to add a custom “year identifier” (this was <a href="https://github.com/iBug/AdventOfCode/commit/7f7080aae1df181ec2b16eafc3bbd214610914c4">implemented</a> right after).</li>
+					</ul>
+				</li>
+				<li>Move all solution files into a <code class="language-plaintext highlighter-rouge">2022</code> subdirectory, and change the package name to just <code class="language-plaintext highlighter-rouge">year</code> (because I don’t expect this directory to be imported and used with the package name).</li>
+				<li>Add <code class="language-plaintext highlighter-rouge">import _ "adventofcode/2022"</code> in <code class="language-plaintext highlighter-rouge">main.go</code> for each year’s subdirectory.</li>
+			</ul>
+			<p>In subsequent commits, I implemented “year selection” (e.g. choosing between the solutions <code class="language-plaintext highlighter-rouge">2021/1-1</code> and <code class="language-plaintext highlighter-rouge">2022/1-1</code>) as well as more listings (e.g. <code class="language-plaintext highlighter-rouge">./adventofcode 2021/</code> to list all solutions for 2021).</p>
+			<p>With this in place, I can now add solutions for 2021 without worrying about name conflicts. For convenience, I also added auto-searching for input files in the current directory, so I can just run <code class="language-plaintext highlighter-rouge">./adventofcode 2021/1-1</code> to run the solution for Day 1 part 1 of 2021.</p>
+			<h2 id="epilogue">Epilogue</h2>
+			<p>At this point, the project has successfully deviated from a collection of solutions to small-but-interesting puzzles, and has become more like a general-purpose tool for this kind of events. Nevertheless, it’s a fun journey as a software engineering practice, in addition to solving the puzzles themselves.</p>
+			<p>Looking at these paths I’ve taken, it is manifest that the initial decisions in the right direction are highly contributory in easing the development process, particularly when I’m coming back later to add a new global feature. This experience once again emphasizes the importance and advantages of having a clear idea of the project before starting to write code, as well as keeping the code in an extensible and maintainable fashion.</p>
+			]]></content><author><name>iBug</name></author><category term="development" /><summary type="html"><![CDATA[Advent of Code (Wikipedia, link) is an annual event that releases a programming puzzle every day from December 1 to December 25. It’s a great chance to learn a new language or practice your skills.]]></summary></entry><entry><title type="html">Recovering a Minecraft world from a crash, the technician way</title><link href="https://ibug.io/blog/2022/11/recover-minecraft-world/" rel="alternate" type="text/html" title="Recovering a Minecraft world from a crash, the technician way" /><published>2022-11-27T00:00:00+00:00</published><updated>2022-12-18T23:54:35+00:00</updated><id>https://ibug.io/blog/2022/11/recover-minecraft-world</id><content type="html" xml:base="https://ibug.io/blog/2022/11/recover-minecraft-world/"><![CDATA[<p>While a friend was building an automatic brewing pipeline, our <a href="https://www.curseforge.com/minecraft/modpacks/create-astral">Create: Astral</a> server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.</p>
+		<h2 id="gathering-information">Gathering information</h2>
+		<p>If at all possible, we would like to salvage this broken world, so we start with an investigation of the crash log. It appears to be an infinite recursion with Create.</p>
+		<div class="language-text highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:219)
 at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
 at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
 at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
@@ -12,12 +153,12 @@ at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
 at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
 at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
 </code></pre>
-				</div>
 			</div>
-			<p>None of us has any knowledge in Java, but fortunately with <a href="https://www.curseforge.com/minecraft/mc-mods/not-enough-crashes">Not Enough Crashes (Fabric)</a>, the crash log gives a hint on which block is going wrong, as shown below:</p>
-			<div class="language-text highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>-- Block entity being ticked --
+		</div>
+		<p>None of us has any knowledge in Java, but fortunately with <a href="https://www.curseforge.com/minecraft/mc-mods/not-enough-crashes">Not Enough Crashes (Fabric)</a>, the crash log gives a hint on which block is going wrong, as shown below:</p>
+		<div class="language-text highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>-- Block entity being ticked --
 Details:
         Name: create:funnel // com.simibubi.create.content.logistics.block.funnel.FunnelTileEntity
         Block: Block{create:brass_funnel}[extracting=true,facing=north,powered=false]
@@ -29,31 +170,31 @@ Stacktrace:
         at net.minecraft.class_2818$class_5564.method_31703(class_2818.java:713)
         ...
 </code></pre>
-				</div>
 			</div>
-			<p>One idea now surfaces: If we can remove or replace with something else the offending block, we can probably fix the save with minimal progress loss.</p>
-			<p>The following information can be summarized from the above portion of the crash log:</p>
-			<ul>
-				<li>The offending block is a Brass Funnel from Create</li>
-				<li>It’s located at (-15,65,172), in chunk (-1,10), section 4 (a vertical 16×16×16 section)</li>
-				<li>The block coordinates are (1,1,12) <strong>within the section</strong></li>
-				<li>The region is (-1,0), meaning that the file that contains is <code class="language-plaintext highlighter-rouge">r.-1.0.mca</code>.</li>
-			</ul>
-			<p>Recalling that Minecraft worlds are also saved in NBT format, I try opening the region file with <a href="https://github.com/C4K3/nbted">nbted</a>, a tool that I previously used to tamper with player data. However, it complains:</p>
-			<div class="language-text highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>Error: Unable to parse r.-1.0.mca, are you sure it's an NBT file?
+		</div>
+		<p>One idea now surfaces: If we can remove or replace with something else the offending block, we can probably fix the save with minimal progress loss.</p>
+		<p>The following information can be summarized from the above portion of the crash log:</p>
+		<ul>
+			<li>The offending block is a Brass Funnel from Create</li>
+			<li>It’s located at (-15,65,172), in chunk (-1,10), section 4 (a vertical 16×16×16 section)</li>
+			<li>The block coordinates are (1,1,12) <strong>within the section</strong></li>
+			<li>The region is (-1,0), meaning that the file that contains is <code class="language-plaintext highlighter-rouge">r.-1.0.mca</code>.</li>
+		</ul>
+		<p>Recalling that Minecraft worlds are also saved in NBT format, I try opening the region file with <a href="https://github.com/C4K3/nbted">nbted</a>, a tool that I previously used to tamper with player data. However, it complains:</p>
+		<div class="language-text highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>Error: Unable to parse r.-1.0.mca, are you sure it's an NBT file?
         caused by: Unknown compression format where first byte is 0
 </code></pre>
-				</div>
 			</div>
-			<p>This indicates that the region file is not a single, complete NBT file, so I have to look for another tool to handle this.</p>
-			<h2 id="reading-the-world-file">Reading the world file</h2>
-			<p>Google-ing for <code class="language-plaintext highlighter-rouge">minecraft region site:github.com</code> leads me to Fenixin/Minecraft-Region-Fixer, of which an included <a href="https://github.com/Fenixin/Minecraft-Region-Fixer/tree/master/nbt">NBT library</a> seems promising. I grab this repository and take the <code class="language-plaintext highlighter-rouge">nbt</code> directory out, throwing away everything else.</p>
-			<p>The <code class="language-plaintext highlighter-rouge">region.py</code> file provides a <code class="language-plaintext highlighter-rouge">RegionFile</code> class that can be used to access region files, so I start playing with it:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nbt</span>
+		</div>
+		<p>This indicates that the region file is not a single, complete NBT file, so I have to look for another tool to handle this.</p>
+		<h2 id="reading-the-world-file">Reading the world file</h2>
+		<p>Google-ing for <code class="language-plaintext highlighter-rouge">minecraft region site:github.com</code> leads me to Fenixin/Minecraft-Region-Fixer, of which an included <a href="https://github.com/Fenixin/Minecraft-Region-Fixer/tree/master/nbt">NBT library</a> seems promising. I grab this repository and take the <code class="language-plaintext highlighter-rouge">nbt</code> directory out, throwing away everything else.</p>
+		<p>The <code class="language-plaintext highlighter-rouge">region.py</code> file provides a <code class="language-plaintext highlighter-rouge">RegionFile</code> class that can be used to access region files, so I start playing with it:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nbt</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">nbt</span><span class="p">.</span><span class="n">region</span><span class="p">.</span><span class="n">RegionFile</span><span class="p">(</span><span class="s">'r.-1.0.mca'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="p">.</span><span class="n">get_chunk</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
 <span class="c"># Traceback (most recent call last):
@@ -62,75 +203,75 @@ Stacktrace:
 <span class="go">&lt;NBTFile with TAG_Compound('') at 0x7f8a8d014eb0&gt;
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">_</span>
 </code></pre>
-				</div>
 			</div>
-			<p>So this Python library arranges chunks by offset <em>within the region file</em>. That’s fine.</p>
-			<p>Now that I have access to an NBT tag, it’s time to study its structure. The <a href="https://minecraft.fandom.com/wiki/Chunk_format">Chunk format</a> page from Minecraft Wiki is the ultimate reference here.</p>
-			<p>I know that <code class="language-plaintext highlighter-rouge">c</code> holds the “root tag” of the chunk I’m looking for. This is easily verified:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="p">[</span><span class="s">'xPos'</span><span class="p">].</span><span class="n">value</span><span class="p">,</span> <span class="n">c</span><span class="p">[</span><span class="s">'zPos'</span><span class="p">].</span><span class="n">value</span>
+		</div>
+		<p>So this Python library arranges chunks by offset <em>within the region file</em>. That’s fine.</p>
+		<p>Now that I have access to an NBT tag, it’s time to study its structure. The <a href="https://minecraft.fandom.com/wiki/Chunk_format">Chunk format</a> page from Minecraft Wiki is the ultimate reference here.</p>
+		<p>I know that <code class="language-plaintext highlighter-rouge">c</code> holds the “root tag” of the chunk I’m looking for. This is easily verified:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="p">[</span><span class="s">'xPos'</span><span class="p">].</span><span class="n">value</span><span class="p">,</span> <span class="n">c</span><span class="p">[</span><span class="s">'zPos'</span><span class="p">].</span><span class="n">value</span>
 <span class="go">(-1, 10)
 </span></code></pre>
-				</div>
 			</div>
-			<p>I find the vertical section containing the offending block:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">c</span><span class="p">[</span><span class="s">'sections'</span><span class="p">]</span> <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="s">'Y'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">4</span><span class="p">]</span>
+		</div>
+		<p>I find the vertical section containing the offending block:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">c</span><span class="p">[</span><span class="s">'sections'</span><span class="p">]</span> <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="s">'Y'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">4</span><span class="p">]</span>
 <span class="go">[&lt;TAG_Compound('') at 0x7f8a8d44c1c0&gt;]
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </code></pre>
-				</div>
 			</div>
-			<p>The <a href="https://minecraft.fandom.com/wiki/Anvil_file_format">Anvil file format</a> page shows that block data is ordered in YZX order, so I try to find the block data from the <code class="language-plaintext highlighter-rouge">data</code> key:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+		</div>
+		<p>The <a href="https://minecraft.fandom.com/wiki/Anvil_file_format">Anvil file format</a> page shows that block data is ordered in YZX order, so I try to find the block data from the <code class="language-plaintext highlighter-rouge">data</code> key:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
 <span class="go">72624976668147841
 </span></code></pre>
-				</div>
 			</div>
-			<p>… which is, unfortunately not something I can decipher.</p>
-			<p>I look closely to the description of the <code class="language-plaintext highlighter-rouge">data</code> tag:</p>
-			<blockquote>
-				<p><strong>A packed array</strong> of 4096 indices pointing to the palette, stored in an array of 64-bit integers. […] All indices are the same length: the minimum amount of bytes required to represent the largest index in the palette. […] Since 1.16, the indices are not packed across multiple elements of the array, meaning that if there is no more space in a given 64-bit integer for the next index, it starts instead at the first (lowest) bit of the next 64-bit element.</p>
-			</blockquote>
-			<p>So not only was that number <em>not</em> for a single block, but also was I looking for a wrong index. I need to inspect the block palette first:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">])</span>
+		</div>
+		<p>… which is, unfortunately not something I can decipher.</p>
+		<p>I look closely to the description of the <code class="language-plaintext highlighter-rouge">data</code> tag:</p>
+		<blockquote>
+			<p><strong>A packed array</strong> of 4096 indices pointing to the palette, stored in an array of 64-bit integers. […] All indices are the same length: the minimum amount of bytes required to represent the largest index in the palette. […] Since 1.16, the indices are not packed across multiple elements of the array, meaning that if there is no more space in a given 64-bit integer for the next index, it starts instead at the first (lowest) bit of the next 64-bit element.</p>
+		</blockquote>
+		<p>So not only was that number <em>not</em> for a single block, but also was I looking for a wrong index. I need to inspect the block palette first:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">])</span>
 <span class="go">95
 </span><span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">])</span>
 <span class="gp">... </span><span class="w"> </span><span class="k">if</span> <span class="n">b</span><span class="p">[</span><span class="s">'Name'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="s">"create:brass_funnel"</span><span class="p">]</span>
 <span class="go">[(55, &lt;TAG_Compound('') at 0x7f8a8d49d120&gt;), (77, &lt;TAG_Compound('') at 0x7f8a8d49ff40&gt;)]
 </span></code></pre>
-				</div>
 			</div>
-			<p>There are two indices allotted for the funnel block, but at this point it cannot be determined which one is correct. I look inside the packed <code class="language-plaintext highlighter-rouge">data</code> array, recalculating the index from the block coordinates using information above:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span>
+		</div>
+		<p>There are two indices allotted for the funnel block, but at this point it cannot be determined which one is correct. I look inside the packed <code class="language-plaintext highlighter-rouge">data</code> array, recalculating the index from the block coordinates using information above:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span>
 <span class="go">3963735054717000501
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">i</span> <span class="o">=</span> <span class="n">_</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Because there are 95 blocks in the palette, 7 bits is enough to hold an index, and a 64-bit integer holds 9 indices. The calculation can be verified by the following:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">])</span>
+		</div>
+		<p>Because there are 95 blocks in the palette, 7 bits is enough to hold an index, and a 64-bit integer holds 9 indices. The calculation can be verified by the following:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">])</span>
 <span class="go">456
 </span><span class="gp">&gt;&gt;&gt; </span><span class="mi">456</span> <span class="o">*</span> <span class="mi">9</span>
 <span class="go">4104
 </span><span class="c"># just slightly over 4096
 </span></code></pre>
-				</div>
 			</div>
-			<p>Now I unpack that large integer into 9 indices, and try to translate them into blocks:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="n">x</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0x7F</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span>
+		</div>
+		<p>Now I unpack that large integer into 9 indices, and try to translate them into blocks:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="n">x</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0x7F</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span>
 <span class="go">[53, 54, 46, 1, 1, 1, 1, 1, 55]
 </span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">][((</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="n">x</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0x7F</span><span class="p">)][</span><span class="s">'Name'</span><span class="p">].</span><span class="n">value</span>
 <span class="gp">... </span><span class="w"> </span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span>
@@ -144,24 +285,24 @@ Stacktrace:
  'minecraft:air',
  'create:brass_funnel']
 </span></code></pre>
-				</div>
 			</div>
-			<p>It starts to make sense now. I can recall a <a href="https://tinkers-construct.fandom.com/wiki/Smeltery">Smeltery</a> structure that we built together near this area.</p>
-			<h2 id="replacing-the-block">Replacing the block</h2>
-			<p>The offending Brass Funnel is the last index within this packed 64-bit integer. I can replace it with air (index = 1) using bit manipulation:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">ii</span> <span class="o">=</span> <span class="n">i</span> <span class="o">^</span> <span class="p">((</span><span class="mi">55</span> <span class="o">^</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="mi">8</span><span class="p">))</span>
+		</div>
+		<p>It starts to make sense now. I can recall a <a href="https://tinkers-construct.fandom.com/wiki/Smeltery">Smeltery</a> structure that we built together near this area.</p>
+		<h2 id="replacing-the-block">Replacing the block</h2>
+		<p>The offending Brass Funnel is the last index within this packed 64-bit integer. I can replace it with air (index = 1) using bit manipulation:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">ii</span> <span class="o">=</span> <span class="n">i</span> <span class="o">^</span> <span class="p">((</span><span class="mi">55</span> <span class="o">^</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="mi">8</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ii</span>
 <span class="go">72624976668891957
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Now I try to save the file, only to find that <code class="language-plaintext highlighter-rouge">nbt.region.RegionFile</code> offers no <code class="language-plaintext highlighter-rouge">.save()</code> or <code class="language-plaintext highlighter-rouge">.write()</code> methods:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">.</span><span class="o">&lt;</span><span class="n">TAB</span><span class="o">&gt;&lt;</span><span class="n">TAB</span><span class="o">&gt;</span>
+		</div>
+		<p>Now I try to save the file, only to find that <code class="language-plaintext highlighter-rouge">nbt.region.RegionFile</code> offers no <code class="language-plaintext highlighter-rouge">.save()</code> or <code class="language-plaintext highlighter-rouge">.write()</code> methods:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">.</span><span class="o">&lt;</span><span class="n">TAB</span><span class="o">&gt;&lt;</span><span class="n">TAB</span><span class="o">&gt;</span>
 <span class="go">f.STATUS_CHUNK_IN_HEADER           f.get_chunk_coords()
 f.STATUS_CHUNK_MISMATCHED_LENGTHS  f.get_chunks()
 f.STATUS_CHUNK_NOT_CREATED         f.get_metadata()
@@ -179,73 +320,73 @@ f.filename                         f.write_blockdata(
 f.get_blockdata(                   f.write_chunk(
 f.get_chunk(
 </span></code></pre>
-				</div>
 			</div>
-			<p class="notice--primary"><i class="fas fa-fw fa-lightbulb"></i> In my original attempt, I took a diversion from the right track, forgetting that each chunk comes in a single-root NBT tag, and that the region file <em>packs</em> multiple chunks into a single file. I only realized that the file format was different from what I expected at first after multiple failed attempts to modify the file using a hex editor.</p>
-			<p>Reading <a href="https://minecraft.fandom.com/wiki/Region_file_format">Region file format</a>, I learn that each chunk is compressed (using Zlib) separately and stored together in the region file, and that <code class="language-plaintext highlighter-rouge">f.write_chunk</code> is the method I am looking for.</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">.</span><span class="n">write_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+		</div>
+		<p class="notice--primary"><i class="fas fa-fw fa-lightbulb"></i> In my original attempt, I took a diversion from the right track, forgetting that each chunk comes in a single-root NBT tag, and that the region file <em>packs</em> multiple chunks into a single file. I only realized that the file format was different from what I expected at first after multiple failed attempts to modify the file using a hex editor.</p>
+		<p>Reading <a href="https://minecraft.fandom.com/wiki/Region_file_format">Region file format</a>, I learn that each chunk is compressed (using Zlib) separately and stored together in the region file, and that <code class="language-plaintext highlighter-rouge">f.write_chunk</code> is the method I am looking for.</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">.</span><span class="n">write_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;
 </span></code></pre>
-				</div>
 			</div>
-			<p>The file size is reduced by some 60 KB. Considering that compression algorithm provides no guarantee on the size of the compressed data, this is not an indicator whether the file’s going well or not. The only way to verify is to load the world and check the result in game.</p>
-			<p>With uncertainty, I make a backup of the broken world, and replace <code class="language-plaintext highlighter-rouge">r.-1.0.mca</code> with my modified copy. The server now starts normally, and I can see the brass funnel disappeared.</p>
-			<p><img src="/image/minecraft/createastral-1.jpg" alt="Block removed" /></p>
-			<h2 id="extra-tests">Extra tests</h2>
-			<p>To convince myself that I have successfully changed the correct block, I decide that I need to replace it with something visible, not just air. I look inside the palette of the section, and found a few blocks available for use.</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">][</span><span class="mi">25</span><span class="p">][</span><span class="s">'Name'</span><span class="p">]</span>
+		</div>
+		<p>The file size is reduced by some 60 KB. Considering that compression algorithm provides no guarantee on the size of the compressed data, this is not an indicator whether the file’s going well or not. The only way to verify is to load the world and check the result in game.</p>
+		<p>With uncertainty, I make a backup of the broken world, and replace <code class="language-plaintext highlighter-rouge">r.-1.0.mca</code> with my modified copy. The server now starts normally, and I can see the brass funnel disappeared.</p>
+		<p><img src="/image/minecraft/createastral-1.jpg" alt="Block removed" /></p>
+		<h2 id="extra-tests">Extra tests</h2>
+		<p>To convince myself that I have successfully changed the correct block, I decide that I need to replace it with something visible, not just air. I look inside the palette of the section, and found a few blocks available for use.</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">][</span><span class="mi">25</span><span class="p">][</span><span class="s">'Name'</span><span class="p">]</span>
 <span class="go">minecraft:grass_block
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">ii</span> <span class="o">=</span> <span class="n">i</span> <span class="o">^</span> <span class="p">((</span><span class="mi">55</span> <span class="o">^</span> <span class="mi">25</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="mi">8</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">.</span><span class="n">write_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
 </code></pre>
-				</div>
 			</div>
-			<p>I then copy the file back to the server, and start it again. As expected, the block at that coordinate is now a grass block.</p>
-			<p><img src="/image/minecraft/createastral-2.jpg" alt="Block replaced with Grass Block" /></p>
-			<h2 id="additional-information">Additional information</h2>
-			<p>According to <a href="https://minecraft.fandom.com/wiki/Chunk_format">Chunk format</a>, block entities are stored in a <code class="language-plaintext highlighter-rouge">block_entity</code> tag under the root tag of the chunk. It’s possible to inspect the block entity data for the offending Brass Funnel, using information provided under the <a href="https://minecraft.fandom.com/wiki/Chunk_format#Block_entity_format">Block entity format</a> section.</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s">'block_entities'</span><span class="p">])</span>
+		</div>
+		<p>I then copy the file back to the server, and start it again. As expected, the block at that coordinate is now a grass block.</p>
+		<p><img src="/image/minecraft/createastral-2.jpg" alt="Block replaced with Grass Block" /></p>
+		<h2 id="additional-information">Additional information</h2>
+		<p>According to <a href="https://minecraft.fandom.com/wiki/Chunk_format">Chunk format</a>, block entities are stored in a <code class="language-plaintext highlighter-rouge">block_entity</code> tag under the root tag of the chunk. It’s possible to inspect the block entity data for the offending Brass Funnel, using information provided under the <a href="https://minecraft.fandom.com/wiki/Chunk_format#Block_entity_format">Block entity format</a> section.</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s">'block_entities'</span><span class="p">])</span>
 <span class="go">420
 </span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">c</span><span class="p">[</span><span class="s">'block_entities'</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">'x'</span><span class="p">].</span><span class="n">value</span>
 <span class="go">-14
 </span></code></pre>
-				</div>
 			</div>
-			<p>So the coordinates for block entities are absolute, not relative to the chunk. Now find the Brass Funnel:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">be</span> <span class="k">for</span> <span class="n">be</span> <span class="ow">in</span> <span class="n">c</span><span class="p">[</span><span class="s">'block_entities'</span><span class="p">]</span>
+		</div>
+		<p>So the coordinates for block entities are absolute, not relative to the chunk. Now find the Brass Funnel:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">be</span> <span class="k">for</span> <span class="n">be</span> <span class="ow">in</span> <span class="n">c</span><span class="p">[</span><span class="s">'block_entities'</span><span class="p">]</span>
 <span class="gp">... </span><span class="w"> </span><span class="k">if</span> <span class="n">be</span><span class="p">[</span><span class="s">'x'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="o">-</span><span class="mi">15</span> <span class="ow">and</span> <span class="n">be</span><span class="p">[</span><span class="s">'y'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">65</span> <span class="ow">and</span> <span class="n">be</span><span class="p">[</span><span class="s">'z'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">172</span><span class="p">]</span>
 <span class="go">[&lt;TAG_Compound('') at 0x7f8a8d4afd30&gt;]
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span> <span class="o">=</span> <span class="n">_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">.</span><span class="n">keys</span><span class="p">()</span>
 <span class="go">['z', 'x', 'TransferCooldown', 'id', 'y', 'FilterAmount', 'keepPacked', 'Filter']
 </span></code></pre>
-				</div>
 			</div>
-			<p>More than half of these keys are familiar: They are common to all block entities. Another one <code class="language-plaintext highlighter-rouge">TransferCooldown</code> is also present for Hoppers. The names of the remaining two tags are self-explanatory.</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'FilterAmount'</span><span class="p">].</span><span class="n">value</span>
+		</div>
+		<p>More than half of these keys are familiar: They are common to all block entities. Another one <code class="language-plaintext highlighter-rouge">TransferCooldown</code> is also present for Hoppers. The names of the remaining two tags are self-explanatory.</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'FilterAmount'</span><span class="p">].</span><span class="n">value</span>
 <span class="go">2
 </span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">]</span>
 <span class="go">&lt;TAG_Compound('Filter') at 0x7f8a8d1000a0&gt;
 </span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">].</span><span class="n">keys</span><span class="p">()</span>
 <span class="go">['id', 'tag', 'Count']
 </span></code></pre>
-				</div>
 			</div>
-			<p>So the <code class="language-plaintext highlighter-rouge">Filter</code> key is an item. In my case it’s a <a href="https://create.fandom.com/wiki/Filter">Filter</a> (normal filter, crafted with Iron Nuggets). The contents of the filter can be further inspected:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">].</span><span class="n">keys</span><span class="p">()</span>
+		</div>
+		<p>So the <code class="language-plaintext highlighter-rouge">Filter</code> key is an item. In my case it’s a <a href="https://create.fandom.com/wiki/Filter">Filter</a> (normal filter, crafted with Iron Nuggets). The contents of the filter can be further inspected:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">].</span><span class="n">keys</span><span class="p">()</span>
 <span class="go">['RespectNBT', 'Blacklist', 'Items']
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Blacklist'</span><span class="p">].</span><span class="n">value</span>
 <span class="go">1
@@ -262,136 +403,136 @@ f.get_chunk(
 </span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">it</span><span class="p">[</span><span class="s">'id'</span><span class="p">]</span> <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">]]</span>
 <span class="go">[create:cinder_flour, minecraft:glass_bottle]
 </span></code></pre>
-				</div>
 			</div>
-			<p>Now the mystery has been completely uncovered. The Brass Funnel is configured to take everything but Cinder Flour and Glass Bottles, 2 at a time. Considering that the Depot behind is part of a brewing system, there will be brewed Potions, which are unstackable. A friend helped us find the GitHub issue <a href="https://github.com/Fabricators-of-Create/Create/issues/570"><i class="fab fa-github"></i> Create#570</a>, confirming that we ran into the same bug as reported in that thread.</p>
-			<h2 id="epilogue">Epilogue</h2>
-			<p>The use of block/item names since Java Edition 1.7.2 (<a href="https://minecraft.fandom.com/wiki/Java_Edition_13w37a">13w37a</a>) hinted that block/item IDs would eventually become dynamic, which actually took place in <a href="https://minecraft.fandom.com/wiki/Java_Edition_1.13/Flattening">the Flattening</a> in Java Edition 1.13. The smart use of the “palette + array of indices” paves the way for mods and future expansions to add new blocks without having to worry about the block ID limit, which is also reminiscent of the <a href="https://en.wikipedia.org/wiki/BMP_file_format#Color_table">color table</a> in 8-bit (256 colors) BMP bitmap images.</p>
-			<p>Contrary to player data (<code class="language-plaintext highlighter-rouge">playerdata/*.dat</code>), the region file is a lot more complicated. Thanks to the large fan base of Minecraft, libraries for handling the file format are readily available. I am inclined to believe that a few steps taken and decisions made here are critical to the success of salvaging our save.</p>
-			<ul>
-				<li>First and foremost, checking the logs: We know which block is going wrong, and <em>have faith in ourselves that we can fix it</em>.</li>
-				<li>Looking in the correct direction: Instead of using a complete “world edit” tool, we decide to find some library on GitHub and improvise from there.</li>
-				<li>Reading the documentation carefully and in detail.</li>
-				<li>Doing math correctly (LOL…)</li>
-			</ul>
-			<p>Finally, I want to credit my friend <a href="https://sirius1242.github.io/">sirius</a> for his unsurpassed knowledge of Minecraft, without whose help I would not have been able to take on this wonderful adventure.</p>
-			]]></content><author><name>iBug</name></author><category term="games" /><category term="minecraft" /><summary type="html"><![CDATA[While a friend was building an automatic brewing pipeline, our Create: Astral server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.]]></summary></entry><entry><title type="html">Paper Reading: Are You Sure You Want to Use MMAP in Your Database Management System?</title><link href="https://ibug.io/blog/2022/11/paper-reading-cidr2022-crotty/" rel="alternate" type="text/html" title="Paper Reading: Are You Sure You Want to Use MMAP in Your Database Management System?" /><published>2022-11-05T00:00:00+00:00</published><updated>2022-11-27T19:48:20+00:00</updated><id>https://ibug.io/blog/2022/11/paper-reading-cidr2022-crotty</id><content type="html" xml:base="https://ibug.io/blog/2022/11/paper-reading-cidr2022-crotty/"><![CDATA[<p>Paper reading for [CIDR 2022] <em>Are You Sure You Want to Use MMAP in Your Database Management System?</em> by Crotty et al.</p>
-		<p>This paper highlights the problems with using MMAP in database management systems.</p>
-		<h2 id="background">Background</h2>
-		<p>MMAP is a POSIX system call that transparently maps file content to process memory (the virtual address space of a process). This allows programmers to simplify the logical structure of program by leveraging the OS page cache as a replacement for a manually-maintained buffer pool.</p>
-		<p>A typical MMAP procedure goes as follows:</p>
-		<figure class="">
-			<img src="/image/papers/mmap-procedure.png" alt="A typical MMAP procedure" />
-			<figcaption>
-				A typical MMAP procedure
-			</figcaption>
-		</figure>
-		<ol>
-			<li>A process calls <code class="language-plaintext highlighter-rouge">mmap()</code> for an open file.</li>
-			<li>The OS reserves part of the process’s virtual address space, but does <em>not</em> load the file from disk. The process receives a pointer to the mapped address.</li>
-			<li>The process accesses the file using that pointer.</li>
-			<li>The OS tries to load the page, but no valid mapping exists, which results in a page fault.</li>
-			<li>The OS loads the file from disk to physical RAM.</li>
-			<li>The OS adds an entry to the page table of the process, mapping the virtual address to the physical address.</li>
-			<li>The initiating CPU caches this new page entry in its <a href="https://en.wikipedia.org/wiki/Translation_lookaside_buffer">Translation Lookaside Buffer (TLB)</a> for faster future accesses.</li>
-		</ol>
-		<p>A process can map as much data from files as the virtual address space permits, and the OS does all the dirty work behind the scenes.</p>
-		<p>Files loaded this way count towards the OS page cache (shows in htop as both <code class="language-plaintext highlighter-rouge">RES</code> and <code class="language-plaintext highlighter-rouge">SHR</code>), so the OS must evict pages when physical memory fills up. During page eviction, the OS must ensure that:</p>
-		<ul>
-			<li>Dirty (modified) pages are written back to disk (if applicable).</li>
-			<li>TLBs of all CPU cores are flushed. This is called <em>TLB shootdown</em>.</li>
-		</ul>
-		<p>Even though disk writes can be avoided on read-only workloads, TLB shootdowns are unavoidable. Worse, since modern CPUs do <em>not</em> provide TLB coherence, flushing TLBs is a costly operation.</p>
-		<h3 id="posix-api">Related POSIX APIs</h3>
-		<ul>
-			<li><code class="language-plaintext highlighter-rouge">mmap()</code> maps a file to memory. The <code class="language-plaintext highlighter-rouge">MAP_SHARED</code> flag allows changes to be (eventually) persisted back to disk, while the <code class="language-plaintext highlighter-rouge">MAP_PRIVATE</code> flag indicates that modifications are discarded (private to the process). These flags cannot be changed after the mapping is created.</li>
-			<li><code class="language-plaintext highlighter-rouge">madvise()</code> provides hints to the OS about how the mapped file will be accessed.
-				<ul>
-					<li>With <code class="language-plaintext highlighter-rouge">MADV_NORMAL</code>, (at least for Linux) loads 32 pages (128 KiB) for every page fault.</li>
-					<li>With <code class="language-plaintext highlighter-rouge">MADV_RANDOM</code>, the OS only loads the exact missing page.</li>
-					<li>With <code class="language-plaintext highlighter-rouge">MADV_SEQUENTIAL</code>, the OS loads more pages in advance.</li>
-				</ul>
-			</li>
-			<li><code class="language-plaintext highlighter-rouge">mlock()</code> locks the mapped file in physical memory, preventing the OS from evicting it. It does not, however, prevent the OS from flushing dirty pages to disk.</li>
-			<li><code class="language-plaintext highlighter-rouge">msync()</code> flushes any modifications to the file back to disk.</li>
-		</ul>
-		<h2 id="problems">Problems</h2>
-		<h3 id="transactional-safety">Transactional safety</h3>
-		<p>One important feature that DBMS provides is transactional safety, which is commonly referred to as <a href="https://en.wikipedia.org/wiki/ACID">the <em>ACID</em> properties</a>. Using MMAP on database files poses a threat to theses properties, as OS can transparently flush dirty pages to disk at any time, which the DBMS is has no control over.</p>
-		<p>To work around this problem, the paper summarizes three kinds of approaches:</p>
-		<ol>
-			<li>
-				<p><strong>OS copy-on-write</strong></p>
-				<p>The first approach maps the same file twice, one with <code class="language-plaintext highlighter-rouge">MAP_SHARED</code> and the other with <code class="language-plaintext highlighter-rouge">MAP_PRIVATE</code>. Any modification is first made to the private mapping, and then synchronized to the shared mapping. To maintain consistency, extra measures like a <a href="https://en.wikipedia.org/wiki/Write-ahead_logging">write-ahead log (WAL)</a> are often used together.</p>
-				<p>A noticeable problem with this approach is that as the database is being accessed, the DBMS will eventually end up with two full copies of the file in memory. While it’s possible to periodically shrink the private workspace, it adds extra complexity to the DBMS.</p>
-			</li>
-			<li>
-				<p><strong>Userspace copy-on-write</strong></p>
-				<p>The second approach is similar to the first, but instead of <code class="language-plaintext highlighter-rouge">mmap</code>-ing the file twice, the “private workspace” is maintained manually as a separate buffer. This approach is more flexible in terms of memory efficiency and manageability.</p>
-			</li>
-			<li>
-				<p><a href="https://en.wikipedia.org/wiki/Shadow_paging"><strong>Shadow paging</strong></a></p>
-				<p>Shadow paging is a traditional copy-on-write technique. The DBMS keeps two copies of the database file, one for the current version and the other for the next version. When a transaction is committed, the DBMS simply swaps the files.</p>
-				<p>One downside is obvious: the DBMS must maintain two copies of the database file, which is not ideal for large databases. Even though it is possible to keep only the delta between the two versions, and only maintain the primary and shadow page tables, it introduces more fragmentation and requires careful bookkeeping.</p>
-				<p>Additionally, as commitments happens on the whole-file level, this method does not scale well with write concurrency.</p>
-			</li>
-		</ol>
-		<h3 id="io-stalls">I/O stalls</h3>
-		<p>With traditional file I/O, the DBMS can use asynchronous I/O to avoid blocking the CPU.</p>
-		<p>However, with MMAP, as the OS evict pages in the background transparently, any access to the mapped file may block the thread. Despite having <code class="language-plaintext highlighter-rouge">mlock()</code>, it provides limited mitigation as the amount of locked pages is bounded. While <code class="language-plaintext highlighter-rouge">madvise()</code> helps with OS prefetching decisions, the control is still very coarse.</p>
-		<p>Last but not least, while it’s possible to spawn an extra background thread to prefetch pages, the added complexity defeats the purpose of using MMAP in the first place.</p>
-		<h3 id="error-handling">Error handling</h3>
-		<p>For DBMS with page-level checksums (to prevent disk corruption), the DBMS must revalidate the checksums after <em>every</em> read, as it has no way to know whether the same page has been evicted and re-read from disk.</p>
-		<p>For DBMS written in memory-unsafe languages like C (which is quite common), a bad pointer write can silently corrupt the database. With a traditional buffer pool, defensive measures can be implemented to avoid writing corrupted data to disk.</p>
-		<p>Finally, with traditional <code class="language-plaintext highlighter-rouge">read()</code>/<code class="language-plaintext highlighter-rouge">write()</code>, error handling resides in the same place as the I/O code. With MMAP, however, error handling must be done through a cumbersome <code class="language-plaintext highlighter-rouge">SIGBUS</code> handler.</p>
-		<h3 id="performance-issues">Performance issues</h3>
-		<p>While it is a common sense that MMAP is more performant than traditional file I/O by eliminating the system calls and extra memory copies, experiments suggest otherwise. Three issues are pointed out:</p>
-		<ul>
-			<li>Page table contention (it’s one single data structure for the whole process)</li>
-			<li>Single-threaded page eviction (Linux: <code class="language-plaintext highlighter-rouge">kswapd</code>)</li>
-			<li>TLB shootdowns (see above)</li>
-		</ul>
-		<h2 id="experimental-results">Experimental results</h2>
-		<div class="notice--primary">
-			<h4 class="no_toc" id="note-on-odirect"><i class="fas fa-fw fa-lightbulb"></i> Note on <code class="language-plaintext highlighter-rouge">O_DIRECT</code></h4>
-			<p>The FIO test uses the <code class="language-plaintext highlighter-rouge">O_DIRECT</code> flag to bypass the OS page cache. For a more detailed explanation, see <a href="https://stackoverflow.com/q/5055859/5958455">this Stack Overflow question</a>.</p>
 		</div>
-		<p>The paper presents two kinds of tasks: Random reading and sequential reading, to represent two typical kinds of database workload: <a href="https://www.ibm.com/cloud/blog/olap-vs-oltp">OLTP and OLAP</a>.</p>
-		<figure class="">
-			<img src="/image/papers/crotty-randread-iops.png" alt="IOPS by time for random read" />
-			<figcaption>
-				Random read - IOPS
-			</figcaption>
-		</figure>
-		<figure class="">
-			<img src="/image/papers/crotty-randread-tlbshootdowns.png" alt="TLB shootdowns by time for random read" />
-			<figcaption>
-				Random read - TLBshootdowns
-			</figcaption>
-		</figure>
-		<p>It is apparent that it doesn’t take long before MMAP can’t sustain its performance, which is due to the page cache filling up. The OS must work hard on evicting pages, which worsens the situation.</p>
-		<figure class="">
-			<img src="/image/papers/crotty-seqread-1ssd.png" alt="Bandwidth by time for single-SSD sequential read" />
-			<figcaption>
-				Sequential read - 1 SSD
-			</figcaption>
-		</figure>
-		<figure class="">
-			<img src="/image/papers/crotty-seqread-10ssds.png" alt="Bandwidth by time for 10-SSD sequential read" />
-			<figcaption>
-				Sequential read - 10 SSDs
-			</figcaption>
-		</figure>
-		<p>With sequential read, the performance gap is larger as disk bandwidth grows. While <code class="language-plaintext highlighter-rouge">fio</code> can almost saturate the bandwidth from 10 SSDs, MMAP’s performance stayed nearly the same. The authors attribute this to the single-threaded page eviction.</p>
-		<h2 id="conclusion">Conclusion</h2>
-		<p>In the final section, the paper makes an ironic comment, suggesting two cases when you <em>maybe</em> can use MMAP in a database product:</p>
+		<p>Now the mystery has been completely uncovered. The Brass Funnel is configured to take everything but Cinder Flour and Glass Bottles, 2 at a time. Considering that the Depot behind is part of a brewing system, there will be brewed Potions, which are unstackable. A friend helped us find the GitHub issue <a href="https://github.com/Fabricators-of-Create/Create/issues/570"><i class="fab fa-github"></i> Create#570</a>, confirming that we ran into the same bug as reported in that thread.</p>
+		<h2 id="epilogue">Epilogue</h2>
+		<p>The use of block/item names since Java Edition 1.7.2 (<a href="https://minecraft.fandom.com/wiki/Java_Edition_13w37a">13w37a</a>) hinted that block/item IDs would eventually become dynamic, which actually took place in <a href="https://minecraft.fandom.com/wiki/Java_Edition_1.13/Flattening">the Flattening</a> in Java Edition 1.13. The smart use of the “palette + array of indices” paves the way for mods and future expansions to add new blocks without having to worry about the block ID limit, which is also reminiscent of the <a href="https://en.wikipedia.org/wiki/BMP_file_format#Color_table">color table</a> in 8-bit (256 colors) BMP bitmap images.</p>
+		<p>Contrary to player data (<code class="language-plaintext highlighter-rouge">playerdata/*.dat</code>), the region file is a lot more complicated. Thanks to the large fan base of Minecraft, libraries for handling the file format are readily available. I am inclined to believe that a few steps taken and decisions made here are critical to the success of salvaging our save.</p>
 		<ul>
-			<li>Your working set (or the entire database) fits in memory and the workload is read-only.</li>
-			<li>
-				<p>You need to rush a product to the market and do not care about data consistency or long-term engineering headaches.</p>
-			</li>
+			<li>First and foremost, checking the logs: We know which block is going wrong, and <em>have faith in ourselves that we can fix it</em>.</li>
+			<li>Looking in the correct direction: Instead of using a complete “world edit” tool, we decide to find some library on GitHub and improvise from there.</li>
+			<li>Reading the documentation carefully and in detail.</li>
+			<li>Doing math correctly (LOL…)</li>
 		</ul>
-		]]></content><author><name>iBug</name></author><category term="paper-reading" /><summary type="html"><![CDATA[Paper reading for [CIDR 2022] Are You Sure You Want to Use MMAP in Your Database Management System? by Crotty et al.]]></summary></entry><entry><title type="html">LVM metadata exceeds maximum metadata size, now what next?</title><link href="https://ibug.io/blog/2022/06/lvm-metadata-full/" rel="alternate" type="text/html" title="LVM metadata exceeds maximum metadata size, now what next?" /><published>2022-06-19T00:00:00+00:00</published><updated>2022-06-19T22:06:07+00:00</updated><id>https://ibug.io/blog/2022/06/lvm-metadata-full</id><content type="html" xml:base="https://ibug.io/blog/2022/06/lvm-metadata-full/"><![CDATA[<p>An LVM volume group (VG) on our Proxmox VE cluster has failed to create new logical volumes, reporting that its metadata was full. At first this appears to be easy, “fine I’ll just add more space for metadata”, but it quickly revealed to be an versity to struggle through.</p>
+		<p>Finally, I want to credit my friend <a href="https://sirius1242.github.io/">sirius</a> for his unsurpassed knowledge of Minecraft, without whose help I would not have been able to take on this wonderful adventure.</p>
+		]]></content><author><name>iBug</name></author><category term="games" /><category term="minecraft" /><summary type="html"><![CDATA[While a friend was building an automatic brewing pipeline, our Create: Astral server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.]]></summary></entry><entry><title type="html">Paper Reading: Are You Sure You Want to Use MMAP in Your Database Management System?</title><link href="https://ibug.io/blog/2022/11/paper-reading-cidr2022-crotty/" rel="alternate" type="text/html" title="Paper Reading: Are You Sure You Want to Use MMAP in Your Database Management System?" /><published>2022-11-05T00:00:00+00:00</published><updated>2022-11-27T19:48:20+00:00</updated><id>https://ibug.io/blog/2022/11/paper-reading-cidr2022-crotty</id><content type="html" xml:base="https://ibug.io/blog/2022/11/paper-reading-cidr2022-crotty/"><![CDATA[<p>Paper reading for [CIDR 2022] <em>Are You Sure You Want to Use MMAP in Your Database Management System?</em> by Crotty et al.</p>
+	<p>This paper highlights the problems with using MMAP in database management systems.</p>
+	<h2 id="background">Background</h2>
+	<p>MMAP is a POSIX system call that transparently maps file content to process memory (the virtual address space of a process). This allows programmers to simplify the logical structure of program by leveraging the OS page cache as a replacement for a manually-maintained buffer pool.</p>
+	<p>A typical MMAP procedure goes as follows:</p>
+	<figure class="">
+		<img src="/image/papers/mmap-procedure.png" alt="A typical MMAP procedure" />
+		<figcaption>
+			A typical MMAP procedure
+		</figcaption>
+	</figure>
+	<ol>
+		<li>A process calls <code class="language-plaintext highlighter-rouge">mmap()</code> for an open file.</li>
+		<li>The OS reserves part of the process’s virtual address space, but does <em>not</em> load the file from disk. The process receives a pointer to the mapped address.</li>
+		<li>The process accesses the file using that pointer.</li>
+		<li>The OS tries to load the page, but no valid mapping exists, which results in a page fault.</li>
+		<li>The OS loads the file from disk to physical RAM.</li>
+		<li>The OS adds an entry to the page table of the process, mapping the virtual address to the physical address.</li>
+		<li>The initiating CPU caches this new page entry in its <a href="https://en.wikipedia.org/wiki/Translation_lookaside_buffer">Translation Lookaside Buffer (TLB)</a> for faster future accesses.</li>
+	</ol>
+	<p>A process can map as much data from files as the virtual address space permits, and the OS does all the dirty work behind the scenes.</p>
+	<p>Files loaded this way count towards the OS page cache (shows in htop as both <code class="language-plaintext highlighter-rouge">RES</code> and <code class="language-plaintext highlighter-rouge">SHR</code>), so the OS must evict pages when physical memory fills up. During page eviction, the OS must ensure that:</p>
+	<ul>
+		<li>Dirty (modified) pages are written back to disk (if applicable).</li>
+		<li>TLBs of all CPU cores are flushed. This is called <em>TLB shootdown</em>.</li>
+	</ul>
+	<p>Even though disk writes can be avoided on read-only workloads, TLB shootdowns are unavoidable. Worse, since modern CPUs do <em>not</em> provide TLB coherence, flushing TLBs is a costly operation.</p>
+	<h3 id="posix-api">Related POSIX APIs</h3>
+	<ul>
+		<li><code class="language-plaintext highlighter-rouge">mmap()</code> maps a file to memory. The <code class="language-plaintext highlighter-rouge">MAP_SHARED</code> flag allows changes to be (eventually) persisted back to disk, while the <code class="language-plaintext highlighter-rouge">MAP_PRIVATE</code> flag indicates that modifications are discarded (private to the process). These flags cannot be changed after the mapping is created.</li>
+		<li><code class="language-plaintext highlighter-rouge">madvise()</code> provides hints to the OS about how the mapped file will be accessed.
+			<ul>
+				<li>With <code class="language-plaintext highlighter-rouge">MADV_NORMAL</code>, (at least for Linux) loads 32 pages (128 KiB) for every page fault.</li>
+				<li>With <code class="language-plaintext highlighter-rouge">MADV_RANDOM</code>, the OS only loads the exact missing page.</li>
+				<li>With <code class="language-plaintext highlighter-rouge">MADV_SEQUENTIAL</code>, the OS loads more pages in advance.</li>
+			</ul>
+		</li>
+		<li><code class="language-plaintext highlighter-rouge">mlock()</code> locks the mapped file in physical memory, preventing the OS from evicting it. It does not, however, prevent the OS from flushing dirty pages to disk.</li>
+		<li><code class="language-plaintext highlighter-rouge">msync()</code> flushes any modifications to the file back to disk.</li>
+	</ul>
+	<h2 id="problems">Problems</h2>
+	<h3 id="transactional-safety">Transactional safety</h3>
+	<p>One important feature that DBMS provides is transactional safety, which is commonly referred to as <a href="https://en.wikipedia.org/wiki/ACID">the <em>ACID</em> properties</a>. Using MMAP on database files poses a threat to theses properties, as OS can transparently flush dirty pages to disk at any time, which the DBMS is has no control over.</p>
+	<p>To work around this problem, the paper summarizes three kinds of approaches:</p>
+	<ol>
+		<li>
+			<p><strong>OS copy-on-write</strong></p>
+			<p>The first approach maps the same file twice, one with <code class="language-plaintext highlighter-rouge">MAP_SHARED</code> and the other with <code class="language-plaintext highlighter-rouge">MAP_PRIVATE</code>. Any modification is first made to the private mapping, and then synchronized to the shared mapping. To maintain consistency, extra measures like a <a href="https://en.wikipedia.org/wiki/Write-ahead_logging">write-ahead log (WAL)</a> are often used together.</p>
+			<p>A noticeable problem with this approach is that as the database is being accessed, the DBMS will eventually end up with two full copies of the file in memory. While it’s possible to periodically shrink the private workspace, it adds extra complexity to the DBMS.</p>
+		</li>
+		<li>
+			<p><strong>Userspace copy-on-write</strong></p>
+			<p>The second approach is similar to the first, but instead of <code class="language-plaintext highlighter-rouge">mmap</code>-ing the file twice, the “private workspace” is maintained manually as a separate buffer. This approach is more flexible in terms of memory efficiency and manageability.</p>
+		</li>
+		<li>
+			<p><a href="https://en.wikipedia.org/wiki/Shadow_paging"><strong>Shadow paging</strong></a></p>
+			<p>Shadow paging is a traditional copy-on-write technique. The DBMS keeps two copies of the database file, one for the current version and the other for the next version. When a transaction is committed, the DBMS simply swaps the files.</p>
+			<p>One downside is obvious: the DBMS must maintain two copies of the database file, which is not ideal for large databases. Even though it is possible to keep only the delta between the two versions, and only maintain the primary and shadow page tables, it introduces more fragmentation and requires careful bookkeeping.</p>
+			<p>Additionally, as commitments happens on the whole-file level, this method does not scale well with write concurrency.</p>
+		</li>
+	</ol>
+	<h3 id="io-stalls">I/O stalls</h3>
+	<p>With traditional file I/O, the DBMS can use asynchronous I/O to avoid blocking the CPU.</p>
+	<p>However, with MMAP, as the OS evict pages in the background transparently, any access to the mapped file may block the thread. Despite having <code class="language-plaintext highlighter-rouge">mlock()</code>, it provides limited mitigation as the amount of locked pages is bounded. While <code class="language-plaintext highlighter-rouge">madvise()</code> helps with OS prefetching decisions, the control is still very coarse.</p>
+	<p>Last but not least, while it’s possible to spawn an extra background thread to prefetch pages, the added complexity defeats the purpose of using MMAP in the first place.</p>
+	<h3 id="error-handling">Error handling</h3>
+	<p>For DBMS with page-level checksums (to prevent disk corruption), the DBMS must revalidate the checksums after <em>every</em> read, as it has no way to know whether the same page has been evicted and re-read from disk.</p>
+	<p>For DBMS written in memory-unsafe languages like C (which is quite common), a bad pointer write can silently corrupt the database. With a traditional buffer pool, defensive measures can be implemented to avoid writing corrupted data to disk.</p>
+	<p>Finally, with traditional <code class="language-plaintext highlighter-rouge">read()</code>/<code class="language-plaintext highlighter-rouge">write()</code>, error handling resides in the same place as the I/O code. With MMAP, however, error handling must be done through a cumbersome <code class="language-plaintext highlighter-rouge">SIGBUS</code> handler.</p>
+	<h3 id="performance-issues">Performance issues</h3>
+	<p>While it is a common sense that MMAP is more performant than traditional file I/O by eliminating the system calls and extra memory copies, experiments suggest otherwise. Three issues are pointed out:</p>
+	<ul>
+		<li>Page table contention (it’s one single data structure for the whole process)</li>
+		<li>Single-threaded page eviction (Linux: <code class="language-plaintext highlighter-rouge">kswapd</code>)</li>
+		<li>TLB shootdowns (see above)</li>
+	</ul>
+	<h2 id="experimental-results">Experimental results</h2>
+	<div class="notice--primary">
+		<h4 class="no_toc" id="note-on-odirect"><i class="fas fa-fw fa-lightbulb"></i> Note on <code class="language-plaintext highlighter-rouge">O_DIRECT</code></h4>
+		<p>The FIO test uses the <code class="language-plaintext highlighter-rouge">O_DIRECT</code> flag to bypass the OS page cache. For a more detailed explanation, see <a href="https://stackoverflow.com/q/5055859/5958455">this Stack Overflow question</a>.</p>
+	</div>
+	<p>The paper presents two kinds of tasks: Random reading and sequential reading, to represent two typical kinds of database workload: <a href="https://www.ibm.com/cloud/blog/olap-vs-oltp">OLTP and OLAP</a>.</p>
+	<figure class="">
+		<img src="/image/papers/crotty-randread-iops.png" alt="IOPS by time for random read" />
+		<figcaption>
+			Random read - IOPS
+		</figcaption>
+	</figure>
+	<figure class="">
+		<img src="/image/papers/crotty-randread-tlbshootdowns.png" alt="TLB shootdowns by time for random read" />
+		<figcaption>
+			Random read - TLBshootdowns
+		</figcaption>
+	</figure>
+	<p>It is apparent that it doesn’t take long before MMAP can’t sustain its performance, which is due to the page cache filling up. The OS must work hard on evicting pages, which worsens the situation.</p>
+	<figure class="">
+		<img src="/image/papers/crotty-seqread-1ssd.png" alt="Bandwidth by time for single-SSD sequential read" />
+		<figcaption>
+			Sequential read - 1 SSD
+		</figcaption>
+	</figure>
+	<figure class="">
+		<img src="/image/papers/crotty-seqread-10ssds.png" alt="Bandwidth by time for 10-SSD sequential read" />
+		<figcaption>
+			Sequential read - 10 SSDs
+		</figcaption>
+	</figure>
+	<p>With sequential read, the performance gap is larger as disk bandwidth grows. While <code class="language-plaintext highlighter-rouge">fio</code> can almost saturate the bandwidth from 10 SSDs, MMAP’s performance stayed nearly the same. The authors attribute this to the single-threaded page eviction.</p>
+	<h2 id="conclusion">Conclusion</h2>
+	<p>In the final section, the paper makes an ironic comment, suggesting two cases when you <em>maybe</em> can use MMAP in a database product:</p>
+	<ul>
+		<li>Your working set (or the entire database) fits in memory and the workload is read-only.</li>
+		<li>
+			<p>You need to rush a product to the market and do not care about data consistency or long-term engineering headaches.</p>
+		</li>
+	</ul>
+	]]></content><author><name>iBug</name></author><category term="paper-reading" /><summary type="html"><![CDATA[Paper reading for [CIDR 2022] Are You Sure You Want to Use MMAP in Your Database Management System? by Crotty et al.]]></summary></entry><entry><title type="html">LVM metadata exceeds maximum metadata size, now what next?</title><link href="https://ibug.io/blog/2022/06/lvm-metadata-full/" rel="alternate" type="text/html" title="LVM metadata exceeds maximum metadata size, now what next?" /><published>2022-06-19T00:00:00+00:00</published><updated>2022-06-19T22:06:07+00:00</updated><id>https://ibug.io/blog/2022/06/lvm-metadata-full</id><content type="html" xml:base="https://ibug.io/blog/2022/06/lvm-metadata-full/"><![CDATA[<p>An LVM volume group (VG) on our Proxmox VE cluster has failed to create new logical volumes, reporting that its metadata was full. At first this appears to be easy, “fine I’ll just add more space for metadata”, but it quickly revealed to be an versity to struggle through.</p>
 	<div class="language-console highlighter-rouge">
 		<div class="highlight">
 			<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>lvcreate <span class="nt">-L</span> 4M <span class="nt">-n</span> test-1721 <span class="nb">test</span>
@@ -2195,123 +2336,4 @@ ip xfrm policy add <span class="se">\</span>
 			</ul>
 		</li>
 	</ul>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections. As an innovative attempt to a lab in this semester’s Network Security course, which was designed to work over multiple Windows Server 2003 virtual machines (VM), I decided to go on my own and proceed with Linux VMs.]]></summary></entry><entry><title type="html">Disassembling a hardware RAID 1 array in Proxmox VE</title><link href="https://ibug.io/blog/2021/08/proxmox-disassemble-hardware-raid1/" rel="alternate" type="text/html" title="Disassembling a hardware RAID 1 array in Proxmox VE" /><published>2021-08-15T00:00:00+00:00</published><updated>2022-05-01T15:21:23+00:00</updated><id>https://ibug.io/blog/2021/08/proxmox-disassemble-hardware-raid1</id><content type="html" xml:base="https://ibug.io/blog/2021/08/proxmox-disassemble-hardware-raid1/"><![CDATA[<p>Yesterday in a server maintenance period, we decided to tune the storage layout of our Proxmox VE server, which included disassembling a RAID 1 array and adjusting the size of the root filesystem.</p>
-	<h2 id="backup-data">Backup data</h2>
-	<p class="notice--danger">As is always, potentially destructive disk operations should be preceded with a backup of anything necessary for recovery.</p>
-	<p>Proxmox VE uses a kind of “standard” partition layout, with the first 512 MB of the primary disk allocated for the EFI System Partition (ESP), and the rest forming an LVM physical volume (PV), which then becomes a volume group (VG) named <code class="language-plaintext highlighter-rouge">pve</code>. In the <code class="language-plaintext highlighter-rouge">pve</code> VG, a fifth of total available space is allocated to the root filesystem for the Proxmox VE system, and the rest goes to a thin pool named <code class="language-plaintext highlighter-rouge">data</code>.</p>
-	<p>The initial disk layout on our server is like this:</p>
-	<p><img src="/image/proxmox-raid1/initial-fdisk.png" alt="Initial disk layout" /></p>
-	<p>The system is booted with UEFI, so the first partition can be safely ignored. The second partition is the ESP and contains no critical data, as it can be rebuilt when needed. The only thing left for backup is the rootfs since we haven’t made use of the <code class="language-plaintext highlighter-rouge">data</code> volume. A good news is that the rootfs only has less then 3.5 GB of content (we have separate storages for the system and our virtual machines), so backing up is as easy as allocating a 4 GB volume on our data storage and copying the whole rootfs over with <a href="https://www.samba.org/rsync/">Rsync</a>:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>rsync <span class="nt">-aHAXx</span> / /mnt/backup/
-</code></pre>
-		</div>
-	</div>
-	<p>In addition, it’s been said in <a href="https://superuser.com/a/137310/688600">this Super User answer</a> that</p>
-	<blockquote>
-		<p>Of course, it may be a complete jerk for you and wipe the drives for no good reason, but this is very unlikely.</p>
-	</blockquote>
-	<p>So we might not even need that backup (in fact we didn’t). After all, it’s better safe than sorry, isn’t it?</p>
-	<h2 id="disassemble-array">Disassembling the RAID array</h2>
-	<p>The standard procedure for this is to reboot into BIOS setup and change the settings there.</p>
-	<p>I reboot the server, hitting F9 on its POST screen.</p>
-	<p><img src="/image/proxmox-raid1/hpe-enter-bios.png" alt="HPE POST Screen" /></p>
-	<p>Next, I locate the built-in RAID controller. It’s called “HPE Smart Array”. I navigate into the options, locate the RAID-1 array, and select “Delete Array”. It completes just in a flash.</p>
-	<p><img src="/image/proxmox-raid1/hpe-bios-array-setting.png" alt="HPE Array Setting" /></p>
-	<p>To ensure the changes take effect, I reboot the server again.</p>
-	<h2 id="restore-partitions">Restore the partition table</h2>
-	<p>Because the disks may previously contain some RAID information at their start, their content may not be recognized now, so I insert a virtual CD-ROM drive using the “Virtual Media” feature provided by the Baseboard Management Controller (BMC, also known as IPMI). It’s good we have a file server providing these handy resources. As the host system has been updated to <a href="https://pve.proxmox.com/wiki/Roadmap#Proxmox_VE_7.0">Proxmox VE 7</a>, I picked the new Debian Bullseye Live CD instead of Buster. This ensures I can start the server for disk recovery jobs.</p>
-	<p><img src="/image/proxmox-raid1/set-virtual-media.png" alt="Insert ISO from IPMI" /></p>
-	<p>This time I enter “One-Time Boot Menu” to boot from the CD-ROM. I select “iLO Virtual CD-ROM” and it starts up.</p>
-	<p><img src="/image/proxmox-raid1/hpe-bios-boot-from-iso.png" alt="Select boot item" /></p>
-	<p>In a few seconds, the Debian boot screen shows up.</p>
-	<p><img src="/image/linux/debian-11-livecd.png" alt="Debian Bullseye GRUB screen" /></p>
-	<p>Now I can run <code class="language-plaintext highlighter-rouge">fdisk</code> to check the disk status. As expected, no partitions are found.</p>
-	<p>Given that the “Delete Array” operation completes so quickly, I’m sure it did nothing to data stored on the disk, so I can try recovering the partition table. <a href="https://linux.die.net/man/1/testdisk"><code class="language-plaintext highlighter-rouge">testdisk</code></a> is one of the utilities that do this job.</p>
-	<p><img src="/image/proxmox-raid1/after-disassembly-fdisk.png" alt="Disk layout after disassembly" /></p>
-	<p>The terminal interface of testdisk is straightforward. Select the only disk given (<code class="language-plaintext highlighter-rouge">/dev/sda</code>, the one you gave it as CLI argument), select the previous partition table type (testdisk tells you if it can find out, which matches that in the first image of this article), and select “Analyze”.</p>
-	<p><img src="/image/proxmox-raid1/testdisk-disk-type.png" alt="Testdisk select disk type" /></p>
-	<p>If testdisk found a partition table in the previous screen, the analyze step doesn’t need a second - it will just show the discovered partition. If it didn’t find anything, you can still run “Quick Search” and get your partition table back.</p>
-	<p><img src="/image/proxmox-raid1/testdisk-analysis.png" alt="Testdisk partition analysis" /></p>
-	<p>In my case, I just select “Backup” and proceed to next step. Testdisk is smart enough to discard the first nonsense partition (it’s completely redundant on a UEFI system), and I’m left with two.</p>
-	<p><img src="/image/proxmox-raid1/testdisk-overview.png" alt="Testdisk found partitions" /></p>
-	<p>There’s no change I need to make at this stage, so I just proceed to the final screen and let testdisk write the partition table.</p>
-	<p><img src="/image/proxmox-raid1/testdisk-confirm.png" alt="Testdisk confirm partitions" /></p>
-	<p>Although testdisk tells me “<em>You will have to reboot for the change to take effect</em>”, calling <code class="language-plaintext highlighter-rouge">partprobe</code> is all that’s necessary. Now I can confirm with <code class="language-plaintext highlighter-rouge">fdisk</code> that the partition table has been restored.</p>
-	<p><img src="/image/proxmox-raid1/restored-fdisk.png" alt="Restored disk layout" /></p>
-	<p class="notice--info"><code class="language-plaintext highlighter-rouge">partprobe</code> doesn’t come with Debian Bullseye live CD (it did with Debian Buster). To get the command I installed <code class="language-plaintext highlighter-rouge">parted</code> package.</p>
-	<h2 id="shrink-rootfs">Shrinking the root filesystem</h2>
-	<p>It’s a complete waste to give the rootfs a whopping 96 GB when we only use some 3.5 GB, so I go to shrink it down to 16 GB.</p>
-	<p>Before shrinking the volume, it’s necessary to shrink the <em>filesystem</em> first. Yes, a “partition” and a “filesystem” are two different concepts.</p>
-	<p>The rootfs of Proxmox VE resides in LVM, so the first thing is to get LVM tools up and running. I tried <code class="language-plaintext highlighter-rouge">apt install lvm2</code>, and was (a bit) surprised to found that it came with Debian Bullseye Live CD.</p>
-	<p>I get back the VG <code class="language-plaintext highlighter-rouge">pve</code> by <code class="language-plaintext highlighter-rouge">vgscan</code>, and make all LVs available for operation by <code class="language-plaintext highlighter-rouge">vgchange -ay pve</code>. I can then mount <code class="language-plaintext highlighter-rouge">/dev/pve/root</code> somewhere and check the volume usage with <code class="language-plaintext highlighter-rouge">df -h</code>. Just around 4 gigs, we’re good.</p>
-	<p>Many years ago I read <a href="https://matt.berther.io/2015/02/03/how-to-resize-aws-ec2-ebs-volumes/">this blog by Matt Berther</a> about shrinking EBS volumes on AWS EC2. The same solution is still applicable here (though years of Linux experience relieved me of the need for the blog as a reference).</p>
-	<p>I unmount the rootfs and run <code class="language-plaintext highlighter-rouge">e2fsck -f /dev/pve/root</code> to ensure a clean state of the filesystem, followed by <code class="language-plaintext highlighter-rouge">resize2fs -M -p /dev/pve/root</code> to perform the shrinking.</p>
-	<p><img src="/image/proxmox-raid1/shrink-rootfs.png" alt="Shrinking rootfs" /></p>
-	<p>After the filesystem is shrunk, I shrink the logical volume with <code class="language-plaintext highlighter-rouge">lvresize -L 16G pve/root</code>. Then I grow the filesystem back to the full size of the volume with <code class="language-plaintext highlighter-rouge">resize2fs -p /dev/pve/root</code> (without the <code class="language-plaintext highlighter-rouge">-M</code> option).</p>
-	<p><img src="/image/proxmox-raid1/grow-rootfs.png" alt="Restore rootfs" /></p>
-	<h2 id="convert-rootfs-to-mirrored">Restoring rootfs to “RAID” state</h2>
-	<p>The main reason we set up RAID 1 for these disks is to provide resilience against disk failures, so we can still have the system running if either disk dies. Completely breaking up the RAID array defeats this purpose, so it’s helpful to at least add the rootfs back to the mirrored state.</p>
-	<p>Luckily, <a href="https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/logical_volume_manager_administration/mirror_create">LVM provides the ability</a> to create mirrored volumes. Converting an existing one is even easier:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>lvconvert <span class="nt">-m1</span> pve/root
-</code></pre>
-		</div>
-	</div>
-	<p>The command failed for an obvious reason: There’s only one disk in the VG.</p>
-	<p>Recalling that a RAID 1 array has just been broken up, there’s <code class="language-plaintext highlighter-rouge">/dev/sdb</code> with an identical partition structure available. I repeat the same steps to recover the partition table on <code class="language-plaintext highlighter-rouge">/dev/sdb</code>, and wiped <code class="language-plaintext highlighter-rouge">/dev/sdb2</code> to avoid conflict. I can then add it to the VG as a second PV:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="nb">dd </span><span class="k">if</span><span class="o">=</span>/dev/zero <span class="nv">of</span><span class="o">=</span>/dev/sdb2 <span class="nv">bs</span><span class="o">=</span>1M <span class="nv">count</span><span class="o">=</span>1
-pvcreate /dev/sdb2
-vgextend pve /dev/sdb2
-</code></pre>
-		</div>
-	</div>
-	<p>Now I can convert the rootfs to “mirrored” volume.</p>
-	<p><img src="/image/proxmox-raid1/extend-vg.png" alt="Extend volume group" /></p>
-	<p>The “data” volume can also be extended to take all remaining space as well:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>lvextend <span class="nt">-l</span> +100%FREE pve/data
-</code></pre>
-		</div>
-	</div>
-	<h2 id="fix-grub">Fixing up GRUB</h2>
-	<p>To ensure the system can boot up normally, GRUB should be updated. This needs to be done in chroot inside the original system environment. A bunch of mounts must be setup for GRUB reinstallation to work.</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>mount /dev/pve/root /srv
-
-<span class="c"># systemd-udev requires these two directories to be available</span>
-mount <span class="nt">-o</span> rbind /run /srv/run
-mount <span class="nt">-o</span> rbind /tmp /srv/tmp
-
-<span class="nb">chroot</span> /srv
-mount <span class="nt">-t</span> devtmpfs _ /dev
-mount /dev/sda1 /boot/efi
-mount <span class="nt">-t</span> proc _ /proc
-mount <span class="nt">-t</span> sysfs _ /sys
-</code></pre>
-		</div>
-	</div>
-	<p>Now I can replace <code class="language-plaintext highlighter-rouge">grub-pc</code> with <code class="language-plaintext highlighter-rouge">grub-efi</code> with <code class="language-plaintext highlighter-rouge">apt install grub-efi</code>, and then run <code class="language-plaintext highlighter-rouge">grub-install</code> on both <code class="language-plaintext highlighter-rouge">/dev/sda1</code> and <code class="language-plaintext highlighter-rouge">/dev/sdb1</code> so that both disks are bootable.</p>
-	<h2 id="fix-initrd">Fixing up ramdisk</h2>
-	<div class="notice--info">
-		<h4 class="no_toc" id="save-yourself-some-hassle"><i class="fas fa-lightbulb"></i> Save yourself some hassle</h4>
-		<p>This paragraph tells a trap I encountered. If you’re following this article as a step-by-step guide, you can skip this paragraph and do this instead:</p>
-		<ol>
-			<li>Either install <code class="language-plaintext highlighter-rouge">mdadm</code>, or</li>
-			<li>Edit <code class="language-plaintext highlighter-rouge">/etc/initramfs-tools/modules</code> and append two lines <code class="language-plaintext highlighter-rouge">dm_raid</code> and <code class="language-plaintext highlighter-rouge">raid1</code>.</li>
-		</ol>
-		<p>After picking an action above, run <code class="language-plaintext highlighter-rouge">update-initramfs -u -k all</code> and you can proceed to rebooting from the live CD.</p>
-	</div>
-	<p>Looking at the checklist, everything should have been taken care of, so I reboot the server. The Proxmox GRUB screen passed as normal. To my surprise, the server is stuck at <em>Loading initial ramdisk</em>.</p>
-	<p>To display more information for troubleshooting, I reboot the server again, pressing <code class="language-plaintext highlighter-rouge">e</code> on the GRUB screen so I can edit the boot item. I remove <code class="language-plaintext highlighter-rouge">quiet</code> and added <code class="language-plaintext highlighter-rouge">nomodeset</code> to the kernel command line (see <a href="https://askubuntu.com/q/716957/612877">Ask Ubuntu</a>), and hit Ctrl-X to boot. This does turn up something useful:</p>
-	<p><img src="/image/proxmox-raid1/loading-initial-ramdisk-nomodeset.png" alt="Debug output for Loading initial ramdisk" /></p>
-	<p>Google search for “raid: failed to run raid array” brings me to <a href="https://askubuntu.com/q/292092/612877">this Ask Ubuntu question</a>. Checking the answers and the comments, I reboot again into Debian Live CD, mount the rootfs, install <code class="language-plaintext highlighter-rouge">mdadm</code>, and <code class="language-plaintext highlighter-rouge">update-initramfs</code> again. The next reboot proved correct, and the Proxmox VE server is back up now.</p>
-	<h2 id="other-stuff">Other stuff</h2>
-	<p>At this point, this server maintenance job has been concluded. If you’re stumbling upon this article and find a mistake or have other questions, feel free to leave a comment below.</p>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><summary type="html"><![CDATA[Yesterday in a server maintenance period, we decided to tune the storage layout of our Proxmox VE server, which included disassembling a RAID 1 array and adjusting the size of the root filesystem.]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections. As an innovative attempt to a lab in this semester’s Network Security course, which was designed to work over multiple Windows Server 2003 virtual machines (VM), I decided to go on my own and proceed with Linux VMs.]]></summary></entry></feed>
