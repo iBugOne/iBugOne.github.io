@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.2">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2023-02-15T07:33:10+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Overengineering Advent of Code 2022</title><link href="https://ibug.io/blog/2023/01/overengineering-adventofcode/" rel="alternate" type="text/html" title="Overengineering Advent of Code 2022" /><published>2023-01-08T00:00:00+00:00</published><updated>2023-01-09T02:17:24+00:00</updated><id>https://ibug.io/blog/2023/01/overengineering-adventofcode</id><content type="html" xml:base="https://ibug.io/blog/2023/01/overengineering-adventofcode/"><![CDATA[<p><em>Advent of Code</em> (<a href="https://en.wikipedia.org/wiki/Advent_of_Code">Wikipedia</a>, <a href="https://adventofcode.com/">link</a>) is an annual event that releases a programming puzzle every day from December 1 to December 25. It’s a great chance to learn a new language or practice your skills.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.2">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2023-03-18T06:14:38+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Overengineering Advent of Code 2022</title><link href="https://ibug.io/blog/2023/01/overengineering-adventofcode/" rel="alternate" type="text/html" title="Overengineering Advent of Code 2022" /><published>2023-01-08T00:00:00+00:00</published><updated>2023-01-09T02:17:24+00:00</updated><id>https://ibug.io/blog/2023/01/overengineering-adventofcode</id><content type="html" xml:base="https://ibug.io/blog/2023/01/overengineering-adventofcode/"><![CDATA[<p><em>Advent of Code</em> (<a href="https://en.wikipedia.org/wiki/Advent_of_Code">Wikipedia</a>, <a href="https://adventofcode.com/">link</a>) is an annual event that releases a programming puzzle every day from December 1 to December 25. It’s a great chance to learn a new language or practice your skills.</p>
 			<p><img src="/image/adventofcode-2022.png" alt="Image" /></p>
 			<p>Considering that all the puzzles are designed to be lightweight, meaning that if implemented correctly, they’re solvable in no more than a few seconds with a reasonably small memory footprint, I picked Go as my language of choice. Go has been my preference over Python for a while, for being compiled into machine code and thus more performant, and a decent set of standard libraries.</p>
 			<h2 id="puzzles">Notes on puzzles</h2>
@@ -195,12 +195,12 @@ Stacktrace:
 		<p>The <code class="language-plaintext highlighter-rouge">region.py</code> file provides a <code class="language-plaintext highlighter-rouge">RegionFile</code> class that can be used to access region files, so I start playing with it:</p>
 		<div class="language-console highlighter-rouge">
 			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">nbt</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">nbt</span><span class="p">.</span><span class="n">region</span><span class="p">.</span><span class="n">RegionFile</span><span class="p">(</span><span class="s">'r.-1.0.mca'</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="p">.</span><span class="n">get_chunk</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="n">nbt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">nbt</span><span class="p">.</span><span class="n">region</span><span class="p">.</span><span class="nc">RegionFile</span><span class="p">(</span><span class="s">'r.-1.0.mca'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="p">.</span><span class="nf">get_chunk</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
 <span class="c"># Traceback (most recent call last):
 </span><span class="go">KeyError: (-1, 10)
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="p">.</span><span class="n">get_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+</span><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="p">.</span><span class="nf">get_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
 <span class="go">&lt;NBTFile with TAG_Compound('') at 0x7f8a8d014eb0&gt;
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">_</span>
 </code></pre>
@@ -241,9 +241,9 @@ Stacktrace:
 		<p>So not only was that number <em>not</em> for a single block, but also was I looking for a wrong index. I need to inspect the block palette first:</p>
 		<div class="language-console highlighter-rouge">
 			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">])</span>
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="nf">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">])</span>
 <span class="go">95
-</span><span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">])</span>
+</span><span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nf">enumerate</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">])</span>
 <span class="gp">... </span><span class="w"> </span><span class="k">if</span> <span class="n">b</span><span class="p">[</span><span class="s">'Name'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="s">"create:brass_funnel"</span><span class="p">]</span>
 <span class="go">[(55, &lt;TAG_Compound('') at 0x7f8a8d49d120&gt;), (77, &lt;TAG_Compound('') at 0x7f8a8d49ff40&gt;)]
 </span></code></pre>
@@ -261,7 +261,7 @@ Stacktrace:
 		<p>Because there are 95 blocks in the palette, 7 bits is enough to hold an index, and a 64-bit integer holds 9 indices. The calculation can be verified by the following:</p>
 		<div class="language-console highlighter-rouge">
 			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">])</span>
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="nf">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">])</span>
 <span class="go">456
 </span><span class="gp">&gt;&gt;&gt; </span><span class="mi">456</span> <span class="o">*</span> <span class="mi">9</span>
 <span class="go">4104
@@ -272,10 +272,10 @@ Stacktrace:
 		<p>Now I unpack that large integer into 9 indices, and try to translate them into blocks:</p>
 		<div class="language-console highlighter-rouge">
 			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="n">x</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0x7F</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span>
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="n">x</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0x7F</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span>
 <span class="go">[53, 54, 46, 1, 1, 1, 1, 1, 55]
 </span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">][((</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="n">x</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0x7F</span><span class="p">)][</span><span class="s">'Name'</span><span class="p">].</span><span class="n">value</span>
-<span class="gp">... </span><span class="w"> </span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span>
+<span class="gp">... </span><span class="w"> </span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span>
 <span class="go">['create:spout',
  'create:mechanical_pump',
  'tconstruct:seared_drain',
@@ -327,7 +327,7 @@ f.get_chunk(
 		<p>Reading <a href="https://minecraft.fandom.com/wiki/Region_file_format">Region file format</a>, I learn that each chunk is compressed (using Zlib) separately and stored together in the region file, and that <code class="language-plaintext highlighter-rouge">f.write_chunk</code> is the method I am looking for.</p>
 		<div class="language-console highlighter-rouge">
 			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">.</span><span class="n">write_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">.</span><span class="nf">write_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
 <span class="go">&gt;&gt;&gt;
 </span></code></pre>
 			</div>
@@ -343,7 +343,7 @@ f.get_chunk(
 <span class="go">minecraft:grass_block
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">ii</span> <span class="o">=</span> <span class="n">i</span> <span class="o">^</span> <span class="p">((</span><span class="mi">55</span> <span class="o">^</span> <span class="mi">25</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="mi">8</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">.</span><span class="n">write_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">.</span><span class="nf">write_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
 </code></pre>
 			</div>
 		</div>
@@ -353,7 +353,7 @@ f.get_chunk(
 		<p>According to <a href="https://minecraft.fandom.com/wiki/Chunk_format">Chunk format</a>, block entities are stored in a <code class="language-plaintext highlighter-rouge">block_entity</code> tag under the root tag of the chunk. It’s possible to inspect the block entity data for the offending Brass Funnel, using information provided under the <a href="https://minecraft.fandom.com/wiki/Chunk_format#Block_entity_format">Block entity format</a> section.</p>
 		<div class="language-console highlighter-rouge">
 			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s">'block_entities'</span><span class="p">])</span>
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="nf">len</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s">'block_entities'</span><span class="p">])</span>
 <span class="go">420
 </span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">c</span><span class="p">[</span><span class="s">'block_entities'</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">'x'</span><span class="p">].</span><span class="n">value</span>
 <span class="go">-14
@@ -367,7 +367,7 @@ f.get_chunk(
 <span class="gp">... </span><span class="w"> </span><span class="k">if</span> <span class="n">be</span><span class="p">[</span><span class="s">'x'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="o">-</span><span class="mi">15</span> <span class="ow">and</span> <span class="n">be</span><span class="p">[</span><span class="s">'y'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">65</span> <span class="ow">and</span> <span class="n">be</span><span class="p">[</span><span class="s">'z'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">172</span><span class="p">]</span>
 <span class="go">[&lt;TAG_Compound('') at 0x7f8a8d4afd30&gt;]
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span> <span class="o">=</span> <span class="n">_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">.</span><span class="n">keys</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">.</span><span class="nf">keys</span><span class="p">()</span>
 <span class="go">['z', 'x', 'TransferCooldown', 'id', 'y', 'FilterAmount', 'keepPacked', 'Filter']
 </span></code></pre>
 			</div>
@@ -379,7 +379,7 @@ f.get_chunk(
 <span class="go">2
 </span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">]</span>
 <span class="go">&lt;TAG_Compound('Filter') at 0x7f8a8d1000a0&gt;
-</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">].</span><span class="n">keys</span><span class="p">()</span>
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">].</span><span class="nf">keys</span><span class="p">()</span>
 <span class="go">['id', 'tag', 'Count']
 </span></code></pre>
 			</div>
@@ -387,19 +387,19 @@ f.get_chunk(
 		<p>So the <code class="language-plaintext highlighter-rouge">Filter</code> key is an item. In my case it’s a <a href="https://create.fandom.com/wiki/Filter">Filter</a> (normal filter, crafted with Iron Nuggets). The contents of the filter can be further inspected:</p>
 		<div class="language-console highlighter-rouge">
 			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">].</span><span class="n">keys</span><span class="p">()</span>
+				<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">].</span><span class="nf">keys</span><span class="p">()</span>
 <span class="go">['RespectNBT', 'Blacklist', 'Items']
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Blacklist'</span><span class="p">].</span><span class="n">value</span>
 <span class="go">1
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">]</span>
 <span class="go">&lt;TAG_Compound('Items') at 0x7f8a8d100070&gt;
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">].</span><span class="n">keys</span><span class="p">()</span>
+</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">].</span><span class="nf">keys</span><span class="p">()</span>
 <span class="go">['Size', 'Items']
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">]</span>
 <span class="go">2 entries of type TAG_Compound
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 <span class="go">&lt;TAG_Compound('') at 0x7f8a8d1003d0&gt;
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="n">keys</span><span class="p">()</span>
+</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="nf">keys</span><span class="p">()</span>
 <span class="go">['Slot', 'id', 'Count']
 </span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">it</span><span class="p">[</span><span class="s">'id'</span><span class="p">]</span> <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">]]</span>
 <span class="go">[create:cinder_flour, minecraft:glass_bottle]
@@ -995,7 +995,7 @@ Volume group <span class="s2">"test"</span> successfully extended
 		<div class="highlight">
 			<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
     <span class="k">virtual</span> <span class="o">~</span><span class="n">Expression</span><span class="p">()</span> <span class="p">{}</span>
-    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">normalize</span><span class="p">()</span> <span class="p">{}</span>
+    <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">normalize</span><span class="p">()</span> <span class="p">{}</span>
     <span class="k">virtual</span> <span class="k">operator</span> <span class="n">string</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
     <span class="k">virtual</span> <span class="k">operator</span> <span class="kt">double</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">};</span>
@@ -1021,21 +1021,21 @@ Volume group <span class="s2">"test"</span> successfully extended
 <span class="p">};</span>
 
 <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
-<span class="n">T</span><span class="o">*</span> <span class="n">join_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span> <span class="n">Expression</span><span class="o">*</span> <span class="n">b</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">negative</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">T</span><span class="o">*</span> <span class="nf">join_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span> <span class="n">Expression</span><span class="o">*</span> <span class="n">b</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">negative</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">static_assert</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_base_of</span><span class="o">&lt;</span><span class="n">ExpressionGroup</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">,</span>
                   <span class="s">"T must be derived from ExpressionGroup"</span><span class="p">);</span>
     <span class="c1">// implementation</span>
 <span class="p">}</span>
 
 <span class="kr">inline</span> <span class="n">AdditiveGroup</span><span class="o">*</span>
-<span class="n">join_additive_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span>
+<span class="nf">join_additive_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span>
                     <span class="n">Expression</span><span class="o">*</span> <span class="n">b</span><span class="p">,</span>
                     <span class="kt">bool</span> <span class="n">negative</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">return</span> <span class="n">join_group</span><span class="o">&lt;</span><span class="n">AdditiveGroup</span><span class="o">&gt;</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">negative</span><span class="p">);</span>
 <span class="p">}</span>
 
 <span class="kr">inline</span> <span class="n">MultiplicativeGroup</span><span class="o">*</span>
-<span class="n">join_multiplicative_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span>
+<span class="nf">join_multiplicative_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span>
                           <span class="n">Expression</span><span class="o">*</span> <span class="n">b</span><span class="p">,</span>
                           <span class="kt">bool</span> <span class="n">negative</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">return</span> <span class="n">join_group</span><span class="o">&lt;</span><span class="n">MultiplicativeGroup</span><span class="o">&gt;</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">negative</span><span class="p">);</span>
@@ -1072,7 +1072,7 @@ Volume group <span class="s2">"test"</span> successfully extended
         <span class="n">std</span><span class="o">::</span><span class="n">swap</span><span class="p">(</span><span class="n">positive</span><span class="p">,</span> <span class="n">negative</span><span class="p">);</span>
     <span class="p">}</span>
 
-    <span class="kt">bool</span> <span class="n">is_invertible</span><span class="p">()</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
+    <span class="kt">bool</span> <span class="nf">is_invertible</span><span class="p">()</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
         <span class="k">return</span> <span class="kt">double</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">is_invertible</span><span class="p">();</span>
     <span class="p">}</span>
 <span class="p">};</span>
@@ -1100,7 +1100,7 @@ Volume group <span class="s2">"test"</span> successfully extended
     <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">neg_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
             <span class="k">break</span><span class="p">;</span>
-        <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span> <span class="p">{</span>
+        <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span> <span class="p">{</span>
             <span class="n">e</span><span class="o">-&gt;</span><span class="n">invert</span><span class="p">();</span>
             <span class="n">neg_count</span><span class="o">--</span><span class="p">;</span>
         <span class="p">}</span>
@@ -1154,7 +1154,7 @@ Volume group <span class="s2">"test"</span> successfully extended
         <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
     <span class="p">}</span>
 
-    <span class="kt">void</span> <span class="n">invert</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+    <span class="kt">void</span> <span class="nf">invert</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
         <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span> <span class="p">{</span>
                 <span class="n">e</span><span class="o">-&gt;</span><span class="n">invert</span><span class="p">();</span>
@@ -1688,16 +1688,16 @@ base dc=ibug
 	<p>It’s easy to discover that there’s a <code class="language-plaintext highlighter-rouge">chsh.ldap</code> command. It’s even easier to discover that it doesn’t work:</p>
 	<div class="language-python highlighter-rouge">
 		<div class="highlight">
-			<pre class="highlight"><code><span class="n">ibug</span><span class="o">@</span><span class="n">ldap</span><span class="p">:</span><span class="o">~</span><span class="err">$</span> <span class="n">chsh</span><span class="p">.</span><span class="n">ldap</span>
+			<pre class="highlight"><code><span class="n">ibug</span><span class="nd">@ldap</span><span class="p">:</span><span class="o">~</span><span class="err">$</span> <span class="n">chsh</span><span class="p">.</span><span class="n">ldap</span>
 <span class="n">LDAP</span> <span class="n">password</span> <span class="k">for</span> <span class="n">ibug</span><span class="p">:</span>
 <span class="n">Enter</span> <span class="n">the</span> <span class="n">new</span> <span class="n">value</span><span class="p">,</span> <span class="ow">or</span> <span class="n">press</span> <span class="n">ENTER</span> <span class="k">for</span> <span class="n">the</span> <span class="n">default</span>
-<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+<span class="nc">Traceback </span><span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
   <span class="n">File</span> <span class="s">"/usr/bin/chsh.ldap"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">80</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
-    <span class="n">main</span><span class="p">()</span>
+    <span class="nf">main</span><span class="p">()</span>
   <span class="n">File</span> <span class="s">"/usr/bin/chsh.ldap"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">69</span><span class="p">,</span> <span class="ow">in</span> <span class="n">main</span>
-    <span class="n">shell</span> <span class="o">=</span> <span class="n">ask_shell</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="n">shell</span><span class="p">)</span>
+    <span class="n">shell</span> <span class="o">=</span> <span class="nf">ask_shell</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="n">shell</span><span class="p">)</span>
   <span class="n">File</span> <span class="s">"/usr/bin/chsh.ldap"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">50</span><span class="p">,</span> <span class="ow">in</span> <span class="n">ask_shell</span>
-    <span class="n">shell</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s">'  Login Shell [%s]: '</span> <span class="o">%</span> <span class="n">oldshell</span><span class="p">)</span>
+    <span class="n">shell</span> <span class="o">=</span> <span class="nf">input</span><span class="p">(</span><span class="s">'  Login Shell [%s]: '</span> <span class="o">%</span> <span class="n">oldshell</span><span class="p">)</span>
 <span class="nb">UnboundLocalError</span><span class="p">:</span> <span class="n">local</span> <span class="n">variable</span> <span class="s">'input'</span> <span class="n">referenced</span> <span class="n">before</span> <span class="n">assignment</span>
 </code></pre>
 		</div>

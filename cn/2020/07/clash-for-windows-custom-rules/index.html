@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=f840f09">
+		<link rel="stylesheet" href="/assets/css/main.css?v=1d8db00">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -199,23 +199,23 @@
 							<div class="language-javascript highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span><span class="p">.</span><span class="nx">parse</span> <span class="o">=</span> <span class="k">async</span> <span class="kd">function</span><span class="p">({</span><span class="nx">content</span><span class="p">,</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">url</span><span class="p">},</span> <span class="p">{</span><span class="nx">axios</span><span class="p">,</span> <span class="nx">yaml</span><span class="p">,</span> <span class="nx">notify</span><span class="p">})</span> <span class="p">{</span>
-  <span class="nx">content</span><span class="p">.</span><span class="nx">rules</span><span class="p">.</span><span class="nx">unshift</span><span class="p">(</span><span class="dl">"</span><span class="s2">DOMAIN-SUFFIX,sharepoint.com,DIRECT</span><span class="dl">"</span><span class="p">);</span>
+  <span class="nx">content</span><span class="p">.</span><span class="nx">rules</span><span class="p">.</span><span class="nf">unshift</span><span class="p">(</span><span class="dl">"</span><span class="s2">DOMAIN-SUFFIX,sharepoint.com,DIRECT</span><span class="dl">"</span><span class="p">);</span>
   <span class="nx">proxies</span> <span class="o">=</span> <span class="p">[];</span>
-  <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">proxy</span> <span class="k">of</span> <span class="nx">content</span><span class="p">.</span><span class="nx">proxies</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nx">proxy</span><span class="p">.</span><span class="nx">server</span> <span class="o">===</span> <span class="kc">undefined</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nx">proxy</span><span class="p">.</span><span class="nx">name</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="dl">'</span><span class="s1">Hong Kong</span><span class="dl">'</span><span class="p">)</span> <span class="o">!==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
-      <span class="nx">proxies</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">proxy</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+  <span class="nf">for </span><span class="p">(</span><span class="kd">let</span> <span class="nx">proxy</span> <span class="k">of</span> <span class="nx">content</span><span class="p">.</span><span class="nx">proxies</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nf">if </span><span class="p">(</span><span class="nx">proxy</span><span class="p">.</span><span class="nx">server</span> <span class="o">===</span> <span class="kc">undefined</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span>
+    <span class="nf">if </span><span class="p">(</span><span class="nx">proxy</span><span class="p">.</span><span class="nx">name</span><span class="p">.</span><span class="nf">indexOf</span><span class="p">(</span><span class="dl">'</span><span class="s1">Hong Kong</span><span class="dl">'</span><span class="p">)</span> <span class="o">!==</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">proxies</span><span class="p">.</span><span class="nf">push</span><span class="p">(</span><span class="nx">proxy</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
     <span class="p">}</span>
   <span class="p">}</span>
-  <span class="k">if</span> <span class="p">(</span><span class="nx">proxies</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-    <span class="nx">content</span><span class="p">[</span><span class="dl">'</span><span class="s1">proxy-groups</span><span class="dl">'</span><span class="p">].</span><span class="nx">push</span><span class="p">({</span>
+  <span class="nf">if </span><span class="p">(</span><span class="nx">proxies</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">content</span><span class="p">[</span><span class="dl">'</span><span class="s1">proxy-groups</span><span class="dl">'</span><span class="p">].</span><span class="nf">push</span><span class="p">({</span>
       <span class="dl">'</span><span class="s1">name</span><span class="dl">'</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Load Balance</span><span class="dl">'</span><span class="p">,</span>
       <span class="dl">'</span><span class="s1">type</span><span class="dl">'</span><span class="p">:</span> <span class="dl">'</span><span class="s1">load-balance</span><span class="dl">'</span><span class="p">,</span>
       <span class="dl">'</span><span class="s1">proxies</span><span class="dl">'</span><span class="p">:</span> <span class="nx">proxies</span><span class="p">,</span>
       <span class="dl">'</span><span class="s1">url</span><span class="dl">'</span><span class="p">:</span> <span class="dl">'</span><span class="s1">http://cp.cloudflare.com/generate_204</span><span class="dl">'</span><span class="p">,</span>
       <span class="dl">'</span><span class="s1">interval</span><span class="dl">'</span><span class="p">:</span> <span class="mi">3</span>
     <span class="p">});</span>
-    <span class="nx">content</span><span class="p">[</span><span class="dl">'</span><span class="s1">proxy-groups</span><span class="dl">'</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="nx">proxies</span><span class="p">.</span><span class="nx">unshift</span><span class="p">(</span><span class="dl">"</span><span class="s2">Load Balance</span><span class="dl">"</span><span class="p">);</span>
+    <span class="nx">content</span><span class="p">[</span><span class="dl">'</span><span class="s1">proxy-groups</span><span class="dl">'</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="nx">proxies</span><span class="p">.</span><span class="nf">unshift</span><span class="p">(</span><span class="dl">"</span><span class="s2">Load Balance</span><span class="dl">"</span><span class="p">);</span>
   <span class="p">}</span>
   <span class="k">return</span> <span class="nx">content</span><span class="p">;</span>
 <span class="p">}</span>
@@ -279,7 +279,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-779</a>
+						Site version <a href="/status" class="version-text">G-780</a>
 					</p>
 				</div>
 			</footer>

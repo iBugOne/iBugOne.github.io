@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=f840f09">
+		<link rel="stylesheet" href="/assets/css/main.css?v=1d8db00">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -97,9 +97,7 @@
 			</div>
 		</div>
 		<div class="initial-content">
-			<div class="page__hero--overlay"
-  style=" background-image: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)), url('/image/header/sunshine-1.jpg');"
->
+			<div class="page__hero--overlay" style=" background-image: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)), url('/image/header/sunshine-1.jpg');">
 				<div class="wrapper">
 					<h1 id="page-title" class="page__title" itemprop="headline">
 						Centralized Linux authentication with OpenLDAP
@@ -147,7 +145,7 @@
 						</div>
 					</div>
 					<nav class="nav__list">
-						<input id="ac-toc" name="accordion-toc" type="checkbox" />
+						<input id="ac-toc" name="accordion-toc" type="checkbox">
 						<label for="ac-toc">Toggle menu</label>
 						<ul class="nav__items">
 							<li>
@@ -177,12 +175,14 @@
 							<aside class="sidebar__right sticky">
 								<nav class="toc">
 									<header>
-										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+										<h4 class="nav__title">
+											<i class="fas fa-file-alt fa-fw"></i> On this page</h4>
 									</header>
 									<ul class="toc__menu">
 										<li><a href="#prerequisites">Prerequisites</a></li>
 										<li><a href="#i-389ds">Interlude: 389 Directory Server</a></li>
-										<li><a href="#server">Server setup</a>
+										<li>
+											<a href="#server">Server setup</a>
 											<ul>
 												<li><a href="#ldap-utils">Configuring LDAP tools</a></li>
 												<li><a href="#seeding">Populating the database</a></li>
@@ -191,9 +191,11 @@
 											</ul>
 										</li>
 										<li><a href="#client">Client setup</a></li>
-										<li><a href="#advanced">Advanced topics</a>
+										<li>
+											<a href="#advanced">Advanced topics</a>
 											<ul>
-												<li><a href="#tls">Securing LDAP server with TLS</a>
+												<li>
+													<a href="#tls">Securing LDAP server with TLS</a>
 													<ul>
 														<li><a href="#external-authentication-method"> “External” authentication method</a></li>
 													</ul>
@@ -242,9 +244,12 @@ URI     ldapi:///
 							</div>
 							<p>There are 3 ways to connect to an LDAP server</p>
 							<ul>
-								<li><code class="language-plaintext highlighter-rouge">ldap://</code> (plaintext TCP, default port 389)</li>
-								<li><code class="language-plaintext highlighter-rouge">ldaps://</code> (over SSL/TLS, default port 636)</li>
-								<li><code class="language-plaintext highlighter-rouge">ldapi://</code> (over IPC, or Unix domain socket, usually <code class="language-plaintext highlighter-rouge">/var/run/slapd/ldapi</code>)</li>
+								<li>
+									<code class="language-plaintext highlighter-rouge">ldap://</code> (plaintext TCP, default port 389)</li>
+								<li>
+									<code class="language-plaintext highlighter-rouge">ldaps://</code> (over SSL/TLS, default port 636)</li>
+								<li>
+									<code class="language-plaintext highlighter-rouge">ldapi://</code> (over IPC, or Unix domain socket, usually <code class="language-plaintext highlighter-rouge">/var/run/slapd/ldapi</code>)</li>
 							</ul>
 							<p>Once you have this file set up, you can omit the <code class="language-plaintext highlighter-rouge">-H &lt;host&gt;</code> option from all <code class="language-plaintext highlighter-rouge">ldap*</code> commands. Similarly, <code class="language-plaintext highlighter-rouge">BASE</code> is useful in <code class="language-plaintext highlighter-rouge">ldapsearch</code> or like.</p>
 							<h3 id="seeding">Populating the database</h3>
@@ -356,7 +361,7 @@ URI     ldapi:///
 							<h2 id="client">Client setup</h2>
 							<p>There are two options for clients: More commonly <code class="language-plaintext highlighter-rouge">libnss-ldapd</code> and <code class="language-plaintext highlighter-rouge">libpam-ldapd</code> are used together, or <code class="language-plaintext highlighter-rouge">sssd</code> if you’re familiar with it (which will not be described in this post). Note that are two obsolete packages <code class="language-plaintext highlighter-rouge">libnss-ldap</code> and <code class="language-plaintext highlighter-rouge">libpam-ldap</code> (both missing the final <code class="language-plaintext highlighter-rouge">d</code>) that might confuse you.</p>
 							<p>Start with <code class="language-plaintext highlighter-rouge">apt install libnss-ldapd libpam-ldapd</code>. You’ll be asked for the LDAP server and the base DN, then “name services to configure”. Select <code class="language-plaintext highlighter-rouge">passwd group shadow</code> for now.</p>
-							<p><img src="/image/linux/libnss-ldapd.png" alt="Configure libnss-ldapd" /></p>
+							<p><img src="/image/linux/libnss-ldapd.png" alt="Configure libnss-ldapd"></p>
 							<p>These two packages should also pull in <code class="language-plaintext highlighter-rouge">nscd</code> (Name Service Cache Daemon) and <code class="language-plaintext highlighter-rouge">nslcd</code> (Name Service LDAP Client Daemon). The former provides a local cache for name service lookup results, while the latter provides the ability to lookup items from an LDAP server.</p>
 							<p>After configuring the packages, your <code class="language-plaintext highlighter-rouge">/etc/nslcd.conf</code> should contain two lines that look similar to that of <code class="language-plaintext highlighter-rouge">/etc/ldap/ldap.conf</code>, except that the keys are in lowercase.</p>
 							<div class="language-text highlighter-rouge">
@@ -395,12 +400,14 @@ base dc=ibug
 								</div>
 							</div>
 							<div class="notice--primary">
-								<h4 id="external-authentication-method"><i class="fas fa-fw fa-lightbulb"></i> “External” authentication method</h4>
+								<h4 id="external-authentication-method">
+									<i class="fas fa-fw fa-lightbulb"></i> “External” authentication method</h4>
 								<p>The “external” authentication method defers authentication to the transport layer. There are (at least) two kinds of supported methods: Unix domain socket option <code class="language-plaintext highlighter-rouge">SO_PEERCRED</code> (see <a href="https://man7.org/linux/man-pages/man7/unix.7.html">unix(7)</a>) and TLS client certificate. When connecting over UDS, the server can retrieve the client’s UID, GID and PID with that option.</p>
 								<p>The <code class="language-plaintext highlighter-rouge">-H ldapi:///</code> tells the <code class="language-plaintext highlighter-rouge">ldap*</code> commands to connect over a local Unix domain socket, which is required for <code class="language-plaintext highlighter-rouge">-Y EXTERNAL</code> (we don’t have TLS client certificates yet).</p>
 							</div>
 							<div class="notice--danger">
-								<h4 class="no_toc" id="order-is-important"><i class="fas fa-fw fa-exclamation-triangle"></i> Order is important</h4>
+								<h4 class="no_toc" id="order-is-important">
+									<i class="fas fa-fw fa-exclamation-triangle"></i> Order is important</h4>
 								<p>The OpenLDAP documentation did not cover the detail that the private key must be added <em>before</em> the certificate. Otherwise you’ll get this response:</p>
 								<div class="language-text highlighter-rouge">
 									<div class="highlight">
@@ -502,16 +509,16 @@ base dc=ibug
 							<p>It’s easy to discover that there’s a <code class="language-plaintext highlighter-rouge">chsh.ldap</code> command. It’s even easier to discover that it doesn’t work:</p>
 							<div class="language-python highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="n">ibug</span><span class="o">@</span><span class="n">ldap</span><span class="p">:</span><span class="o">~</span><span class="err">$</span> <span class="n">chsh</span><span class="p">.</span><span class="n">ldap</span>
+									<pre class="highlight"><code><span class="n">ibug</span><span class="nd">@ldap</span><span class="p">:</span><span class="o">~</span><span class="err">$</span> <span class="n">chsh</span><span class="p">.</span><span class="n">ldap</span>
 <span class="n">LDAP</span> <span class="n">password</span> <span class="k">for</span> <span class="n">ibug</span><span class="p">:</span>
 <span class="n">Enter</span> <span class="n">the</span> <span class="n">new</span> <span class="n">value</span><span class="p">,</span> <span class="ow">or</span> <span class="n">press</span> <span class="n">ENTER</span> <span class="k">for</span> <span class="n">the</span> <span class="n">default</span>
-<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+<span class="nc">Traceback </span><span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
   <span class="n">File</span> <span class="s">"/usr/bin/chsh.ldap"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">80</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
-    <span class="n">main</span><span class="p">()</span>
+    <span class="nf">main</span><span class="p">()</span>
   <span class="n">File</span> <span class="s">"/usr/bin/chsh.ldap"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">69</span><span class="p">,</span> <span class="ow">in</span> <span class="n">main</span>
-    <span class="n">shell</span> <span class="o">=</span> <span class="n">ask_shell</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="n">shell</span><span class="p">)</span>
+    <span class="n">shell</span> <span class="o">=</span> <span class="nf">ask_shell</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="n">shell</span><span class="p">)</span>
   <span class="n">File</span> <span class="s">"/usr/bin/chsh.ldap"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">50</span><span class="p">,</span> <span class="ow">in</span> <span class="n">ask_shell</span>
-    <span class="n">shell</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s">'  Login Shell [%s]: '</span> <span class="o">%</span> <span class="n">oldshell</span><span class="p">)</span>
+    <span class="n">shell</span> <span class="o">=</span> <span class="nf">input</span><span class="p">(</span><span class="s">'  Login Shell [%s]: '</span> <span class="o">%</span> <span class="n">oldshell</span><span class="p">)</span>
 <span class="nb">UnboundLocalError</span><span class="p">:</span> <span class="n">local</span> <span class="n">variable</span> <span class="s">'input'</span> <span class="n">referenced</span> <span class="n">before</span> <span class="n">assignment</span>
 </code></pre>
 								</div>
@@ -583,7 +590,8 @@ Enter the new value, or press ENTER for the default
 							<h2 id="references">References</h2>
 							<ul>
 								<li><a href="https://harrychen.xyz/2021/01/17/openldap-linux-auth/">使用 OpenLDAP 在 Linux 上进行中心化用户管理 - Harry Chen’s blog</a></li>
-								<li><a href="https://access.redhat.com/documentation/en-us/red_hat_directory_server/11/html/administration_guide/managing_the_nss_database_used_by_directory_server">9.3. Managing the NSS Database Used by Directory Server</a> (Red Hat Documentation)</li>
+								<li>
+									<a href="https://access.redhat.com/documentation/en-us/red_hat_directory_server/11/html/administration_guide/managing_the_nss_database_used_by_directory_server">9.3. Managing the NSS Database Used by Directory Server</a> (Red Hat Documentation)</li>
 								<li><a href="https://en.wikipedia.org/wiki/Bcrypt">Bcrypt - Wikipedia</a></li>
 								<li><a href="https://hohnstaedt.de/xca/">XCA</a></li>
 								<li>
@@ -612,7 +620,7 @@ Enter the new value, or press ENTER for the default
 							<h4 class="page__share-title">Share on</h4>
 							<a href="https://twitter.com/intent/tweet?text=Centralized+Linux+authentication+with+OpenLDAP%20https%3A%2F%2Fibug.io%2Fblog%2F2022%2F03%2Flinux-openldap-server%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
 							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2022%2F03%2Flinux-openldap-server%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
-							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2022%2F03%2Flinux-openldap-server%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3A%2F%2Fibug.io%2Fblog%2F2022%2F03%2Flinux-openldap-server%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
 						</section>
 						<nav class="pagination">
 							<a href="/blog/2022/03/install-proxmox-ve-emmc/" class="pagination--pager" title="Install Proxmox VE on eMMC
@@ -746,11 +754,11 @@ Enter the new value, or press ENTER for the default
 					</ul>
 				</div>
 				<div class="page__footer-copyright">
-					<p>&copy; 2023 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>© 2023 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-779</a>
+						Site version <a href="/status" class="version-text">G-780</a>
 					</p>
 				</div>
 			</footer>
@@ -858,6 +866,7 @@ Enter the new value, or press ENTER for the default
 			  (d.head || d.body).appendChild(s);
 			})();
 		</script>
-		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+		</noscript>
 	</body>
 </html>

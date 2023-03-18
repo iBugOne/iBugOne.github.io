@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=f840f09">
+		<link rel="stylesheet" href="/assets/css/main.css?v=1d8db00">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -218,9 +218,9 @@
 							<p>Here’s the pseudo-code in the previous post that demonstrates a plain heuristic searching algorithm.</p>
 							<div class="language-javascript highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="kd">function</span> <span class="nx">heuristicSearch</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">side</span><span class="p">,</span> <span class="nx">depth</span><span class="p">)</span>
+									<pre class="highlight"><code><span class="kd">function</span> <span class="nf">heuristicSearch</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">side</span><span class="p">,</span> <span class="nx">depth</span><span class="p">)</span>
   <span class="k">if</span> <span class="nx">depth</span> <span class="o">&lt;=</span> <span class="mi">0</span>
-    <span class="k">return</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">heuristicScore</span><span class="p">(</span><span class="nx">game</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">null</span><span class="p">,</span> <span class="nf">heuristicScore</span><span class="p">(</span><span class="nx">game</span><span class="p">)</span>
 
   <span class="nx">want_max</span> <span class="o">=</span> <span class="p">(</span><span class="nx">side</span> <span class="o">==</span> <span class="nx">BLACK</span><span class="p">)</span>
   <span class="nx">bestMove</span> <span class="o">=</span> <span class="kc">null</span>
@@ -232,7 +232,7 @@
   <span class="k">for</span> <span class="nx">move</span> <span class="k">in</span> <span class="nx">game</span><span class="p">.</span><span class="nx">availableMoves</span>
     <span class="nx">game</span><span class="p">.</span><span class="nx">perform</span> <span class="nx">move</span>
     <span class="c1">// Recurse</span>
-    <span class="nx">subMove</span><span class="p">,</span> <span class="nx">subScore</span> <span class="o">=</span> <span class="nx">heuristicSearch</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">side</span><span class="p">,</span> <span class="nx">depth</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="nx">subMove</span><span class="p">,</span> <span class="nx">subScore</span> <span class="o">=</span> <span class="nf">heuristicSearch</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">side</span><span class="p">,</span> <span class="nx">depth</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
     <span class="nx">game</span><span class="p">.</span><span class="nx">undo</span>
 
     <span class="k">if</span> <span class="nx">want_max</span>
@@ -250,9 +250,9 @@
 							<p>To add alpha-beta pruning, as described above, we need to maintain two values, α and β, and cut off searching when α&gt;β.</p>
 							<div class="language-javascript highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="kd">function</span> <span class="nx">heuristicSearch</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">side</span><span class="p">,</span> <span class="nx">depth</span><span class="p">,</span> <span class="nx">alpha</span><span class="p">,</span> <span class="nx">beta</span><span class="p">)</span>
+									<pre class="highlight"><code><span class="kd">function</span> <span class="nf">heuristicSearch</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">side</span><span class="p">,</span> <span class="nx">depth</span><span class="p">,</span> <span class="nx">alpha</span><span class="p">,</span> <span class="nx">beta</span><span class="p">)</span>
   <span class="k">if</span> <span class="nx">depth</span> <span class="o">&lt;=</span> <span class="mi">0</span>
-    <span class="k">return</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">heuristicScore</span><span class="p">(</span><span class="nx">game</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">null</span><span class="p">,</span> <span class="nf">heuristicScore</span><span class="p">(</span><span class="nx">game</span><span class="p">)</span>
 
   <span class="nx">want_max</span> <span class="o">=</span> <span class="p">(</span><span class="nx">side</span> <span class="o">==</span> <span class="nx">BLACK</span><span class="p">)</span>
   <span class="nx">bestMove</span> <span class="o">=</span> <span class="kc">null</span>
@@ -264,21 +264,21 @@
   <span class="k">for</span> <span class="nx">move</span> <span class="k">in</span> <span class="nx">game</span><span class="p">.</span><span class="nx">availableMoves</span>
     <span class="nx">game</span><span class="p">.</span><span class="nx">perform</span> <span class="nx">move</span>
     <span class="c1">// Recurse</span>
-    <span class="nx">subMove</span><span class="p">,</span> <span class="nx">subScore</span> <span class="o">=</span> <span class="nx">heuristicSearch</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">side</span><span class="p">,</span> <span class="nx">depth</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">alpha</span><span class="p">,</span> <span class="nx">beta</span><span class="p">)</span>
+    <span class="nx">subMove</span><span class="p">,</span> <span class="nx">subScore</span> <span class="o">=</span> <span class="nf">heuristicSearch</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">side</span><span class="p">,</span> <span class="nx">depth</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">alpha</span><span class="p">,</span> <span class="nx">beta</span><span class="p">)</span>
     <span class="nx">game</span><span class="p">.</span><span class="nx">undo</span>
 
     <span class="k">if</span> <span class="nx">want_max</span>
       <span class="k">if</span> <span class="nx">subScore</span> <span class="o">&gt;</span> <span class="nx">bestScore</span>
         <span class="nx">bestScore</span> <span class="o">=</span> <span class="nx">subScore</span>
         <span class="nx">bestMove</span> <span class="o">=</span> <span class="nx">move</span>
-      <span class="nx">alpha</span> <span class="o">=</span> <span class="nx">max</span><span class="p">(</span><span class="nx">alpha</span><span class="p">,</span> <span class="nx">bestScore</span><span class="p">)</span>
+      <span class="nx">alpha</span> <span class="o">=</span> <span class="nf">max</span><span class="p">(</span><span class="nx">alpha</span><span class="p">,</span> <span class="nx">bestScore</span><span class="p">)</span>
       <span class="k">if</span> <span class="nx">alpha</span> <span class="o">&gt;=</span> <span class="nx">beta</span>
         <span class="k">break</span>  <span class="c1">// alpha cut</span>
     <span class="k">else</span>
       <span class="k">if</span> <span class="nx">subScore</span> <span class="o">&lt;</span> <span class="nx">bestScore</span>
         <span class="nx">bestScore</span> <span class="o">=</span> <span class="nx">subScore</span>
         <span class="nx">bestMove</span> <span class="o">=</span> <span class="nx">move</span>
-      <span class="nx">beta</span> <span class="o">=</span> <span class="nx">min</span><span class="p">(</span><span class="nx">beta</span><span class="p">,</span> <span class="nx">bestScore</span><span class="p">)</span>
+      <span class="nx">beta</span> <span class="o">=</span> <span class="nf">min</span><span class="p">(</span><span class="nx">beta</span><span class="p">,</span> <span class="nx">bestScore</span><span class="p">)</span>
       <span class="k">if</span> <span class="nx">alpha</span> <span class="o">&gt;=</span> <span class="nx">beta</span>
         <span class="k">break</span>  <span class="c1">// beta cut</span>
   <span class="k">return</span> <span class="nx">bestMove</span><span class="p">,</span> <span class="nx">bestScore</span>
@@ -288,7 +288,7 @@
 							<p>Since α and β are passed down to deeper recursive searches, they need initial values. The modified function should be called like</p>
 							<div class="language-javascript highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="nx">heuristicSearch</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">side</span><span class="p">,</span> <span class="nx">depth</span><span class="p">,</span> <span class="o">-</span><span class="nx">INF</span><span class="p">,</span> <span class="nx">INF</span><span class="p">)</span>
+									<pre class="highlight"><code><span class="nf">heuristicSearch</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">side</span><span class="p">,</span> <span class="nx">depth</span><span class="p">,</span> <span class="o">-</span><span class="nx">INF</span><span class="p">,</span> <span class="nx">INF</span><span class="p">)</span>
 </code></pre>
 								</div>
 							</div>
@@ -299,9 +299,9 @@
 							<p>In most typical games, a partially good move often leads to better subsequences, and vice versa. This fact implies that we can sort the current steps we’re going deep into, and search better moves first. Worse moves will likely be pruned more often. This leads to a small change in the code:</p>
 							<div class="language-javascript highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="kd">function</span> <span class="nx">heuristicSearch</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">side</span><span class="p">,</span> <span class="nx">depth</span><span class="p">,</span> <span class="nx">alpha</span><span class="p">,</span> <span class="nx">beta</span><span class="p">)</span>
+									<pre class="highlight"><code><span class="kd">function</span> <span class="nf">heuristicSearch</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">side</span><span class="p">,</span> <span class="nx">depth</span><span class="p">,</span> <span class="nx">alpha</span><span class="p">,</span> <span class="nx">beta</span><span class="p">)</span>
   <span class="k">if</span> <span class="nx">depth</span> <span class="o">&lt;=</span> <span class="mi">0</span>
-    <span class="k">return</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">heuristicScore</span><span class="p">(</span><span class="nx">game</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">null</span><span class="p">,</span> <span class="nf">heuristicScore</span><span class="p">(</span><span class="nx">game</span><span class="p">)</span>
 
   <span class="nx">want_max</span> <span class="o">=</span> <span class="p">(</span><span class="nx">side</span> <span class="o">==</span> <span class="nx">BLACK</span><span class="p">)</span>
   <span class="nx">bestMove</span> <span class="o">=</span> <span class="kc">null</span>
@@ -312,27 +312,27 @@
 
   <span class="nx">moves</span> <span class="o">=</span> <span class="nx">game</span><span class="p">.</span><span class="nx">availableMoves</span>
   <span class="c1">// ↓↓↓</span>
-  <span class="nx">sort</span> <span class="nx">moves</span> <span class="nx">by</span> <span class="nx">heuristicScore</span><span class="p">(</span><span class="nx">after</span> <span class="nx">move</span><span class="p">)</span>
+  <span class="nx">sort</span> <span class="nx">moves</span> <span class="nx">by</span> <span class="nf">heuristicScore</span><span class="p">(</span><span class="nx">after</span> <span class="nx">move</span><span class="p">)</span>
   <span class="c1">// ↑↑↑</span>
 
   <span class="k">for</span> <span class="nx">move</span> <span class="k">in</span> <span class="nx">sorted_moves</span>
     <span class="nx">game</span><span class="p">.</span><span class="nx">perform</span> <span class="nx">move</span>
     <span class="c1">// Recurse</span>
-    <span class="nx">subMove</span><span class="p">,</span> <span class="nx">subScore</span> <span class="o">=</span> <span class="nx">heuristicSearch</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">side</span><span class="p">,</span> <span class="nx">depth</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">alpha</span><span class="p">,</span> <span class="nx">beta</span><span class="p">)</span>
+    <span class="nx">subMove</span><span class="p">,</span> <span class="nx">subScore</span> <span class="o">=</span> <span class="nf">heuristicSearch</span><span class="p">(</span><span class="nx">game</span><span class="p">,</span> <span class="nx">side</span><span class="p">,</span> <span class="nx">depth</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">alpha</span><span class="p">,</span> <span class="nx">beta</span><span class="p">)</span>
     <span class="nx">game</span><span class="p">.</span><span class="nx">undo</span>
 
     <span class="k">if</span> <span class="nx">want_max</span>
       <span class="k">if</span> <span class="nx">subScore</span> <span class="o">&gt;</span> <span class="nx">bestScore</span>
         <span class="nx">bestScore</span> <span class="o">=</span> <span class="nx">subScore</span>
         <span class="nx">bestMove</span> <span class="o">=</span> <span class="nx">move</span>
-      <span class="nx">alpha</span> <span class="o">=</span> <span class="nx">max</span><span class="p">(</span><span class="nx">alpha</span><span class="p">,</span> <span class="nx">bestScore</span><span class="p">)</span>
+      <span class="nx">alpha</span> <span class="o">=</span> <span class="nf">max</span><span class="p">(</span><span class="nx">alpha</span><span class="p">,</span> <span class="nx">bestScore</span><span class="p">)</span>
       <span class="k">if</span> <span class="nx">alpha</span> <span class="o">&gt;=</span> <span class="nx">beta</span>
         <span class="k">break</span>  <span class="c1">// alpha cut</span>
     <span class="k">else</span>
       <span class="k">if</span> <span class="nx">subScore</span> <span class="o">&lt;</span> <span class="nx">bestScore</span>
         <span class="nx">bestScore</span> <span class="o">=</span> <span class="nx">subScore</span>
         <span class="nx">bestMove</span> <span class="o">=</span> <span class="nx">move</span>
-      <span class="nx">beta</span> <span class="o">=</span> <span class="nx">min</span><span class="p">(</span><span class="nx">beta</span><span class="p">,</span> <span class="nx">bestScore</span><span class="p">)</span>
+      <span class="nx">beta</span> <span class="o">=</span> <span class="nf">min</span><span class="p">(</span><span class="nx">beta</span><span class="p">,</span> <span class="nx">bestScore</span><span class="p">)</span>
       <span class="k">if</span> <span class="nx">alpha</span> <span class="o">&gt;=</span> <span class="nx">beta</span>
         <span class="k">break</span>  <span class="c1">// beta cut</span>
   <span class="k">return</span> <span class="nx">bestMove</span><span class="p">,</span> <span class="nx">bestScore</span>
@@ -500,7 +500,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-779</a>
+						Site version <a href="/status" class="version-text">G-780</a>
 					</p>
 				</div>
 			</footer>
