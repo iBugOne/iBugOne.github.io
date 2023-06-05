@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=41e5b6b">
+		<link rel="stylesheet" href="/assets/css/main.css?v=1155baf">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -208,7 +208,7 @@
     <span class="nb">document</span><span class="p">.</span><span class="nx">addEventListener</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">,</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">d</span><span class="p">)</span> <span class="p">{</span>
         <span class="c1">// a = event name (string), b = function</span>
         <span class="kd">var</span> <span class="nx">code</span> <span class="o">=</span> <span class="nx">b</span><span class="p">.</span><span class="nf">toString</span><span class="p">();</span>
-        <span class="nf">if </span><span class="p">(</span><span class="nx">a</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">DOMContentLoaded</span><span class="dl">"</span> <span class="o">&amp;&amp;</span> <span class="nx">code</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="sr">/dev</span><span class="se">\W?</span><span class="sr">tool/i</span><span class="p">))</span> <span class="p">{</span>
+        <span class="k">if </span><span class="p">(</span><span class="nx">a</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">DOMContentLoaded</span><span class="dl">"</span> <span class="o">&amp;&amp;</span> <span class="nx">code</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="sr">/dev</span><span class="se">\W?</span><span class="sr">tool/i</span><span class="p">))</span> <span class="p">{</span>
             <span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">Blocked function. Code below</span><span class="dl">"</span><span class="p">);</span>
             <span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="nx">code</span><span class="p">);</span>
             <span class="k">return</span><span class="p">;</span>
@@ -265,7 +265,7 @@
 							<p>It wasn’t hard to find some traits, for example, the following code is a part of it:</p>
 							<div class="language-javascript highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="nf">throw </span><span class="p">((</span><span class="nx">checkStatus</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">on</span><span class="dl">"</span><span class="p">),</span> <span class="k">new</span> <span class="nc">Error</span><span class="p">(</span><span class="dl">"</span><span class="s2">Dev tools checker</span><span class="dl">"</span><span class="p">));</span>
+									<pre class="highlight"><code><span class="k">throw </span><span class="p">((</span><span class="nx">checkStatus</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">on</span><span class="dl">"</span><span class="p">),</span> <span class="k">new</span> <span class="nc">Error</span><span class="p">(</span><span class="dl">"</span><span class="s2">Dev tools checker</span><span class="dl">"</span><span class="p">));</span>
 </code></pre>
 								</div>
 							</div>
@@ -317,7 +317,7 @@
 <span class="nb">document</span><span class="p">.</span><span class="nx">addEventListener</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">,</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">d</span><span class="p">)</span> <span class="p">{</span>
     <span class="c1">// a = event name (string), b = function</span>
     <span class="kd">var</span> <span class="nx">code</span> <span class="o">=</span> <span class="nx">b</span><span class="p">.</span><span class="nf">toString</span><span class="p">();</span>
-    <span class="nf">if </span><span class="p">(</span><span class="nx">a</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">DOMContentLoaded</span><span class="dl">"</span> <span class="o">&amp;&amp;</span> <span class="nx">code</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="sr">/dev</span><span class="se">\W?</span><span class="sr">tool/i</span><span class="p">))</span> <span class="p">{</span>
+    <span class="k">if </span><span class="p">(</span><span class="nx">a</span> <span class="o">===</span> <span class="dl">"</span><span class="s2">DOMContentLoaded</span><span class="dl">"</span> <span class="o">&amp;&amp;</span> <span class="nx">code</span><span class="p">.</span><span class="nf">match</span><span class="p">(</span><span class="sr">/dev</span><span class="se">\W?</span><span class="sr">tool/i</span><span class="p">))</span> <span class="p">{</span>
         <span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">Blocked function. Code below</span><span class="dl">"</span><span class="p">);</span>
         <span class="nx">console</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="nx">code</span><span class="p">);</span>
         <span class="k">return</span><span class="p">;</span>
@@ -502,7 +502,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-792</a>
+						Site version <a href="/status" class="version-text">G-793</a>
 					</p>
 				</div>
 			</footer>

@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=41e5b6b">
+		<link rel="stylesheet" href="/assets/css/main.css?v=1155baf">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -246,7 +246,7 @@ Stacktrace:
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="n">nbt</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">nbt</span><span class="p">.</span><span class="n">region</span><span class="p">.</span><span class="nc">RegionFile</span><span class="p">(</span><span class="s">'r.-1.0.mca'</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">nbt</span><span class="p">.</span><span class="n">region</span><span class="p">.</span><span class="nc">RegionFile</span><span class="p">(</span><span class="sh">'</span><span class="s">r.-1.0.mca</span><span class="sh">'</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="p">.</span><span class="nf">get_chunk</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
 <span class="c"># Traceback (most recent call last):
 </span><span class="go">KeyError: (-1, 10)
@@ -261,7 +261,7 @@ Stacktrace:
 							<p>I know that <code class="language-plaintext highlighter-rouge">c</code> holds the “root tag” of the chunk I’m looking for. This is easily verified:</p>
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="p">[</span><span class="s">'xPos'</span><span class="p">].</span><span class="n">value</span><span class="p">,</span> <span class="n">c</span><span class="p">[</span><span class="s">'zPos'</span><span class="p">].</span><span class="n">value</span>
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="p">[</span><span class="sh">'</span><span class="s">xPos</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span><span class="p">,</span> <span class="n">c</span><span class="p">[</span><span class="sh">'</span><span class="s">zPos</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span>
 <span class="go">(-1, 10)
 </span></code></pre>
 								</div>
@@ -269,7 +269,7 @@ Stacktrace:
 							<p>I find the vertical section containing the offending block:</p>
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">c</span><span class="p">[</span><span class="s">'sections'</span><span class="p">]</span> <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="s">'Y'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">4</span><span class="p">]</span>
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">c</span><span class="p">[</span><span class="sh">'</span><span class="s">sections</span><span class="sh">'</span><span class="p">]</span> <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">Y</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">4</span><span class="p">]</span>
 <span class="go">[&lt;TAG_Compound('') at 0x7f8a8d44c1c0&gt;]
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </code></pre>
@@ -278,7 +278,7 @@ Stacktrace:
 							<p>The <a href="https://minecraft.fandom.com/wiki/Anvil_file_format">Anvil file format</a> page shows that block data is ordered in YZX order, so I try to find the block data from the <code class="language-plaintext highlighter-rouge">data</code> key:</p>
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">data</span><span class="sh">'</span><span class="p">][</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
 <span class="go">72624976668147841
 </span></code></pre>
 								</div>
@@ -291,10 +291,10 @@ Stacktrace:
 							<p>So not only was that number <em>not</em> for a single block, but also was I looking for a wrong index. I need to inspect the block palette first:</p>
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="nf">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">])</span>
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="nf">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">palette</span><span class="sh">'</span><span class="p">])</span>
 <span class="go">95
-</span><span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nf">enumerate</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">])</span>
-<span class="gp">... </span><span class="w"> </span><span class="k">if</span> <span class="n">b</span><span class="p">[</span><span class="s">'Name'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="s">"create:brass_funnel"</span><span class="p">]</span>
+</span><span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nf">enumerate</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">palette</span><span class="sh">'</span><span class="p">])</span>
+<span class="gp">... </span><span class="w"> </span><span class="k">if</span> <span class="n">b</span><span class="p">[</span><span class="sh">'</span><span class="s">Name</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="sh">"</span><span class="s">create:brass_funnel</span><span class="sh">"</span><span class="p">]</span>
 <span class="go">[(55, &lt;TAG_Compound('') at 0x7f8a8d49d120&gt;), (77, &lt;TAG_Compound('') at 0x7f8a8d49ff40&gt;)]
 </span></code></pre>
 								</div>
@@ -302,7 +302,7 @@ Stacktrace:
 							<p>There are two indices allotted for the funnel block, but at this point it cannot be determined which one is correct. I look inside the packed <code class="language-plaintext highlighter-rouge">data</code> array, recalculating the index from the block coordinates using information above:</p>
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span>
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">data</span><span class="sh">'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span>
 <span class="go">3963735054717000501
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">i</span> <span class="o">=</span> <span class="n">_</span>
 </code></pre>
@@ -311,7 +311,7 @@ Stacktrace:
 							<p>Because there are 95 blocks in the palette, 7 bits is enough to hold an index, and a 64-bit integer holds 9 indices. The calculation can be verified by the following:</p>
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="nf">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">])</span>
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="nf">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">data</span><span class="sh">'</span><span class="p">])</span>
 <span class="go">456
 </span><span class="gp">&gt;&gt;&gt; </span><span class="mi">456</span> <span class="o">*</span> <span class="mi">9</span>
 <span class="go">4104
@@ -324,7 +324,7 @@ Stacktrace:
 								<div class="highlight">
 									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="n">x</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0x7F</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span>
 <span class="go">[53, 54, 46, 1, 1, 1, 1, 1, 55]
-</span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">][((</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="n">x</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0x7F</span><span class="p">)][</span><span class="s">'Name'</span><span class="p">].</span><span class="n">value</span>
+</span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">palette</span><span class="sh">'</span><span class="p">][((</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="n">x</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0x7F</span><span class="p">)][</span><span class="sh">'</span><span class="s">Name</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span>
 <span class="gp">... </span><span class="w"> </span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span>
 <span class="go">['create:spout',
  'create:mechanical_pump',
@@ -346,7 +346,7 @@ Stacktrace:
 									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">ii</span> <span class="o">=</span> <span class="n">i</span> <span class="o">^</span> <span class="p">((</span><span class="mi">55</span> <span class="o">^</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="mi">8</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">ii</span>
 <span class="go">72624976668891957
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
+</span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">data</span><span class="sh">'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
 </code></pre>
 								</div>
 							</div>
@@ -389,10 +389,10 @@ f.get_chunk(
 							<p>To convince myself that I have successfully changed the correct block, I decide that I need to replace it with something visible, not just air. I look inside the palette of the section, and found a few blocks available for use.</p>
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'palette'</span><span class="p">][</span><span class="mi">25</span><span class="p">][</span><span class="s">'Name'</span><span class="p">]</span>
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">palette</span><span class="sh">'</span><span class="p">][</span><span class="mi">25</span><span class="p">][</span><span class="sh">'</span><span class="s">Name</span><span class="sh">'</span><span class="p">]</span>
 <span class="go">minecraft:grass_block
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">ii</span> <span class="o">=</span> <span class="n">i</span> <span class="o">^</span> <span class="p">((</span><span class="mi">55</span> <span class="o">^</span> <span class="mi">25</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="mi">8</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="s">'block_states'</span><span class="p">][</span><span class="s">'data'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">data</span><span class="sh">'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">.</span><span class="nf">write_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
 </code></pre>
 								</div>
@@ -403,9 +403,9 @@ f.get_chunk(
 							<p>According to <a href="https://minecraft.fandom.com/wiki/Chunk_format">Chunk format</a>, block entities are stored in a <code class="language-plaintext highlighter-rouge">block_entity</code> tag under the root tag of the chunk. It’s possible to inspect the block entity data for the offending Brass Funnel, using information provided under the <a href="https://minecraft.fandom.com/wiki/Chunk_format#Block_entity_format">Block entity format</a> section.</p>
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="nf">len</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="s">'block_entities'</span><span class="p">])</span>
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="nf">len</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="sh">'</span><span class="s">block_entities</span><span class="sh">'</span><span class="p">])</span>
 <span class="go">420
-</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">c</span><span class="p">[</span><span class="s">'block_entities'</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">'x'</span><span class="p">].</span><span class="n">value</span>
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">c</span><span class="p">[</span><span class="sh">'</span><span class="s">block_entities</span><span class="sh">'</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="sh">'</span><span class="s">x</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span>
 <span class="go">-14
 </span></code></pre>
 								</div>
@@ -413,8 +413,8 @@ f.get_chunk(
 							<p>So the coordinates for block entities are absolute, not relative to the chunk. Now find the Brass Funnel:</p>
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">be</span> <span class="k">for</span> <span class="n">be</span> <span class="ow">in</span> <span class="n">c</span><span class="p">[</span><span class="s">'block_entities'</span><span class="p">]</span>
-<span class="gp">... </span><span class="w"> </span><span class="k">if</span> <span class="n">be</span><span class="p">[</span><span class="s">'x'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="o">-</span><span class="mi">15</span> <span class="ow">and</span> <span class="n">be</span><span class="p">[</span><span class="s">'y'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">65</span> <span class="ow">and</span> <span class="n">be</span><span class="p">[</span><span class="s">'z'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">172</span><span class="p">]</span>
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">be</span> <span class="k">for</span> <span class="n">be</span> <span class="ow">in</span> <span class="n">c</span><span class="p">[</span><span class="sh">'</span><span class="s">block_entities</span><span class="sh">'</span><span class="p">]</span>
+<span class="gp">... </span><span class="w"> </span><span class="k">if</span> <span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">x</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="o">-</span><span class="mi">15</span> <span class="ow">and</span> <span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">y</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">65</span> <span class="ow">and</span> <span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">z</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">172</span><span class="p">]</span>
 <span class="go">[&lt;TAG_Compound('') at 0x7f8a8d4afd30&gt;]
 </span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span> <span class="o">=</span> <span class="n">_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">.</span><span class="nf">keys</span><span class="p">()</span>
@@ -425,11 +425,11 @@ f.get_chunk(
 							<p>More than half of these keys are familiar: They are common to all block entities. Another one <code class="language-plaintext highlighter-rouge">TransferCooldown</code> is also present for Hoppers. The names of the remaining two tags are self-explanatory.</p>
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'FilterAmount'</span><span class="p">].</span><span class="n">value</span>
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">FilterAmount</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span>
 <span class="go">2
-</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">]</span>
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">]</span>
 <span class="go">&lt;TAG_Compound('Filter') at 0x7f8a8d1000a0&gt;
-</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">].</span><span class="nf">keys</span><span class="p">()</span>
+</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">].</span><span class="nf">keys</span><span class="p">()</span>
 <span class="go">['id', 'tag', 'Count']
 </span></code></pre>
 								</div>
@@ -437,21 +437,21 @@ f.get_chunk(
 							<p>So the <code class="language-plaintext highlighter-rouge">Filter</code> key is an item. In my case it’s a <a href="https://create.fandom.com/wiki/Filter">Filter</a> (normal filter, crafted with Iron Nuggets). The contents of the filter can be further inspected:</p>
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">].</span><span class="nf">keys</span><span class="p">()</span>
+									<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">tag</span><span class="sh">'</span><span class="p">].</span><span class="nf">keys</span><span class="p">()</span>
 <span class="go">['RespectNBT', 'Blacklist', 'Items']
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Blacklist'</span><span class="p">].</span><span class="n">value</span>
+</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">tag</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Blacklist</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span>
 <span class="go">1
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">]</span>
+</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">tag</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">]</span>
 <span class="go">&lt;TAG_Compound('Items') at 0x7f8a8d100070&gt;
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">].</span><span class="nf">keys</span><span class="p">()</span>
+</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">tag</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">].</span><span class="nf">keys</span><span class="p">()</span>
 <span class="go">['Size', 'Items']
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">]</span>
+</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">tag</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">]</span>
 <span class="go">2 entries of type TAG_Compound
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">tag</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 <span class="go">&lt;TAG_Compound('') at 0x7f8a8d1003d0&gt;
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="nf">keys</span><span class="p">()</span>
+</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">tag</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="nf">keys</span><span class="p">()</span>
 <span class="go">['Slot', 'id', 'Count']
-</span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">it</span><span class="p">[</span><span class="s">'id'</span><span class="p">]</span> <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="n">be</span><span class="p">[</span><span class="s">'Filter'</span><span class="p">][</span><span class="s">'tag'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">][</span><span class="s">'Items'</span><span class="p">]]</span>
+</span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">it</span><span class="p">[</span><span class="sh">'</span><span class="s">id</span><span class="sh">'</span><span class="p">]</span> <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">tag</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">]]</span>
 <span class="go">[create:cinder_flour, minecraft:glass_bottle]
 </span></code></pre>
 								</div>
@@ -623,7 +623,7 @@ f.get_chunk(
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-792</a>
+						Site version <a href="/status" class="version-text">G-793</a>
 					</p>
 				</div>
 			</footer>
