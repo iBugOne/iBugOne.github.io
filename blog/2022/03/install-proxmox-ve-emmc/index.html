@@ -21,7 +21,7 @@
 		<meta property="og:description" content="Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just a router”, so I figured I’d get some virtual machines to improve its utilization. Choosing the virtualization platform isn’t hard - I’m most familiar with Proxmox VE.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2022-03-01T00:00:00+00:00">
-		<meta property="article:modified_time" content="2022-05-01T15:21:23+00:00">
+		<meta property="article:modified_time" content="2023-07-12T15:11:02+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2022/03/install-proxmox-ve-emmc/">
 		<script type="application/ld+json">
 			{
@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=c7ca392">
+		<link rel="stylesheet" href="/assets/css/main.css?v=ea9b2af">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -172,7 +172,7 @@
 					<meta itemprop="headline" content="Install Proxmox VE on eMMC">
 					<meta itemprop="description" content="Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just a router”, so I figured I’d get some virtual machines to improve its utilization. Choosing the virtualization platform isn’t hard - I’m most familiar with Proxmox VE.">
 					<meta itemprop="datePublished" content="2022-03-01T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2022-05-01T15:21:23+00:00">
+					<meta itemprop="dateModified" content="2023-07-12T15:11:02+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -203,7 +203,12 @@
 							<ol>
 								<li>Boot the installer ISO to the first menu, select the second option <code class="language-plaintext highlighter-rouge">Install Proxmox VE (Debug mode)</code></li>
 								<li>The first time you’re present with a command-line prompt, type <code class="language-plaintext highlighter-rouge">exit</code> and Enter to skip it. This is a very early stage and you can’t do much here.</li>
-								<li>The second time you have a shell, locate <code class="language-plaintext highlighter-rouge">/usr/bin/proxinstall</code> and open it. Text editors such as <code class="language-plaintext highlighter-rouge">vi</code> and <code class="language-plaintext highlighter-rouge">nano</code> are available.</li>
+								<li>
+									<p>The second time you have a shell, locate <code class="language-plaintext highlighter-rouge">/usr/bin/proxinstall</code> and open it. Text editors such as <code class="language-plaintext highlighter-rouge">vi</code> and <code class="language-plaintext highlighter-rouge">nano</code> are available.</p>
+									<div class="notice notice--primary">
+										<p>For Proxmox VE 8 installer, the file you’re going for is <code class="language-plaintext highlighter-rouge">/usr/share/perl5/Proxmox/Sys/Block.pm</code>.</p>
+									</div>
+								</li>
 								<li>
 									<p>Search for <code class="language-plaintext highlighter-rouge">unable to get device</code> and you should find some code like this:</p>
 									<div class="language-perl highlighter-rouge">
@@ -258,7 +263,7 @@
 									<a href="/category/tech" class="page__taxonomy-item" rel="tag">tech</a>
 								</span>
 							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-05-01">May 1, 2022</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2023-07-12">Jul 12, 2023</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
@@ -360,23 +365,23 @@
 						<div class="grid__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<div class="archive__item-teaser">
-									<img src="/image/teaser/24.png" alt="">
+									<img src="/image/teaser/ldap.jpg" alt="">
 								</div>
 								<div class="archive__item-text">
 									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2022/05/programming-24-game/" rel="permalink">Taking the 24 puzzle game to the next level
+										<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
 										</a>
 									</h2>
-									<p class="archive__item-excerpt" itemprop="description">The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now a...</p>
+									<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
 									<p class="page__meta">
 										<span class="page__meta-date">
 											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2022-05-25T00:00:00+00:00">May 25, 2022</time>
+											<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
 										</span>
 										<span class="page__meta-sep"></span>
 										<span class="page__meta-readtime">
 											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											12 minute read
+											14 minute read
 										</span>
 									</p>
 								</div>
@@ -409,7 +414,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-795</a>
+						Site version <a href="/status" class="version-text">G-796</a>
 					</p>
 				</div>
 			</footer>
