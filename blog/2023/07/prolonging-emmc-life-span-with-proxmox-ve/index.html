@@ -1,0 +1,657 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>Prolonging eMMC Life Span with Proxmox VE - iBug</title>
+		<meta name="description" content="Since my blog on installing Proxmox VE on eMMC, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, as eMMCs typically do not offer the same level of performance as anything better than USB flash drives. Among many concerns, the most important one is the limited number of write cycles that an eMMC can sustain, while Proxmox VE, being an enterprise-grade product, has to constantly write stuff like logs to the storage. I came across this blog (fat-nerds.com) on reducing eMMC writes on a Proxmox VE installation on a single-board computer from a Hong Kong guy, so I figure I’d share my ideas here.">
+		<meta name="author" content="iBug">
+		<meta property="article:author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="Prolonging eMMC Life Span with Proxmox VE">
+		<meta property="og:url" content="https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/">
+		<meta property="og:description" content="Since my blog on installing Proxmox VE on eMMC, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, as eMMCs typically do not offer the same level of performance as anything better than USB flash drives. Among many concerns, the most important one is the limited number of write cycles that an eMMC can sustain, while Proxmox VE, being an enterprise-grade product, has to constantly write stuff like logs to the storage. I came across this blog (fat-nerds.com) on reducing eMMC writes on a Proxmox VE installation on a single-board computer from a Hong Kong guy, so I figure I’d share my ideas here.">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2023-07-15T00:00:00+00:00">
+		<meta property="article:modified_time" content="2023-07-15T20:11:50+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/">
+		<script type="application/ld+json">
+			{
+			  "@context": "https://schema.org",
+
+			    "@type": "Person",
+			    "name": "iBug",
+			    "url": "https://ibug.io/"
+
+			}
+		</script>
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script>
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=81c4b11">
+		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<meta name="theme-color" content="#EDEDED">
+		<script>
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+	</head>
+	<body class="layout--single">
+		<nav class="skip-links">
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt="iBug"></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a href="/about/">About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/blog/">Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/projects/">Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/friends/">Friends</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/cn/">中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<i class="fas fa-search"></i>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay"
+  style=" background-image: url('/image/header/mountain-1.jpg');"
+>
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						Prolonging eMMC Life Span with Proxmox VE
+					</h1>
+					<p class="page__meta">
+						<span class="page__meta-date">
+							<i class="far fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2023-07-15T00:00:00+00:00">Jul 15, 2023</time>
+						</span>
+						<span class="page__meta-sep"></span>
+						<span class="page__meta-readtime">
+							<i class="far fa-clock" aria-hidden="true"></i>
+							6 minute read
+						</span>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person">
+						<div class="author__avatar">
+							<img src="/image/avatar.png" alt="iBug" itemprop="image">
+						</div>
+						<div class="author__content">
+							<h3 class="author__name" itemprop="name">iBug</h3>
+							<div class="author__bio" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer"><i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/iBugThought" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-telegram" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox" />
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/bookmarks/"><i class="fas fa-fw fa-bookmark"></i> Bookmarks</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="Prolonging eMMC Life Span with Proxmox VE">
+					<meta itemprop="description" content="Since my blog on installing Proxmox VE on eMMC, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, as eMMCs typically do not offer the same level of performance as anything better than USB flash drives. Among many concerns, the most important one is the limited number of write cycles that an eMMC can sustain, while Proxmox VE, being an enterprise-grade product, has to constantly write stuff like logs to the storage. I came across this blog (fat-nerds.com) on reducing eMMC writes on a Proxmox VE installation on a single-board computer from a Hong Kong guy, so I figure I’d share my ideas here.">
+					<meta itemprop="datePublished" content="2023-07-15T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2023-07-15T20:11:50+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#swap">Disable swap</a></li>
+										<li><a href="#logs">System logs</a>
+											<ul>
+												<li><a href="#move-logs">Move logs to another disk</a></li>
+												<li><a href="#disable-logs">Or disable logs altogether</a></li>
+											</ul>
+										</li>
+										<li><a href="#pve-services">Stop certain PVE services</a></li>
+										<li><a href="#rrdcached">Reduce rrdcached writes</a></li>
+										<li><a href="#pvestatd">Stop pvestatd</a></li>
+										<li><a href="#conclusion">Conclusion</a></li>
+										<li><a href="#references">References</a></li>
+									</ul>
+								</nav>
+							</aside>
+							<p>Since my blog on <a href="/p/49">installing Proxmox VE on eMMC</a>, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, as eMMCs typically do not offer the same level of performance as anything better than USB flash drives. Among many concerns, the most important one is the limited number of write cycles that an eMMC can sustain, while Proxmox VE, being an enterprise-grade product, has to constantly write stuff like logs to the storage. I came across <a href="https://fat-nerds.com/dot-nerd/cut-down-proxmox-ve-emmc-sd-read-write/">this blog (fat-nerds.com)</a> on reducing eMMC writes on a Proxmox VE installation on a single-board computer from a Hong Kong guy, so I figure I’d share my ideas here.</p>
+							<p>This article will be a remix of the original blog, with some of my own experiences blended in.</p>
+							<p>As a courtesy, here’s the disclaimer from the original blog:</p>
+							<blockquote>
+								<p>警告：下面的設定不應該被應用於有重大價值的伺服器上面！這只是筆者強行在便宜硬件上塞進PVE並以更暴力的方式去為其續命的手段。</p>
+							</blockquote>
+							<blockquote>
+								<p>WARNING: The following settings should not be applied to production servers! This is just a method for the author to force Proxmox VE onto cheap hardware and to prolong its life span.</p>
+							</blockquote>
+							<h2 id="swap">Disable swap</h2>
+							<p>Swap is the mechanism of offloading some memory from physical RAM to disk in order to improve RAM management efficiency. If you have a lot of physical RAM, chances are swap isn’t going to be much helpful while producing a lot of writes to the disk. On a default Proxmox VE installation, the swap size is set from 4 GB to 8 GB, depending on your RAM capacity and disk size.</p>
+							<p>You can temporarily disable swap by setting sysctl <code class="language-plaintext highlighter-rouge">vm.swappiness</code> to 0:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>sysctl vm.swappiness<span class="o">=</span>0
+</code></pre>
+								</div>
+							</div>
+							<p>Or why not just remove the swap space altogether?</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>swapoff <span class="nt">-a</span>  <span class="c"># disables swap</span>
+vim /etc/fstab  <span class="c"># remove the swap entry</span>
+lvremove /dev/pve/swap  <span class="c"># remove the swap logical volume</span>
+</code></pre>
+								</div>
+							</div>
+							<p>In most cases, you won’t need swap on a Proxmox VE host. If you find yourself needing swap, you should probably consider upgrading your RAM instead.</p>
+							<h2 id="logs">System logs</h2>
+							<h3 id="move-logs">Move logs to another disk</h3>
+							<p>Every system produces logs, but Proxmox VE is particularly prolific on this. In a production environment, you’ll want to keep the logs by storing them on a separate disk (but why is it running on an eMMC in the first place?). So get another reliable disk and migrate the logs:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="c"># assuming the new disk is /dev/sdX</span>
+systemctl stop rsyslog
+
+mount /dev/sdX1 /var/log1
+rsync <span class="nt">-avAXx</span> /var/log/ /var/log1/
+<span class="nb">rm</span> <span class="nt">-rf</span> /var/log
+<span class="nb">mkdir</span> /var/log
+umount /var/log1
+vim /etc/fstab  <span class="c"># add an entry for /dev/sdX1</span>
+systemctl daemon-reload  <span class="c"># see notes</span>
+mount /var/log
+
+systemctl start rsyslog
+</code></pre>
+								</div>
+							</div>
+							<p>Notes on the above commands:</p>
+							<ul>
+								<li>Rsync is better than <code class="language-plaintext highlighter-rouge">cp</code> if you need to perform a non-trivial copy operation. (The original blog uses <code class="language-plaintext highlighter-rouge">cp</code>.)</li>
+								<li>Using <code class="language-plaintext highlighter-rouge">fstab</code> guarantees any mounts are consistent and persistent across reboots.</li>
+								<li>
+									<p>Why <code class="language-plaintext highlighter-rouge">systemctl daemon-reload</code> after edting <code class="language-plaintext highlighter-rouge">fstab</code>? Because <a href="https://unix.stackexchange.com/q/474743/211239">systemd is sometimes too smart</a> (I got bitten by this once).</p>
+								</li>
+							</ul>
+							<h3 id="disable-logs">Or disable logs altogether</h3>
+							<p>On a hobbyist setup, you may be fine with disabling logs altogether.</p>
+							<p>The original blog suggests replacing a few file with symlinks to <code class="language-plaintext highlighter-rouge">/dev/null</code>, which I find rather incomplete and ineffective. On my 5-GB-used rootfs, <code class="language-plaintext highlighter-rouge">/var/log</code> takes 1.8 GB, of which <code class="language-plaintext highlighter-rouge">/var/log/journal</code> eats 1.6 GB alone, so systemd journal is the first thing to go. Editing <code class="language-plaintext highlighter-rouge">/etc/systemd/journald.conf</code> and setting <code class="language-plaintext highlighter-rouge">Storage=none</code> will stop its disk hogging, but better yet, you can keep a minimal amount of logs by combining <code class="language-plaintext highlighter-rouge">Storage=volatile</code> and <code class="language-plaintext highlighter-rouge">RuntimeMaxUse=16M</code> (<a href="https://unix.stackexchange.com/a/705057/211239">ref</a>).</p>
+							<p>If you’re on Proxmox VE 8+, you can create an “override” file for systemd-journald by adding your customizations to <code class="language-plaintext highlighter-rouge">/etc/systemd/journald.conf.d/override.conf</code>. This will save some trouble when the stock configuration file gets updated and you’re asked to merge the changes.</p>
+							<p>For other logs, you can simple replace them with symlinks to <code class="language-plaintext highlighter-rouge">/dev/null</code>. For example:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nb">ln</span> <span class="nt">-sfn</span> /dev/null /var/log/lastlog
+</code></pre>
+								</div>
+							</div>
+							<p>I’m not keen on this method as other logs only comes at a rate of a few hundred MBs per week, so I’d rather keep them around.</p>
+							<h2 id="pve-services">Stop certain PVE services</h2>
+							<p>The original blog suggests stopping a few non-essential services as they (which I couldn’t verify, nor do I believe so):</p>
+							<ul>
+								<li>High-Availability-related services (you don’t need HA on a single-node setup):
+									<ul>
+										<li><code class="language-plaintext highlighter-rouge">pve-ha-lrm</code></li>
+										<li><code class="language-plaintext highlighter-rouge">pve-ha-crm</code></li>
+									</ul>
+								</li>
+								<li>Firewall logger: <code class="language-plaintext highlighter-rouge">pvefw-logger</code></li>
+								<li>Non-essential and non-PVE services:
+									<ul>
+										<li>spiceproxy (required for SPICE console, but noVNC is better)</li>
+										<li>corosync (required for multi-node setup)</li>
+									</ul>
+								</li>
+							</ul>
+							<p>Except for <code class="language-plaintext highlighter-rouge">pvefw-logger</code>, stopping these services will not save you much disk writes as per my experiences.</p>
+							<h2 id="rrdcached">Reduce <code class="language-plaintext highlighter-rouge">rrdcached</code> writes</h2>
+							<p><code class="language-plaintext highlighter-rouge">rrdcached</code> is the service that stores and provides data for the PVE web interface to display graphs on system resource usage. I have no idea how much writes it produces, so I just relay the optimization given in the original blog.</p>
+							<ul>
+								<li>Edit <code class="language-plaintext highlighter-rouge">/etc/default/rrdcached</code>:
+									<ul>
+										<li>Set <code class="language-plaintext highlighter-rouge">WRITE_TIMEOUT=3600</code> so it only writes to disk once per hour.</li>
+										<li>Comment out <code class="language-plaintext highlighter-rouge">JOURNAL_PATH</code> so it stops writing journals (not the data itself).</li>
+										<li>Add <code class="language-plaintext highlighter-rouge">FLUSH_TIMEOUT=7200</code> (timeout for <code class="language-plaintext highlighter-rouge">flush</code> command, not sure how useful it is).</li>
+									</ul>
+								</li>
+								<li>
+									<p>Edit <code class="language-plaintext highlighter-rouge">/etc/init.d/rrdcached</code> for it to pick up the new <code class="language-plaintext highlighter-rouge">FLUSH_TIMEOUT</code> value:</p>
+									<p>Find these lines:</p>
+									<div class="language-shell highlighter-rouge">
+										<div class="highlight">
+											<pre class="highlight"><code><span class="k">${</span><span class="nv">WRITE_TIMEOUT</span>:+-w<span class="p"> </span><span class="k">${</span><span class="nv">WRITE_TIMEOUT</span><span class="k">}}</span> <span class="se">\</span>
+<span class="k">${</span><span class="nv">WRITE_JITTER</span>:+-z<span class="p"> </span><span class="k">${</span><span class="nv">WRITE_JITTER</span><span class="k">}}</span> <span class="se">\</span>
+</code></pre>
+										</div>
+    </div>
+									<p>And insert one line for <code class="language-plaintext highlighter-rouge">FLUSH_TIMEOUT</code>:</p>
+									<div class="language-shell highlighter-rouge">
+										<div class="highlight">
+											<pre class="highlight"><code><span class="k">${</span><span class="nv">WRITE_TIMEOUT</span>:+-w<span class="p"> </span><span class="k">${</span><span class="nv">WRITE_TIMEOUT</span><span class="k">}}</span> <span class="se">\</span>
+<span class="k">${</span><span class="nv">FLUSH_TIMEOUT</span>:+-f<span class="p"> </span><span class="k">${</span><span class="nv">FLUSH_TIMEOUT</span><span class="k">}}</span> <span class="se">\</span>
+<span class="k">${</span><span class="nv">WRITE_JITTER</span>:+-z<span class="p"> </span><span class="k">${</span><span class="nv">WRITE_JITTER</span><span class="k">}}</span> <span class="se">\</span>
+</code></pre>
+										</div>
+    </div>
+								</li>
+							</ul>
+							<p>After editing both files, restart the service: <code class="language-plaintext highlighter-rouge">systemctl restart rrdcached.service</code></p>
+							<h2 id="pvestatd">Stop <code class="language-plaintext highlighter-rouge">pvestatd</code></h2>
+							<p><code class="language-plaintext highlighter-rouge">pvestatd</code> provides an interface for hardware information for the PVE system. It shouldn’t produce much writes and stopping it will prevent creation of new VMs and containers, so I don’t recommend stopping it. The original blog probably included this option as a result of a mistake or ignorance.</p>
+							<h2 id="conclusion">Conclusion</h2>
+							<p>We can see how Proxmox VE is designed to provide enterprise-grade reliability and durability, at the expense of producing lots of disk writes for its various components like system logging and statistics. Based on the above analysis, it seems perfectly reasonable that Proxmox VE decides not to support eMMC storage.</p>
+							<p>This blog combines a few tips from the original blog and my own experiences. I hope it helps you with your Proxmox VE setup on any eMMC-backed devices.</p>
+							<div class="notice notice--primary">
+								<p class="align-center" style="font-size: 1.6em;">But <em>really</em>?</p>
+							</div>
+							<h2 class="no_toc" id="results">Results</h2>
+							<p>There’s one key question left unanswered by everything above: How much writes does Proxmox VE really produce?</p>
+							<p>To answer this question, let’s see some of my examples:</p>
+							<h3 class="no_toc" id="server-1">Server 1</h3>
+							<p>Specs:</p>
+							<ul>
+								<li>Two enterprise-grade SSDs in RAID 1</li>
+								<li>Running since October 2019</li>
+								<li>“Master” node in a multi-node cluster, with the entire cluster running over 2,000 VMs and containers (~10 on this host)</li>
+							</ul>
+							<p>Total writes as of July 2023 (rootfs-only, thanks to <a href="https://unix.stackexchange.com/q/121699/211239">this answer</a>):</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="c"># lrwxrwxrwx 1 root root 7 Jul 12 15:48 /dev/pve/root -&gt; ../dm-4</span>
+<span class="c"># cat /sys/fs/ext4/dm-4/lifetime_write_kbytes</span>
+17017268104
+</code></pre>
+								</div>
+							</div>
+							<p>Result: 4.5 TB annually.</p>
+							<h3 class="no_toc" id="server-2">Server 2</h3>
+							<p>Specs:</p>
+							<ul>
+								<li>Two ol’ rusty spinning drives in RAID 1</li>
+								<li>Running since January 2022</li>
+								<li>Belongs to a multi-node cluster, running around 20 VMs (~3 on this host)</li>
+							</ul>
+							<p>Total writes as of July 2023 (rootfs-only):</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="c"># lrwxrwxrwx 1 root root 7 Jan 21  2022 /dev/pve/root -&gt; ../dm-1</span>
+<span class="c"># cat /sys/fs/ext4/dm-1/lifetime_write_kbytes</span>
+2336580629
+</code></pre>
+								</div>
+							</div>
+							<p>Result: 1.5 TB annually.</p>
+							<h3 class="no_toc" id="server-3">Server 3</h3>
+							<p>Specs:</p>
+							<ul>
+								<li>Lab’s storage server, single SSD for rootfs and ZFS SLOG (ZIL)</li>
+								<li>Running since October 2022</li>
+								<li>Single-node setup, running 2 VMs</li>
+								<li>Data is stored separately</li>
+							</ul>
+							<p>Total writes as of July 2023:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="c"># smartctl -A /dev/sda</span>
+241 Total_LBAs_Written 2849895751
+</code></pre>
+								</div>
+							</div>
+							<p><code class="language-plaintext highlighter-rouge">humanize.naturalsize(2849895751 * 512, format="%.2f")</code>: 1.46 TB (≈ 2 TB annually)</p>
+							<h3 class="no_toc" id="emmc-write-life">eMMC Write Life</h3>
+							<p>This one really depends on the hardware you get. In 2023 virtually every reasonable TLC flash chip should withstand at least 1,000 P/E cycles, so even a pathetic 8 GB eMMC should last around 10 TB of writes, <a href="https://forums.raspberrypi.com/viewtopic.php?t=291808">as that on a Raspberry Pi Compute Module 4</a>.</p>
+							<p>If you get anything larger than that, you should be fine expecting it to survive at least 20 TB of writes.</p>
+							<h2 class="no_toc" id="real-conclusion">REAL Conclusion</h2>
+							<p>Congratulations on reading this far.</p>
+							<p>If you managed to hold your paranoia and refrain from putting anything into action, you can now sit back and relax. Unless you’re squeezing hundreds of VMs and containers into a single eMMC-driven board (poor board) without separate storage for VMs, your eMMC is not going to die anytime soon.</p>
+							<h2 id="references">References</h2>
+							<ul>
+								<li>Original blog (Traditional Chinese): <a href="https://fat-nerds.com/dot-nerd/cut-down-proxmox-ve-emmc-sd-read-write/">單板小主機上的Proxmox VE實務：暴力減少eMMC或SD卡的讀寫耗損</a></li>
+								<li><a href="https://forums.raspberrypi.com/viewtopic.php?t=291808">CM4 eMMC durability - Terabytes written value (TBW)?</a></li>
+							</ul>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/linux" class="page__taxonomy-item" rel="tag">linux</a><span class="sep">, </span>
+									<a href="/tag/proxmox-ve" class="page__taxonomy-item" rel="tag">proxmox-ve</a><span class="sep">, </span>
+									<a href="/tag/server" class="page__taxonomy-item" rel="tag">server</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2023-07-15">Jul 15, 2023</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=Prolonging+eMMC+Life+Span+with+Proxmox+VE%20https%3A%2F%2Fibug.io%2Fblog%2F2023%2F07%2Fprolonging-emmc-life-span-with-proxmox-ve%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2023%2F07%2Fprolonging-emmc-life-span-with-proxmox-ve%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2023%2F07%2Fprolonging-emmc-life-span-with-proxmox-ve%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/blog/2023/04/checkin-infrastructure/" class="pagination--pager" title="My automated Daily Health Report infrastructure
+">Previous</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+				<div class="page__related">
+					<h2 class="page__related-title">You may also enjoy</h2>
+					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/linux-container.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are w...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											24 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											16 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/ldap.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											14 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/vpn-imagine.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											15 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					<p>&copy; 2023 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
+					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
+					<p>
+						Site version <a href="/status" class="version-text">G-799</a>
+					</p>
+				</div>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<script>
+			// Including InstantSearch.js library and styling
+			const loadSearch = function() {
+			  const loadCSS = function(src) {
+			    var link = document.createElement('link');
+			    link.rel = 'stylesheet';
+			    link.type = 'text/css';
+			    link.href = src;
+			    link.media = 'all';
+			    document.head.appendChild(link);
+			  };
+
+			  var script = document.createElement('script');
+			  script.setAttribute("type", "text/javascript");
+			  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
+			  script.addEventListener("load", function() {
+			    // Instantiating InstantSearch.js with Algolia credentials
+			    const search = instantsearch({
+			      appId: '14DZKASAEJ',
+			      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			      indexName: 'iBug_website',
+			      searchParameters: {
+			        restrictSearchableAttributes: ['title', 'content']
+			      }
+			    });
+
+			    const hitTemplate = function(hit) {
+			      const url = hit.url;
+			      const title = hit._highlightResult.title.value;
+			      const content = hit._highlightResult.html.value;
+
+			      return `
+			        <div class="list__item">
+			          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			            <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			          </article>
+			        </div>
+			      `;
+			    }
+
+			    // Adding searchbar and results widgets
+			    search.addWidget(
+			      instantsearch.widgets.searchBox({
+			        container: '.search-searchbar',
+			        poweredBy: true,
+			        placeholder: 'Enter your search term...'
+			      })
+			    );
+			    search.addWidget(
+			      instantsearch.widgets.hits({
+			        container: '.search-hits',
+			        templates: {
+			          item: hitTemplate,
+			          empty: 'No results',
+			        }
+			      })
+			    );
+
+			    if(!search.started) {
+			      search.start();
+			    }
+			  });
+			  document.body.appendChild(script);
+
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
+			};
+
+			// Starting the search only when toggle is clicked
+			$(document).ready(function() {
+			  var scriptLoaded = false;
+
+			  $(".search__toggle").on("click", function() {
+			    if (!scriptLoaded) {
+			      loadSearch();
+			      scriptLoaded = true;
+			    }
+			  });
+			});
+		</script>
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-V93196TX91"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+
+			gtag('config', 'G-V93196TX91', { 'anonymize_ip': false});
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	</body>
+</html>

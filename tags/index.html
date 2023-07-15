@@ -38,7 +38,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=29534e2">
+		<link rel="stylesheet" href="/assets/css/main.css?v=81c4b11">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -158,7 +158,7 @@
 					<ul class="taxonomy__index">
 						<li>
 							<a href="#linux">
-								<strong>linux</strong> <span class="taxonomy__count">16</span>
+								<strong>linux</strong> <span class="taxonomy__count">17</span>
 							</a>
 						</li>
 						<li>
@@ -167,13 +167,13 @@
 							</a>
 						</li>
 						<li>
-							<a href="#web">
-								<strong>web</strong> <span class="taxonomy__count">6</span>
+							<a href="#server">
+								<strong>server</strong> <span class="taxonomy__count">7</span>
 							</a>
 						</li>
 						<li>
-							<a href="#server">
-								<strong>server</strong> <span class="taxonomy__count">6</span>
+							<a href="#web">
+								<strong>web</strong> <span class="taxonomy__count">6</span>
 							</a>
 						</li>
 						<li>
@@ -229,6 +229,11 @@
 						<li>
 							<a href="#aws">
 								<strong>aws</strong> <span class="taxonomy__count">2</span>
+							</a>
+						</li>
+						<li>
+							<a href="#proxmox-ve">
+								<strong>proxmox-ve</strong> <span class="taxonomy__count">2</span>
 							</a>
 						</li>
 						<li>
@@ -300,6 +305,31 @@
 					<section id="linux" class="taxonomy__section">
 						<h2 class="archive__subtitle">linux</h2>
 						<div class="entries-list">
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-teaser">
+										<img src="/image/proxmox.jpg" alt="">
+									</div>
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/" rel="permalink">Prolonging eMMC Life Span with Proxmox VE
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">Since my blog on installing Proxmox VE on eMMC, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, ...</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2023-07-15T00:00:00+00:00">Jul 15, 2023</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												6 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
 							<div class="list__item">
 								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 									<div class="archive__item-text">
@@ -850,152 +880,34 @@
 						</div>
 						<a href="#page-title" class="back-to-top">Back to top &uarr;</a>
 					</section>
-					<section id="web" class="taxonomy__section">
-						<h2 class="archive__subtitle">web</h2>
+					<section id="server" class="taxonomy__section">
+						<h2 class="archive__subtitle">server</h2>
 						<div class="entries-list">
 							<div class="list__item">
 								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 									<div class="archive__item-teaser">
-										<img src="/image/teaser/chrome-edge.jpg" alt="">
+										<img src="/image/proxmox.jpg" alt="">
 									</div>
 									<div class="archive__item-text">
 										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2021/06/switch-from-google-chrome-to-microsoft-edge/" rel="permalink">I switched from Google Chrome to Microsoft Edge
+											<a href="/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/" rel="permalink">Prolonging eMMC Life Span with Proxmox VE
 											</a>
 										</h2>
-										<p class="archive__item-excerpt" itemprop="description">Last year (maybe September? I don’t remember now) I switched my primary browser from Google Chrome to the new Microsoft Edge. It turned out to be a wise move and I’ve been with Edge for more than h...</p>
+										<p class="archive__item-excerpt" itemprop="description">Since my blog on installing Proxmox VE on eMMC, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, ...</p>
 										<p class="page__meta">
 											<span class="page__meta-date">
 												<i class="far fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2021-06-12T00:00:00+00:00">Jun 12, 2021</time>
+												<time datetime="2023-07-15T00:00:00+00:00">Jul 15, 2023</time>
 											</span>
 											<span class="page__meta-sep"></span>
 											<span class="page__meta-readtime">
 												<i class="far fa-clock" aria-hidden="true"></i>
-												4 minute read
+												6 minute read
 											</span>
 										</p>
 									</div>
 								</article>
 							</div>
-							<div class="list__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2021/01/keep-flash-player-browser/" rel="permalink">Keep using Flash Player in browsers in 2021
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">It’s 2021 now, and Adobe Flash Player has been end-of-life after December 31, 2020. There are many cases where you want to retain it, however. For example, you may want to keep enjoying an old game...</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2021-01-12T00:00:00+00:00">Jan 12, 2021</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-clock" aria-hidden="true"></i>
-												2 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="list__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2020/08/work-against-wordpress-deblocker/" rel="permalink">Working against WordPress DeBlocker plugin
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">I’ll go straight to the solution (keep in mind that it’s considerably primitive, so use at your own risk) with code attached below. It’s a Tampermonkey userscript.
-										</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2020-08-13T00:00:00+00:00">Aug 13, 2020</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-clock" aria-hidden="true"></i>
-												5 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="list__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-clock" aria-hidden="true"></i>
-												16 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="list__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2019/11/change-nvidia-account-email/" rel="permalink">How to change email of your Nvidia account
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">I recently retired a few old email addresses, and am currently going in a row to change email for accounts associated with those emails. Everything else went smoothly, with my Nvidia account being ...</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2019-11-22T00:00:00+00:00">Nov 22, 2019</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-clock" aria-hidden="true"></i>
-												1 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="list__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2019/11/optimize-github-pages-with-cloudflare/" rel="permalink">Make your GitHub Pages website faster with Cloudflare
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">This September I employed Cloudflare to optimize my website (https://ibugone.com) in various aspects. It turned out to be a brilliant move and Cloudflare has proved to be a great service to have.
-										</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2019-11-11T00:00:00+00:00">Nov 11, 2019</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-clock" aria-hidden="true"></i>
-												4 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-						</div>
-						<a href="#page-title" class="back-to-top">Back to top &uarr;</a>
-					</section>
-					<section id="server" class="taxonomy__section">
-						<h2 class="archive__subtitle">server</h2>
-						<div class="entries-list">
 							<div class="list__item">
 								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 									<div class="archive__item-text">
@@ -1136,6 +1048,149 @@
 											<span class="page__meta-readtime">
 												<i class="far fa-clock" aria-hidden="true"></i>
 												7 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+						</div>
+						<a href="#page-title" class="back-to-top">Back to top &uarr;</a>
+					</section>
+					<section id="web" class="taxonomy__section">
+						<h2 class="archive__subtitle">web</h2>
+						<div class="entries-list">
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-teaser">
+										<img src="/image/teaser/chrome-edge.jpg" alt="">
+									</div>
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2021/06/switch-from-google-chrome-to-microsoft-edge/" rel="permalink">I switched from Google Chrome to Microsoft Edge
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">Last year (maybe September? I don’t remember now) I switched my primary browser from Google Chrome to the new Microsoft Edge. It turned out to be a wise move and I’ve been with Edge for more than h...</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2021-06-12T00:00:00+00:00">Jun 12, 2021</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												4 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2021/01/keep-flash-player-browser/" rel="permalink">Keep using Flash Player in browsers in 2021
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">It’s 2021 now, and Adobe Flash Player has been end-of-life after December 31, 2020. There are many cases where you want to retain it, however. For example, you may want to keep enjoying an old game...</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2021-01-12T00:00:00+00:00">Jan 12, 2021</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												2 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2020/08/work-against-wordpress-deblocker/" rel="permalink">Working against WordPress DeBlocker plugin
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">I’ll go straight to the solution (keep in mind that it’s considerably primitive, so use at your own risk) with code attached below. It’s a Tampermonkey userscript.
+										</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2020-08-13T00:00:00+00:00">Aug 13, 2020</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												5 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												16 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2019/11/change-nvidia-account-email/" rel="permalink">How to change email of your Nvidia account
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">I recently retired a few old email addresses, and am currently going in a row to change email for accounts associated with those emails. Everything else went smoothly, with my Nvidia account being ...</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2019-11-22T00:00:00+00:00">Nov 22, 2019</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												1 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2019/11/optimize-github-pages-with-cloudflare/" rel="permalink">Make your GitHub Pages website faster with Cloudflare
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">This September I employed Cloudflare to optimize my website (https://ibugone.com) in various aspects. It turned out to be a brilliant move and Cloudflare has proved to be a great service to have.
+										</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2019-11-11T00:00:00+00:00">Nov 11, 2019</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												4 minute read
 											</span>
 										</p>
 									</div>
@@ -1950,6 +2005,62 @@
 						</div>
 						<a href="#page-title" class="back-to-top">Back to top &uarr;</a>
 					</section>
+					<section id="proxmox-ve" class="taxonomy__section">
+						<h2 class="archive__subtitle">proxmox-ve</h2>
+						<div class="entries-list">
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-teaser">
+										<img src="/image/proxmox.jpg" alt="">
+									</div>
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/" rel="permalink">Prolonging eMMC Life Span with Proxmox VE
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">Since my blog on installing Proxmox VE on eMMC, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, ...</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2023-07-15T00:00:00+00:00">Jul 15, 2023</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												6 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-teaser">
+										<img src="/image/proxmox.jpg" alt="">
+									</div>
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2022/03/install-proxmox-ve-emmc/" rel="permalink">Install Proxmox VE on eMMC
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just ...</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2022-03-01T00:00:00+00:00">Mar 1, 2022</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												2 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+						</div>
+						<a href="#page-title" class="back-to-top">Back to top &uarr;</a>
+					</section>
 					<section id="android" class="taxonomy__section">
 						<h2 class="archive__subtitle">android</h2>
 						<div class="entries-list">
@@ -2359,7 +2470,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-798</a>
+						Site version <a href="/status" class="version-text">G-799</a>
 					</p>
 				</div>
 			</footer>
