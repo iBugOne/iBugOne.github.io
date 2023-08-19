@@ -305,6 +305,10 @@
 			<lastmod>2023-07-15T20:32:06+00:00</lastmod>
 		</url>
 		<url>
+			<loc>https://ibug.io/blog/2023/08/nju-talk/</loc>
+			<lastmod>2023-08-19T13:50:40+00:00</lastmod>
+		</url>
+		<url>
 			<loc>https://ibug.io/project/OJSandbox/</loc>
 			<lastmod>2021-12-21T04:11:24+00:00</lastmod>
 		</url>
@@ -512,6 +516,9 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/tag/minecraft/</loc>
+		</url>
+		<url>
+			<loc>https://ibug.io/tag/tags/</loc>
 		</url>
 		<url>
 			<loc>https://ibug.io/tag/study-notes/</loc>

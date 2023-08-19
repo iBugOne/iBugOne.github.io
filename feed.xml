@@ -1,37 +1,426 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.2">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2023-08-19T05:50:22+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Prolonging eMMC Life Span with Proxmox VE</title><link href="https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/" rel="alternate" type="text/html" title="Prolonging eMMC Life Span with Proxmox VE" /><published>2023-07-15T00:00:00+00:00</published><updated>2023-07-15T20:32:06+00:00</updated><id>https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve</id><content type="html" xml:base="https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/"><![CDATA[<p>Since my blog on <a href="/p/49">installing Proxmox VE on eMMC</a>, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, as eMMCs typically do not offer the level of endurance as anything better than USB flash drives. Among many concerns, the most important one is the limited number of write cycles that an eMMC can sustain, while Proxmox VE, being an enterprise-grade product, has to constantly write stuff like logs to the storage. I came across <a href="https://fat-nerds.com/dot-nerd/cut-down-proxmox-ve-emmc-sd-read-write/">this blog (fat-nerds.com)</a> on reducing eMMC writes on a Proxmox VE installation on a single-board computer from a Hong Kong guy, so I figure I’d share my ideas here.</p>
-			<p>This article will be a remix of the original blog, with some of my own experiences blended in.</p>
-			<p>As a courtesy, here’s the disclaimer from the original blog:</p>
-			<blockquote>
-				<p>警告：下面的設定不應該被應用於有重大價值的伺服器上面！這只是筆者強行在便宜硬件上塞進PVE並以更暴力的方式去為其續命的手段。</p>
-			</blockquote>
-			<blockquote>
-				<p>WARNING: The following settings should not be applied to valuable production servers! This is just a method for the author to force Proxmox VE onto cheap hardware and to prolong its life span.</p>
-			</blockquote>
-			<h2 id="swap">Disable swap</h2>
-			<p>Swap is the mechanism of offloading some memory from physical RAM to disk in order to improve RAM management efficiency. If you have a lot of physical RAM, chances are swap isn’t going to be much helpful while producing a lot of writes to the disk. On a default Proxmox VE installation, the swap size is set from 4 GB to 8 GB, depending on your RAM capacity and disk size.</p>
-			<p>You can temporarily disable swap by setting sysctl <code class="language-plaintext highlighter-rouge">vm.swappiness</code> to 0:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>sysctl vm.swappiness<span class="o">=</span>0
-</code></pre>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.2">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2023-08-19T05:53:15+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Vlab 远程教学云桌面</title><link href="https://ibug.io/blog/2023/08/nju-talk/" rel="alternate" type="text/html" title="Vlab 远程教学云桌面" /><published>2023-08-19T00:00:00+00:00</published><updated>2023-08-19T13:50:40+00:00</updated><id>https://ibug.io/blog/2023/08/nju-talk</id><content type="html" xml:base="https://ibug.io/blog/2023/08/nju-talk/"><![CDATA[<section id="title">
+				<h1 class="title">Vlab<br>
+					远程教学云桌面</h1>
+				<p class="date">iBug @ USTC</p>
+				<p class="date">2023 年 8 月 19 日<br />
+					南京大学</p>
+			</section>
+			<section id="cover-image">
+				<style>
+					:root {
+					  --r-heading-font-weight: bold;
+					}
+
+					.slides section {
+					  max-height: 100%;
+					}
+
+					li img {
+					  vertical-align: middle;
+					}
+
+					li+li {
+					  margin-top: 0.25em;
+					}
+
+					.img-container {
+					  width: 100%;
+					  height: 100%;
+
+					  display: flex;
+					  flex-direction: column;
+					  justify-content: center;
+					}
+
+					.img-container img {
+					  display: block;
+					  max-height: 100%;
+					  margin: auto !important;
+					  object-fit: contain;
+					}
+
+					.reveal section>img {
+					  display: block;
+					  margin: auto !important;
+					  max-height: 95vh;
+					}
+
+					.border {
+					  border: 1px solid black;
+					}
+				</style>
+				<div class="img-container">
+					<img src="https://image.ibugone.com/vlab/vlab-in-browser.jpg" />
 				</div>
+			</section>
+			<section id="目录">
+				<h2>目录</h2>
+				<ol type="1">
+					<li>背景</li>
+					<li>第一代 Vlab</li>
+					<li>第二代 Vlab</li>
+					<li>技术分享</li>
+					<li>共享灵车</li>
+					<li>成果</li>
+				</ol>
+			</section>
+			<section>
+				<section id="background">
+					<h2>背景</h2>
+					<p>计算机实验的环境配置问题：</p>
+					<ul>
+						<li>学校机房开放时间有限，利用率低</li>
+						<li>部分实验软件体积大、对配置要求高（如 Vivado）</li>
+						<li>学生使用的系统环境不同，导致安装与使用时出现奇怪的问题</li>
+						<li>部分实验环境安装时容易损坏（如双系统安装）</li>
+					</ul>
+				</section>
+				<section id="background-idea">
+					<h2>思考</h2>
+					<p>能不能通过提供预先配置好实验环境的虚拟机来解决这个问题呢？</p>
+					<ul>
+						<li>Linux 虚拟机还是 Windows 虚拟机？</li>
+						<li>实验软件怎么配？</li>
+						<li>给学生分配多少系统资源？主机需要多少硬件配置？</li>
+						<li>单位支持：计算机实验教学中心</li>
+					</ul>
+				</section>
+			</section>
+			<section>
+				<section id="1st-gen">
+					<h2>第一代 Vlab</h2>
+					<ul>
+						<li>2019 年暑假搭建完成<br />
+							秋季学期小范围运营</li>
+						<li>接入校园网，提供 VNC 连接</li>
+						<li>打包虚拟机镜像预装 Vivado 方便实验</li>
+					</ul>
+				</section>
+				<section id="1st-gen-features">
+					<h3>平台特点</h3>
+					<ul>
+						<li>单台 E5 2630 v4 (2S)，<s>64</s> 128 GB 内存，一些固态和机械</li>
+						<li>Ubuntu 18.04 + 3.10.0-957.el7🤔 + LXD snap</li>
+						<li>lxdbr0 ↔ USTCnet</li>
+					</ul>
+					<hr />
+					<ul>
+						<li>校园网接入：可以使用网络通选择出口或从校外连接
+							<ul>
+								<li><s>也可以挂 Minecraft 服务器、Terraria 服务器、……</s></li>
+							</ul>
+						</li>
+						<li>虚拟机镜像：(Ubuntu 1 GB) + Xfce4 (2 GB) + Vivado (<b>18 GB</b>)
+							<ul>
+								<li>好在单机有 ZFS 可以用</li>
+							</ul>
+						</li>
+						<li>用 Django 糊了个面板（@taoky），使用统一身份认证登录</li>
+					</ul>
+				</section>
+				<section id="1st-gen-sumup">
+					<h3>总结经验</h3>
+					<ul>
+						<li><s>一台母鸡超卖也卖不动多少啊</s></li>
+						<li>避免将用户虚拟机直接连接在校园网上
+							<ul>
+								<li>这样既不方便使用，也不安全</li>
+								<li>机房 IP 早晚会不够用的（3× /24）</li>
+								<li>开个 NAT</li>
+							</ul>
+						</li>
+						<li>提供桌面和命令行的统一登录接口，方便用户连接使用</li>
+						<li>配备更多实验软件</li>
+						<li>完善用户文档</li>
+					</ul>
+				</section>
+			</section>
+			<section>
+				<section id="2nd-gen">
+					<h2>第二代 Vlab</h2>
+					<ul>
+						<li>2020 年寒假基本配置完成<br />
+							春季学期投入使用</li>
+						<li>改进了第一代 Vlab 的许多不足点</li>
+					</ul>
+				</section>
+				<section id="2nd-gen-infrastructure">
+					<h3>基础设施</h3>
+					<ul>
+						<li>采购：HPE MSA 1050，Gen10 节点 ×8, 251 交换机</li>
+						<li>Ubuntu ❌ Proxmox VE ✔</li>
+						<li>iSCSI 存储共享：LVM（no thin provisioning）</li>
+						<li>网络：VXLAN、NAT 网关</li>
+						<li><s>小修小补的</s> Django 面板</li>
+						<li>超卖能力++++</li>
+					</ul>
+				</section>
+				<section id="2nd-gen-network">
+					<div class="img-container">
+						<img src="https://image.ibugone.com/vlab/network-external-1.png" />
+					</div>
+				</section>
+				<section id="2nd-gen-network-internal">
+					<div class="img-container">
+						<img src="https://image.ibugone.com/vlab/network-internal.png" />
+					</div>
+				</section>
+				<section id="gateway">
+					<h3>年轻人的第一次卵路由实践</h3>
+					<ul>
+						<li>基础功能：为虚拟机提供 NAT 上网</li>
+						<li>基本操作：Debian LXC + 手搓 iproute2 + iptables（其实也没那么复杂）</li>
+						<li>DNS + 监控：AdGuard Home</li>
+						<li>流量记录：<code>-m conntrack --ctstate NEW -j NFLOG</code>
+							<ul>
+								<li>没有磁带，不宜全量镜像</li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+				<section id="lxc-build">
+					<h3>稳定可靠的 LXC 镜像构建技术</h3>
+					<ul>
+						<li>Docker 提供 build environment，PVE 提供 base image</li>
+						<li>基于 shell 脚本和 GitHub Actions 的自动化流程
+							<ul>
+								<li><code>add_file</code>, <code>add_package</code>, <code>run</code> 等“指令”</li>
+								<li><s>就差发明一个 <code>Lxcfile</code> DSL 了</s></li>
+							</ul>
+						</li>
+						<li>Repository：<a href="https://github.com/USTC-vlab/labstrap"><i class="fab fa-github"></i>
+								USTC-vlab/labstrap</a>
+							<ul>
+								<li>精神前辈：图书馆查询🐔的 PXE 镜像构建：<a href="https://github.com/ustclug/liimstrap"><i class="fab fa-github"></i>
+										ustclug/liimstrap</a></li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section>
+				<section id="login">
+					<h2>登录方式</h2>
+					<p>不开放端口，各种协议都需要转发</p>
+					<p>VNC, SSH, and what?</p>
+				</section>
+				<section id="login-ssh-1">
+					<h3>SSH 统一登录</h3>
+					<ul>
+						<li>SSH 没有 Host header 怎么办：来点 PubkeyAuthentication</li>
+						<li><code>ssh <b>-i vm-114514.pem</b> ubuntu@vlab.ustc.edu.cn</code></li>
+						<li>鉴权：就像 GitHub / GitLab 一样直接按公钥区分用户（VM）
+							<ul>
+								<li>Django 提供一个 pubkey → VM IP address 的接口</li>
+							</ul>
+						</li>
+						<li>后端：<code>golang.org/x/crypto/ssh</code>
+							<ul>
+								<li>初版：Forked from <a href="https://github.com/tg123/sshpiper"><i class="fab fa-github"></i>
+										tg123/sshpiper</a></li>
+								<li>现在：<a href="https://github.com/USTC-vlab/sshmux"><i class="fab fa-github"></i> USTC-vlab/sshmux</a>
+								</li>
+								<li>sshpiper 重构了，不好用了 QwQ</li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+				<section id="login-ssh-2">
+					<h3>SSH 统一登录</h3>
+					<ul>
+						<li>恢复模式（LXC）：<code>ssh <b>recovery</b>@vlab.ustc.edu.cn</code>
+							<ul>
+								<li>后台转接到 <code>pct enter &lt;vmid&gt;</code></li>
+							</ul>
+						</li>
+						<li>控制台模式（LXC）：<code>ssh <b>console</b>@vlab.ustc.edu.cn</code>
+							<ul>
+								<li>后台转接到 <code>pct console &lt;vmid&gt;</code></li>
+							</ul>
+						</li>
+						<li>控制台模式（KVM）：<code>ssh <b>serial</b>@vlab.ustc.edu.cn</code>
+							<ul>
+								<li>后台转接到 <code>qm serial &lt;vmid&gt;</code></li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+				<section id="login-vnc-1">
+					<h3>VNC 统一登录</h3>
+					<ul>
+						<li>请出神仙：<a href="https://github.com/pdlan"><i class="fab fa-github"></i> pdlan</a>
+							<ul>
+								<li>逆向了 RealVNC，写了 10,000 行 C艹，到处 <code>co_await</code>，……</li>
+								<li>顺带还实现了 TLS 加密</li>
+								<li>顺带还实现了……</li>
+								<li>外加一个 unix-domain socket 发送管理指令</li>
+							</ul>
+						</li>
+						<li><s>一起来大受震撼吧</s></li>
+						<li>使用 VNC 软件连接：
+							<ul>
+								<li>服务器：<code>vlab.ustc.edu.cn</code>（标准端口 5900/tcp）</li>
+								<li>用户名：<code>PB17000001:114514</code>（用户名 + VM ID，如果用户有多个 VM 的话）</li>
+							</ul>
+						</li>
+					</ul>
+				</section>
+				<section id="login-vnc-2">
+					<h3>VNC 统一登录</h3>
+					<ul>
+						<li>开源贡献：</li>
+						<li>
+							<img src="https://image.ibugone.com/vlab/tigervnc-pr-pdlan.png" />
+							<img src="https://image.ibugone.com/vlab/novnc-pr-pdlan.png" />
+						</li>
+					</ul>
+				</section>
+				<section id="login-rdp">
+					<h3>RDP 统一登录</h3>
+					<ul>
+						<li><s>咕咕咕了，Windows VM 支持还没搞定</s></li>
+						<li>RDP 一大坨非常起夜级的协议，<s>不是很想逆向</s></li>
+						<li><i class="fas fa-fw fa-lightbulb-on"></i> 计划规格：<code>loadbalanceinfo</code></li>
+					</ul>
+				</section>
+				<section id="login-browser">
+					<h3>浏览器登录</h3>
+					<ul>
+						<li>VNC：魔改版 noVNC
+							<ul>
+								<li>没错，vncmux 顺带还实现了 WebSocket</li>
+							</ul>
+						</li>
+						<li>SSH：Go → WASM</li>
+						<li>RDP：从入门到放弃</li>
+					</ul>
+				</section>
+			</section>
+			<section>
+				<section id="hearses">
+					<h2>灵车时间</h2>
+				</section>
+				<section id="vlab-software-1">
+					<h3>磁盘容量</h3>
+					<ul>
+						<li>一个虚拟机镜像就已经 21 GB 了</li>
+						<li>+MATLAB, +Mathematica, +<a href="https://image.ibugone.com/vlab/node_modules-meme.png">node_modules</a></li>
+						<li>我们的存储阵列里就有 114514 份 Vivado</li>
+					</ul>
+				</section>
+				<section id="vlab-software-2">
+					<h3>Bind mount!</h3>
+					<ul>
+						<li>local-lvm 开个新卷给 <code>/opt/vlab</code></li>
+						<li>mp0: /opt/vlab,mp=/opt/vlab,ro=1</li>
+						<li>易于维护：Rsync cron job</li>
+					</ul>
+				</section>
+				<section id="novnc-fun">
+					<h3>No... VNC?</h3>
+					<p><img src="https://image.ibugone.com/vlab/no-vnc.png" /></p>
+				</section>
+				<section>
+					<img src="https://image.ibugone.com/vlab/502.png" />
+				</section>
+				<section id="lvm-metadata-full">
+					<h3>Everything breaks if pushed too hard...</h3>
+					<pre style="font-size: 1em;"><code>VG test 1723 metadata on /dev/sdc1 (521759 bytes) exceeds maximum metadata size (521472 bytes)
+Failed to write VG test.</code></pre>
+					<p><a href="https://ibug.io/p/52"><i class="fas fa-fw fa-arrow-alt-circle-right"></i> ibug.io/p/52</a></p>
+				</section>
+				<section id="iowait-spike">
+					<h3>IOWait（<code>%wa</code>）午夜准时爆炸</h3>
+					<p style="width: 100%; height: 8em; display: flex; justify-content: space-evenly;">
+						<img src="https://image.ibugone.com/vlab/iowait-load-average.png" />
+						<img src="https://image.ibugone.com/vlab/iowait-iowait.png" />
+					</p>
+					<p>
+						替用户停掉了 <code>man-db.timer</code> 和 <code>apt-daily-upgrade.timer</code>，
+						<br />
+						给 <code>logrotate.timer</code> 补上了 <code>RandomizedDelaySec=3h</code>。
+					</p>
+				</section>
+				<section id="other-software-gore">
+					<h3>其他灵异事件</h3>
+					<ul>
+						<li>
+							一运行备份，网卡就掉了 😦<br />
+							解决方法：两边开启 jumbo frame，MTU 拉到 9000 字节
+						</li>
+						<li>存储服务器的密码掉了</li>
+						<li>PVE HA 过于热情（+<code>nofailback</code>）</li>
+						<li>Vivado 又双叒叕炸了
+							<ol type="1">
+								<li><code>LD_PRELOAD</code> += <code>libudev.so.1</code></li>
+								<li><code>LD_PRELOAD</code> += <code>libdbus-glib-1.so.2</code></li>
+							</ol>
+						</li>
+					</ul>
+				</section>
+			</section>
+			<section>
+				<section id="results">
+					<h2>成果</h2>
+					<ul>
+						<li>自 2020 年春季学期运行至今</li>
+						<li>与 <a href="https://fpgaol.ustc.edu.cn/">FPGA Online</a> 和 <a href="https://verilogoj.ustc.edu.cn/">Verilog
+								OJ</a> 等项目结合，实现纯在线 FPGA 编程教学</li>
+						<li>Grafana：<a href="https://monitor.ibugone.com/grafana/d/2">monitor.ibugone.com/grafana/d/2</a></li>
+					</ul>
+				</section>
+				<section>
+					<div class="img-container">
+						<img src="https://image.ibugone.com/vlab/containers-2023-08.png" />
+					</div>
+				</section>
+				<section>
+					<h3>学习资料</h3>
+					<ul>
+						<li>用户文档：<a href="https://vlab.ustc.edu.cn/docs/">vlab.ustc.edu.cn/docs</a></li>
+						<li>维护文档：<a href="https://vlab.ibugone.com/">vlab.ibugone.com</a></li>
+						<li>GitHub Org：<a href="https://github.com/USTC-vlab"><i class="fab fa-github"></i> USTC-vlab</a></li>
+					</ul>
+				</section>
+			</section>
+			<section id="outro">
+				<h1>谢谢！</h1>
+				<p><small>本页面的链接：<a href="https://ibug.io/p/59"><i class="fas fa-fw fa-link"></i> ibug.io/p/59</a></small></p>
+			</section>
+			]]></content><author><name>iBug</name></author><category term="tags" /><category term="tags" /></entry><entry><title type="html">Prolonging eMMC Life Span with Proxmox VE</title><link href="https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/" rel="alternate" type="text/html" title="Prolonging eMMC Life Span with Proxmox VE" /><published>2023-07-15T00:00:00+00:00</published><updated>2023-07-15T20:32:06+00:00</updated><id>https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve</id><content type="html" xml:base="https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/"><![CDATA[<p>Since my blog on <a href="/p/49">installing Proxmox VE on eMMC</a>, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, as eMMCs typically do not offer the level of endurance as anything better than USB flash drives. Among many concerns, the most important one is the limited number of write cycles that an eMMC can sustain, while Proxmox VE, being an enterprise-grade product, has to constantly write stuff like logs to the storage. I came across <a href="https://fat-nerds.com/dot-nerd/cut-down-proxmox-ve-emmc-sd-read-write/">this blog (fat-nerds.com)</a> on reducing eMMC writes on a Proxmox VE installation on a single-board computer from a Hong Kong guy, so I figure I’d share my ideas here.</p>
+		<p>This article will be a remix of the original blog, with some of my own experiences blended in.</p>
+		<p>As a courtesy, here’s the disclaimer from the original blog:</p>
+		<blockquote>
+			<p>警告：下面的設定不應該被應用於有重大價值的伺服器上面！這只是筆者強行在便宜硬件上塞進PVE並以更暴力的方式去為其續命的手段。</p>
+		</blockquote>
+		<blockquote>
+			<p>WARNING: The following settings should not be applied to valuable production servers! This is just a method for the author to force Proxmox VE onto cheap hardware and to prolong its life span.</p>
+		</blockquote>
+		<h2 id="swap">Disable swap</h2>
+		<p>Swap is the mechanism of offloading some memory from physical RAM to disk in order to improve RAM management efficiency. If you have a lot of physical RAM, chances are swap isn’t going to be much helpful while producing a lot of writes to the disk. On a default Proxmox VE installation, the swap size is set from 4 GB to 8 GB, depending on your RAM capacity and disk size.</p>
+		<p>You can temporarily disable swap by setting sysctl <code class="language-plaintext highlighter-rouge">vm.swappiness</code> to 0:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>sysctl vm.swappiness<span class="o">=</span>0
+</code></pre>
 			</div>
-			<p>Or why not just remove the swap space altogether?</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>swapoff <span class="nt">-a</span>  <span class="c"># disables swap</span>
+		</div>
+		<p>Or why not just remove the swap space altogether?</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>swapoff <span class="nt">-a</span>  <span class="c"># disables swap</span>
 vim /etc/fstab  <span class="c"># remove the swap entry</span>
 lvremove /dev/pve/swap  <span class="c"># remove the swap logical volume</span>
 </code></pre>
-				</div>
 			</div>
-			<p>In most cases, you won’t need swap on a Proxmox VE host. If you find yourself needing swap, you should probably consider upgrading your RAM instead.</p>
-			<h2 id="logs">System logs</h2>
-			<h3 id="move-logs">Move logs to another disk</h3>
-			<p>Every system produces logs, but Proxmox VE is particularly prolific on this. In a production environment, you’ll want to keep the logs by storing them on a separate disk (but why is it running on an eMMC in the first place?). So get another reliable disk and migrate the logs:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="c"># assuming the new disk is /dev/sdX</span>
+		</div>
+		<p>In most cases, you won’t need swap on a Proxmox VE host. If you find yourself needing swap, you should probably consider upgrading your RAM instead.</p>
+		<h2 id="logs">System logs</h2>
+		<h3 id="move-logs">Move logs to another disk</h3>
+		<p>Every system produces logs, but Proxmox VE is particularly prolific on this. In a production environment, you’ll want to keep the logs by storing them on a separate disk (but why is it running on an eMMC in the first place?). So get another reliable disk and migrate the logs:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="c"># assuming the new disk is /dev/sdX</span>
 systemctl stop rsyslog
 
 mount /dev/sdX1 /var/log1
@@ -45,214 +434,214 @@ mount /var/log
 
 systemctl start rsyslog
 </code></pre>
-				</div>
 			</div>
-			<p>Notes on the above commands:</p>
-			<ul>
-				<li>Rsync is better than <code class="language-plaintext highlighter-rouge">cp</code> if you need to perform a non-trivial copy operation. (The original blog uses <code class="language-plaintext highlighter-rouge">cp</code>.)</li>
-				<li>Using <code class="language-plaintext highlighter-rouge">fstab</code> guarantees any mounts are consistent and persistent across reboots.</li>
-				<li>
-					<p>Why <code class="language-plaintext highlighter-rouge">systemctl daemon-reload</code> after edting <code class="language-plaintext highlighter-rouge">fstab</code>? Because <a href="https://unix.stackexchange.com/q/474743/211239">systemd is sometimes too smart</a> (I got bitten by this once).</p>
-				</li>
-			</ul>
-			<h3 id="disable-logs">Or disable logs altogether</h3>
-			<p>On a hobbyist setup, you may be fine with disabling logs altogether.</p>
-			<p>The original blog suggests replacing a few file with symlinks to <code class="language-plaintext highlighter-rouge">/dev/null</code>, which I find rather incomplete and ineffective. On my 5-GB-used rootfs, <code class="language-plaintext highlighter-rouge">/var/log</code> takes 1.8 GB, of which <code class="language-plaintext highlighter-rouge">/var/log/journal</code> eats 1.6 GB alone, so systemd journal is the first thing to go. Editing <code class="language-plaintext highlighter-rouge">/etc/systemd/journald.conf</code> and setting <code class="language-plaintext highlighter-rouge">Storage=none</code> will stop its disk hogging, but better yet, you can keep a minimal amount of logs by combining <code class="language-plaintext highlighter-rouge">Storage=volatile</code> and <code class="language-plaintext highlighter-rouge">RuntimeMaxUse=16M</code> (<a href="https://unix.stackexchange.com/a/705057/211239">ref</a>).</p>
-			<p>If you’re on Proxmox VE 8+, you can create an “override” file for systemd-journald by adding your customizations to <code class="language-plaintext highlighter-rouge">/etc/systemd/journald.conf.d/override.conf</code>. This will save some trouble when the stock configuration file gets updated and you’re asked to merge the changes.</p>
-			<p>For other logs, you can simply replace them with symlinks to <code class="language-plaintext highlighter-rouge">/dev/null</code>. For example:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="nb">ln</span> <span class="nt">-sfn</span> /dev/null /var/log/lastlog
+		</div>
+		<p>Notes on the above commands:</p>
+		<ul>
+			<li>Rsync is better than <code class="language-plaintext highlighter-rouge">cp</code> if you need to perform a non-trivial copy operation. (The original blog uses <code class="language-plaintext highlighter-rouge">cp</code>.)</li>
+			<li>Using <code class="language-plaintext highlighter-rouge">fstab</code> guarantees any mounts are consistent and persistent across reboots.</li>
+			<li>
+				<p>Why <code class="language-plaintext highlighter-rouge">systemctl daemon-reload</code> after edting <code class="language-plaintext highlighter-rouge">fstab</code>? Because <a href="https://unix.stackexchange.com/q/474743/211239">systemd is sometimes too smart</a> (I got bitten by this once).</p>
+			</li>
+		</ul>
+		<h3 id="disable-logs">Or disable logs altogether</h3>
+		<p>On a hobbyist setup, you may be fine with disabling logs altogether.</p>
+		<p>The original blog suggests replacing a few file with symlinks to <code class="language-plaintext highlighter-rouge">/dev/null</code>, which I find rather incomplete and ineffective. On my 5-GB-used rootfs, <code class="language-plaintext highlighter-rouge">/var/log</code> takes 1.8 GB, of which <code class="language-plaintext highlighter-rouge">/var/log/journal</code> eats 1.6 GB alone, so systemd journal is the first thing to go. Editing <code class="language-plaintext highlighter-rouge">/etc/systemd/journald.conf</code> and setting <code class="language-plaintext highlighter-rouge">Storage=none</code> will stop its disk hogging, but better yet, you can keep a minimal amount of logs by combining <code class="language-plaintext highlighter-rouge">Storage=volatile</code> and <code class="language-plaintext highlighter-rouge">RuntimeMaxUse=16M</code> (<a href="https://unix.stackexchange.com/a/705057/211239">ref</a>).</p>
+		<p>If you’re on Proxmox VE 8+, you can create an “override” file for systemd-journald by adding your customizations to <code class="language-plaintext highlighter-rouge">/etc/systemd/journald.conf.d/override.conf</code>. This will save some trouble when the stock configuration file gets updated and you’re asked to merge the changes.</p>
+		<p>For other logs, you can simply replace them with symlinks to <code class="language-plaintext highlighter-rouge">/dev/null</code>. For example:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="nb">ln</span> <span class="nt">-sfn</span> /dev/null /var/log/lastlog
 </code></pre>
-				</div>
 			</div>
-			<p>I’m not keen on this method as other logs only comes at a rate of a few hundred MBs per week, so I’d rather keep them around.</p>
-			<h2 id="pve-services">Stop certain PVE services</h2>
-			<p>The original blog suggests stopping a few non-essential services as they (which I couldn’t verify, nor do I believe so):</p>
-			<ul>
-				<li>High-Availability-related services (you don’t need HA on a single-node setup):
-					<ul>
-						<li><code class="language-plaintext highlighter-rouge">pve-ha-lrm</code></li>
-						<li><code class="language-plaintext highlighter-rouge">pve-ha-crm</code></li>
-					</ul>
-				</li>
-				<li>Firewall logger: <code class="language-plaintext highlighter-rouge">pvefw-logger</code></li>
-				<li>Non-essential and non-PVE services:
-					<ul>
-						<li>spiceproxy (required for SPICE console, but noVNC is better)</li>
-						<li>corosync (required for multi-node setup)</li>
-					</ul>
-				</li>
-			</ul>
-			<p>Except for <code class="language-plaintext highlighter-rouge">pvefw-logger</code>, stopping these services will not save you much disk writes as per my experiences.</p>
-			<h2 id="rrdcached">Reduce <code class="language-plaintext highlighter-rouge">rrdcached</code> writes</h2>
-			<p><code class="language-plaintext highlighter-rouge">rrdcached</code> is the service that stores and provides data for the PVE web interface to display graphs on system resource usage. I have no idea how much writes it produces, so I just relay the optimization given in the original blog.</p>
-			<ul>
-				<li>Edit <code class="language-plaintext highlighter-rouge">/etc/default/rrdcached</code>:
-					<ul>
-						<li>Set <code class="language-plaintext highlighter-rouge">WRITE_TIMEOUT=3600</code> so it only writes to disk once per hour.</li>
-						<li>Comment out <code class="language-plaintext highlighter-rouge">JOURNAL_PATH</code> so it stops writing journals (not the data itself).</li>
-						<li>Add <code class="language-plaintext highlighter-rouge">FLUSH_TIMEOUT=7200</code> (timeout for <code class="language-plaintext highlighter-rouge">flush</code> command, not sure how useful it is).</li>
-					</ul>
-				</li>
-				<li>
-					<p>Edit <code class="language-plaintext highlighter-rouge">/etc/init.d/rrdcached</code> for it to pick up the new <code class="language-plaintext highlighter-rouge">FLUSH_TIMEOUT</code> value:</p>
-					<p>Find these lines:</p>
-					<div class="language-shell highlighter-rouge">
-						<div class="highlight">
-							<pre class="highlight"><code><span class="k">${</span><span class="nv">WRITE_TIMEOUT</span>:+-w<span class="p"> </span><span class="k">${</span><span class="nv">WRITE_TIMEOUT</span><span class="k">}}</span> <span class="se">\</span>
+		</div>
+		<p>I’m not keen on this method as other logs only comes at a rate of a few hundred MBs per week, so I’d rather keep them around.</p>
+		<h2 id="pve-services">Stop certain PVE services</h2>
+		<p>The original blog suggests stopping a few non-essential services as they (which I couldn’t verify, nor do I believe so):</p>
+		<ul>
+			<li>High-Availability-related services (you don’t need HA on a single-node setup):
+				<ul>
+					<li><code class="language-plaintext highlighter-rouge">pve-ha-lrm</code></li>
+					<li><code class="language-plaintext highlighter-rouge">pve-ha-crm</code></li>
+				</ul>
+			</li>
+			<li>Firewall logger: <code class="language-plaintext highlighter-rouge">pvefw-logger</code></li>
+			<li>Non-essential and non-PVE services:
+				<ul>
+					<li>spiceproxy (required for SPICE console, but noVNC is better)</li>
+					<li>corosync (required for multi-node setup)</li>
+				</ul>
+			</li>
+		</ul>
+		<p>Except for <code class="language-plaintext highlighter-rouge">pvefw-logger</code>, stopping these services will not save you much disk writes as per my experiences.</p>
+		<h2 id="rrdcached">Reduce <code class="language-plaintext highlighter-rouge">rrdcached</code> writes</h2>
+		<p><code class="language-plaintext highlighter-rouge">rrdcached</code> is the service that stores and provides data for the PVE web interface to display graphs on system resource usage. I have no idea how much writes it produces, so I just relay the optimization given in the original blog.</p>
+		<ul>
+			<li>Edit <code class="language-plaintext highlighter-rouge">/etc/default/rrdcached</code>:
+				<ul>
+					<li>Set <code class="language-plaintext highlighter-rouge">WRITE_TIMEOUT=3600</code> so it only writes to disk once per hour.</li>
+					<li>Comment out <code class="language-plaintext highlighter-rouge">JOURNAL_PATH</code> so it stops writing journals (not the data itself).</li>
+					<li>Add <code class="language-plaintext highlighter-rouge">FLUSH_TIMEOUT=7200</code> (timeout for <code class="language-plaintext highlighter-rouge">flush</code> command, not sure how useful it is).</li>
+				</ul>
+			</li>
+			<li>
+				<p>Edit <code class="language-plaintext highlighter-rouge">/etc/init.d/rrdcached</code> for it to pick up the new <code class="language-plaintext highlighter-rouge">FLUSH_TIMEOUT</code> value:</p>
+				<p>Find these lines:</p>
+				<div class="language-shell highlighter-rouge">
+					<div class="highlight">
+						<pre class="highlight"><code><span class="k">${</span><span class="nv">WRITE_TIMEOUT</span>:+-w<span class="p"> </span><span class="k">${</span><span class="nv">WRITE_TIMEOUT</span><span class="k">}}</span> <span class="se">\</span>
 <span class="k">${</span><span class="nv">WRITE_JITTER</span>:+-z<span class="p"> </span><span class="k">${</span><span class="nv">WRITE_JITTER</span><span class="k">}}</span> <span class="se">\</span>
 </code></pre>
-						</div>
+					</div>
     </div>
-					<p>And insert one line for <code class="language-plaintext highlighter-rouge">FLUSH_TIMEOUT</code>:</p>
-					<div class="language-shell highlighter-rouge">
-						<div class="highlight">
-							<pre class="highlight"><code><span class="k">${</span><span class="nv">WRITE_TIMEOUT</span>:+-w<span class="p"> </span><span class="k">${</span><span class="nv">WRITE_TIMEOUT</span><span class="k">}}</span> <span class="se">\</span>
+				<p>And insert one line for <code class="language-plaintext highlighter-rouge">FLUSH_TIMEOUT</code>:</p>
+				<div class="language-shell highlighter-rouge">
+					<div class="highlight">
+						<pre class="highlight"><code><span class="k">${</span><span class="nv">WRITE_TIMEOUT</span>:+-w<span class="p"> </span><span class="k">${</span><span class="nv">WRITE_TIMEOUT</span><span class="k">}}</span> <span class="se">\</span>
 <span class="k">${</span><span class="nv">FLUSH_TIMEOUT</span>:+-f<span class="p"> </span><span class="k">${</span><span class="nv">FLUSH_TIMEOUT</span><span class="k">}}</span> <span class="se">\</span>
 <span class="k">${</span><span class="nv">WRITE_JITTER</span>:+-z<span class="p"> </span><span class="k">${</span><span class="nv">WRITE_JITTER</span><span class="k">}}</span> <span class="se">\</span>
 </code></pre>
-						</div>
+					</div>
     </div>
-				</li>
-			</ul>
-			<p>After editing both files, restart the service: <code class="language-plaintext highlighter-rouge">systemctl restart rrdcached.service</code></p>
-			<h2 id="pvestatd">Stop <code class="language-plaintext highlighter-rouge">pvestatd</code></h2>
-			<p><code class="language-plaintext highlighter-rouge">pvestatd</code> provides an interface for hardware information for the PVE system. It shouldn’t produce much writes and stopping it will prevent creation of new VMs and containers, so I don’t recommend stopping it. The original blog probably included this option as a result of a mistake or ignorance.</p>
-			<h2 id="conclusion">Conclusion</h2>
-			<p>We can see how Proxmox VE is designed to provide enterprise-grade reliability and durability, at the expense of producing lots of disk writes for its various components like system logging and statistics. Based on the above analysis, it seems perfectly reasonable that Proxmox VE decides not to support eMMC storage.</p>
-			<p>This blog combines a few tips from the original blog and my own experiences. I hope it helps you with your Proxmox VE setup on any eMMC-backed devices.</p>
-			<div class="notice notice--primary">
-				<p class="align-center" style="font-size: 1.6em;">But <em>really</em>?</p>
-			</div>
-			<h2 class="no_toc" id="results">Results</h2>
-			<p>There’s one key question left unanswered by everything above: How much writes does Proxmox VE really produce?</p>
-			<p>To answer this question, let’s see some of my examples:</p>
-			<h3 class="no_toc" id="server-1">Server 1</h3>
-			<p>Specs:</p>
-			<ul>
-				<li>Two enterprise-grade SSDs in RAID 1</li>
-				<li>Running since October 2019</li>
-				<li>“Master” node in a multi-node cluster, with the entire cluster running over 2,000 VMs and containers (~10 on this host)</li>
-			</ul>
-			<p>Total writes as of July 2023 (rootfs-only, thanks to <a href="https://unix.stackexchange.com/q/121699/211239">this answer</a>):</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="c"># lrwxrwxrwx 1 root root 7 Jul 12 15:48 /dev/pve/root -&gt; ../dm-4</span>
+			</li>
+		</ul>
+		<p>After editing both files, restart the service: <code class="language-plaintext highlighter-rouge">systemctl restart rrdcached.service</code></p>
+		<h2 id="pvestatd">Stop <code class="language-plaintext highlighter-rouge">pvestatd</code></h2>
+		<p><code class="language-plaintext highlighter-rouge">pvestatd</code> provides an interface for hardware information for the PVE system. It shouldn’t produce much writes and stopping it will prevent creation of new VMs and containers, so I don’t recommend stopping it. The original blog probably included this option as a result of a mistake or ignorance.</p>
+		<h2 id="conclusion">Conclusion</h2>
+		<p>We can see how Proxmox VE is designed to provide enterprise-grade reliability and durability, at the expense of producing lots of disk writes for its various components like system logging and statistics. Based on the above analysis, it seems perfectly reasonable that Proxmox VE decides not to support eMMC storage.</p>
+		<p>This blog combines a few tips from the original blog and my own experiences. I hope it helps you with your Proxmox VE setup on any eMMC-backed devices.</p>
+		<div class="notice notice--primary">
+			<p class="align-center" style="font-size: 1.6em;">But <em>really</em>?</p>
+		</div>
+		<h2 class="no_toc" id="results">Results</h2>
+		<p>There’s one key question left unanswered by everything above: How much writes does Proxmox VE really produce?</p>
+		<p>To answer this question, let’s see some of my examples:</p>
+		<h3 class="no_toc" id="server-1">Server 1</h3>
+		<p>Specs:</p>
+		<ul>
+			<li>Two enterprise-grade SSDs in RAID 1</li>
+			<li>Running since October 2019</li>
+			<li>“Master” node in a multi-node cluster, with the entire cluster running over 2,000 VMs and containers (~10 on this host)</li>
+		</ul>
+		<p>Total writes as of July 2023 (rootfs-only, thanks to <a href="https://unix.stackexchange.com/q/121699/211239">this answer</a>):</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="c"># lrwxrwxrwx 1 root root 7 Jul 12 15:48 /dev/pve/root -&gt; ../dm-4</span>
 <span class="c"># cat /sys/fs/ext4/dm-4/lifetime_write_kbytes</span>
 17017268104
 </code></pre>
-				</div>
 			</div>
-			<p>Result: 4.5 TB annually.</p>
-			<h3 class="no_toc" id="server-2">Server 2</h3>
-			<p>Specs:</p>
-			<ul>
-				<li>Two ol’ rusty spinning drives in RAID 1</li>
-				<li>Running since January 2022</li>
-				<li>Belongs to a multi-node cluster, running around 20 VMs (~3 on this host)</li>
-			</ul>
-			<p>Total writes as of July 2023 (rootfs-only):</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="c"># lrwxrwxrwx 1 root root 7 Jan 21  2022 /dev/pve/root -&gt; ../dm-1</span>
+		</div>
+		<p>Result: 4.5 TB annually.</p>
+		<h3 class="no_toc" id="server-2">Server 2</h3>
+		<p>Specs:</p>
+		<ul>
+			<li>Two ol’ rusty spinning drives in RAID 1</li>
+			<li>Running since January 2022</li>
+			<li>Belongs to a multi-node cluster, running around 20 VMs (~3 on this host)</li>
+		</ul>
+		<p>Total writes as of July 2023 (rootfs-only):</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="c"># lrwxrwxrwx 1 root root 7 Jan 21  2022 /dev/pve/root -&gt; ../dm-1</span>
 <span class="c"># cat /sys/fs/ext4/dm-1/lifetime_write_kbytes</span>
 2336580629
 </code></pre>
-				</div>
 			</div>
-			<p>Result: 1.5 TB annually.</p>
-			<h3 class="no_toc" id="server-3">Server 3</h3>
-			<p>Specs:</p>
-			<ul>
-				<li>Lab’s storage server, single SSD for rootfs and ZFS SLOG (ZIL)</li>
-				<li>Running since October 2022</li>
-				<li>Single-node setup, running 2 VMs</li>
-				<li>Data is stored separately</li>
-			</ul>
-			<p>Total writes as of July 2023:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="c"># smartctl -A /dev/sda</span>
+		</div>
+		<p>Result: 1.5 TB annually.</p>
+		<h3 class="no_toc" id="server-3">Server 3</h3>
+		<p>Specs:</p>
+		<ul>
+			<li>Lab’s storage server, single SSD for rootfs and ZFS SLOG (ZIL)</li>
+			<li>Running since October 2022</li>
+			<li>Single-node setup, running 2 VMs</li>
+			<li>Data is stored separately</li>
+		</ul>
+		<p>Total writes as of July 2023:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="c"># smartctl -A /dev/sda</span>
 241 Total_LBAs_Written 2849895751
 </code></pre>
-				</div>
 			</div>
-			<p><code class="language-plaintext highlighter-rouge">humanize.naturalsize(2849895751 * 512, format="%.2f")</code>: 1.46 TB (≈ 2 TB annually)</p>
-			<h3 class="no_toc" id="emmc-write-life">eMMC Write Life</h3>
-			<p>This one really depends on the hardware you get. In 2023 virtually every reasonable TLC flash chip should withstand at least 1,000 P/E cycles, so even a pathetic 8 GB eMMC should last around 10 TB of writes, <a href="https://forums.raspberrypi.com/viewtopic.php?t=291808">as that on a Raspberry Pi Compute Module 4</a>.</p>
-			<p>If you get anything larger than that, you should be fine expecting it to survive at least 20 TB of writes.</p>
-			<h2 class="no_toc" id="real-conclusion">REAL Conclusion</h2>
-			<p>Congratulations on reading this far.</p>
-			<p>If you managed to hold your paranoia and refrain from putting anything into action, you can now sit back and relax. Unless you’re squeezing hundreds of VMs and containers into a single eMMC-driven board (poor board) without separate storage for VMs, your eMMC is not going to die anytime soon.</p>
-			<h2 id="references">References</h2>
-			<ul>
-				<li>Original blog (Traditional Chinese): <a href="https://fat-nerds.com/dot-nerd/cut-down-proxmox-ve-emmc-sd-read-write/">單板小主機上的Proxmox VE實務：暴力減少eMMC或SD卡的讀寫耗損</a></li>
-				<li><a href="https://forums.raspberrypi.com/viewtopic.php?t=291808">CM4 eMMC durability - Terabytes written value (TBW)?</a></li>
-			</ul>
-			]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><category term="proxmox-ve" /><summary type="html"><![CDATA[Since my blog on installing Proxmox VE on eMMC, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, as eMMCs typically do not offer the level of endurance as anything better than USB flash drives. Among many concerns, the most important one is the limited number of write cycles that an eMMC can sustain, while Proxmox VE, being an enterprise-grade product, has to constantly write stuff like logs to the storage. I came across this blog (fat-nerds.com) on reducing eMMC writes on a Proxmox VE installation on a single-board computer from a Hong Kong guy, so I figure I’d share my ideas here.]]></summary></entry><entry><title type="html">My automated Daily Health Report infrastructure</title><link href="https://ibug.io/blog/2023/04/checkin-infrastructure/" rel="alternate" type="text/html" title="My automated Daily Health Report infrastructure" /><published>2023-04-23T00:00:00+00:00</published><updated>2023-04-24T00:48:56+00:00</updated><id>https://ibug.io/blog/2023/04/checkin-infrastructure</id><content type="html" xml:base="https://ibug.io/blog/2023/04/checkin-infrastructure/"><![CDATA[<p>Back in the days when the <a href="https://en.wikipedia.org/wiki/Chinese_government_response_to_COVID-19">Zero COVID policy</a> was prevailing, our university introduced a <em>Daily Health Report</em> system. Students and faculty were mandated to submit a daily online form detailing their health status. Noncompliance resulted in denied campus access, and in more stringent times, forced quarantine. Thanks to the comprehensive lockdown of campuses, our activity were strictly confined. Consequently, our daily data submission were pratically invariant. It’s a colossal waste of effort to do it manually (with some anecdotes later on), so I opted to automate the process.</p>
-		<p>As the policies evolved, our school’s reporting platform also underwent changes. I had to update the reporting script multiple times with new features to align those of the reporting platform.</p>
-		<p>Much like my <a href="/blog/2023/01/overengineering-adventofcode/">previous article</a>, there’s a significant distinction between making something work and making it work with elegance. So in this article, I’ll share my infrastructure for the automated daily report system, and delve into some design options and decisions I made in the way.</p>
-		<h2 id="script">The reporting script</h2>
-		<p>Writing a script is about the easiest thing in the whole system with the least technical complexity. Anyone with basic scripting abilities can do it well, so I <a href="https://github.com/iBug/thu-checkin">open-sourced mine</a>. It only takes a few minutes to open the Developer Tools on your browser, identify the request originating from the [Submit] button, copy its payload out and put that into a script, and it’s ready to service. If anything marginally fancy were to be added, it’d be saving certain data to a separate file so that others can adopt the script more easily.</p>
-		<p>The next thing is to run the script every day at a desired time. A common solution is to use Cron that is simple and easy. <a href="https://wiki.archlinux.org/title/systemd/Timers">Systemd timers</a> is a modern alternative offering more features at the expense of a more complex configuration. I chose the latter for its <code class="language-plaintext highlighter-rouge">RandomizedDelaySec</code> option, so that the script won’t be run at the exact same time every day.</p>
-		<p>At the beginning I also had a sample GitHub Actions workflow file so that others can fork my repository and start automating their reports with minimal effort. However, I scrapped it later on realizing it’s against GitHub’s ToS.</p>
-		<p><img src="/image/server/checkin-1.png" alt="First step" /></p>
-		<h2 id="status">Status report</h2>
-		<p>The next thing is to stay informed of whether the script is working properly. Logging in to the server and reading logs every day is not fun. Assuming that it worked and ending up being denied entry to the school is even worse. So it’d be nice to be notified of everything it does.</p>
-		<p>A common choice is via email, but it’s lacking a bit of timeliness. I chose Telegram because I’m actively using it and it provides a bot API. Adding <code class="language-plaintext highlighter-rouge">python-telegram-bot</code> to the script and a few lines of code, I can get a notification on my Telegram every time the script runs.</p>
-		<p>My actual setup differs slightly, with an extra component between the script and the bot: an AWS Lambda serverless function. I did this for two reasons:</p>
+		</div>
+		<p><code class="language-plaintext highlighter-rouge">humanize.naturalsize(2849895751 * 512, format="%.2f")</code>: 1.46 TB (≈ 2 TB annually)</p>
+		<h3 class="no_toc" id="emmc-write-life">eMMC Write Life</h3>
+		<p>This one really depends on the hardware you get. In 2023 virtually every reasonable TLC flash chip should withstand at least 1,000 P/E cycles, so even a pathetic 8 GB eMMC should last around 10 TB of writes, <a href="https://forums.raspberrypi.com/viewtopic.php?t=291808">as that on a Raspberry Pi Compute Module 4</a>.</p>
+		<p>If you get anything larger than that, you should be fine expecting it to survive at least 20 TB of writes.</p>
+		<h2 class="no_toc" id="real-conclusion">REAL Conclusion</h2>
+		<p>Congratulations on reading this far.</p>
+		<p>If you managed to hold your paranoia and refrain from putting anything into action, you can now sit back and relax. Unless you’re squeezing hundreds of VMs and containers into a single eMMC-driven board (poor board) without separate storage for VMs, your eMMC is not going to die anytime soon.</p>
+		<h2 id="references">References</h2>
 		<ul>
-			<li>Minor reason: Telegram servers (<code class="language-plaintext highlighter-rouge">api.telegram.org</code>) is not directly accessible from mainland China for well-known reasons.</li>
-			<li><strong>Major reason</strong>: I already have a <a href="/blog/2021/02/github-webhook-on-aws-lambda/">GitHub webhook</a> running on AWS Lambda. It is much less involved to add another URL handler to that function and reuse the existing codebase, like credentials and message formatting. This allows me to simplify the notification to a single <code class="language-plaintext highlighter-rouge">requests.post</code>.</li>
+			<li>Original blog (Traditional Chinese): <a href="https://fat-nerds.com/dot-nerd/cut-down-proxmox-ve-emmc-sd-read-write/">單板小主機上的Proxmox VE實務：暴力減少eMMC或SD卡的讀寫耗損</a></li>
+			<li><a href="https://forums.raspberrypi.com/viewtopic.php?t=291808">CM4 eMMC durability - Terabytes written value (TBW)?</a></li>
 		</ul>
-		<p><img src="/image/server/checkin-2.png" alt="Second step" /></p>
-		<p>As a bonus feature, I also send the error message and the line number in case of an exception, so that I can quickly identify the problem before investigating the logs.</p>
-		<blockquote>
-			<p><strong>[THU Checkin]</strong> Success: 2023-02-24 20:42:23<br />
-				Checkin: Success<br />
-				Apply: Success</p>
-		</blockquote>
-		<blockquote>
-			<p><strong>[THU Checkin]</strong> ❌ <strong>Error</strong>: 2023-02-25 20:05:46<br />
-				AttributeError: ‘NoneType’ object has no attribute ‘group’<br />
-				On <code class="language-plaintext highlighter-rouge">checkin.py</code> line 67</p>
-		</blockquote>
-		<h2 id="image">Uploading images</h2>
-		<p>Sometime later, our school began to demand regular uploads of our <a href="https://en.wikipedia.org/wiki/Health_Code">health QR code</a>. The QR code is generated by a govermental mobile app whose retrieval is, unfortunately, difficult to automate. Before stepping over the line of producing fake QR codes, I decided to take the screenshots manually and have my script upload them to the reporting platform. The good news is, there’s no measures on the platform to validate the uploaded images, so uploading an outdated screenshot yields no consequences most of the time, and I don’t have to constantly update the screenshots for the script.</p>
-		<p>Image uploading is nothing new to the <code class="language-plaintext highlighter-rouge">requests</code> Python library, but I have to deliver the files from my phone somehow. Options to transfer files from an Android phone to a Linux server are abundant, and for me I found SMB the most convenient. <a href="https://play.google.com/store/apps/details?id=com.speedsoftware.rootexplorer">Root Explorer</a> is the file manager that I’ve been using for a decade, so I could just set up Samba on my server to receive the files from it.</p>
-		<blockquote>
-			<p><strong>[THU Checkin]</strong> Success: 2023-02-25 08:33:36<br />
-				Checkin: Success<br />
-				Apply: Success<br />
-				Image 1: Skipped<br />
-				Image 2: Success<br />
-				Image 3: Success</p>
-		</blockquote>
-		<p><img src="/image/server/checkin-3.png" alt="Third step" /></p>
-		<p>Alternatively, I could have my Telegram bot accept the images and forward them to the server. This would be more convenient in terms of using, but much less in coding as I didn’t have any existing code in my Telegram bot that handles images. Meanwhile, I already had Samba running on my server so I in fact did not set it up anew.</p>
-		<h2 id="security">Securing the server</h2>
-		<p>At this point everything is operational, with one detail missing: The SMB protocol is not known for being secure. Exposing the SMB port to the Internet is prone to troubles and connecting to a VPN every time is not convenient. Luckily I have Clash for Android running on my phone 24/7 that I can use to proxy Root Explorer. I set up a shadowsocks-libev server and configured Clash to route traffic targeting my server through it, and then closed the SMB port in my server firewall.</p>
-		<p>There’s a noteworthy thing about Clash: It’s a rule-based proxy software that reads configurations. My airport<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> service provides their configuration through a subscription URL, but Clash for Android doesn’t support editing subscribed config. Another background story comes up here: I have another Lambda function serving as my own Clash config subscription. It fetches the airport config and modifies it to my preferences, and then serves it to Clash. It also makes updating the config easier, as I can just update the Lambda function code and the changes will be reflected in Clash.</p>
-		<p>Fun fact: My custom subscription is also used with Clash for Windows on my computer, which helped me completely bypass two RCE vulnerabilities (<a href="https://github.com/Fndroid/clash_for_windows_pkg/issues/2710">1</a>, <a href="https://github.com/advisories/GHSA-rq24-vhfq-6v9x">2</a>).</p>
-		<h2 id="conclusion">Conclusion</h2>
-		<p>After all this complexity, here’s what I’ve got:</p>
-		<p><img src="/image/server/checkin-infra.png" alt="Final state" /></p>
-		<p>The script runs every day at a random time in a configured time span, and I get a notification on Telegram regardless of whether it succeeds or fails. If the script fails I also have the required information to look into it. The script also uploads the health QR code screenshots to the reporting platform, and I can update the images from my phone through a secured connection.</p>
-		<p>Of all these tasks, only taking the screenshots and uploading them to the server is manual, denoted in the image by blue arrows. All black arrows are automated and require no attention to function.</p>
-		<p>As the zero-COVID policy <a href="https://en.wikipedia.org/wiki/Chinese_government_response_to_COVID-19#2022_outbreaks_and_end_of_zero-COVID_policy">came crumbling down</a> in December 2022, our school also put an end to the daily health reporting system. As a result, I can safely share my setup here without fearing repercussions. I hope this article brings you some inspiration for your next automation project.</p>
-		<div class="notice--primary">
-			<h4 class="no_toc" id="anecdote">Anecdote</h4>
-			<p>During the days around the strictest lockdown of campuses, all students’ requests for outgoing were manually reviewed by two levels of authority, with the second level being the dean. Our department consists of over 2,000 students that kept submitting requests every day. Needless to say, many staff weren’t happy about this, and the dean in particular. We were once asked to stop phoning her as she was already processing the requests from 7 AM to 11 PM every day. To everyone’s relief, the reviewing process was cancelled in a few days and requests were automatically approved thereafter.</p>
-		</div>
-		<div class="footnotes" role="doc-endnotes">
-			<ol>
-				<li id="fn:1" role="doc-endnote">
-					<p>Shadowsocks service providers are commonly called “airports” because the icon of Shadowsocks is a paper plane, and every provider has multiple “plane servers” that you can use. <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-				</li>
-			</ol>
-		</div>
-		]]></content><author><name>iBug</name></author><category term="tech" /><category term="server" /><category term="networking" /><category term="development" /><summary type="html"><![CDATA[Back in the days when the Zero COVID policy was prevailing, our university introduced a Daily Health Report system. Students and faculty were mandated to submit a daily online form detailing their health status. Noncompliance resulted in denied campus access, and in more stringent times, forced quarantine. Thanks to the comprehensive lockdown of campuses, our activity were strictly confined. Consequently, our daily data submission were pratically invariant. It’s a colossal waste of effort to do it manually (with some anecdotes later on), so I opted to automate the process.]]></summary></entry><entry><title type="html">Overengineering Advent of Code 2022</title><link href="https://ibug.io/blog/2023/01/overengineering-adventofcode/" rel="alternate" type="text/html" title="Overengineering Advent of Code 2022" /><published>2023-01-08T00:00:00+00:00</published><updated>2023-01-09T02:17:24+00:00</updated><id>https://ibug.io/blog/2023/01/overengineering-adventofcode</id><content type="html" xml:base="https://ibug.io/blog/2023/01/overengineering-adventofcode/"><![CDATA[<p><em>Advent of Code</em> (<a href="https://en.wikipedia.org/wiki/Advent_of_Code">Wikipedia</a>, <a href="https://adventofcode.com/">link</a>) is an annual event that releases a programming puzzle every day from December 1 to December 25. It’s a great chance to learn a new language or practice your skills.</p>
+		]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><category term="proxmox-ve" /><summary type="html"><![CDATA[Since my blog on installing Proxmox VE on eMMC, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, as eMMCs typically do not offer the level of endurance as anything better than USB flash drives. Among many concerns, the most important one is the limited number of write cycles that an eMMC can sustain, while Proxmox VE, being an enterprise-grade product, has to constantly write stuff like logs to the storage. I came across this blog (fat-nerds.com) on reducing eMMC writes on a Proxmox VE installation on a single-board computer from a Hong Kong guy, so I figure I’d share my ideas here.]]></summary></entry><entry><title type="html">My automated Daily Health Report infrastructure</title><link href="https://ibug.io/blog/2023/04/checkin-infrastructure/" rel="alternate" type="text/html" title="My automated Daily Health Report infrastructure" /><published>2023-04-23T00:00:00+00:00</published><updated>2023-04-24T00:48:56+00:00</updated><id>https://ibug.io/blog/2023/04/checkin-infrastructure</id><content type="html" xml:base="https://ibug.io/blog/2023/04/checkin-infrastructure/"><![CDATA[<p>Back in the days when the <a href="https://en.wikipedia.org/wiki/Chinese_government_response_to_COVID-19">Zero COVID policy</a> was prevailing, our university introduced a <em>Daily Health Report</em> system. Students and faculty were mandated to submit a daily online form detailing their health status. Noncompliance resulted in denied campus access, and in more stringent times, forced quarantine. Thanks to the comprehensive lockdown of campuses, our activity were strictly confined. Consequently, our daily data submission were pratically invariant. It’s a colossal waste of effort to do it manually (with some anecdotes later on), so I opted to automate the process.</p>
+	<p>As the policies evolved, our school’s reporting platform also underwent changes. I had to update the reporting script multiple times with new features to align those of the reporting platform.</p>
+	<p>Much like my <a href="/blog/2023/01/overengineering-adventofcode/">previous article</a>, there’s a significant distinction between making something work and making it work with elegance. So in this article, I’ll share my infrastructure for the automated daily report system, and delve into some design options and decisions I made in the way.</p>
+	<h2 id="script">The reporting script</h2>
+	<p>Writing a script is about the easiest thing in the whole system with the least technical complexity. Anyone with basic scripting abilities can do it well, so I <a href="https://github.com/iBug/thu-checkin">open-sourced mine</a>. It only takes a few minutes to open the Developer Tools on your browser, identify the request originating from the [Submit] button, copy its payload out and put that into a script, and it’s ready to service. If anything marginally fancy were to be added, it’d be saving certain data to a separate file so that others can adopt the script more easily.</p>
+	<p>The next thing is to run the script every day at a desired time. A common solution is to use Cron that is simple and easy. <a href="https://wiki.archlinux.org/title/systemd/Timers">Systemd timers</a> is a modern alternative offering more features at the expense of a more complex configuration. I chose the latter for its <code class="language-plaintext highlighter-rouge">RandomizedDelaySec</code> option, so that the script won’t be run at the exact same time every day.</p>
+	<p>At the beginning I also had a sample GitHub Actions workflow file so that others can fork my repository and start automating their reports with minimal effort. However, I scrapped it later on realizing it’s against GitHub’s ToS.</p>
+	<p><img src="/image/server/checkin-1.png" alt="First step" /></p>
+	<h2 id="status">Status report</h2>
+	<p>The next thing is to stay informed of whether the script is working properly. Logging in to the server and reading logs every day is not fun. Assuming that it worked and ending up being denied entry to the school is even worse. So it’d be nice to be notified of everything it does.</p>
+	<p>A common choice is via email, but it’s lacking a bit of timeliness. I chose Telegram because I’m actively using it and it provides a bot API. Adding <code class="language-plaintext highlighter-rouge">python-telegram-bot</code> to the script and a few lines of code, I can get a notification on my Telegram every time the script runs.</p>
+	<p>My actual setup differs slightly, with an extra component between the script and the bot: an AWS Lambda serverless function. I did this for two reasons:</p>
+	<ul>
+		<li>Minor reason: Telegram servers (<code class="language-plaintext highlighter-rouge">api.telegram.org</code>) is not directly accessible from mainland China for well-known reasons.</li>
+		<li><strong>Major reason</strong>: I already have a <a href="/blog/2021/02/github-webhook-on-aws-lambda/">GitHub webhook</a> running on AWS Lambda. It is much less involved to add another URL handler to that function and reuse the existing codebase, like credentials and message formatting. This allows me to simplify the notification to a single <code class="language-plaintext highlighter-rouge">requests.post</code>.</li>
+	</ul>
+	<p><img src="/image/server/checkin-2.png" alt="Second step" /></p>
+	<p>As a bonus feature, I also send the error message and the line number in case of an exception, so that I can quickly identify the problem before investigating the logs.</p>
+	<blockquote>
+		<p><strong>[THU Checkin]</strong> Success: 2023-02-24 20:42:23<br />
+			Checkin: Success<br />
+			Apply: Success</p>
+	</blockquote>
+	<blockquote>
+		<p><strong>[THU Checkin]</strong> ❌ <strong>Error</strong>: 2023-02-25 20:05:46<br />
+			AttributeError: ‘NoneType’ object has no attribute ‘group’<br />
+			On <code class="language-plaintext highlighter-rouge">checkin.py</code> line 67</p>
+	</blockquote>
+	<h2 id="image">Uploading images</h2>
+	<p>Sometime later, our school began to demand regular uploads of our <a href="https://en.wikipedia.org/wiki/Health_Code">health QR code</a>. The QR code is generated by a govermental mobile app whose retrieval is, unfortunately, difficult to automate. Before stepping over the line of producing fake QR codes, I decided to take the screenshots manually and have my script upload them to the reporting platform. The good news is, there’s no measures on the platform to validate the uploaded images, so uploading an outdated screenshot yields no consequences most of the time, and I don’t have to constantly update the screenshots for the script.</p>
+	<p>Image uploading is nothing new to the <code class="language-plaintext highlighter-rouge">requests</code> Python library, but I have to deliver the files from my phone somehow. Options to transfer files from an Android phone to a Linux server are abundant, and for me I found SMB the most convenient. <a href="https://play.google.com/store/apps/details?id=com.speedsoftware.rootexplorer">Root Explorer</a> is the file manager that I’ve been using for a decade, so I could just set up Samba on my server to receive the files from it.</p>
+	<blockquote>
+		<p><strong>[THU Checkin]</strong> Success: 2023-02-25 08:33:36<br />
+			Checkin: Success<br />
+			Apply: Success<br />
+			Image 1: Skipped<br />
+			Image 2: Success<br />
+			Image 3: Success</p>
+	</blockquote>
+	<p><img src="/image/server/checkin-3.png" alt="Third step" /></p>
+	<p>Alternatively, I could have my Telegram bot accept the images and forward them to the server. This would be more convenient in terms of using, but much less in coding as I didn’t have any existing code in my Telegram bot that handles images. Meanwhile, I already had Samba running on my server so I in fact did not set it up anew.</p>
+	<h2 id="security">Securing the server</h2>
+	<p>At this point everything is operational, with one detail missing: The SMB protocol is not known for being secure. Exposing the SMB port to the Internet is prone to troubles and connecting to a VPN every time is not convenient. Luckily I have Clash for Android running on my phone 24/7 that I can use to proxy Root Explorer. I set up a shadowsocks-libev server and configured Clash to route traffic targeting my server through it, and then closed the SMB port in my server firewall.</p>
+	<p>There’s a noteworthy thing about Clash: It’s a rule-based proxy software that reads configurations. My airport<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> service provides their configuration through a subscription URL, but Clash for Android doesn’t support editing subscribed config. Another background story comes up here: I have another Lambda function serving as my own Clash config subscription. It fetches the airport config and modifies it to my preferences, and then serves it to Clash. It also makes updating the config easier, as I can just update the Lambda function code and the changes will be reflected in Clash.</p>
+	<p>Fun fact: My custom subscription is also used with Clash for Windows on my computer, which helped me completely bypass two RCE vulnerabilities (<a href="https://github.com/Fndroid/clash_for_windows_pkg/issues/2710">1</a>, <a href="https://github.com/advisories/GHSA-rq24-vhfq-6v9x">2</a>).</p>
+	<h2 id="conclusion">Conclusion</h2>
+	<p>After all this complexity, here’s what I’ve got:</p>
+	<p><img src="/image/server/checkin-infra.png" alt="Final state" /></p>
+	<p>The script runs every day at a random time in a configured time span, and I get a notification on Telegram regardless of whether it succeeds or fails. If the script fails I also have the required information to look into it. The script also uploads the health QR code screenshots to the reporting platform, and I can update the images from my phone through a secured connection.</p>
+	<p>Of all these tasks, only taking the screenshots and uploading them to the server is manual, denoted in the image by blue arrows. All black arrows are automated and require no attention to function.</p>
+	<p>As the zero-COVID policy <a href="https://en.wikipedia.org/wiki/Chinese_government_response_to_COVID-19#2022_outbreaks_and_end_of_zero-COVID_policy">came crumbling down</a> in December 2022, our school also put an end to the daily health reporting system. As a result, I can safely share my setup here without fearing repercussions. I hope this article brings you some inspiration for your next automation project.</p>
+	<div class="notice--primary">
+		<h4 class="no_toc" id="anecdote">Anecdote</h4>
+		<p>During the days around the strictest lockdown of campuses, all students’ requests for outgoing were manually reviewed by two levels of authority, with the second level being the dean. Our department consists of over 2,000 students that kept submitting requests every day. Needless to say, many staff weren’t happy about this, and the dean in particular. We were once asked to stop phoning her as she was already processing the requests from 7 AM to 11 PM every day. To everyone’s relief, the reviewing process was cancelled in a few days and requests were automatically approved thereafter.</p>
+	</div>
+	<div class="footnotes" role="doc-endnotes">
+		<ol>
+			<li id="fn:1" role="doc-endnote">
+				<p>Shadowsocks service providers are commonly called “airports” because the icon of Shadowsocks is a paper plane, and every provider has multiple “plane servers” that you can use. <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+			</li>
+		</ol>
+	</div>
+	]]></content><author><name>iBug</name></author><category term="tech" /><category term="server" /><category term="networking" /><category term="development" /><summary type="html"><![CDATA[Back in the days when the Zero COVID policy was prevailing, our university introduced a Daily Health Report system. Students and faculty were mandated to submit a daily online form detailing their health status. Noncompliance resulted in denied campus access, and in more stringent times, forced quarantine. Thanks to the comprehensive lockdown of campuses, our activity were strictly confined. Consequently, our daily data submission were pratically invariant. It’s a colossal waste of effort to do it manually (with some anecdotes later on), so I opted to automate the process.]]></summary></entry><entry><title type="html">Overengineering Advent of Code 2022</title><link href="https://ibug.io/blog/2023/01/overengineering-adventofcode/" rel="alternate" type="text/html" title="Overengineering Advent of Code 2022" /><published>2023-01-08T00:00:00+00:00</published><updated>2023-01-09T02:17:24+00:00</updated><id>https://ibug.io/blog/2023/01/overengineering-adventofcode</id><content type="html" xml:base="https://ibug.io/blog/2023/01/overengineering-adventofcode/"><![CDATA[<p><em>Advent of Code</em> (<a href="https://en.wikipedia.org/wiki/Advent_of_Code">Wikipedia</a>, <a href="https://adventofcode.com/">link</a>) is an annual event that releases a programming puzzle every day from December 1 to December 25. It’s a great chance to learn a new language or practice your skills.</p>
 	<p><img src="/image/adventofcode-2022.png" alt="Image" /></p>
 	<p>Considering that all the puzzles are designed to be lightweight, meaning that if implemented correctly, they’re solvable in no more than a few seconds with a reasonably small memory footprint, I picked Go as my language of choice. Go has been my preference over Python for a while, for being compiled into machine code and thus more performant, and a decent set of standard libraries.</p>
 	<h2 id="puzzles">Notes on puzzles</h2>
@@ -2092,107 +2481,4 @@ Enter the new value, or press ENTER for the default
 	<h2 id="rambling">Rambling</h2>
 	<p>While it’s possible to install Proxmox VE on top of a matching version of Debian, it’s tedious to install Debian <em>just for PVE</em>. The last time I had to do it this way was on very old hardware that the PVE installer just crashed (X server died), and that the PVE installer didn’t have a CLI version. Plus a standard Debian installation typically comes with extra stuff that you don’t want on a PVE system (or want to get rid of ASAP).</p>
 	<p>It’s also possible to modify the installer script beforehand, but you need to unpack <code class="language-plaintext highlighter-rouge">pve-installer.squashfs</code> and re-pack it into the ISO. You should think more seriously if you want to install PVE on a lot of eMMC devices.</p>
-	]]></content><author><name>iBug</name></author><category term="tech" /><category term="linux" /><category term="server" /><category term="proxmox-ve" /><summary type="html"><![CDATA[Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just a router”, so I figured I’d get some virtual machines to improve its utilization. Choosing the virtualization platform isn’t hard - I’m most familiar with Proxmox VE.]]></summary></entry><entry><title type="html">New Pandora’s box: Install Linux and Windows onto the same NTFS partition</title><link href="https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs/" rel="alternate" type="text/html" title="New Pandora’s box: Install Linux and Windows onto the same NTFS partition" /><published>2021-11-28T00:00:00+00:00</published><updated>2022-05-01T15:21:23+00:00</updated><id>https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs</id><content type="html" xml:base="https://ibug.io/blog/2021/11/linux-windows-amalgam-monster-ntfs/"><![CDATA[<p>Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, <a href="https://www.techrepublic.com/article/linux-kernel-5-15-is-now-available-and-it-has-something-special-for-ntfs-users/">NTFS3</a>. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.</p>
-	<div class="notice--danger">
-		<h4 class="no_toc" id="warning"><i class="fas fa-exclamation-triangle"></i> WARNING</h4>
-		<p>This is COMPLETELY EXPERIMENTAL. If you are not familiar with either Linux or Windows, <strong>do not try this</strong>.</p>
-	</div>
-	<p>Sounds WEIRD to me. I’m going to do this experiment on my Proxmox VE cluster.</p>
-	<p><img src="/image/linux/monster/vm-create.png" alt="Create virtual machine" class="border" /></p>
-	<h2 id="preparation">Preparation</h2>
-	<h3 id="archiso">Archiso</h3>
-	<p>At the time of writing this article, the latest Arch Linux ISO (2021.11.01) was shipped with Kernel <strong>5.14</strong>.15 - no new NTFS3 driver. I need to create one for myself or this won’t work.</p>
-	<p><a href="https://wiki.archlinux.org/title/archiso">Archiso</a> is Arch’s official tool for creating custom ISO images. I’m not normally an Arch user, so I choose to install Arch first from an official ISO (20211101) before wiping it.</p>
-	<p><img src="/image/linux/monster/install-arch-partition.png" alt="Partitioning in Arch ISO" /></p>
-	<p>After this temporary system is set up, I just follow the Archiso guide and receive my own <code class="language-plaintext highlighter-rouge">archlinux-2021.11.22-x86_64.iso</code> with no trouble. It has Kernel <strong>5.15</strong>.4 packed.</p>
-	<p>I copy the ISO onto the Proxmox VE host system, reboot the VM with this new ISO and wipe <code class="language-plaintext highlighter-rouge">/dev/sda2</code> to avoid (possible) further issues with the Windows installer. I also format <code class="language-plaintext highlighter-rouge">/dev/sda1</code> again to ensure I’m really starting over anew.</p>
-	<h3 id="install-windows">Install Windows</h3>
-	<p>Since NTFS is developed by Microsoft and for Windows, it seems reasonable to assume Windows is best suited for NTFS. So I’ll install Windows first lest it recognizes the filesystem created by <code class="language-plaintext highlighter-rouge">mkfs.ntfs</code> (from the old <code class="language-plaintext highlighter-rouge">ntfs-3g</code> package) as “foreign” and complains anyhow.</p>
-	<p>The installation process of Windows 10 has always been as boring and mundane as it is, so I’m not going to be verbose here. Following the usual steps, except that the disk has already been partitioned, it’s easy to get Windows 10 up and ready.</p>
-	<p><img src="/image/linux/monster/install-win10-oobe.png" alt="Windows 10 OOBE screen" /></p>
-	<p>Proceeding through the out-of-box experience and I get to the desktop. There’s not many things of interest here, so I just shutdown the VM and take a snapshot.</p>
-	<p>Now it’s time to get this compound monstrosity set up.</p>
-	<h2 id="the-main-show">The Main Show</h2>
-	<p>Swap the CD/DVD drive image for the newly created archiso and boot it up:</p>
-	<p><img src="/image/linux/monster/install-archiso.png" alt="CD/DVD image selection" /></p>
-	<p>With the proper Linux kernel equipped, I can now mount the NTFS partition create by Windows installer. It seems NTFS is sophisticated enough to even allow Unix filesystem attibutes, like file modes (permissions) and ownership, as well as “special file types” like symbolic links and named sockets (Unix domain sockets). This may hint that bootstrapping a Linux system should not be too problematic.</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>fdisk <span class="nt">-l</span> /dev/sda  <span class="c"># confirm partition layout</span>
-mount <span class="nt">-t</span> ntfs3 /dev/sda2 /mnt
-<span class="nb">mkdir</span> <span class="nt">-p</span> /mnt/boot/efi
-mount /dev/sda1 /mnt/boot/efi
-pacstrap /mnt base linux linux-firmware
-</code></pre>
-		</div>
-	</div>
-	<p>Indeed, <code class="language-plaintext highlighter-rouge">pacstrap</code> goes so smoothly that I almost forget it’s on a non-native filesystem. The only thing that makes me concerned is that <strong>there’s no <code class="language-plaintext highlighter-rouge">fsck</code> tool for NTFS</strong> (<em>file not found: <code class="language-plaintext highlighter-rouge">fsck.ntfs3</code></em> in console output).</p>
-	<p><img src="/image/linux/monster/install-arch-pacstrap.png" alt="pacstrap output" /></p>
-	<p>Now I can chroot into the system and set up the rest of the system.</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>genfstab <span class="nt">-U</span> /mnt <span class="o">&gt;&gt;</span> /mnt/etc/fstab
-arch-chroot /mnt
-<span class="nb">ln</span> <span class="nt">-sf</span> /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-vim /etc/locale.gen  <span class="c"># add en_US.UTF-8 UTF-8</span>
-<span class="nb">echo </span>monster <span class="o">&gt;</span> /etc/hostname
-passwd <span class="nt">-d</span> root
-<span class="nb">exit</span>  <span class="c"># quit chroot environment, return to archiso</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Fixing the bootloader is a bit different than usual, as Linux detects NTFS partitions as <code class="language-plaintext highlighter-rouge">ntfs</code>, not <code class="language-plaintext highlighter-rouge">ntfs3</code>. In case of auto mounting, Linux will try to mount with <code class="language-plaintext highlighter-rouge">-t ntfs</code>, which is not available (it’s provided by ntfs-3g). Fortunately, there’s a <code class="language-plaintext highlighter-rouge">rootfstype=</code> <a href="https://wiki.archlinux.org/title/kernel_parameters">kernel command-line parameter</a> to override the “filesystem type” parameter when mounting.</p>
-	<p>Putting this into action:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>arch-chroot /mnt
-<span class="c"># configure networking</span>
-pacman <span class="nt">-Sy</span> grub efibootmgr
-vim /etc/default/grub
-<span class="c"># remove "quiet" from GRUB_CMDLINE_LINUX</span>
-<span class="c"># set GRUB_CMDLINE_LINUX_DEFAULT="rootfstype=ntfs3"</span>
-grub-install
-grub-mkconfig <span class="nt">-o</span> /boot/grub/grub.cfg
-</code></pre>
-		</div>
-	</div>
-	<p><img src="/image/linux/monster/install-arch-grub.png" alt="Install GRUB for Arch Linux" /></p>
-	<p>To make things a bit more interesting, I’m adding a desktop environment:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>pacman <span class="nt">-Sy</span> gnome
-<span class="c"># select some items - not everything</span>
-</code></pre>
-		</div>
-	</div>
-	<p>And configure networking as well:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="nb">cd</span> /etc/systemd/network
-vim ens18.network
-<span class="nb">cd</span> ../system
-<span class="nb">ln</span> <span class="nt">-s</span> /lib/systemd/system/systemd-networkd.service multi-user.target.wants/
-</code></pre>
-		</div>
-	</div>
-	<p>All set, let’s give it a try.</p>
-	<h2 id="usage-experience">Usage experience</h2>
-	<p>Arch Linux plays surprisingly well with the new NTFS3 filesystem driver.</p>
-	<p><img src="/image/linux/monster/after-arch-neofetch.png" alt="System information in Arch Linux" /></p>
-	<p>To keep things simple, I didn’t install too much software. During my testing, the only issue I encountered was that <code class="language-plaintext highlighter-rouge">ldconfig</code> never worked. It always aborts.</p>
-	<p><img src="/image/linux/monster/arch-terminal-sigabrt.png" alt="ldconfig stops working" /></p>
-	<p>A non-issue is that there’s no working <code class="language-plaintext highlighter-rouge">fsck</code> tool, and there’s a systemd service “Fsck at boot” that consequently fails. It’s not as useful so I just disabled it.</p>
-	<p>The pioneer from r/archlinux said the system breaks after a few reboots, which didn’t happen to me. On the contrary, my Arch Linux was considerably resistant to Windows, and survived multiple Windows Updates, one Microsoft Update, and a few more. It even survived a CHKDSK despite a bunch of files being reported for “invalid filename” because <a href="https://stackoverflow.com/a/25477235/5958455">Windows dislikes colons in filenames</a> (not that NTFS doesn’t support).</p>
-	<h2 id="thoughts">Thoughts</h2>
-	<p>I must admit I’m amazed at how exquisitely NTFS is designed. It’s so mature that it hasn’t even been updated <a href="https://en.wikipedia.org/wiki/NTFS#Versions">since Windows XP</a>. One important part of NTFS is its Extended Attributes (EA) for files. Every NTFS filesystem contains a special file named <code class="language-plaintext highlighter-rouge">$MFT</code> located under its root directory. This is the metadata for all files, including file names, “normal attributes” and ACL, among which is the EA. Every file has an associated entry for EA, which can contain an arbitrary number of attributes (key-value pairs). In fact, the first generation of Windows Subsystem for Linux (WSL) stores Linux file modes and permissions <a href="https://docs.microsoft.com/en-us/windows/wsl/file-permissions">using custom EA keys</a>, which gets adapted by the new NTFS3 driver. Other EA keys are also used as needed, like <code class="language-plaintext highlighter-rouge">security.capability</code>, which is a 20-byte bitset. (Interestingly, EA was originally designed for compatibility with HPFS, which also has a similarly-extensible “Extended Attributes”.)</p>
-	<p>The new NTFS3 driver is a delighting improvement to the Linux ecosystem. Complaints about the classic NTFS-3G driver <a href="https://superuser.com/q/613869/688600">have</a> <a href="https://www.reddit.com/r/linuxquestions/comments/73v5pi/why_is_ntfs_on_linux_so_slow/">always</a> <a href="https://askubuntu.com/q/187813/612877">been</a> <a href="https://unix.stackexchange.com/q/107978/211239">around</a>. Performance was one of the primary concerns because it not only is based on FUSE (Filesystem in USErspace), but also badly optimized. Use of FUSE means extra context switches when accessing files, which, paired with hard-coded 4 KiB read/write unit, delivers unusually slow access speeds.</p>
-	<p>While the NTFS3 driver is a bit more optimized, concerns around compatibility are still encompassing. This is mainly because it’s still built on knowledge obtained from reverse engineering than technical documentation and standard. Fortunately, stability for NTFS-3G is already at a satisfactory level, and the new driver is thought to be more reliable than the old one.</p>
-	<p>Besides, this is a perfect example of Linux’s inclusiveness. Years before the commencement of the new NTFS3 driver, <a href="https://github.com/CyanoHao/NTFS-as-rootfs">attempts were made</a> to run Linux on top of NTFS using NTFS-3G. This leads to an interesting question: Will Linux run on top of FAT32? Technical difficulties are more conspicuous and critical this time, like lack of support and extensibility for file modes and more. I’ll explore into this challenge and share my findings in a subsequent blog post. Stay tuned!</p>
-	<h2 id="links--credits">Links &amp; Credits</h2>
-	<ul>
-		<li>Pioneer from r/archlinux: <a href="https://www.reddit.com/r/archlinux/comments/qwsftq/arch_linux_on_ntfs3/">Arch Linux on NTFS3!</a></li>
-		<li>
-			<p>Original idea by a GitHub user: <a href="https://gist.github.com/motorailgun/cc2c573f253d0893f429a165b5f851ee">Installing Windows and Linux into the same partition</a></p>
-		</li>
-	</ul>
-	]]></content><author><name>iBug</name></author><category term="tech" /><category term="linux" /><category term="windows" /><summary type="html"><![CDATA[Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, NTFS3. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received criticism for breaking existing filesystems, NTFS3 is a new driver that is designed to be compatible with contemporary NTFS filesystems, while providing safer read/write operations. This makes it possible to install Linux onto NTFS (as is with most other filesystems), and opens up a whole new can of worms: run Linux alongside Windows, TOGETHER.]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="tech" /><category term="linux" /><category term="server" /><category term="proxmox-ve" /><summary type="html"><![CDATA[Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just a router”, so I figured I’d get some virtual machines to improve its utilization. Choosing the virtualization platform isn’t hard - I’m most familiar with Proxmox VE.]]></summary></entry></feed>
