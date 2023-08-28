@@ -21,7 +21,7 @@
 		<meta property="og:description" content="This November I found a discount from one of my favorite VPS providers, NETfront. They offered Linux VPS with 2 vCPUs and 2 GB RAM at HK$56/mo, and also Windows VPS with 4 vCPUs and 4 GB RAM at HK$49/mo. Looks strange, right? Why buy the crappy Linux VPS when you can have a better configuration with less money (if possible)?">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
 		<meta property="article:published_time" content="2021-11-22T00:00:00+00:00">
-		<meta property="article:modified_time" content="2022-05-01T15:21:23+00:00">
+		<meta property="article:modified_time" content="2023-08-29T03:46:14+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2021/11/convert-windows-vps-to-linux/">
 		<script type="application/ld+json">
 			{
@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=cea434f">
+		<link rel="stylesheet" href="/assets/css/main.css?v=9e32a9a">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -171,7 +171,7 @@
 					<meta itemprop="headline" content="Reinstall Windows VPS into Linux with iPXE network boot">
 					<meta itemprop="description" content="This November I found a discount from one of my favorite VPS providers, NETfront. They offered Linux VPS with 2 vCPUs and 2 GB RAM at HK$56/mo, and also Windows VPS with 4 vCPUs and 4 GB RAM at HK$49/mo. Looks strange, right? Why buy the crappy Linux VPS when you can have a better configuration with less money (if possible)?">
 					<meta itemprop="datePublished" content="2021-11-22T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2022-05-01T15:21:23+00:00">
+					<meta itemprop="dateModified" content="2023-08-29T03:46:14+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -206,7 +206,7 @@
 							<p><img src="/image/linux/ipxe/ipxe-boot.png" alt="iPXE boot screen" /></p>
 							<p>iPXE tries to configure network automatically using DHCP, but since the VPS environment does not have DHCP, I have to manually configure the network.</p>
 							<p><img src="/image/linux/ipxe/ipxe-config.png" alt="iPXE configure IP address" /></p>
-							<p>Now it’s time to load some boot source. <a href="https://netboot.xyz/docs/booting/ipxe">Netboot.xyz</a> is the first Google result for “publix pxe boot server”, so I’ll trust it for good.</p>
+							<p>Now it’s time to load some boot source. <a href="https://netboot.xyz/docs/booting/ipxe">Netboot.xyz</a> is the first Google result for “public pxe boot server”, so I’ll trust it for good.</p>
 							<div class="notice--danger">
 								<h4 class="no_toc" id="trap"><i class="fas fa-bug"></i> Trap</h4>
 								<p>I previously got trapped following its <a href="https://netboot.xyz/docs/quick-start">quick start</a> guide. It didn’t boot for me and just dropped network connection mid-way. Turns out the <a href="https://netboot.xyz/docs/booting/ipxe"><em>Boot using iPXE</em></a> guide is the one I should follow.</p>
@@ -248,7 +248,7 @@ chain <span class="nt">--autofree</span> http://boot.netboot.xyz
 									<a href="/tag/server" class="page__taxonomy-item" rel="tag">server</a>
 								</span>
 							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-05-01">May 1, 2022</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2023-08-29">Aug 29, 2023</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
@@ -395,7 +395,7 @@ chain <span class="nt">--autofree</span> http://boot.netboot.xyz
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-816</a>
+						Site version <a href="/status" class="version-text">G-817</a>
 					</p>
 				</div>
 			</footer>
