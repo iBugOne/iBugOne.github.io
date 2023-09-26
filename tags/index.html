@@ -38,7 +38,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=4dfff61">
+		<link rel="stylesheet" href="/assets/css/main.css?v=3af1ff2">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -157,7 +157,7 @@
 					<ul class="taxonomy__index">
 						<li>
 							<a href="#linux">
-								<strong>linux</strong> <span class="taxonomy__count">17</span>
+								<strong>linux</strong> <span class="taxonomy__count">18</span>
 							</a>
 						</li>
 						<li>
@@ -181,13 +181,13 @@
 							</a>
 						</li>
 						<li>
-							<a href="#github-pages">
-								<strong>github-pages</strong> <span class="taxonomy__count">4</span>
+							<a href="#networking">
+								<strong>networking</strong> <span class="taxonomy__count">5</span>
 							</a>
 						</li>
 						<li>
-							<a href="#networking">
-								<strong>networking</strong> <span class="taxonomy__count">4</span>
+							<a href="#github-pages">
+								<strong>github-pages</strong> <span class="taxonomy__count">4</span>
 							</a>
 						</li>
 						<li>
@@ -309,6 +309,28 @@
 					<section id="linux" class="taxonomy__section">
 						<h2 class="archive__subtitle">linux</h2>
 						<div class="entries-list">
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2023/09/dual-protocol-vpn-port/" rel="permalink">Running a dual-protocol OpenVPN/WireGuard VPN server on one port
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries...</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2023-09-26T00:00:00+00:00">Sep 26, 2023</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												2 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
 							<div class="list__item">
 								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 									<div class="archive__item-teaser">
@@ -1326,6 +1348,127 @@
 						</div>
 						<a href="#page-title" class="back-to-top">Back to top &uarr;</a>
 					</section>
+					<section id="networking" class="taxonomy__section">
+						<h2 class="archive__subtitle">networking</h2>
+						<div class="entries-list">
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2023/09/dual-protocol-vpn-port/" rel="permalink">Running a dual-protocol OpenVPN/WireGuard VPN server on one port
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries...</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2023-09-26T00:00:00+00:00">Sep 26, 2023</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												2 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2023/04/checkin-infrastructure/" rel="permalink">My automated Daily Health Report infrastructure
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">Back in the days when the Zero COVID policy was prevailing, our university introduced a Daily Health Report system. Students and faculty were mandated to submit a daily online form detailing their ...</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2023-04-23T00:00:00+00:00">Apr 23, 2023</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												6 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-teaser">
+										<img src="/image/teaser/vpn-imagine.jpg" alt="">
+									</div>
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												15 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2021/02/traceroute-from-vmware/" rel="permalink">Fix traceroute not showing intermediate results in a virtual machine on Windows
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">Today when I was running some networking diagnostics from an Ubuntu inside VMware Workstation, I noticed this strange result from mtr (My Traceroute):
+										</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2021-02-04T00:00:00+00:00">Feb 4, 2021</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												3 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2019/02/ssh-into-lan-computer/" rel="permalink">Access your Raspberry Pi remotely with SSH
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">Do you have a personal server at home but can’t access it from work or travel because your home doesn’t have a public IP? If so, then, this article is what you’re looking for.
+										</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2019-02-13T00:00:00+00:00">Feb 13, 2019</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												3 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+						</div>
+						<a href="#page-title" class="back-to-top">Back to top &uarr;</a>
+					</section>
 					<section id="github-pages" class="taxonomy__section">
 						<h2 class="archive__subtitle">github-pages</h2>
 						<div class="entries-list">
@@ -1416,105 +1559,6 @@
 											<span class="page__meta-readtime">
 												<i class="far fa-clock" aria-hidden="true"></i>
 												6 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-						</div>
-						<a href="#page-title" class="back-to-top">Back to top &uarr;</a>
-					</section>
-					<section id="networking" class="taxonomy__section">
-						<h2 class="archive__subtitle">networking</h2>
-						<div class="entries-list">
-							<div class="list__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2023/04/checkin-infrastructure/" rel="permalink">My automated Daily Health Report infrastructure
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">Back in the days when the Zero COVID policy was prevailing, our university introduced a Daily Health Report system. Students and faculty were mandated to submit a daily online form detailing their ...</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2023-04-23T00:00:00+00:00">Apr 23, 2023</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-clock" aria-hidden="true"></i>
-												6 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="list__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-teaser">
-										<img src="/image/teaser/vpn-imagine.jpg" alt="">
-									</div>
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-clock" aria-hidden="true"></i>
-												15 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="list__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2021/02/traceroute-from-vmware/" rel="permalink">Fix traceroute not showing intermediate results in a virtual machine on Windows
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">Today when I was running some networking diagnostics from an Ubuntu inside VMware Workstation, I noticed this strange result from mtr (My Traceroute):
-										</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2021-02-04T00:00:00+00:00">Feb 4, 2021</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-clock" aria-hidden="true"></i>
-												3 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="list__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2019/02/ssh-into-lan-computer/" rel="permalink">Access your Raspberry Pi remotely with SSH
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">Do you have a personal server at home but can’t access it from work or travel because your home doesn’t have a public IP? If so, then, this article is what you’re looking for.
-										</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2019-02-13T00:00:00+00:00">Feb 13, 2019</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-clock" aria-hidden="true"></i>
-												3 minute read
 											</span>
 										</p>
 									</div>
@@ -2526,7 +2570,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-818</a>
+						Site version <a href="/status" class="version-text">G-819</a>
 					</p>
 				</div>
 			</footer>

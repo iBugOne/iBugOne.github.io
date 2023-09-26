@@ -9,20 +9,20 @@
 	<head>
 		<meta charset="utf-8">
 		<!-- begin _includes/seo.html -->
-		<title>How I saved a lost commit from GitHub - iBug</title>
-		<meta name="description" content="Earlier today I force-pushed to my repository USTC-RV-Chisel for testing purposes, without noticing that my local ref origin/master is 1 commit behind the actual master on GitHub. My friend pushed his work (1 commit) to it, and now it’s lost.">
+		<title>Running a dual-protocol OpenVPN/WireGuard VPN server on one port - iBug</title>
+		<meta name="description" content="Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.">
 		<meta name="author" content="iBug">
 		<meta property="article:author" content="iBug">
 		<meta property="og:type" content="article">
 		<meta property="og:locale" content="en_US">
 		<meta property="og:site_name" content="iBug">
-		<meta property="og:title" content="How I saved a lost commit from GitHub">
-		<meta property="og:url" content="https://ibug.io/blog/2019/06/save-commit-from-github/">
-		<meta property="og:description" content="Earlier today I force-pushed to my repository USTC-RV-Chisel for testing purposes, without noticing that my local ref origin/master is 1 commit behind the actual master on GitHub. My friend pushed his work (1 commit) to it, and now it’s lost.">
+		<meta property="og:title" content="Running a dual-protocol OpenVPN/WireGuard VPN server on one port">
+		<meta property="og:url" content="https://ibug.io/blog/2023/09/dual-protocol-vpn-port/">
+		<meta property="og:description" content="Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
-		<meta property="article:published_time" content="2019-06-07T00:00:00+00:00">
-		<meta property="article:modified_time" content="2022-04-30T20:00:10+00:00">
-		<link rel="canonical" href="https://ibug.io/blog/2019/06/save-commit-from-github/">
+		<meta property="article:published_time" content="2023-09-26T00:00:00+00:00">
+		<meta property="article:modified_time" content="2023-09-26T14:16:03+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2023/09/dual-protocol-vpn-port/">
 		<script type="application/ld+json">
 			{
 			  "@context": "https://schema.org",
@@ -98,16 +98,16 @@
 		</div>
 		<div class="initial-content">
 			<div class="page__hero--overlay"
-  style=" background-image: url('/image/code.jpg');"
+  style=" background-image: url('/image/header/mountain-1.jpg');"
 >
 				<div class="wrapper">
 					<h1 id="page-title" class="page__title" itemprop="headline">
-						How I saved a lost commit from GitHub
+						Running a dual-protocol OpenVPN/WireGuard VPN server on one port
 					</h1>
 					<p class="page__meta">
 						<span class="page__meta-date">
 							<i class="far fa-calendar-alt" aria-hidden="true"></i>
-							<time datetime="2019-06-07T00:00:00+00:00">Jun 7, 2019</time>
+							<time datetime="2023-09-26T00:00:00+00:00">Sep 26, 2023</time>
 						</span>
 						<span class="page__meta-sep"></span>
 						<span class="page__meta-readtime">
@@ -168,94 +168,101 @@
 					</nav>
 				</div>
 				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
-					<meta itemprop="headline" content="How I saved a lost commit from GitHub">
-					<meta itemprop="description" content="Earlier today I force-pushed to my repository USTC-RV-Chisel for testing purposes,without noticing that my local ref origin/master is 1 commit behind the actual master on GitHub.My friend pushed his work (1 commit) to it, and now it’s lost.">
-					<meta itemprop="datePublished" content="2019-06-07T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2022-04-30T20:00:10+00:00">
+					<meta itemprop="headline" content="Running a dual-protocol OpenVPN/WireGuard VPN server on one port">
+					<meta itemprop="description" content="Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.">
+					<meta itemprop="datePublished" content="2023-09-26T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2023-09-26T14:16:03+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
-							<p>Earlier today I force-pushed to my repository <a href="https://github.com/iBug/USTC-RV-Chisel">USTC-RV-Chisel</a> for testing purposes,
-								without noticing that my local ref <code class="language-plaintext highlighter-rouge">origin/master</code> is 1 commit behind the actual <code class="language-plaintext highlighter-rouge">master</code> on GitHub.
-								My friend pushed his work (1 commit) to it, and now it’s lost.</p>
-							<p>Fortunately, I haven’t closed my terminal yet, so there’s at least some place to look at:</p>
-							<p><img src="/image/git-restore/1.png" alt="image" /></p>
-							<p>From the terminal log, I knew that the SHA of the lost commit begins with <code class="language-plaintext highlighter-rouge">b3c3b36</code>, so it appeared very intuitive for me to just try fetching the commit, but no luck:</p>
-							<p><img src="/image/git-restore/2.png" alt="image" /></p>
-							<p>I recalled that GitHub can show commits with only first 7 digits of its SHA, so I constructed the URL <a href="https://github.com/iBug/USTC-RV-Chisel/commit/b3c3b36">https://github.com/iBug/USTC-RV-Chisel/commit/b3c3b36</a> and followed it:</p>
-							<p><img src="/image/git-restore/3.png" alt="image" /></p>
-							<p>Now trying it again with the full SHA that’s easily retrieved from the web page:</p>
-							<p><img src="/image/git-restore/4.png" alt="image" /></p>
-							<p>Hello? Does GitHub allow this? Oh-no!</p>
-							<p>I Googled around for a few minutes, and concluded that GitHub doesn’t allow fetching this commit, because it’s <em>unadvertised</em>.</p>
-							<p>Thinking around for ideas, I decided to give it a try to rebuild the commit.</p>
-							<p>First, I prepare my working directory with</p>
-							<div class="language-plaintext highlighter-rouge">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#inspiration">Inspiration</a></li>
+										<li><a href="#protocols">Protocols</a></li>
+										<li><a href="#implementation">Implementation</a></li>
+									</ul>
+								</nav>
+							</aside>
+							<p>Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.</p>
+							<p>In previous times, OpenVPN was the general preference for personal VPN services. Since the emergence of WireGuard, however, popularity has shifted significantly for its simplicity and performance. A challenge presents itself as there’s only one UDP port numbered 53, making it seemingly impossible to run both OpenVPN and WireGuard on the same port.</p>
+							<p>There solution hinges itself on a little bit of insights.</p>
+							<h2 id="inspiration">Inspiration</h2>
+							<p>In a similar situation, a wide range of local proxy software like Shadowsocks and V2ray supports a feature called “mixed mode”, which accepts both HTTP and SOCKS5 connections on the same port. This also seems impossible at first glance, but with a bit of knowledge in both protocols, it’s actually practical to make it work.</p>
+							<ul>
+								<li>An HTTP proxy request, just like other HTTP requests, begins with an HTTP verb. In proxy requests, it’s either <code class="language-plaintext highlighter-rouge">GET</code> or <code class="language-plaintext highlighter-rouge">CONNECT</code>,</li>
+								<li>A SOCKS proxy request begins with a 1-byte header containing its version, which is <code class="language-plaintext highlighter-rouge">0x04</code> for SOCKS4 or <code class="language-plaintext highlighter-rouge">0x05</code> for SOCKS5.</li>
+							</ul>
+							<p>Now there’s a clear line between the two protocols, and we can identify them by looking at the first byte of the request. This is how most proxy implementations work, like <a href="https://github.com/3proxy/3proxy/commit/fb56b7d307a7bce1f2109c73864bad7c71716f3b#diff-e268b23274bc9df1b2c0957dfa85d684519282ed611f6135e795205e53fb6e3b">3proxy</a> and <a href="https://github.com/nadoo/glider/blob/4f12a4f3082940d8a4c56ba4f06f02a72d90d5d6/proxy/mixed/mixed.go#L84">glider</a>.</p>
+							<p>So the question is, is there a similar trait between OpenVPN and WireGuard? The answer is, as you would expect, yes.</p>
+							<h2 id="protocols">Protocols</h2>
+							<p>WireGuard runs over UDP and defines 4 packet types: 3 for handshake and 1 for data. All 4 packet types share the same 4-byte <a href="https://github.com/WireGuard/wireguard-linux/blob/fa41884c1c6deb6774135390e5813a97184903e0/drivers/net/wireguard/messages.h#L65">header</a>:</p>
+							<div class="language-rust highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code>git add -A
-git stash
-git reset --hard ee216e3  # This is the parent commit of the lost commit
+									<pre class="highlight"><code><span class="k">struct</span> <span class="n">message_header</span> <span class="p">{</span>
+    <span class="nb">u8</span> <span class="k">type</span><span class="p">;</span>
+    <span class="nb">u8</span> <span class="n">reserved_zero</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+<span class="p">}</span>
 </code></pre>
 								</div>
 							</div>
-							<p>Then, I need the full content of the tree of the commit.</p>
-							<p>While GitHub offers ZIP archive download at the tree page <a href="https://github.com/iBug/USTC-RV-Chisel/tree/b3c3b36">https://github.com/iBug/USTC-RV-Chisel/tree/b3c3b36</a>, ZIP isn’t good for this job - it doesn’t preserve POSIX file modes, so I looked around for the TAR archive (tarball). It wasn’t on the page.</p>
-							<p>Thinking around again, I recalled working with the GitHub API, and there’s an endpoint to get a tarball.
-								It wasn’t hard to construct the desired GitHub API call URL:</p>
-							<div class="language-plaintext highlighter-rouge">
+							<p>Similarly, all OpenVPN packet types share the same 1-byte <a href="https://build.openvpn.net/doxygen/network_protocol.html#network_protocol_external_types">header</a>:</p>
+							<div class="language-c highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code>curl -v https://api.github.com/repos/iBug/USTC-RV-Chisel/tarball/b3c3b3683a6f5961dcde2d6c5312c31d9f382865
+									<pre class="highlight"><code><span class="k">struct</span> <span class="n">header_byte</span> <span class="p">{</span>
+    <span class="kt">uint8_t</span> <span class="n">opcpde</span> <span class="o">:</span> <span class="mi">5</span><span class="p">;</span>
+    <span class="kt">uint8_t</span> <span class="n">key_id</span> <span class="o">:</span> <span class="mi">3</span><span class="p">;</span>
+<span class="p">}</span>
 </code></pre>
 								</div>
 							</div>
-							<p>Looking at the cURL output, the <code class="language-plaintext highlighter-rouge">Location</code> header is what I wanted, so I followed it and <code class="language-plaintext highlighter-rouge">wget</code> the target:</p>
-							<div class="language-plaintext highlighter-rouge">
+							<p>It’s worth noting that 0 is not a defined opcode, so the smallest valid value for this byte is 8.</p>
+							<h2 id="implementation">Implementation</h2>
+							<p>Now that we have the packet format for both protocols understood, we can implement an identifier that filters traffic in one protocol from the other.</p>
+							<p>Considering that the WireGuard packet format is much simpler than that of OpenVPN, I choose to identify WireGuard. With <code class="language-plaintext highlighter-rouge">iptables</code>, options are abundant, though I find <code class="language-plaintext highlighter-rouge">u32</code> the easiest:</p>
+							<div class="language-sh highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code>wget https://codeload.github.com/iBug/USTC-RV-Chisel/legacy.tar.gz/b3c3b3683a6f5961dcde2d6c5312c31d9f382865
+									<pre class="highlight"><code><span class="k">*</span>nat
+:iBugVPN - <span class="o">[</span>0:0]
+<span class="nt">-A</span> PREROUTING <span class="nt">-m</span> addrtype <span class="nt">--dst-type</span> LOCAL <span class="nt">-p</span> udp <span class="nt">--dport</span> 53 <span class="nt">-j</span> iBugVPN
+<span class="nt">-A</span> iBugVPN <span class="nt">-m</span> u32 <span class="nt">--u32</span> <span class="s2">"25 &amp; 0xFF = 1:4 &amp;&amp; 28 &amp; 0xFFFFFF = 0"</span> <span class="nt">-j</span> REDIRECT <span class="nt">--to-port</span> 51820
+<span class="nt">-A</span> iBugVPN <span class="nt">-j</span> REDIRECT <span class="nt">--to-port</span> 1194
+COMMIT
 </code></pre>
 								</div>
 							</div>
-							<p>The next thing was to examine the tarball to determine the top-level folder name:</p>
-							<p><img src="/image/git-restore/5.png" alt="image" /></p>
-							<p>To make it easier to merge my working directory with the tarball, I renamed my local folder to match the one in the tarball:</p>
-							<p><img src="/image/git-restore/6.png" alt="image" /></p>
-							<p>Now it’s time to rebuild the commit!</p>
-							<p>Now that the working directory is restored, all that’s left to do is to figure out the committer information and commit time.</p>
-							<p>I must say here that retrieving those information from the GitHub API is an easier way to do it programmatically, but since I had the browser page open as well as my local repository, fetching the exact time from the web page was the method easier to reach, and committer information can be seen from <code class="language-plaintext highlighter-rouge">git log</code>.</p>
-							<p><img src="/image/git-restore/7.png" alt="image" /></p>
-							<p><sup>The exact time in ISO 8601 format is available through F12<sup></sup></sup></p>
-							<p>With all the required information collected, I rebuilt the commit myself:</p>
-							<p><img src="/image/git-restore/8.png" alt="image" /></p>
-							<p>Look! The new commit has the same SHA as the lost commit! So they’re the same commit now.</p>
-							<p>Pushing the restored commit back happily:</p>
-							<p><img src="/image/git-restore/9.png" alt="image" /></p>
+							<p>With both OpenVPN and WireGuard running on their standard ports, this will redirect each protocol to its respective service port. While these rules only operate on the initial packet, Linux conntrack will handle the rest of the connection.</p>
+							<p>The <code class="language-plaintext highlighter-rouge">u32</code> match is explained:</p>
+							<ul>
+								<li>Basic syntax: <code class="language-plaintext highlighter-rouge">&lt;offset&gt; [operators...] = &lt;range&gt;</code>, where <code class="language-plaintext highlighter-rouge">&lt;offset&gt;</code> is relative to the IP header. For UDP over IPv4, the application payload starts from 28 (20 bytes of IPv4 and 8 bytes of UDP)</li>
+								<li><code class="language-plaintext highlighter-rouge">25 &amp; 0xFF = 1:4</code>: The 28th byte is in range <code class="language-plaintext highlighter-rouge">1:4</code>.</li>
+								<li><code class="language-plaintext highlighter-rouge">28 &amp; 0xFFFFFF = 0</code>: The 29th to 31th bytes are all zero.</li>
+							</ul>
+							<p>For IPv6, you just need to increase the offset by 20 (IPv6 header is 40 bytes), so the rule becomes <code class="language-plaintext highlighter-rouge">45 &amp; 0xFF = 1:4 &amp;&amp; 48 &amp; 0xFFFFFF = 0</code>.</p>
+							<p>This VPN server is running like a hearse so proofs are left out for brevity.</p>
 						</section>
 						<footer class="page__meta">
 							<p class="page__taxonomy">
 								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
 								<span itemprop="keywords">
-									<a href="/tag/git" class="page__taxonomy-item" rel="tag">git</a><span class="sep">, </span>
-									<a href="/tag/github" class="page__taxonomy-item" rel="tag">github</a>
+									<a href="/tag/linux" class="page__taxonomy-item" rel="tag">linux</a><span class="sep">, </span>
+									<a href="/tag/networking" class="page__taxonomy-item" rel="tag">networking</a>
 								</span>
 							</p>
-							<p class="page__taxonomy">
-								<strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
-								<span itemprop="keywords">
-									<a href="/category/tech" class="page__taxonomy-item" rel="tag">tech</a>
-								</span>
-							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-04-30">Apr 30, 2022</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2023-09-26">Sep 26, 2023</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
-							<a href="https://twitter.com/intent/tweet?text=How+I+saved+a+lost+commit+from+GitHub%20https%3A%2F%2Fibug.io%2Fblog%2F2019%2F06%2Fsave-commit-from-github%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
-							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2019%2F06%2Fsave-commit-from-github%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
-							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2019%2F06%2Fsave-commit-from-github%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+							<a href="https://twitter.com/intent/tweet?text=Running+a+dual-protocol+OpenVPN%2FWireGuard+VPN+server+on+one+port%20https%3A%2F%2Fibug.io%2Fblog%2F2023%2F09%2Fdual-protocol-vpn-port%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2023%2F09%2Fdual-protocol-vpn-port%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2023%2F09%2Fdual-protocol-vpn-port%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
 						</section>
 						<nav class="pagination">
-							<a href="/blog/2019/05/mathematica-keygen/" class="pagination--pager" title="Wolfram Mathematica 13 Key Generator Online
+							<a href="/blog/2023/08/nju-talk/" class="pagination--pager" title="Vlab 远程教学云桌面
 ">Previous</a>
-							<a href="/blog/2019/07/circleci-ssh-deploy-keys/" class="pagination--pager" title="Using SSH deploy keys on CircleCI
-">Next</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
 						</nav>
 					</div>
 					<div class="page__comments">
@@ -266,6 +273,31 @@ git reset --hard ee216e3  # This is the parent commit of the lost commit
 				<div class="page__related">
 					<h2 class="page__related-title">You may also enjoy</h2>
 					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/vpn-imagine.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											15 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
 						<div class="grid__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<div class="archive__item-teaser">
@@ -285,7 +317,7 @@ git reset --hard ee216e3  # This is the parent commit of the lost commit
 										<span class="page__meta-sep"></span>
 										<span class="page__meta-readtime">
 											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											20 minute read
+											24 minute read
 										</span>
 									</p>
 								</div>
@@ -293,21 +325,24 @@ git reset --hard ee216e3  # This is the parent commit of the lost commit
 						</div>
 						<div class="grid__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/24.png" alt="">
+								</div>
 								<div class="archive__item-text">
 									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+										<a href="/blog/2022/05/programming-24-game/" rel="permalink">Taking the 24 puzzle game to the next level
 										</a>
 									</h2>
-									<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
+									<p class="archive__item-excerpt" itemprop="description">The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now a...</p>
 									<p class="page__meta">
 										<span class="page__meta-date">
 											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
+											<time datetime="2022-05-25T00:00:00+00:00">May 25, 2022</time>
 										</span>
 										<span class="page__meta-sep"></span>
 										<span class="page__meta-readtime">
 											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											16 minute read
+											19 minute read
 										</span>
 									</p>
 								</div>
@@ -315,45 +350,24 @@ git reset --hard ee216e3  # This is the parent commit of the lost commit
 						</div>
 						<div class="grid__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2020/09/build-github-pages-with-github-actions/" rel="permalink">Build GitHub Pages with GitHub Actions
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">Why use an external service when there’s an in-house GitHub service?
-									</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2020-09-19T00:00:00+00:00">Sep 19, 2020</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											7 minute read
-										</span>
-									</p>
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/ldap.jpg" alt="">
 								</div>
-							</article>
-						</div>
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<div class="archive__item-text">
 									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2019/08/speech-at-msc-2019/" rel="permalink">My speech at Microsoft Summer Camp 2019
+										<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
 										</a>
 									</h2>
-									<p class="archive__item-excerpt" itemprop="description">This is a translated version from the Chinese (original) script. The slideshow can be acquired here. For comments, please head to the Chinese version of this post.
-									</p>
+									<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
 									<p class="page__meta">
 										<span class="page__meta-date">
 											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2019-08-14T00:00:00+00:00">Aug 14, 2019</time>
+											<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
 										</span>
 										<span class="page__meta-sep"></span>
 										<span class="page__meta-readtime">
 											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											10 minute read
+											14 minute read
 										</span>
 									</p>
 								</div>
@@ -484,8 +498,8 @@ git reset --hard ee216e3  # This is the parent commit of the lost commit
 		</script>
 		<script>
 			var disqus_config = function () {
-			  this.page.url = "https://ibug.io/blog/2019/06/save-commit-from-github/";  /* Replace PAGE_URL with your page's canonical URL variable */
-			  this.page.identifier = "/blog/2019/06/save-commit-from-github"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			  this.page.url = "https://ibug.io/blog/2023/09/dual-protocol-vpn-port/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2023/09/dual-protocol-vpn-port"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
 			};
 			(function() { /* DON'T EDIT BELOW THIS LINE */
 			  var d = document, s = d.createElement('script');
