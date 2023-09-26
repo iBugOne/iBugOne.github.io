@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=3af1ff2">
+		<link rel="stylesheet" href="/assets/css/main.css?v=8d7cd35">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -190,7 +190,7 @@
 							<p>In previous times, OpenVPN was the general preference for personal VPN services. Since the emergence of WireGuard, however, popularity has shifted significantly for its simplicity and performance. A challenge presents itself as there’s only one UDP port numbered 53, making it seemingly impossible to run both OpenVPN and WireGuard on the same port.</p>
 							<p>There solution hinges itself on a little bit of insights.</p>
 							<h2 id="inspiration">Inspiration</h2>
-							<p>In a similar situation, a wide range of local proxy software like Shadowsocks and V2ray supports a feature called “mixed mode”, which accepts both HTTP and SOCKS5 connections on the same port. This also seems impossible at first glance, but with a bit of knowledge in both protocols, it’s actually practical to make it work.</p>
+							<p>In a similar situation, many local proxy software like Shadowsocks and V2ray support a feature called “mixed mode”, which accepts both HTTP and SOCKS5 connections on the same TCP port. This also seems impossible at first glance, but with a bit of knowledge in both protocols, it’s actually easy to pull it off.</p>
 							<ul>
 								<li>An HTTP proxy request, just like other HTTP requests, begins with an HTTP verb. In proxy requests, it’s either <code class="language-plaintext highlighter-rouge">GET</code> or <code class="language-plaintext highlighter-rouge">CONNECT</code>,</li>
 								<li>A SOCKS proxy request begins with a 1-byte header containing its version, which is <code class="language-plaintext highlighter-rouge">0x04</code> for SOCKS4 or <code class="language-plaintext highlighter-rouge">0x05</code> for SOCKS5.</li>
@@ -218,10 +218,10 @@
 </code></pre>
 								</div>
 							</div>
-							<p>It’s worth noting that 0 is not a defined opcode, so the smallest valid value for this byte is 8.</p>
+							<p>It’s worth noting that 0 is not a defined opcode, so the smallest valid value for this byte is 8, as <code class="language-plaintext highlighter-rouge">key_id</code> can be anything from 0 to 7.</p>
 							<h2 id="implementation">Implementation</h2>
-							<p>Now that we have the packet format for both protocols understood, we can implement an identifier that filters traffic in one protocol from the other.</p>
-							<p>Considering that the WireGuard packet format is much simpler than that of OpenVPN, I choose to identify WireGuard. With <code class="language-plaintext highlighter-rouge">iptables</code>, options are abundant, though I find <code class="language-plaintext highlighter-rouge">u32</code> the easiest:</p>
+							<p>Now that we have the packet format for both protocols understood, we can implement a classifier that filters traffic in one protocol from the other.</p>
+							<p>Considering that the WireGuard packet format is much simpler than that of OpenVPN, I choose to identify WireGuard. With kernel firewall <code class="language-plaintext highlighter-rouge">iptables</code>, options are abundant, though I find <code class="language-plaintext highlighter-rouge">u32</code> the easiest:</p>
 							<div class="language-sh highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code><span class="k">*</span>nat
@@ -400,7 +400,7 @@ COMMIT
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-819</a>
+						Site version <a href="/status" class="version-text">G-820</a>
 					</p>
 				</div>
 			</footer>
