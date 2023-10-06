@@ -40,7 +40,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=1b75444">
+		<link rel="stylesheet" href="/assets/css/main.css?v=c068ed9">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -160,6 +160,28 @@
 				<div class="archive">
 					<h3 class="archive__subtitle">Recent posts</h3>
 					<div class="entries-list">
+						<div class="list__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/cn/2020/07/clash-for-windows-custom-rules/" rel="permalink">Clash for Windows 自定义规则整合
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">自从今年年初换了机场之后，我从 Shadowsocks-Windows 换到了 Clash for Windows。Clash 确实比纯 SS 好用多了，尤其是订阅功能，特别是订阅里还可以自带一系列分流规则。不过我用的那个订阅规则不够完善，想要自己添加一些。以前用 SS 的时候，我自己写了 PAC 脚本用于实现分流，当然可控性也更好，这次不方便用 PAC 了，就得研究研究 CFW 的功能了，...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2020-07-18T00:00:00+00:00">Jul 18, 2020</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-clock" aria-hidden="true"></i>
+											1 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
 						<div class="list__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<div class="archive__item-text">
@@ -318,29 +340,6 @@
 								</div>
 							</article>
 						</div>
-						<div class="list__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/cn/2019/11/backTCP-report/" rel="permalink">backTCP 实验报告
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">backTCP 是中科大 2019 年秋季《计算机网络》课程的一次实验任务
-									</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2019-11-17T00:00:00+00:00">Nov 17, 2019</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-clock" aria-hidden="true"></i>
-											9 minute read
-										</span>
-									</p>
-								</div>
-							</article>
-						</div>
 					</div>
 					<nav class="pagination">
 						<ul>
@@ -382,7 +381,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-822</a>
+						Site version <a href="/status" class="version-text">G-823</a>
 					</p>
 				</div>
 			</footer>

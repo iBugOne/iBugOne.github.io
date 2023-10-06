@@ -1,449 +1,641 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.2">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2023-09-26T06:27:50+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Running a dual-protocol OpenVPN/WireGuard VPN server on one port</title><link href="https://ibug.io/blog/2023/09/dual-protocol-vpn-port/" rel="alternate" type="text/html" title="Running a dual-protocol OpenVPN/WireGuard VPN server on one port" /><published>2023-09-26T00:00:00+00:00</published><updated>2023-09-26T14:26:49+00:00</updated><id>https://ibug.io/blog/2023/09/dual-protocol-vpn-port</id><content type="html" xml:base="https://ibug.io/blog/2023/09/dual-protocol-vpn-port/"><![CDATA[<p>Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.</p>
-			<p>In previous times, OpenVPN was the general preference for personal VPN services. Since the emergence of WireGuard, however, popularity has shifted significantly for its simplicity and performance. A challenge presents itself as there’s only one UDP port numbered 53, making it seemingly impossible to run both OpenVPN and WireGuard on the same port.</p>
-			<p>There solution hinges itself on a little bit of insights.</p>
-			<h2 id="inspiration">Inspiration</h2>
-			<p>In a similar situation, many local proxy software like Shadowsocks and V2ray support a feature called “mixed mode”, which accepts both HTTP and SOCKS5 connections on the same TCP port. This also seems impossible at first glance, but with a bit of knowledge in both protocols, it’s actually easy to pull it off.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.2">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2023-10-06T05:41:45+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Debugging Proxmox VE Firewall Dropping TCP Reset Packets</title><link href="https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset/" rel="alternate" type="text/html" title="Debugging Proxmox VE Firewall Dropping TCP Reset Packets" /><published>2023-10-06T00:00:00+00:00</published><updated>2023-10-06T13:37:51+00:00</updated><id>https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset</id><content type="html" xml:base="https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset/"><![CDATA[<p>A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.</p>
+			<p>When I reviewed my edited Nginx configuration and tried visiting the new website, I received a 504 Gateway Timeout error after <code class="language-plaintext highlighter-rouge">curl</code> hung for a minute. Knowing that the web server had yet to be set up, I was expecting a 502 Bad Gateway error. I quickly recalled the conditions for Nginx to return these specific errors: 502 if the upstream server is immediately known down, and 504 if the upstream server is up but not responding.</p>
+			<p>Since the actual web application hadn’t been set up yet, the new VM should have nothing listening on the configured ports. Consequently, the kernel should immediately respond with a TCP Reset for any incoming connections. To verify this, I ran <code class="language-plaintext highlighter-rouge">tcpdump</code> on both sides to check if the TCP reset packets actually came out. To my surprise, the packets were indeed sent out from the new VM, but the gateway server received nothing. So there was certainly something wrong with the firewall. I took a glance at the output of <code class="language-plaintext highlighter-rouge">pve-firewall compile</code>. They were very structured and adequately easy to understand, but I couldn’t immediately identify anything wrong. Things were apparently more complicated than I had previously anticipated.</p>
+			<h2 id="searching">Searching for information</h2>
+			<p>As usual, the first thing to try is Googling. Searching for <code class="language-plaintext highlighter-rouge">pve firewall tcp reset</code> brought <a href="https://forum.proxmox.com/threads/tcp-rst-packets-dropped-by-pve-firewall.56300/">this post on Proxmox Forum</a> as the first result. Their symptoms were precisely the same as mine:</p>
+			<blockquote>
+				<ul>
+					<li>Assume we have a service running on TCP port 12354</li>
+					<li>Clients can communicate with it while running</li>
+					<li>While service is down, clients recieved “Connection timed out” (no answer) even if OS send TCP RST packets:</li>
+				</ul>
+				<p>[…]</p>
+				<p>However, these RST packets are dropped somewhere in PVE firewall.<br />
+					On the VM options :</p>
+				<ul>
+					<li>Firewall &gt; Options &gt; Firewall = No, Has no effect</li>
+					<li>Firewall &gt; Options &gt; * Policy = ACCEPT, Has no effect (even with NO rule in active for this VM)</li>
+					<li>Hardware &gt; Network Device &gt; <code class="language-plaintext highlighter-rouge">firewall=0</code>, allows packets RST to pass!</li>
+				</ul>
+			</blockquote>
+			<p>I gave the last suggestion a try, and it worked! I could now see connections immediately reset on the gateway server, and Nginx started producing 502 errors. But I was still confused why this happened in the first place. The first thread contained nothing else useful, so I continued scanning through other search results and noticed <a href="https://forum.proxmox.com/threads/turning-on-the-pve-firewall-stops-vm-lxc-connectivity.55634/#post-261316">another post</a> about another seemingly unrelated problem, with a plausible solution:</p>
+			<blockquote>
+				<p>[…], and the fix was just to add the <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> in the <code class="language-plaintext highlighter-rouge">host.fw</code> for each node - I didn’t have to do anything other than that.</p>
+			</blockquote>
+			<p>That seemed understandable to me, so I gave it a try as well, and to my pleasure, it also worked.</p>
+			<p>Regrettably, useful information ceased to exist online beyond this, and it was far from painting the whole picture. So anything further would have to be uncovered on my own.</p>
+			<h2 id="reviewing">Reviewing information</h2>
+			<p>I reviewed the two helpful workarounds and made myself abundantly clear about their effects:</p>
 			<ul>
-				<li>An HTTP proxy request, just like other HTTP requests, begins with an HTTP verb. In proxy requests, it’s either <code class="language-plaintext highlighter-rouge">GET</code> or <code class="language-plaintext highlighter-rouge">CONNECT</code>,</li>
-				<li>A SOCKS proxy request begins with a 1-byte header containing its version, which is <code class="language-plaintext highlighter-rouge">0x04</code> for SOCKS4 or <code class="language-plaintext highlighter-rouge">0x05</code> for SOCKS5.</li>
+				<li>
+					<p>Disabling the firewall on the virtual network device stops PVE from bridging the interface an extra time, as shown in the following diagram:</p>
+					<p><img src="/image/pve-firewall/pve-fwbr.png" alt="PVE Firewall Diagram" /></p>
+				</li>
+				<li>
+					<p>Adding <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> removes one single iptables rule:</p>
+					<div class="language-shell highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code><span class="nt">-A</span> PVEFW-FORWARD <span class="nt">-m</span> conntrack <span class="nt">--ctstate</span> INVALID <span class="nt">-j</span> DROP
+</code></pre>
+						</div>
+    </div>
+				</li>
 			</ul>
-			<p>Now there’s a clear line between the two protocols, and we can identify them by looking at the first byte of the request. This is how most proxy implementations work, like <a href="https://github.com/3proxy/3proxy/commit/fb56b7d307a7bce1f2109c73864bad7c71716f3b#diff-e268b23274bc9df1b2c0957dfa85d684519282ed611f6135e795205e53fb6e3b">3proxy</a> and <a href="https://github.com/nadoo/glider/blob/4f12a4f3082940d8a4c56ba4f06f02a72d90d5d6/proxy/mixed/mixed.go#L84">glider</a>.</p>
-			<p>So the question is, is there a similar trait between OpenVPN and WireGuard? The answer is, as you would expect, yes.</p>
-			<h2 id="protocols">Protocols</h2>
-			<p>WireGuard runs over UDP and defines 4 packet types: 3 for handshake and 1 for data. All 4 packet types share the same 4-byte <a href="https://github.com/WireGuard/wireguard-linux/blob/fa41884c1c6deb6774135390e5813a97184903e0/drivers/net/wireguard/messages.h#L65">header</a>:</p>
-			<div class="language-rust highlighter-rouge">
+			<p>I couldn’t figure out how the first difference was relevant, but the second one provided an important clue: The firewall was dropping TCP Reset packets because conntrack considered them invalid.</p>
+			<p>Conntrack (<strong>conn</strong>ection <strong>track</strong>ing) is a Linux kernel subsystem that tracks network connections and aids in stateful packet inspection and network address translation. The first packet of a connection is considered “NEW”, and subsequent packets from the same connection are considered “ESTABLISHED”, including the TCP Reset packet when it’s first seen, which causes conntrack to delete the connection entry.</p>
+			<p>There was still yet anything obvious, so time to start debugging.</p>
+			<h2 id="tcpdump">Inspecting packet captures</h2>
+			<p>I ran <code class="language-plaintext highlighter-rouge">tcpdump -ni any host 172.31.0.2 and host 172.31.1.11 and tcp</code> on the PVE host to capture packets between the two VMs. This is what I got (output trimmed):</p>
+			<div class="language-text highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code><span class="k">struct</span> <span class="n">message_header</span> <span class="p">{</span>
+					<pre class="highlight"><code>tcpdump: data link type LINUX_SLL2
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+16:33:11.911184 veth101i1 P   IP 172.31.0.2.50198 &gt; 172.31.1.11.80: Flags [S], seq 3404503761, win 64240
+16:33:11.911202 fwln101i1 Out IP 172.31.0.2.50198 &gt; 172.31.1.11.80: Flags [S], seq 3404503761, win 64240
+16:33:11.911203 fwpr101p1 P   IP 172.31.0.2.50198 &gt; 172.31.1.11.80: Flags [S], seq 3404503761, win 64240
+16:33:11.911206 fwpr811p0 Out IP 172.31.0.2.50198 &gt; 172.31.1.11.80: Flags [S], seq 3404503761, win 64240
+16:33:11.911207 fwln811i0 P   IP 172.31.0.2.50198 &gt; 172.31.1.11.80: Flags [S], seq 3404503761, win 64240
+16:33:11.911213 tap811i0  Out IP 172.31.0.2.50198 &gt; 172.31.1.11.80: Flags [S], seq 3404503761, win 64240
+16:33:11.911262 tap811i0  P   IP 172.31.1.11.80 &gt; 172.31.0.2.50198: Flags [R.], seq 0, ack 3404503762, win 0, length 0
+16:33:11.911267 fwln811i0 Out IP 172.31.1.11.80 &gt; 172.31.0.2.50198: Flags [R.], seq 0, ack 1, win 0, length 0
+16:33:11.911269 fwpr811p0 P   IP 172.31.1.11.80 &gt; 172.31.0.2.50198: Flags [R.], seq 0, ack 1, win 0, length 0
+^C
+9 packets captured
+178 packets received by filter
+0 packets dropped by kernel
+</code></pre>
+				</div>
+			</div>
+			<p><img src="/image/pve-firewall/fw-diagram-1.png" alt="Diagram" /></p>
+			<p>The first thing to notice is the ACK number. After coming from <code class="language-plaintext highlighter-rouge">tap811i0</code>, it suddenly became 1 with no apparent reason. I struggled on this for a good while and temporarily put it aside.</p>
+			<p>Adding <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> to the firewall options and capturing packets again, I got the following:</p>
+			<div class="language-text highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+16:46:15.243002 veth101i1 P   IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
+16:46:15.243015 fwln101i1 Out IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
+16:46:15.243016 fwpr101p1 P   IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
+16:46:15.243020 fwpr811p0 Out IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
+16:46:15.243021 fwln811i0 P   IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
+16:46:15.243027 tap811i0  Out IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
+16:46:15.243076 tap811i0  P   IP 172.31.1.11.80 &gt; 172.31.0.2.58784: Flags [R.], seq 0, ack 301948897, win 0, length 0
+16:46:15.243081 fwln811i0 Out IP 172.31.1.11.80 &gt; 172.31.0.2.58784: Flags [R.], seq 0, ack 1, win 0, length 0
+16:46:15.243083 fwpr811p0 P   IP 172.31.1.11.80 &gt; 172.31.0.2.58784: Flags [R.], seq 0, ack 1, win 0, length 0
+16:46:15.243086 fwpr101p1 Out IP 172.31.1.11.80 &gt; 172.31.0.2.58784: Flags [R.], seq 0, ack 1, win 0, length 0
+16:46:15.243087 fwln101i1 P   IP 172.31.1.11.80 &gt; 172.31.0.2.58784: Flags [R.], seq 0, ack 1, win 0, length 0
+16:46:15.243090 veth101i1 Out IP 172.31.1.11.80 &gt; 172.31.0.2.58784: Flags [R.], seq 0, ack 1, win 0, length 0
+^C
+</code></pre>
+				</div>
+			</div>
+			<p><img src="/image/pve-firewall/fw-diagram-2.png" alt="Diagram" /></p>
+			<p>This time while the ACK number was still wrong, the RST packet somehow got through. Ignoring the ACK numbers for now, the output suggested that the RST packet was dropped between <code class="language-plaintext highlighter-rouge">fwpr811p0 P</code> and <code class="language-plaintext highlighter-rouge">fwln811i0 Out</code>. That was the main bridge <code class="language-plaintext highlighter-rouge">vmbr0</code>. All right then, that was where the <code class="language-plaintext highlighter-rouge">PVEFW-FORWARD</code> chain kicked in, so at this point the RST packet was <code class="language-plaintext highlighter-rouge">--ctstate INVALID</code>. Everything was logical so far.</p>
+			<p>So how about disabling firewall for the interface on VM 811?</p>
+			<div class="language-text highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+17:19:01.812030 veth101i1 P   IP 172.31.0.2.39734 &gt; 172.31.1.11.80: Flags [S], seq 1128018611, win 64240
+17:19:01.812045 fwln101i1 Out IP 172.31.0.2.39734 &gt; 172.31.1.11.80: Flags [S], seq 1128018611, win 64240
+17:19:01.812046 fwpr101p1 P   IP 172.31.0.2.39734 &gt; 172.31.1.11.80: Flags [S], seq 1128018611, win 64240
+17:19:01.812051 tap811i0  Out IP 172.31.0.2.39734 &gt; 172.31.1.11.80: Flags [S], seq 1128018611, win 64240
+17:19:01.812178 tap811i0  P   IP 172.31.1.11.80 &gt; 172.31.0.2.39734: Flags [R.], seq 0, ack 1128018612, win 0, length 0
+17:19:01.812183 fwpr101p1 Out IP 172.31.1.11.80 &gt; 172.31.0.2.39734: Flags [R.], seq 0, ack 1, win 0, length 0
+17:19:01.812185 fwln101i1 P   IP 172.31.1.11.80 &gt; 172.31.0.2.39734: Flags [R.], seq 0, ack 1, win 0, length 0
+17:19:01.812190 veth101i1 Out IP 172.31.1.11.80 &gt; 172.31.0.2.39734: Flags [R.], seq 0, ack 1, win 0, length 0
+^C
+</code></pre>
+				</div>
+			</div>
+			<p><img src="/image/pve-firewall/fw-diagram-3.png" alt="Diagram" /></p>
+			<p>This time <code class="language-plaintext highlighter-rouge">fwbr811i0</code> was missing, and the RST packet didn’t get dropped at <code class="language-plaintext highlighter-rouge">vmbr0</code>. I was left totally confused.</p>
+			<p>I decided to sort out the ACK number issue, but ended up asking my friends for help. It turned out this was well documented in <code class="language-plaintext highlighter-rouge">tcpdump(8)</code>:</p>
+			<blockquote>
+				<p><code class="language-plaintext highlighter-rouge">-S</code><br />
+					<code class="language-plaintext highlighter-rouge">--absolute-tcp-sequence-numbers</code><br />
+					Print absolute, rather than relative, TCP sequence numbers.</p>
+			</blockquote>
+			<p>This certainly came out unexpected, but at least I was assured there was nothing wrong with the ACK numbers.</p>
+			<p>Up to now, that’s one more step forward, and a small conclusion:</p>
+			<ul>
+				<li>At the point the RST packet reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, it was already <code class="language-plaintext highlighter-rouge">--ctstate INVALID</code>.</li>
+			</ul>
+			<p>But how? As far as I knew, when the RST packet came out, it should still be considered part of the connection, and thus should be <code class="language-plaintext highlighter-rouge">--ctstate ESTABLISHED</code>. I was still missing something.</p>
+			<p>Time to investigate conntrack.</p>
+			<h2 id="conntrack">Inspecting conntrack</h2>
+			<p><code class="language-plaintext highlighter-rouge">conntrack</code> is the tool to inspect and modify conntrack entries. I ran <code class="language-plaintext highlighter-rouge">conntrack -L</code> to list all entries, only to realize it’s inefficient. So instead, I ran <code class="language-plaintext highlighter-rouge">conntrack -E</code> to watch for “events” in real time, so that I could compare the output with <code class="language-plaintext highlighter-rouge">tcpdump</code>. Except that the entire connection concluded so quickly that I couldn’t identify anything.</p>
+			<p>I had to add artificial delays to the packets to clearly separate each hop that the RST packet goes through:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>tc qdisc add dev tap811i0 root netem delay 200ms
+tc qdisc add dev fwln811i0 root netem delay 200ms
+</code></pre>
+				</div>
+			</div>
+			<p>I also tuned the output on both sides to show the timestamp in a consistent format. For conntrack, <code class="language-plaintext highlighter-rouge">-o timestamp</code> produced Unix timestamps (which is the only supported format), so for <code class="language-plaintext highlighter-rouge">tcpdump</code> I also resorted to <code class="language-plaintext highlighter-rouge">-tt</code> to show Unix timestamps as well.</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>conntrack <span class="nt">-E</span> <span class="nt">-o</span> timestamp <span class="nt">-s</span> 172.31.0.2 <span class="nt">-d</span> 172.31.1.11
+tcpdump <span class="nt">-ttSni</span> any host 172.31.0.2 and host 172.31.1.11 and tcp
+</code></pre>
+				</div>
+			</div>
+			<p>Now I could watch the outputs on two separate tmux panes. The problem immediately emerged (blank lines added for readability):</p>
+			<div class="language-text highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+1696412047.886575 veth101i1 P   IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
+1696412047.886592 fwln101i1 Out IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
+1696412047.886594 fwpr101p1 P   IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
+1696412047.886599 fwpr811p0 Out IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
+1696412047.886600 fwln811i0 P   IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
+
+1696412048.086620 tap811i0  Out IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
+1696412048.086841 tap811i0  P   IP 172.31.1.11.80 &gt; 172.31.0.2.47066: Flags [R.]
+
+1696412048.286919 fwln811i0 Out IP 172.31.1.11.80 &gt; 172.31.0.2.47066: Flags [R.]
+1696412048.286930 fwpr811p0 P   IP 172.31.1.11.80 &gt; 172.31.0.2.47066: Flags [R.]
+^C
+</code></pre>
+				</div>
+			</div>
+			<div class="language-text highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>[1696412047.886657]         [NEW] tcp      6 120 SYN_SENT src=172.31.0.2 dst=172.31.1.11 sport=47066 dport=80 [UNREPLIED] src=172.31.1.11 dst=172.31.0.2 sport=80 dport=47066
+[1696412048.086899]     [DESTROY] tcp      6 119 CLOSE src=172.31.0.2 dst=172.31.1.11 sport=47066 dport=80 [UNREPLIED] src=172.31.1.11 dst=172.31.0.2 sport=80 dport=47066
+</code></pre>
+				</div>
+			</div>
+			<p>The artificial delays and the timestamps were absolutely useful: It was clear that the corresponding conntrack connection was destroyed as soon as the RST packet passed through <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, before it came out via <code class="language-plaintext highlighter-rouge">fwln811i0</code>. When it reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, the connection was already gone, and the RST packet was considered invalid.</p>
+			<p><img src="/image/pve-firewall/fw-diagram-4.png" alt="Diagram" /></p>
+			<p>It also became explainable how <code class="language-plaintext highlighter-rouge">firewall=0</code> on the virtual network device remedied the issue: It removed an extra bridge <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, so the connection stayed alive when the RST packet reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, at which point a previous rule for <code class="language-plaintext highlighter-rouge">--ctstate ESTABLISHED</code> gave an <code class="language-plaintext highlighter-rouge">ACCEPT</code> verdict. While it was still <code class="language-plaintext highlighter-rouge">INVALID</code> when passing through <code class="language-plaintext highlighter-rouge">fwbr101i1</code>, there was no rule concerning <code class="language-plaintext highlighter-rouge">--ctstate</code> at play, so it slipped through this stage with no problem.</p>
+			<p>After double-checking the intention of the extra <code class="language-plaintext highlighter-rouge">fwbr*</code> bridge, I drew the conclusion that <strong>this must be a bug with PVE Firewall</strong>. I reported it on the Proxmox VE bug tracker as <a href="https://bugzilla.proxmox.com/show_bug.cgi?id=4983">#4983</a>, and soon received a reply:</p>
+			<blockquote>
+				<p>Thank you for the detailed write-up!</p>
+				<p>This is a known limitation for our kind of firewall setup, since the conntrack is shared between all interfaces on the host.</p>
+				<p>[…]</p>
+				<p>If you know of any other way to avoid this happening, other than using conntrack zones, I’d be happy to take a look.</p>
+			</blockquote>
+			<p>So they admitted that this was a limitation but without a satisfactory solution. Guess I’m still on my own, though.</p>
+			<h2 id="solution">Finding the solution</h2>
+			<p>The actual problem is, when passing through <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, the RST packet isn’t supposed to be processed by conntrack by then. There is no <code class="language-plaintext highlighter-rouge">sysctl</code> option to disable conntrack on a specific interface (or even just all bridges altogether), but at the right time the rarely-used <code class="language-plaintext highlighter-rouge">raw</code> table came to my mind. It didn’t take long to work this out:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>iptables <span class="nt">-t</span> raw <span class="nt">-A</span> PREROUTING <span class="nt">-i</span> fwbr+ <span class="nt">-j</span> CT <span class="nt">--notrack</span>
+</code></pre>
+				</div>
+			</div>
+			<p>After verifying this is the intended solution, I added it as a reply to the bug report. At the time of writing this blog post, the bug report is still open, but I’m sure it’s to be resolved soon.</p>
+			<h2 id="conclusion">Conclusion</h2>
+			<p>Debugging Linux networking has always been a pain for its lack of proper tools and its complexity. Most of the times even reading and understanding packet captures requires immense knowledge of the protocols and all the involved components, as well as scrutinizing every single detail available. Sometimes it’s even necessary to think outside the box but fortunately not today.</p>
+			<p>Also worth mentioning is that it’s easy to suspect the fault of another piece of software, but detailed investigation is always necessary to actually lay the blame.</p>
+			<p>Just as a late reminder, useful bug reports always require detailed information and solid evidence. Glad I was able to have them at hand this time.</p>
+			]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><category term="proxmox-ve" /><summary type="html"><![CDATA[A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.]]></summary></entry><entry><title type="html">Running a dual-protocol OpenVPN/WireGuard VPN server on one port</title><link href="https://ibug.io/blog/2023/09/dual-protocol-vpn-port/" rel="alternate" type="text/html" title="Running a dual-protocol OpenVPN/WireGuard VPN server on one port" /><published>2023-09-26T00:00:00+00:00</published><updated>2023-09-26T14:26:49+00:00</updated><id>https://ibug.io/blog/2023/09/dual-protocol-vpn-port</id><content type="html" xml:base="https://ibug.io/blog/2023/09/dual-protocol-vpn-port/"><![CDATA[<p>Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.</p>
+		<p>In previous times, OpenVPN was the general preference for personal VPN services. Since the emergence of WireGuard, however, popularity has shifted significantly for its simplicity and performance. A challenge presents itself as there’s only one UDP port numbered 53, making it seemingly impossible to run both OpenVPN and WireGuard on the same port.</p>
+		<p>There solution hinges itself on a little bit of insights.</p>
+		<h2 id="inspiration">Inspiration</h2>
+		<p>In a similar situation, many local proxy software like Shadowsocks and V2ray support a feature called “mixed mode”, which accepts both HTTP and SOCKS5 connections on the same TCP port. This also seems impossible at first glance, but with a bit of knowledge in both protocols, it’s actually easy to pull it off.</p>
+		<ul>
+			<li>An HTTP proxy request, just like other HTTP requests, begins with an HTTP verb. In proxy requests, it’s either <code class="language-plaintext highlighter-rouge">GET</code> or <code class="language-plaintext highlighter-rouge">CONNECT</code>,</li>
+			<li>A SOCKS proxy request begins with a 1-byte header containing its version, which is <code class="language-plaintext highlighter-rouge">0x04</code> for SOCKS4 or <code class="language-plaintext highlighter-rouge">0x05</code> for SOCKS5.</li>
+		</ul>
+		<p>Now there’s a clear line between the two protocols, and we can identify them by looking at the first byte of the request. This is how most proxy implementations work, like <a href="https://github.com/3proxy/3proxy/commit/fb56b7d307a7bce1f2109c73864bad7c71716f3b#diff-e268b23274bc9df1b2c0957dfa85d684519282ed611f6135e795205e53fb6e3b">3proxy</a> and <a href="https://github.com/nadoo/glider/blob/4f12a4f3082940d8a4c56ba4f06f02a72d90d5d6/proxy/mixed/mixed.go#L84">glider</a>.</p>
+		<p>So the question is, is there a similar trait between OpenVPN and WireGuard? The answer is, as you would expect, yes.</p>
+		<h2 id="protocols">Protocols</h2>
+		<p>WireGuard runs over UDP and defines 4 packet types: 3 for handshake and 1 for data. All 4 packet types share the same 4-byte <a href="https://github.com/WireGuard/wireguard-linux/blob/fa41884c1c6deb6774135390e5813a97184903e0/drivers/net/wireguard/messages.h#L65">header</a>:</p>
+		<div class="language-rust highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">struct</span> <span class="n">message_header</span> <span class="p">{</span>
     <span class="nb">u8</span> <span class="k">type</span><span class="p">;</span>
     <span class="nb">u8</span> <span class="n">reserved_zero</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Similarly, all OpenVPN packet types share the same 1-byte <a href="https://build.openvpn.net/doxygen/network_protocol.html#network_protocol_external_types">header</a>:</p>
-			<div class="language-c highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">struct</span> <span class="n">header_byte</span> <span class="p">{</span>
+		</div>
+		<p>Similarly, all OpenVPN packet types share the same 1-byte <a href="https://build.openvpn.net/doxygen/network_protocol.html#network_protocol_external_types">header</a>:</p>
+		<div class="language-c highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">struct</span> <span class="n">header_byte</span> <span class="p">{</span>
     <span class="kt">uint8_t</span> <span class="n">opcpde</span> <span class="o">:</span> <span class="mi">5</span><span class="p">;</span>
     <span class="kt">uint8_t</span> <span class="n">key_id</span> <span class="o">:</span> <span class="mi">3</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<p>It’s worth noting that 0 is not a defined opcode, so the smallest valid value for this byte is 8, as <code class="language-plaintext highlighter-rouge">key_id</code> can be anything from 0 to 7.</p>
-			<h2 id="implementation">Implementation</h2>
-			<p>Now that we have the packet format for both protocols understood, we can implement a classifier that filters traffic in one protocol from the other.</p>
-			<p>Considering that the WireGuard packet format is much simpler than that of OpenVPN, I choose to identify WireGuard. With kernel firewall <code class="language-plaintext highlighter-rouge">iptables</code>, options are abundant, though I find <code class="language-plaintext highlighter-rouge">u32</code> the easiest:</p>
-			<div class="language-sh highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">*</span>nat
+		</div>
+		<p>It’s worth noting that 0 is not a defined opcode, so the smallest valid value for this byte is 8, as <code class="language-plaintext highlighter-rouge">key_id</code> can be anything from 0 to 7.</p>
+		<h2 id="implementation">Implementation</h2>
+		<p>Now that we have the packet format for both protocols understood, we can implement a classifier that filters traffic in one protocol from the other.</p>
+		<p>Considering that the WireGuard packet format is much simpler than that of OpenVPN, I choose to identify WireGuard. With kernel firewall <code class="language-plaintext highlighter-rouge">iptables</code>, options are abundant, though I find <code class="language-plaintext highlighter-rouge">u32</code> the easiest:</p>
+		<div class="language-sh highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">*</span>nat
 :iBugVPN - <span class="o">[</span>0:0]
 <span class="nt">-A</span> PREROUTING <span class="nt">-m</span> addrtype <span class="nt">--dst-type</span> LOCAL <span class="nt">-p</span> udp <span class="nt">--dport</span> 53 <span class="nt">-j</span> iBugVPN
 <span class="nt">-A</span> iBugVPN <span class="nt">-m</span> u32 <span class="nt">--u32</span> <span class="s2">"25 &amp; 0xFF = 1:4 &amp;&amp; 28 &amp; 0xFFFFFF = 0"</span> <span class="nt">-j</span> REDIRECT <span class="nt">--to-port</span> 51820
 <span class="nt">-A</span> iBugVPN <span class="nt">-j</span> REDIRECT <span class="nt">--to-port</span> 1194
 COMMIT
 </code></pre>
-				</div>
 			</div>
-			<p>With both OpenVPN and WireGuard running on their standard ports, this will redirect each protocol to its respective service port. While these rules only operate on the initial packet, Linux conntrack will handle the rest of the connection.</p>
-			<p>The <code class="language-plaintext highlighter-rouge">u32</code> match is explained:</p>
+		</div>
+		<p>With both OpenVPN and WireGuard running on their standard ports, this will redirect each protocol to its respective service port. While these rules only operate on the initial packet, Linux conntrack will handle the rest of the connection.</p>
+		<p>The <code class="language-plaintext highlighter-rouge">u32</code> match is explained:</p>
+		<ul>
+			<li>Basic syntax: <code class="language-plaintext highlighter-rouge">&lt;offset&gt; [operators...] = &lt;range&gt;</code>, where <code class="language-plaintext highlighter-rouge">&lt;offset&gt;</code> is relative to the IP header. For UDP over IPv4, the application payload starts from 28 (20 bytes of IPv4 and 8 bytes of UDP)</li>
+			<li><code class="language-plaintext highlighter-rouge">25 &amp; 0xFF = 1:4</code>: The 28th byte is in range <code class="language-plaintext highlighter-rouge">1:4</code>.</li>
+			<li><code class="language-plaintext highlighter-rouge">28 &amp; 0xFFFFFF = 0</code>: The 29th to 31th bytes are all zero.</li>
+		</ul>
+		<p>For IPv6, you just need to increase the offset by 20 (IPv6 header is 40 bytes), so the rule becomes <code class="language-plaintext highlighter-rouge">45 &amp; 0xFF = 1:4 &amp;&amp; 48 &amp; 0xFFFFFF = 0</code>.</p>
+		<p>This VPN server is running like a hearse so proofs are left out for brevity.</p>
+		]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.]]></summary></entry><entry><title type="html">Vlab 远程教学云桌面</title><link href="https://ibug.io/blog/2023/08/nju-talk/" rel="alternate" type="text/html" title="Vlab 远程教学云桌面" /><published>2023-08-19T00:00:00+00:00</published><updated>2023-08-19T13:50:40+00:00</updated><id>https://ibug.io/blog/2023/08/nju-talk</id><content type="html" xml:base="https://ibug.io/blog/2023/08/nju-talk/"><![CDATA[<section id="title">
+		<h1 class="title">Vlab<br>
+			远程教学云桌面</h1>
+		<p class="date">iBug @ USTC</p>
+		<p class="date">2023 年 8 月 19 日<br />
+			南京大学</p>
+	</section>
+	<section id="cover-image">
+		<style>
+			:root {
+			  --r-heading-font-weight: bold;
+			}
+
+			.slides section {
+			  max-height: 100%;
+			}
+
+			li img {
+			  vertical-align: middle;
+			}
+
+			li+li {
+			  margin-top: 0.25em;
+			}
+
+			.img-container {
+			  width: 100%;
+			  height: 100%;
+
+			  display: flex;
+			  flex-direction: column;
+			  justify-content: center;
+			}
+
+			.img-container img {
+			  display: block;
+			  max-height: 100%;
+			  margin: auto !important;
+			  object-fit: contain;
+			}
+
+			.reveal section>img {
+			  display: block;
+			  margin: auto !important;
+			  max-height: 95vh;
+			}
+
+			.border {
+			  border: 1px solid black;
+			}
+		</style>
+		<div class="img-container">
+			<img src="https://image.ibugone.com/vlab/vlab-in-browser.jpg" />
+		</div>
+	</section>
+	<section id="目录">
+		<h2>目录</h2>
+		<ol type="1">
+			<li>背景</li>
+			<li>第一代 Vlab</li>
+			<li>第二代 Vlab</li>
+			<li>技术分享</li>
+			<li>共享灵车</li>
+			<li>成果</li>
+		</ol>
+	</section>
+	<section>
+		<section id="background">
+			<h2>背景</h2>
+			<p>计算机实验的环境配置问题：</p>
 			<ul>
-				<li>Basic syntax: <code class="language-plaintext highlighter-rouge">&lt;offset&gt; [operators...] = &lt;range&gt;</code>, where <code class="language-plaintext highlighter-rouge">&lt;offset&gt;</code> is relative to the IP header. For UDP over IPv4, the application payload starts from 28 (20 bytes of IPv4 and 8 bytes of UDP)</li>
-				<li><code class="language-plaintext highlighter-rouge">25 &amp; 0xFF = 1:4</code>: The 28th byte is in range <code class="language-plaintext highlighter-rouge">1:4</code>.</li>
-				<li><code class="language-plaintext highlighter-rouge">28 &amp; 0xFFFFFF = 0</code>: The 29th to 31th bytes are all zero.</li>
+				<li>学校机房开放时间有限，利用率低</li>
+				<li>部分实验软件体积大、对配置要求高（如 Vivado）</li>
+				<li>学生使用的系统环境不同，导致安装与使用时出现奇怪的问题</li>
+				<li>部分实验环境安装时容易损坏（如双系统安装）</li>
 			</ul>
-			<p>For IPv6, you just need to increase the offset by 20 (IPv6 header is 40 bytes), so the rule becomes <code class="language-plaintext highlighter-rouge">45 &amp; 0xFF = 1:4 &amp;&amp; 48 &amp; 0xFFFFFF = 0</code>.</p>
-			<p>This VPN server is running like a hearse so proofs are left out for brevity.</p>
-			]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.]]></summary></entry><entry><title type="html">Vlab 远程教学云桌面</title><link href="https://ibug.io/blog/2023/08/nju-talk/" rel="alternate" type="text/html" title="Vlab 远程教学云桌面" /><published>2023-08-19T00:00:00+00:00</published><updated>2023-08-19T13:50:40+00:00</updated><id>https://ibug.io/blog/2023/08/nju-talk</id><content type="html" xml:base="https://ibug.io/blog/2023/08/nju-talk/"><![CDATA[<section id="title">
-			<h1 class="title">Vlab<br>
-				远程教学云桌面</h1>
-			<p class="date">iBug @ USTC</p>
-			<p class="date">2023 年 8 月 19 日<br />
-				南京大学</p>
 		</section>
-		<section id="cover-image">
-			<style>
-				:root {
-				  --r-heading-font-weight: bold;
-				}
-
-				.slides section {
-				  max-height: 100%;
-				}
-
-				li img {
-				  vertical-align: middle;
-				}
-
-				li+li {
-				  margin-top: 0.25em;
-				}
-
-				.img-container {
-				  width: 100%;
-				  height: 100%;
-
-				  display: flex;
-				  flex-direction: column;
-				  justify-content: center;
-				}
-
-				.img-container img {
-				  display: block;
-				  max-height: 100%;
-				  margin: auto !important;
-				  object-fit: contain;
-				}
-
-				.reveal section>img {
-				  display: block;
-				  margin: auto !important;
-				  max-height: 95vh;
-				}
-
-				.border {
-				  border: 1px solid black;
-				}
-			</style>
+		<section id="background-idea">
+			<h2>思考</h2>
+			<p>能不能通过提供预先配置好实验环境的虚拟机来解决这个问题呢？</p>
+			<ul>
+				<li>Linux 虚拟机还是 Windows 虚拟机？</li>
+				<li>实验软件怎么配？</li>
+				<li>给学生分配多少系统资源？主机需要多少硬件配置？</li>
+				<li>单位支持：计算机实验教学中心</li>
+			</ul>
+		</section>
+	</section>
+	<section>
+		<section id="1st-gen">
+			<h2>第一代 Vlab</h2>
+			<ul>
+				<li>2019 年暑假搭建完成<br />
+					秋季学期小范围运营</li>
+				<li>接入校园网，提供 VNC 连接</li>
+				<li>打包虚拟机镜像预装 Vivado 方便实验</li>
+			</ul>
+		</section>
+		<section id="1st-gen-features">
+			<h3>平台特点</h3>
+			<ul>
+				<li>单台 E5 2630 v4 (2S)，<s>64</s> 128 GB 内存，一些固态和机械</li>
+				<li>Ubuntu 18.04 + 3.10.0-957.el7🤔 + LXD snap</li>
+				<li>lxdbr0 ↔ USTCnet</li>
+			</ul>
+			<hr />
+			<ul>
+				<li>校园网接入：可以使用网络通选择出口或从校外连接
+					<ul>
+						<li><s>也可以挂 Minecraft 服务器、Terraria 服务器、……</s></li>
+					</ul>
+				</li>
+				<li>虚拟机镜像：(Ubuntu 1 GB) + Xfce4 (2 GB) + Vivado (<b>18 GB</b>)
+					<ul>
+						<li>好在单机有 ZFS 可以用</li>
+					</ul>
+				</li>
+				<li>用 Django 糊了个面板（@taoky），使用统一身份认证登录</li>
+			</ul>
+		</section>
+		<section id="1st-gen-sumup">
+			<h3>总结经验</h3>
+			<ul>
+				<li><s>一台母鸡超卖也卖不动多少啊</s></li>
+				<li>避免将用户虚拟机直接连接在校园网上
+					<ul>
+						<li>这样既不方便使用，也不安全</li>
+						<li>机房 IP 早晚会不够用的（3× /24）</li>
+						<li>开个 NAT</li>
+					</ul>
+				</li>
+				<li>提供桌面和命令行的统一登录接口，方便用户连接使用</li>
+				<li>配备更多实验软件</li>
+				<li>完善用户文档</li>
+			</ul>
+		</section>
+	</section>
+	<section>
+		<section id="2nd-gen">
+			<h2>第二代 Vlab</h2>
+			<ul>
+				<li>2020 年寒假基本配置完成<br />
+					春季学期投入使用</li>
+				<li>改进了第一代 Vlab 的许多不足点</li>
+			</ul>
+		</section>
+		<section id="2nd-gen-infrastructure">
+			<h3>基础设施</h3>
+			<ul>
+				<li>采购：HPE MSA 1050，Gen10 节点 ×8, 251 交换机</li>
+				<li>Ubuntu ❌ Proxmox VE ✔</li>
+				<li>iSCSI 存储共享：LVM（no thin provisioning）</li>
+				<li>网络：VXLAN、NAT 网关</li>
+				<li><s>小修小补的</s> Django 面板</li>
+				<li>超卖能力++++</li>
+			</ul>
+		</section>
+		<section id="2nd-gen-network">
 			<div class="img-container">
-				<img src="https://image.ibugone.com/vlab/vlab-in-browser.jpg" />
+				<img src="https://image.ibugone.com/vlab/network-external-1.png" />
 			</div>
 		</section>
-		<section id="目录">
-			<h2>目录</h2>
-			<ol type="1">
-				<li>背景</li>
-				<li>第一代 Vlab</li>
-				<li>第二代 Vlab</li>
-				<li>技术分享</li>
-				<li>共享灵车</li>
-				<li>成果</li>
-			</ol>
+		<section id="2nd-gen-network-internal">
+			<div class="img-container">
+				<img src="https://image.ibugone.com/vlab/network-internal.png" />
+			</div>
+		</section>
+		<section id="gateway">
+			<h3>年轻人的第一次卵路由实践</h3>
+			<ul>
+				<li>基础功能：为虚拟机提供 NAT 上网</li>
+				<li>基本操作：Debian LXC + 手搓 iproute2 + iptables（其实也没那么复杂）</li>
+				<li>DNS + 监控：AdGuard Home</li>
+				<li>流量记录：<code>-m conntrack --ctstate NEW -j NFLOG</code>
+					<ul>
+						<li>没有磁带，不宜全量镜像</li>
+					</ul>
+				</li>
+			</ul>
+		</section>
+		<section id="lxc-build">
+			<h3>稳定可靠的 LXC 镜像构建技术</h3>
+			<ul>
+				<li>Docker 提供 build environment，PVE 提供 base image</li>
+				<li>基于 shell 脚本和 GitHub Actions 的自动化流程
+					<ul>
+						<li><code>add_file</code>, <code>add_package</code>, <code>run</code> 等“指令”</li>
+						<li><s>就差发明一个 <code>Lxcfile</code> DSL 了</s></li>
+					</ul>
+				</li>
+				<li>Repository：<a href="https://github.com/USTC-vlab/labstrap"><i class="fab fa-github"></i>
+						USTC-vlab/labstrap</a>
+					<ul>
+						<li>精神前辈：图书馆查询🐔的 PXE 镜像构建：<a href="https://github.com/ustclug/liimstrap"><i class="fab fa-github"></i>
+								ustclug/liimstrap</a></li>
+					</ul>
+				</li>
+			</ul>
+		</section>
+	</section>
+	<section>
+		<section id="login">
+			<h2>登录方式</h2>
+			<p>不开放端口，各种协议都需要转发</p>
+			<p>VNC, SSH, and what?</p>
+		</section>
+		<section id="login-ssh-1">
+			<h3>SSH 统一登录</h3>
+			<ul>
+				<li>SSH 没有 Host header 怎么办：来点 PubkeyAuthentication</li>
+				<li><code>ssh <b>-i vm-114514.pem</b> ubuntu@vlab.ustc.edu.cn</code></li>
+				<li>鉴权：就像 GitHub / GitLab 一样直接按公钥区分用户（VM）
+					<ul>
+						<li>Django 提供一个 pubkey → VM IP address 的接口</li>
+					</ul>
+				</li>
+				<li>后端：<code>golang.org/x/crypto/ssh</code>
+					<ul>
+						<li>初版：Forked from <a href="https://github.com/tg123/sshpiper"><i class="fab fa-github"></i>
+								tg123/sshpiper</a></li>
+						<li>现在：<a href="https://github.com/USTC-vlab/sshmux"><i class="fab fa-github"></i> USTC-vlab/sshmux</a>
+						</li>
+						<li>sshpiper 重构了，不好用了 QwQ</li>
+					</ul>
+				</li>
+			</ul>
+		</section>
+		<section id="login-ssh-2">
+			<h3>SSH 统一登录</h3>
+			<ul>
+				<li>恢复模式（LXC）：<code>ssh <b>recovery</b>@vlab.ustc.edu.cn</code>
+					<ul>
+						<li>后台转接到 <code>pct enter &lt;vmid&gt;</code></li>
+					</ul>
+				</li>
+				<li>控制台模式（LXC）：<code>ssh <b>console</b>@vlab.ustc.edu.cn</code>
+					<ul>
+						<li>后台转接到 <code>pct console &lt;vmid&gt;</code></li>
+					</ul>
+				</li>
+				<li>控制台模式（KVM）：<code>ssh <b>serial</b>@vlab.ustc.edu.cn</code>
+					<ul>
+						<li>后台转接到 <code>qm serial &lt;vmid&gt;</code></li>
+					</ul>
+				</li>
+			</ul>
+		</section>
+		<section id="login-vnc-1">
+			<h3>VNC 统一登录</h3>
+			<ul>
+				<li>请出神仙：<a href="https://github.com/pdlan"><i class="fab fa-github"></i> pdlan</a>
+					<ul>
+						<li>逆向了 RealVNC，写了 10,000 行 C艹，到处 <code>co_await</code>，……</li>
+						<li>顺带还实现了 TLS 加密</li>
+						<li>顺带还实现了……</li>
+						<li>外加一个 unix-domain socket 发送管理指令</li>
+					</ul>
+				</li>
+				<li><s>一起来大受震撼吧</s></li>
+				<li>使用 VNC 软件连接：
+					<ul>
+						<li>服务器：<code>vlab.ustc.edu.cn</code>（标准端口 5900/tcp）</li>
+						<li>用户名：<code>PB17000001:114514</code>（用户名 + VM ID，如果用户有多个 VM 的话）</li>
+					</ul>
+				</li>
+			</ul>
+		</section>
+		<section id="login-vnc-2">
+			<h3>VNC 统一登录</h3>
+			<ul>
+				<li>开源贡献：</li>
+				<li>
+					<img src="https://image.ibugone.com/vlab/tigervnc-pr-pdlan.png" />
+					<img src="https://image.ibugone.com/vlab/novnc-pr-pdlan.png" />
+				</li>
+			</ul>
+		</section>
+		<section id="login-rdp">
+			<h3>RDP 统一登录</h3>
+			<ul>
+				<li><s>咕咕咕了，Windows VM 支持还没搞定</s></li>
+				<li>RDP 一大坨非常起夜级的协议，<s>不是很想逆向</s></li>
+				<li><i class="fas fa-fw fa-lightbulb-on"></i> 计划规格：<code>loadbalanceinfo</code></li>
+			</ul>
+		</section>
+		<section id="login-browser">
+			<h3>浏览器登录</h3>
+			<ul>
+				<li>VNC：魔改版 noVNC
+					<ul>
+						<li>没错，vncmux 顺带还实现了 WebSocket</li>
+					</ul>
+				</li>
+				<li>SSH：Go → WASM</li>
+				<li>RDP：从入门到放弃</li>
+			</ul>
+		</section>
+	</section>
+	<section>
+		<section id="hearses">
+			<h2>灵车时间</h2>
+		</section>
+		<section id="vlab-software-1">
+			<h3>磁盘容量</h3>
+			<ul>
+				<li>一个虚拟机镜像就已经 21 GB 了</li>
+				<li>+MATLAB, +Mathematica, +<a href="https://image.ibugone.com/vlab/node_modules-meme.png">node_modules</a></li>
+				<li>我们的存储阵列里就有 114514 份 Vivado</li>
+			</ul>
+		</section>
+		<section id="vlab-software-2">
+			<h3>Bind mount!</h3>
+			<ul>
+				<li>local-lvm 开个新卷给 <code>/opt/vlab</code></li>
+				<li>mp0: /opt/vlab,mp=/opt/vlab,ro=1</li>
+				<li>易于维护：Rsync cron job</li>
+			</ul>
+		</section>
+		<section id="novnc-fun">
+			<h3>No... VNC?</h3>
+			<p><img src="https://image.ibugone.com/vlab/no-vnc.png" /></p>
 		</section>
 		<section>
-			<section id="background">
-				<h2>背景</h2>
-				<p>计算机实验的环境配置问题：</p>
-				<ul>
-					<li>学校机房开放时间有限，利用率低</li>
-					<li>部分实验软件体积大、对配置要求高（如 Vivado）</li>
-					<li>学生使用的系统环境不同，导致安装与使用时出现奇怪的问题</li>
-					<li>部分实验环境安装时容易损坏（如双系统安装）</li>
-				</ul>
-			</section>
-			<section id="background-idea">
-				<h2>思考</h2>
-				<p>能不能通过提供预先配置好实验环境的虚拟机来解决这个问题呢？</p>
-				<ul>
-					<li>Linux 虚拟机还是 Windows 虚拟机？</li>
-					<li>实验软件怎么配？</li>
-					<li>给学生分配多少系统资源？主机需要多少硬件配置？</li>
-					<li>单位支持：计算机实验教学中心</li>
-				</ul>
-			</section>
+			<img src="https://image.ibugone.com/vlab/502.png" />
 		</section>
-		<section>
-			<section id="1st-gen">
-				<h2>第一代 Vlab</h2>
-				<ul>
-					<li>2019 年暑假搭建完成<br />
-						秋季学期小范围运营</li>
-					<li>接入校园网，提供 VNC 连接</li>
-					<li>打包虚拟机镜像预装 Vivado 方便实验</li>
-				</ul>
-			</section>
-			<section id="1st-gen-features">
-				<h3>平台特点</h3>
-				<ul>
-					<li>单台 E5 2630 v4 (2S)，<s>64</s> 128 GB 内存，一些固态和机械</li>
-					<li>Ubuntu 18.04 + 3.10.0-957.el7🤔 + LXD snap</li>
-					<li>lxdbr0 ↔ USTCnet</li>
-				</ul>
-				<hr />
-				<ul>
-					<li>校园网接入：可以使用网络通选择出口或从校外连接
-						<ul>
-							<li><s>也可以挂 Minecraft 服务器、Terraria 服务器、……</s></li>
-						</ul>
-					</li>
-					<li>虚拟机镜像：(Ubuntu 1 GB) + Xfce4 (2 GB) + Vivado (<b>18 GB</b>)
-						<ul>
-							<li>好在单机有 ZFS 可以用</li>
-						</ul>
-					</li>
-					<li>用 Django 糊了个面板（@taoky），使用统一身份认证登录</li>
-				</ul>
-			</section>
-			<section id="1st-gen-sumup">
-				<h3>总结经验</h3>
-				<ul>
-					<li><s>一台母鸡超卖也卖不动多少啊</s></li>
-					<li>避免将用户虚拟机直接连接在校园网上
-						<ul>
-							<li>这样既不方便使用，也不安全</li>
-							<li>机房 IP 早晚会不够用的（3× /24）</li>
-							<li>开个 NAT</li>
-						</ul>
-					</li>
-					<li>提供桌面和命令行的统一登录接口，方便用户连接使用</li>
-					<li>配备更多实验软件</li>
-					<li>完善用户文档</li>
-				</ul>
-			</section>
-		</section>
-		<section>
-			<section id="2nd-gen">
-				<h2>第二代 Vlab</h2>
-				<ul>
-					<li>2020 年寒假基本配置完成<br />
-						春季学期投入使用</li>
-					<li>改进了第一代 Vlab 的许多不足点</li>
-				</ul>
-			</section>
-			<section id="2nd-gen-infrastructure">
-				<h3>基础设施</h3>
-				<ul>
-					<li>采购：HPE MSA 1050，Gen10 节点 ×8, 251 交换机</li>
-					<li>Ubuntu ❌ Proxmox VE ✔</li>
-					<li>iSCSI 存储共享：LVM（no thin provisioning）</li>
-					<li>网络：VXLAN、NAT 网关</li>
-					<li><s>小修小补的</s> Django 面板</li>
-					<li>超卖能力++++</li>
-				</ul>
-			</section>
-			<section id="2nd-gen-network">
-				<div class="img-container">
-					<img src="https://image.ibugone.com/vlab/network-external-1.png" />
-				</div>
-			</section>
-			<section id="2nd-gen-network-internal">
-				<div class="img-container">
-					<img src="https://image.ibugone.com/vlab/network-internal.png" />
-				</div>
-			</section>
-			<section id="gateway">
-				<h3>年轻人的第一次卵路由实践</h3>
-				<ul>
-					<li>基础功能：为虚拟机提供 NAT 上网</li>
-					<li>基本操作：Debian LXC + 手搓 iproute2 + iptables（其实也没那么复杂）</li>
-					<li>DNS + 监控：AdGuard Home</li>
-					<li>流量记录：<code>-m conntrack --ctstate NEW -j NFLOG</code>
-						<ul>
-							<li>没有磁带，不宜全量镜像</li>
-						</ul>
-					</li>
-				</ul>
-			</section>
-			<section id="lxc-build">
-				<h3>稳定可靠的 LXC 镜像构建技术</h3>
-				<ul>
-					<li>Docker 提供 build environment，PVE 提供 base image</li>
-					<li>基于 shell 脚本和 GitHub Actions 的自动化流程
-						<ul>
-							<li><code>add_file</code>, <code>add_package</code>, <code>run</code> 等“指令”</li>
-							<li><s>就差发明一个 <code>Lxcfile</code> DSL 了</s></li>
-						</ul>
-					</li>
-					<li>Repository：<a href="https://github.com/USTC-vlab/labstrap"><i class="fab fa-github"></i>
-							USTC-vlab/labstrap</a>
-						<ul>
-							<li>精神前辈：图书馆查询🐔的 PXE 镜像构建：<a href="https://github.com/ustclug/liimstrap"><i class="fab fa-github"></i>
-									ustclug/liimstrap</a></li>
-						</ul>
-					</li>
-				</ul>
-			</section>
-		</section>
-		<section>
-			<section id="login">
-				<h2>登录方式</h2>
-				<p>不开放端口，各种协议都需要转发</p>
-				<p>VNC, SSH, and what?</p>
-			</section>
-			<section id="login-ssh-1">
-				<h3>SSH 统一登录</h3>
-				<ul>
-					<li>SSH 没有 Host header 怎么办：来点 PubkeyAuthentication</li>
-					<li><code>ssh <b>-i vm-114514.pem</b> ubuntu@vlab.ustc.edu.cn</code></li>
-					<li>鉴权：就像 GitHub / GitLab 一样直接按公钥区分用户（VM）
-						<ul>
-							<li>Django 提供一个 pubkey → VM IP address 的接口</li>
-						</ul>
-					</li>
-					<li>后端：<code>golang.org/x/crypto/ssh</code>
-						<ul>
-							<li>初版：Forked from <a href="https://github.com/tg123/sshpiper"><i class="fab fa-github"></i>
-									tg123/sshpiper</a></li>
-							<li>现在：<a href="https://github.com/USTC-vlab/sshmux"><i class="fab fa-github"></i> USTC-vlab/sshmux</a>
-							</li>
-							<li>sshpiper 重构了，不好用了 QwQ</li>
-						</ul>
-					</li>
-				</ul>
-			</section>
-			<section id="login-ssh-2">
-				<h3>SSH 统一登录</h3>
-				<ul>
-					<li>恢复模式（LXC）：<code>ssh <b>recovery</b>@vlab.ustc.edu.cn</code>
-						<ul>
-							<li>后台转接到 <code>pct enter &lt;vmid&gt;</code></li>
-						</ul>
-					</li>
-					<li>控制台模式（LXC）：<code>ssh <b>console</b>@vlab.ustc.edu.cn</code>
-						<ul>
-							<li>后台转接到 <code>pct console &lt;vmid&gt;</code></li>
-						</ul>
-					</li>
-					<li>控制台模式（KVM）：<code>ssh <b>serial</b>@vlab.ustc.edu.cn</code>
-						<ul>
-							<li>后台转接到 <code>qm serial &lt;vmid&gt;</code></li>
-						</ul>
-					</li>
-				</ul>
-			</section>
-			<section id="login-vnc-1">
-				<h3>VNC 统一登录</h3>
-				<ul>
-					<li>请出神仙：<a href="https://github.com/pdlan"><i class="fab fa-github"></i> pdlan</a>
-						<ul>
-							<li>逆向了 RealVNC，写了 10,000 行 C艹，到处 <code>co_await</code>，……</li>
-							<li>顺带还实现了 TLS 加密</li>
-							<li>顺带还实现了……</li>
-							<li>外加一个 unix-domain socket 发送管理指令</li>
-						</ul>
-					</li>
-					<li><s>一起来大受震撼吧</s></li>
-					<li>使用 VNC 软件连接：
-						<ul>
-							<li>服务器：<code>vlab.ustc.edu.cn</code>（标准端口 5900/tcp）</li>
-							<li>用户名：<code>PB17000001:114514</code>（用户名 + VM ID，如果用户有多个 VM 的话）</li>
-						</ul>
-					</li>
-				</ul>
-			</section>
-			<section id="login-vnc-2">
-				<h3>VNC 统一登录</h3>
-				<ul>
-					<li>开源贡献：</li>
-					<li>
-						<img src="https://image.ibugone.com/vlab/tigervnc-pr-pdlan.png" />
-						<img src="https://image.ibugone.com/vlab/novnc-pr-pdlan.png" />
-					</li>
-				</ul>
-			</section>
-			<section id="login-rdp">
-				<h3>RDP 统一登录</h3>
-				<ul>
-					<li><s>咕咕咕了，Windows VM 支持还没搞定</s></li>
-					<li>RDP 一大坨非常起夜级的协议，<s>不是很想逆向</s></li>
-					<li><i class="fas fa-fw fa-lightbulb-on"></i> 计划规格：<code>loadbalanceinfo</code></li>
-				</ul>
-			</section>
-			<section id="login-browser">
-				<h3>浏览器登录</h3>
-				<ul>
-					<li>VNC：魔改版 noVNC
-						<ul>
-							<li>没错，vncmux 顺带还实现了 WebSocket</li>
-						</ul>
-					</li>
-					<li>SSH：Go → WASM</li>
-					<li>RDP：从入门到放弃</li>
-				</ul>
-			</section>
-		</section>
-		<section>
-			<section id="hearses">
-				<h2>灵车时间</h2>
-			</section>
-			<section id="vlab-software-1">
-				<h3>磁盘容量</h3>
-				<ul>
-					<li>一个虚拟机镜像就已经 21 GB 了</li>
-					<li>+MATLAB, +Mathematica, +<a href="https://image.ibugone.com/vlab/node_modules-meme.png">node_modules</a></li>
-					<li>我们的存储阵列里就有 114514 份 Vivado</li>
-				</ul>
-			</section>
-			<section id="vlab-software-2">
-				<h3>Bind mount!</h3>
-				<ul>
-					<li>local-lvm 开个新卷给 <code>/opt/vlab</code></li>
-					<li>mp0: /opt/vlab,mp=/opt/vlab,ro=1</li>
-					<li>易于维护：Rsync cron job</li>
-				</ul>
-			</section>
-			<section id="novnc-fun">
-				<h3>No... VNC?</h3>
-				<p><img src="https://image.ibugone.com/vlab/no-vnc.png" /></p>
-			</section>
-			<section>
-				<img src="https://image.ibugone.com/vlab/502.png" />
-			</section>
-			<section id="lvm-metadata-full">
-				<h3>Everything breaks if pushed too hard...</h3>
-				<pre style="font-size: 1em;"><code>VG test 1723 metadata on /dev/sdc1 (521759 bytes) exceeds maximum metadata size (521472 bytes)
+		<section id="lvm-metadata-full">
+			<h3>Everything breaks if pushed too hard...</h3>
+			<pre style="font-size: 1em;"><code>VG test 1723 metadata on /dev/sdc1 (521759 bytes) exceeds maximum metadata size (521472 bytes)
 Failed to write VG test.</code></pre>
-				<p><a href="https://ibug.io/p/52"><i class="fas fa-fw fa-arrow-alt-circle-right"></i> ibug.io/p/52</a></p>
-			</section>
-			<section id="iowait-spike">
-				<h3>IOWait（<code>%wa</code>）午夜准时爆炸</h3>
-				<p style="width: 100%; height: 8em; display: flex; justify-content: space-evenly;">
-					<img src="https://image.ibugone.com/vlab/iowait-load-average.png" />
-					<img src="https://image.ibugone.com/vlab/iowait-iowait.png" />
-				</p>
-				<p>
-					替用户停掉了 <code>man-db.timer</code> 和 <code>apt-daily-upgrade.timer</code>，
-					<br />
-					给 <code>logrotate.timer</code> 补上了 <code>RandomizedDelaySec=3h</code>。
-				</p>
-			</section>
-			<section id="other-software-gore">
-				<h3>其他灵异事件</h3>
-				<ul>
-					<li>
-						一运行备份，网卡就掉了 😦<br />
-						解决方法：两边开启 jumbo frame，MTU 拉到 9000 字节
-					</li>
-					<li>存储服务器的密码掉了</li>
-					<li>PVE HA 过于热情（+<code>nofailback</code>）</li>
-					<li>Vivado 又双叒叕炸了
-						<ol type="1">
-							<li><code>LD_PRELOAD</code> += <code>libudev.so.1</code></li>
-							<li><code>LD_PRELOAD</code> += <code>libdbus-glib-1.so.2</code></li>
-						</ol>
-					</li>
-				</ul>
-			</section>
+			<p><a href="https://ibug.io/p/52"><i class="fas fa-fw fa-arrow-alt-circle-right"></i> ibug.io/p/52</a></p>
+		</section>
+		<section id="iowait-spike">
+			<h3>IOWait（<code>%wa</code>）午夜准时爆炸</h3>
+			<p style="width: 100%; height: 8em; display: flex; justify-content: space-evenly;">
+				<img src="https://image.ibugone.com/vlab/iowait-load-average.png" />
+				<img src="https://image.ibugone.com/vlab/iowait-iowait.png" />
+			</p>
+			<p>
+				替用户停掉了 <code>man-db.timer</code> 和 <code>apt-daily-upgrade.timer</code>，
+				<br />
+				给 <code>logrotate.timer</code> 补上了 <code>RandomizedDelaySec=3h</code>。
+			</p>
+		</section>
+		<section id="other-software-gore">
+			<h3>其他灵异事件</h3>
+			<ul>
+				<li>
+					一运行备份，网卡就掉了 😦<br />
+					解决方法：两边开启 jumbo frame，MTU 拉到 9000 字节
+				</li>
+				<li>存储服务器的密码掉了</li>
+				<li>PVE HA 过于热情（+<code>nofailback</code>）</li>
+				<li>Vivado 又双叒叕炸了
+					<ol type="1">
+						<li><code>LD_PRELOAD</code> += <code>libudev.so.1</code></li>
+						<li><code>LD_PRELOAD</code> += <code>libdbus-glib-1.so.2</code></li>
+					</ol>
+				</li>
+			</ul>
+		</section>
+	</section>
+	<section>
+		<section id="results">
+			<h2>成果</h2>
+			<ul>
+				<li>自 2020 年春季学期运行至今</li>
+				<li>与 <a href="https://fpgaol.ustc.edu.cn/">FPGA Online</a> 和 <a href="https://verilogoj.ustc.edu.cn/">Verilog
+						OJ</a> 等项目结合，实现纯在线 FPGA 编程教学</li>
+				<li>Grafana：<a href="https://monitor.ibugone.com/grafana/d/2">monitor.ibugone.com/grafana/d/2</a></li>
+			</ul>
 		</section>
 		<section>
-			<section id="results">
-				<h2>成果</h2>
-				<ul>
-					<li>自 2020 年春季学期运行至今</li>
-					<li>与 <a href="https://fpgaol.ustc.edu.cn/">FPGA Online</a> 和 <a href="https://verilogoj.ustc.edu.cn/">Verilog
-							OJ</a> 等项目结合，实现纯在线 FPGA 编程教学</li>
-					<li>Grafana：<a href="https://monitor.ibugone.com/grafana/d/2">monitor.ibugone.com/grafana/d/2</a></li>
-				</ul>
-			</section>
-			<section>
-				<div class="img-container">
-					<img src="https://image.ibugone.com/vlab/containers-2023-08.png" />
-				</div>
-			</section>
-			<section>
-				<h3>学习资料</h3>
-				<ul>
-					<li>用户文档：<a href="https://vlab.ustc.edu.cn/docs/">vlab.ustc.edu.cn/docs</a></li>
-					<li>维护文档：<a href="https://vlab.ibugone.com/">vlab.ibugone.com</a></li>
-					<li>GitHub Org：<a href="https://github.com/USTC-vlab"><i class="fab fa-github"></i> USTC-vlab</a></li>
-				</ul>
-			</section>
+			<div class="img-container">
+				<img src="https://image.ibugone.com/vlab/containers-2023-08.png" />
+			</div>
 		</section>
-		<section id="outro">
-			<h1>谢谢！</h1>
-			<p><small>本页面的链接：<a href="https://ibug.io/p/59"><i class="fas fa-fw fa-link"></i> ibug.io/p/59</a></small></p>
+		<section>
+			<h3>学习资料</h3>
+			<ul>
+				<li>用户文档：<a href="https://vlab.ustc.edu.cn/docs/">vlab.ustc.edu.cn/docs</a></li>
+				<li>维护文档：<a href="https://vlab.ibugone.com/">vlab.ibugone.com</a></li>
+				<li>GitHub Org：<a href="https://github.com/USTC-vlab"><i class="fab fa-github"></i> USTC-vlab</a></li>
+			</ul>
 		</section>
-		]]></content><author><name>iBug</name></author><category term="tags" /><category term="tags" /></entry><entry><title type="html">Prolonging eMMC Life Span with Proxmox VE</title><link href="https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/" rel="alternate" type="text/html" title="Prolonging eMMC Life Span with Proxmox VE" /><published>2023-07-15T00:00:00+00:00</published><updated>2023-07-15T20:32:06+00:00</updated><id>https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve</id><content type="html" xml:base="https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/"><![CDATA[<p>Since my blog on <a href="/p/49">installing Proxmox VE on eMMC</a>, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, as eMMCs typically do not offer the level of endurance as anything better than USB flash drives. Among many concerns, the most important one is the limited number of write cycles that an eMMC can sustain, while Proxmox VE, being an enterprise-grade product, has to constantly write stuff like logs to the storage. I came across <a href="https://fat-nerds.com/dot-nerd/cut-down-proxmox-ve-emmc-sd-read-write/">this blog (fat-nerds.com)</a> on reducing eMMC writes on a Proxmox VE installation on a single-board computer from a Hong Kong guy, so I figure I’d share my ideas here.</p>
+	</section>
+	<section id="outro">
+		<h1>谢谢！</h1>
+		<p><small>本页面的链接：<a href="https://ibug.io/p/59"><i class="fas fa-fw fa-link"></i> ibug.io/p/59</a></small></p>
+	</section>
+	]]></content><author><name>iBug</name></author><category term="tags" /><category term="tags" /></entry><entry><title type="html">Prolonging eMMC Life Span with Proxmox VE</title><link href="https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/" rel="alternate" type="text/html" title="Prolonging eMMC Life Span with Proxmox VE" /><published>2023-07-15T00:00:00+00:00</published><updated>2023-07-15T20:32:06+00:00</updated><id>https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve</id><content type="html" xml:base="https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/"><![CDATA[<p>Since my blog on <a href="/p/49">installing Proxmox VE on eMMC</a>, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, as eMMCs typically do not offer the level of endurance as anything better than USB flash drives. Among many concerns, the most important one is the limited number of write cycles that an eMMC can sustain, while Proxmox VE, being an enterprise-grade product, has to constantly write stuff like logs to the storage. I came across <a href="https://fat-nerds.com/dot-nerd/cut-down-proxmox-ve-emmc-sd-read-write/">this blog (fat-nerds.com)</a> on reducing eMMC writes on a Proxmox VE installation on a single-board computer from a Hong Kong guy, so I figure I’d share my ideas here.</p>
 	<p>This article will be a remix of the original blog, with some of my own experiences blended in.</p>
 	<p>As a courtesy, here’s the disclaimer from the original blog:</p>
 	<blockquote>
@@ -2092,387 +2284,4 @@ Volume group <span class="s2">"test"</span> successfully extended
 			<p><a href="https://www.4nums.com/theory/">Definition of “distinct” by <em>4 Numbers</em> website</a></p>
 		</li>
 	</ul>
-	]]></content><author><name>iBug</name></author><category term="development" /><category term="c++" /><category term="algorithm" /><summary type="html"><![CDATA[The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.]]></summary></entry><entry><title type="html">Centralized Linux authentication with OpenLDAP</title><link href="https://ibug.io/blog/2022/03/linux-openldap-server/" rel="alternate" type="text/html" title="Centralized Linux authentication with OpenLDAP" /><published>2022-03-18T00:00:00+00:00</published><updated>2022-05-01T15:21:23+00:00</updated><id>https://ibug.io/blog/2022/03/linux-openldap-server</id><content type="html" xml:base="https://ibug.io/blog/2022/03/linux-openldap-server/"><![CDATA[<p>LDAP, <del>the #1 way to get your graduation delayed</del> (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes the most serious dedication to set up and maintain, yet the slightest agitation to fail.</p>
-	<p>The <em>correct</em> story behind this opens up with our lab’s messy machine management. While home directories across machines are shared from a common NFS server, user and group information is managed manually. To start with, whenever someone joins our lab, the other admin (thankfully not yet me) creates a user for them on <em>every</em> machine they’d access, while paying attention to the consistency of UID and GID. What’s worse, we often grant temporary access to a selected set of machines to guest students to enable them to work on certain projects, or to participate in competitions on behalf of our lab. Not to mention the other admin himself has literally 5 different UIDs on different hosts.</p>
-	<p>LDAP solves this agony and saves a lot of sysadmins’ souls by providing centralized management to users, groups and some other organizational resources using a directory-structured database. While I previously used an existing GOsa² setup for simple management tasks, our lab’s new cluster provides an excellent opportunity to try out LDAP anew.</p>
-	<h2 id="prerequisites">Prerequisites</h2>
-	<p>Thanks to a network outage a few days ago, I get to reinstall our NFS server into Proxmox VE (yes again) to allow more specialized applications to be deployed in a more flexible manner. So I can just launch a new Debian Bullseye (11) virtual machine and begin this journey. The rest of this blog post assumes this environment.</p>
-	<h2 id="i-389ds">Interlude: 389 Directory Server</h2>
-	<p>A friend recommended Fedora’s <a href="https://directory.fedoraproject.org/">389 Directory Server</a> after learning that I wanted to set up some LDAP server, indicating that it’s easier to use and maintain.</p>
-	<p>So I followed the documentation and got a 389DS up and running. Everything looked simple and straightforward until I went on configuring TLS certificates. I created a self-signed certificate with extra Subject Alternative Names (as needed) and tried to import them to 389DS. <a href="https://directory.fedoraproject.org/docs/389ds/howto/howto-ssl-archive.html#importing-an-existing-self-sign-keycert-or-3rd-party-cacert">Their documentation on this</a> is completely unhelpful, and I struggled for two tedious hours before landing on <a href="https://access.redhat.com/documentation/en-us/red_hat_directory_server/11/html/administration_guide/managing_the_nss_database_used_by_directory_server">Red Hat’s documentation</a> that actually worked. 389DS’s default “group” object doesn’t support POSIX GID, either.</p>
-	<p>All those failures led to one question: Why bother with 389DS when it still uses <code class="language-plaintext highlighter-rouge">slapd</code> behind? So I ditched this VM and gave it up.</p>
-	<h2 id="server">Server setup</h2>
-	<p>Installation is easy:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>apt <span class="nb">install </span>slapd
-</code></pre>
-		</div>
-	</div>
-	<p>This installs the OpenLDAP server with all recommended packages that’ll aid configuration. During installation, you’ll be prompted for the admin password. Ignore that for now as we’ll (probably) have to reconfigure this later.</p>
-	<p>This is because slapd tries to automatically determine the base Distinguished Name for the server, which often fails and falls back to the unpleasant <code class="language-plaintext highlighter-rouge">dc=nodomain</code>.</p>
-	<p>Run <code class="language-plaintext highlighter-rouge">dpkg-reconfigure slapd</code> to specify a domain name that will be used to construct the base DN from. It’s perfectly fine to have a short name like just <code class="language-plaintext highlighter-rouge">ibug</code>, or you can choose to be serious on this and use <code class="language-plaintext highlighter-rouge">example.com</code>. Either way, you probably don’t want to have a long DN like <code class="language-plaintext highlighter-rouge">dc=protonlab,dc=research,dc=google,dc=com</code>, which will make manual querying a nightmare.</p>
-	<p>Now we have an empty OpenLDAP server. The admin user’s DN is <code class="language-plaintext highlighter-rouge">cn=admin</code> followed by your base DN, so most data manipulation tasks require the role to be bound to <code class="language-plaintext highlighter-rouge">cn=admin,dc=ibug</code> for me.</p>
-	<p>The additional package <code class="language-plaintext highlighter-rouge">ldap-utils</code> provides tools like <code class="language-plaintext highlighter-rouge">ldapadd</code>, <code class="language-plaintext highlighter-rouge">ldapmodify</code> and <code class="language-plaintext highlighter-rouge">ldapdelete</code> which we’ll be mostly using later. <code class="language-plaintext highlighter-rouge">slapd</code> provides <code class="language-plaintext highlighter-rouge">slapcat</code> that dumps the whole database and <code class="language-plaintext highlighter-rouge">ldapvi</code> provides an interactive editor, both of which come in handy for management and debugging.</p>
-	<h3 id="ldap-utils">Configuring LDAP tools</h3>
-	<p>All interactions with the server are done through <code class="language-plaintext highlighter-rouge">ldap*</code> commands submitting text in LDIF (LDAP Data Interchange Format).</p>
-	<p>Before moving on to the next step, there are config files for common settings that simplifies later tasks.</p>
-	<p>Open <code class="language-plaintext highlighter-rouge">/etc/ldap/ldap.conf</code> (the system-wide settings) and set these options:</p>
-	<div class="language-text highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>BASE    dc=ibug
-URI     ldapi:///
-</code></pre>
-		</div>
-	</div>
-	<p>There are 3 ways to connect to an LDAP server</p>
-	<ul>
-		<li><code class="language-plaintext highlighter-rouge">ldap://</code> (plaintext TCP, default port 389)</li>
-		<li><code class="language-plaintext highlighter-rouge">ldaps://</code> (over SSL/TLS, default port 636)</li>
-		<li><code class="language-plaintext highlighter-rouge">ldapi://</code> (over IPC, or Unix domain socket, usually <code class="language-plaintext highlighter-rouge">/var/run/slapd/ldapi</code>)</li>
-	</ul>
-	<p>Once you have this file set up, you can omit the <code class="language-plaintext highlighter-rouge">-H &lt;host&gt;</code> option from all <code class="language-plaintext highlighter-rouge">ldap*</code> commands. Similarly, <code class="language-plaintext highlighter-rouge">BASE</code> is useful in <code class="language-plaintext highlighter-rouge">ldapsearch</code> or like.</p>
-	<h3 id="seeding">Populating the database</h3>
-	<p>Now that we have an empty database, we can create two directories for our users and groups. This is the first LDIF file to have.</p>
-	<div class="language-yaml highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">ou=user,dc=ibug</span>
-<span class="na">objectClass</span><span class="pi">:</span> <span class="s">organizationalUnit</span>
-<span class="na">ou</span><span class="pi">:</span> <span class="s">user</span>
-
-<span class="na">dn</span><span class="pi">:</span> <span class="s">ou=group,dc=ibug</span>
-<span class="na">objectClass</span><span class="pi">:</span> <span class="s">organizationalUnit</span>
-<span class="na">ou</span><span class="pi">:</span> <span class="s">group</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Use <code class="language-plaintext highlighter-rouge">ldapadd -D cn=admin,dc=ibug -W -f base.ldif</code> to load the “change request” into the database.</p>
-	<h3 id="users-and-groups">Managing users and groups</h3>
-	<p>Now create the first user and group:</p>
-	<div class="language-yaml highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">uid=ibug,ou=user,dc=ibug</span>
-<span class="na">objectClass</span><span class="pi">:</span> <span class="s">posixAccount</span>
-<span class="na">objectClass</span><span class="pi">:</span> <span class="s">shadowAccount</span>
-<span class="na">objectClass</span><span class="pi">:</span> <span class="s">inetOrgPerson</span>
-<span class="na">cn</span><span class="pi">:</span> <span class="s">iBug</span>
-<span class="na">sn</span><span class="pi">:</span> <span class="s">iBug</span>
-<span class="na">uid</span><span class="pi">:</span> <span class="s">ibug</span>
-<span class="na">uidNumber</span><span class="pi">:</span> <span class="m">1000</span>
-<span class="na">gidNumber</span><span class="pi">:</span> <span class="m">1000</span>
-<span class="na">homeDirectory</span><span class="pi">:</span> <span class="s">/home/ibug</span>
-<span class="na">loginShell</span><span class="pi">:</span> <span class="s">/bin/bash</span>
-<span class="na">gecos</span><span class="pi">:</span> <span class="s">iBug</span>
-
-<span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
-<span class="na">objectClass</span><span class="pi">:</span> <span class="s">posixGroup</span>
-<span class="na">cn</span><span class="pi">:</span> <span class="s">staff</span>
-<span class="na">gidNumber</span><span class="pi">:</span> <span class="m">1000</span>
-<span class="na">description</span><span class="pi">:</span> <span class="s">My staff group</span>
-</code></pre>
-		</div>
-	</div>
-	<p>For user objects, <code class="language-plaintext highlighter-rouge">inetOrgPerson</code> is a required “object class”, and therefore the <code class="language-plaintext highlighter-rouge">cn</code> and <code class="language-plaintext highlighter-rouge">sn</code> fields. Linux uses <code class="language-plaintext highlighter-rouge">posixAccount</code> and <code class="language-plaintext highlighter-rouge">shadowAccount</code> for authentication, and the <code class="language-plaintext highlighter-rouge">gecos</code> field is the one that’ll appear in output from commands like <code class="language-plaintext highlighter-rouge">getent passwd</code>.</p>
-	<p>To add a user to a group, use <code class="language-plaintext highlighter-rouge">ldapmodify</code> with this LDIF file:</p>
-	<div class="language-yaml highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
-<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
-<span class="na">add</span><span class="pi">:</span> <span class="s">memberUid</span>
-<span class="na">memberUid</span><span class="pi">:</span> <span class="s">ibug</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Similarly, to change user information, just use <code class="language-plaintext highlighter-rouge">replace</code> with <code class="language-plaintext highlighter-rouge">changetype: modify</code>:</p>
-	<div class="language-yaml highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
-<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
-<span class="na">replace</span><span class="pi">:</span> <span class="s">gecos</span>
-<span class="na">gecos</span><span class="pi">:</span> <span class="s">New iBug</span>
-</code></pre>
-		</div>
-	</div>
-	<p>If you’re importing users and groups from an existing system, you may find the ability to preload the group with an initial set of users useful. When creating the group, you may supply any number of <code class="language-plaintext highlighter-rouge">memberUid</code>s. This has the same effect as adding them one by one.</p>
-	<div class="language-yaml highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=staff,ou=group,dc=ibug</span>
-<span class="na">objectClass</span><span class="pi">:</span> <span class="s">posixGroup</span>
-<span class="na">cn</span><span class="pi">:</span> <span class="s">staff</span>
-<span class="na">gidNumber</span><span class="pi">:</span> <span class="m">1000</span>
-<span class="na">description</span><span class="pi">:</span> <span class="s">My staff group</span>
-<span class="na">memberUid</span><span class="pi">:</span> <span class="s">ibug</span>
-<span class="na">memberUid</span><span class="pi">:</span> <span class="s">user1</span>
-<span class="na">memberUid</span><span class="pi">:</span> <span class="s">user2</span>
-<span class="na">memberUid</span><span class="pi">:</span> <span class="s">user3</span>
-<span class="na">memberUid</span><span class="pi">:</span> <span class="s">user4</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Last but not least, <code class="language-plaintext highlighter-rouge">ldappasswd</code> sets or resets passwords for users:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>ldappasswd <span class="nt">-D</span> <span class="nv">cn</span><span class="o">=</span>admin,dc<span class="o">=</span>ibug <span class="nt">-W</span> <span class="nv">uid</span><span class="o">=</span>ibug,ou<span class="o">=</span>group,dc<span class="o">=</span>ibug
-</code></pre>
-		</div>
-	</div>
-	<p>If you don’t give the new password, <code class="language-plaintext highlighter-rouge">ldappasswd</code> will generate a random new one for you, which you can forward to the user themself.</p>
-	<h3 id="import-passwords">Importing passwords from Linux</h3>
-	<p>One great concern while migrating my lab’s authentication completely onto LDAP was whether users can keep their passwords. LDAP uses another hashing scheme SSHA by default, while any supported hashing scheme may be imported.</p>
-	<p>By default, modern Linux stores hashed user password in <code class="language-plaintext highlighter-rouge">/etc/shadow</code>, which is only accessible by root. It contains lines like this:</p>
-	<div class="language-text highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>root:$y$j9T$egdUbc2x4FiVY42xxEH4z.$OJA25VwJ2fIEZizIqUDkS/yUtz8z5tuRiSS3XLum/F3:19064:0:99999:7:::
-</code></pre>
-		</div>
-	</div>
-	<p>The 2nd field, delimited by colons, is the hashed password in <a href="https://en.wikipedia.org/wiki/Bcrypt">Bcrypt</a> format. To import that into LDAP, prepend the hash with <code class="language-plaintext highlighter-rouge">{CRYPT}</code>, like this:</p>
-	<div class="language-yaml highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">uid=ibug,ou=group,dc=ibug</span>
-<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
-<span class="na">replace</span><span class="pi">:</span> <span class="s">userPassword</span>
-<span class="na">userPassword</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">CRYPT</span><span class="pi">}</span><span class="s">$y$j9T$egdUbc2x4FiVY42xxEH4z.$OJA25VwJ2fIEZizIqUDkS/yUtz8z5tuRiSS3XLum/F3</span>
-</code></pre>
-		</div>
-	</div>
-	<p>It will be replaced with LDAP’s default password hash type when the user changes their password for the next time.</p>
-	<p>Now that we have our server set up and running, it’s time to configure client machines to use it.</p>
-	<h2 id="client">Client setup</h2>
-	<p>There are two options for clients: More commonly <code class="language-plaintext highlighter-rouge">libnss-ldapd</code> and <code class="language-plaintext highlighter-rouge">libpam-ldapd</code> are used together, or <code class="language-plaintext highlighter-rouge">sssd</code> if you’re familiar with it (which will not be described in this post). Note that are two obsolete packages <code class="language-plaintext highlighter-rouge">libnss-ldap</code> and <code class="language-plaintext highlighter-rouge">libpam-ldap</code> (both missing the final <code class="language-plaintext highlighter-rouge">d</code>) that might confuse you.</p>
-	<p>Start with <code class="language-plaintext highlighter-rouge">apt install libnss-ldapd libpam-ldapd</code>. You’ll be asked for the LDAP server and the base DN, then “name services to configure”. Select <code class="language-plaintext highlighter-rouge">passwd group shadow</code> for now.</p>
-	<p><img src="/image/linux/libnss-ldapd.png" alt="Configure libnss-ldapd" /></p>
-	<p>These two packages should also pull in <code class="language-plaintext highlighter-rouge">nscd</code> (Name Service Cache Daemon) and <code class="language-plaintext highlighter-rouge">nslcd</code> (Name Service LDAP Client Daemon). The former provides a local cache for name service lookup results, while the latter provides the ability to lookup items from an LDAP server.</p>
-	<p>After configuring the packages, your <code class="language-plaintext highlighter-rouge">/etc/nslcd.conf</code> should contain two lines that look similar to that of <code class="language-plaintext highlighter-rouge">/etc/ldap/ldap.conf</code>, except that the keys are in lowercase.</p>
-	<div class="language-text highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>uri ldap://ldap.example.com
-base dc=ibug
-</code></pre>
-		</div>
-	</div>
-	<p>If the LDAP server is configured correctly (for <code class="language-plaintext highlighter-rouge">nslcd</code>), you should now be able to see LDAP users in the output of <code class="language-plaintext highlighter-rouge">getent passwd</code>, as well as <code class="language-plaintext highlighter-rouge">getent group</code>. LDAP users can also login via SSH or ttys.</p>
-	<p>An LDAP user changes their password using the same <code class="language-plaintext highlighter-rouge">passwd</code> command, which will be stored in LDAP and immediately available to all machines connected to this LDAP server. In case it doesn’t, <code class="language-plaintext highlighter-rouge">nscd -i passwd</code> and <code class="language-plaintext highlighter-rouge">nscd -i group</code> will refresh the cache and allow nslcd to pull in the latest information.</p>
-	<h2 id="advanced">Advanced topics</h2>
-	<h3 id="tls">Securing LDAP server with TLS</h3>
-	<p>Nothing is “baseline secure” over unencrypted traffic, so the next thing is to add TLS certificates for the LDAP server. Certificates aren’t hard to get. For example, if you have a public domain, <a href="https://letsencrypt.org/">Let’s Encrypt</a> is the easiest way to get a universally-trusted certificate. Otherwise, you can create a self-signed certificate that can include any domain name or IP address. <a href="https://hohnstaedt.de/xca/">XCA</a> is one of the best tools to manage a private Certificate Authority.</p>
-	<p>Copy the certificate and private key files to the <code class="language-plaintext highlighter-rouge">/etc/ldap/</code> directory. Change the owner and group to <code class="language-plaintext highlighter-rouge">openldap</code> and file mode to <code class="language-plaintext highlighter-rouge">0644</code> (for the certificate) or <code class="language-plaintext highlighter-rouge">0400</code> (for the private key). This ensures only the OpenLDAP server can access them. Now you need to tell the server to <em>use</em> these files.</p>
-	<div class="language-yaml highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">cn=config</span>
-<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
-<span class="na">add</span><span class="pi">:</span> <span class="s">olcTLSCertificateKeyFile</span>
-<span class="na">olcTLSCertificateKeyFile</span><span class="pi">:</span> <span class="s">/etc/ldap/server.key</span>
-<span class="pi">-</span>
-<span class="na">add</span><span class="pi">:</span> <span class="s">olcTLSCertificateFile</span>
-<span class="na">olcTLSCertificateFile</span><span class="pi">:</span> <span class="s">/etc/ldap/server.crt</span>
-<span class="pi">-</span>
-<span class="na">add</span><span class="pi">:</span> <span class="s">olcTLSCACertificateFile</span>
-<span class="na">olcTLSCACertificateFile</span><span class="pi">:</span> <span class="s">/etc/ldap/server.crt</span>
-</code></pre>
-		</div>
-	</div>
-	<p>This time the LDAP “admin” user can’t import these changes. You need to log in to the server as <code class="language-plaintext highlighter-rouge">root</code>, then use the following command:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>ldapmodify <span class="nt">-Y</span> EXTERNAL <span class="nt">-H</span> ldapi:/// <span class="nt">-f</span> ssl.ldif
-</code></pre>
-		</div>
-	</div>
-	<div class="notice--primary">
-		<h4 id="external-authentication-method"><i class="fas fa-fw fa-lightbulb"></i> “External” authentication method</h4>
-		<p>The “external” authentication method defers authentication to the transport layer. There are (at least) two kinds of supported methods: Unix domain socket option <code class="language-plaintext highlighter-rouge">SO_PEERCRED</code> (see <a href="https://man7.org/linux/man-pages/man7/unix.7.html">unix(7)</a>) and TLS client certificate. When connecting over UDS, the server can retrieve the client’s UID, GID and PID with that option.</p>
-		<p>The <code class="language-plaintext highlighter-rouge">-H ldapi:///</code> tells the <code class="language-plaintext highlighter-rouge">ldap*</code> commands to connect over a local Unix domain socket, which is required for <code class="language-plaintext highlighter-rouge">-Y EXTERNAL</code> (we don’t have TLS client certificates yet).</p>
-	</div>
-	<div class="notice--danger">
-		<h4 class="no_toc" id="order-is-important"><i class="fas fa-fw fa-exclamation-triangle"></i> Order is important</h4>
-		<p>The OpenLDAP documentation did not cover the detail that the private key must be added <em>before</em> the certificate. Otherwise you’ll get this response:</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>ldap_modify: Other (e.g., implementation specific) error (80)
-</code></pre>
-			</div>
-  </div>
-		<p>References: <a href="https://askubuntu.com/a/1103245/612877">1</a>, <a href="https://gist.github.com/ndlrx/edef4474ec9f5edac594cc5e37644559">2</a>, <a href="https://serverfault.com/a/1007262/450575">3</a></p>
-	</div>
-	<p>After getting the certificates ready, we can now enable LDAP-over-TLS service. Somehow the Debian <code class="language-plaintext highlighter-rouge">slapd</code> package does not come with a native systemd service, but <code class="language-plaintext highlighter-rouge">/etc/init.d/slapd</code>, so “service settings” are configured at <code class="language-plaintext highlighter-rouge">/etc/default/slapd</code>. Locate that file and add <code class="language-plaintext highlighter-rouge">ldaps:///</code> for <code class="language-plaintext highlighter-rouge">SLAPD_SERVICES</code>. Optionally, though recommended, you can remove <code class="language-plaintext highlighter-rouge">ldap://</code> to disable the plaintext port. The line should now look like this:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="nv">SLAPD_SERVICES</span><span class="o">=</span><span class="s2">"ldaps:/// ldapi:///"</span>
-</code></pre>
-		</div>
-	</div>
-	<p>You can now use <code class="language-plaintext highlighter-rouge">systemctl restart slapd</code> to restart the server, and <code class="language-plaintext highlighter-rouge">netstat -tlpn</code> to verify that the server is listening on the correct port (TCP 636).</p>
-	<h3 id="permissions">Managing permissions</h3>
-	<p>By default,</p>
-	<ul>
-		<li>The “admin” user (using <code class="language-plaintext highlighter-rouge">-D cn=admin,dc=... -W</code>) can modify the “database”, where users, groups etc. are stored.</li>
-		<li>The local root user can modify server settings. Namely, anything under the tree <code class="language-plaintext highlighter-rouge">cn=config</code>. Note that Distinguished Name (DN) resolves from right to left, like domain names.</li>
-	</ul>
-	<p>For me, I found it a hinderance that the root user cannot edit the database directly, so I added some permissions to make this happen.</p>
-	<p>As you may have noticed, we used the same LDIF format to change TLS settings, except for the server port. In fact, the whole <code class="language-plaintext highlighter-rouge">cn=config</code> tree is another LDAP database, just like the <code class="language-plaintext highlighter-rouge">mysql</code> database in MySQL. And this “config” database also has its metadata under <code class="language-plaintext highlighter-rouge">cn=config</code>.</p>
-	<p>First we identify where the metadata for the “config” database is:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>ldapsearch <span class="nt">-Y</span> EXTERNAL <span class="nt">-b</span> <span class="nv">cn</span><span class="o">=</span>config
-</code></pre>
-		</div>
-	</div>
-	<p>You can pipe the above command to <code class="language-plaintext highlighter-rouge">less</code> or send to a file for easier inspection. Pay attention to lines beginning with <code class="language-plaintext highlighter-rouge">dn:</code>, which describes a directory “node”. One of them will look like:</p>
-	<div class="language-yaml highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
-</code></pre>
-		</div>
-	</div>
-	<p>The <code class="language-plaintext highlighter-rouge">olc</code> prefix stands for <strong>O</strong>pen<strong>L</strong>DAP <strong>C</strong>onfiguration, and <code class="language-plaintext highlighter-rouge">{1}</code> indicates an entry from multiple of the same name. You’ll probably notice there’s <code class="language-plaintext highlighter-rouge">olcDatabase={0}config</code> as well, which we’ll cover soon.</p>
-	<p>This item has a lot of attributes, among which there are:</p>
-	<div class="language-yaml highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
-<span class="na">objectClass</span><span class="pi">:</span> <span class="s">olcDatabaseConfig</span>
-<span class="na">objectClass</span><span class="pi">:</span> <span class="s">olcMdbConfig</span>
-<span class="na">olcDatabase</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">1</span><span class="pi">}</span><span class="s">mdb</span>
-<span class="na">olcDbDirectory</span><span class="pi">:</span> <span class="s">/var/lib/ldap</span>
-<span class="na">olcSuffix</span><span class="pi">:</span> <span class="s">dc=ibug</span>
-<span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">0</span><span class="pi">}</span><span class="s">to attrs=userPassword by self write by anonymous auth by * none</span>
-<span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">1</span><span class="pi">}</span><span class="s">to attrs=shadowLastChange by self write by * read</span>
-<span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">2</span><span class="pi">}</span><span class="s">to * by * read</span>
-<span class="na">olcRootDN</span><span class="pi">:</span> <span class="s">cn=admin,dc=ibug</span>
-</code></pre>
-		</div>
-	</div>
-	<p>The <code class="language-plaintext highlighter-rouge">olcAccess</code> key(s) describes its Access Control List (ACL), and apparently <code class="language-plaintext highlighter-rouge">{0}</code>, <code class="language-plaintext highlighter-rouge">{1}</code> and <code class="language-plaintext highlighter-rouge">{2}</code> have the same meaning as that of <code class="language-plaintext highlighter-rouge">olcDatabase={1}mdb</code>. The syntax is roughly as follows:</p>
-	<div class="language-text highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>olcAccess: {&lt;index&gt;}to &lt;what&gt; by &lt;who&gt; &lt;how&gt; [by &lt;who&gt; &lt;how&gt;]...
-</code></pre>
-		</div>
-	</div>
-	<p>Notice that there’s no explicit ACL to the “admin user”, because the admin user is registered as <code class="language-plaintext highlighter-rouge">olcRootDN</code> for this database. The next thing we need to do is to insert an all-access rule for the local root user. The next question is, how to “refer to” the root user?</p>
-	<p>If you looked through <code class="language-plaintext highlighter-rouge">olcDatabase={0}config</code>, you should have the answer now:</p>
-	<div class="language-yaml highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={0}config,cn=config</span>
-<span class="nn">...</span>
-<span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">0</span><span class="pi">}</span><span class="s">to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break</span>
-<span class="nn">...</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Unfortunately LDIF does not allow modifying or inserting an item into a repeated attribute directly, so the way to do this is to replace all of them:</p>
-	<div class="language-yaml highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
-<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
-<span class="na">replace</span><span class="pi">:</span> <span class="s">olcAccess</span>
-<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break</span>
-<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to attrs=userPassword by self write by anonymous auth by * none</span>
-<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to attrs=shadowLastChange by self write by * read</span>
-<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to * by * read</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Seen how the <code class="language-plaintext highlighter-rouge">&lt;who&gt;</code> part is reminiscent of the “External authentication method” described above? Send this LDIF to the server and you’ll get the desired result. You can now try to modify the “user database” using root user and <code class="language-plaintext highlighter-rouge">-Y EXTERNAL</code>.</p>
-	<p>To save some typing <code class="language-plaintext highlighter-rouge">-Y EXTERNAL</code> for <code class="language-plaintext highlighter-rouge">ldap*</code> commands, keep in mind that these commands read <code class="language-plaintext highlighter-rouge">/etc/ldap/ldap.conf</code>. This means there should be some kind of configuration for this, and indeed there is:</p>
-	<div class="language-text highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>SASL_MECH   EXTERNAL
-</code></pre>
-		</div>
-	</div>
-	<p>For more detailed description, you can check out the <a href="https://www.openldap.org/doc/admin24/access-control.html">slapd.access</a> help page.</p>
-	<h3 id="user-chsh">Allow users to change login shell</h3>
-	<p>Changing the login shell is a basic privilege of a normal POSIX user. Unlike <code class="language-plaintext highlighter-rouge">passwd</code> that automatically handles LDAP users, <code class="language-plaintext highlighter-rouge">chsh</code> does not, and only complains about PAM authentication failed.</p>
-	<p>It’s easy to discover that there’s a <code class="language-plaintext highlighter-rouge">chsh.ldap</code> command. It’s even easier to discover that it doesn’t work:</p>
-	<div class="language-python highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="n">ibug</span><span class="nd">@ldap</span><span class="p">:</span><span class="o">~</span><span class="err">$</span> <span class="n">chsh</span><span class="p">.</span><span class="n">ldap</span>
-<span class="n">LDAP</span> <span class="n">password</span> <span class="k">for</span> <span class="n">ibug</span><span class="p">:</span>
-<span class="n">Enter</span> <span class="n">the</span> <span class="n">new</span> <span class="n">value</span><span class="p">,</span> <span class="ow">or</span> <span class="n">press</span> <span class="n">ENTER</span> <span class="k">for</span> <span class="n">the</span> <span class="n">default</span>
-<span class="nc">Traceback </span><span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
-  <span class="n">File</span> <span class="sh">"</span><span class="s">/usr/bin/chsh.ldap</span><span class="sh">"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">80</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
-    <span class="nf">main</span><span class="p">()</span>
-  <span class="n">File</span> <span class="sh">"</span><span class="s">/usr/bin/chsh.ldap</span><span class="sh">"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">69</span><span class="p">,</span> <span class="ow">in</span> <span class="n">main</span>
-    <span class="n">shell</span> <span class="o">=</span> <span class="nf">ask_shell</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="n">shell</span><span class="p">)</span>
-  <span class="n">File</span> <span class="sh">"</span><span class="s">/usr/bin/chsh.ldap</span><span class="sh">"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">50</span><span class="p">,</span> <span class="ow">in</span> <span class="n">ask_shell</span>
-    <span class="n">shell</span> <span class="o">=</span> <span class="nf">input</span><span class="p">(</span><span class="sh">'</span><span class="s">  Login Shell [%s]: </span><span class="sh">'</span> <span class="o">%</span> <span class="n">oldshell</span><span class="p">)</span>
-<span class="nb">UnboundLocalError</span><span class="p">:</span> <span class="n">local</span> <span class="n">variable</span> <span class="sh">'</span><span class="s">input</span><span class="sh">'</span> <span class="n">referenced</span> <span class="n">before</span> <span class="n">assignment</span>
-</code></pre>
-		</div>
-	</div>
-	<p>If you look at <code class="language-plaintext highlighter-rouge">/usr/bin/chsh.ldap</code>, it contains this stupid assignment:</p>
-	<div class="language-python highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="c1"># Provide Python 2 compatibility
-</span><span class="k">try</span><span class="p">:</span>
-    <span class="nb">input</span> <span class="o">=</span> <span class="nb">raw_input</span>
-<span class="k">except</span> <span class="nb">NameError</span><span class="p">:</span>
-    <span class="k">pass</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Removing this try-except block gets rid of the first error, but it’s still not working:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">ibug@ldap:~$</span><span class="w"> </span>chsh.ldap
-<span class="go">LDAP password for ibug:
-Enter the new value, or press ENTER for the default
-  Login Shell [/bin/bash]:
-/usr/bin/chsh.ldap: /bin/bash is an invalid shell
-</span></code></pre>
-		</div>
-	</div>
-	<p>The second one is trickier to fix because you don’t know where it’s doing wrong.</p>
-	<p>It took me some effort to find bug report <a href="https://bugs.launchpad.net/ubuntu/+source/nss-pam-ldapd/+bug/1892482">LP#1892482</a>, which provides a link to <a href="https://github.com/arthurdejong/nss-pam-ldapd/commit/1025d5de336d8c9585b79df3154b5649da344281">this commit</a> that fixes the problem. You can safely apply that commit to your local installation of <code class="language-plaintext highlighter-rouge">/usr/share/nslcd-utils</code>.</p>
-	<p>Now <code class="language-plaintext highlighter-rouge">chsh.ldap</code> seems to be working, <em>except</em> that it doesn’t save your selected shell.</p>
-	<p>Remember how there’s an ACL to allow users to change their passwords?</p>
-	<div class="language-yaml highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="na">olcAccess</span><span class="pi">:</span> <span class="pi">{</span><span class="nv">0</span><span class="pi">}</span><span class="s">to attrs=userPassword by self write by anonymous auth by * none</span>
-</code></pre>
-		</div>
-	</div>
-	<p>That’s right, the only thing left to do is to add another ACL to allow users to change their login shells as well, replacing all <code class="language-plaintext highlighter-rouge">olcAccess</code> keys <em>again</em>:</p>
-	<div class="language-yaml highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="na">dn</span><span class="pi">:</span> <span class="s">olcDatabase={1}mdb,cn=config</span>
-<span class="na">changetype</span><span class="pi">:</span> <span class="s">modify</span>
-<span class="na">replace</span><span class="pi">:</span> <span class="s">olcAccess</span>
-<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to * by dn.exact=gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth manage by * break</span>
-<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to attrs=userPassword by self write by anonymous auth by * none</span>
-<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to attrs=loginShell by self write by * none</span>
-<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to attrs=shadowLastChange by self write by * read</span>
-<span class="na">olcAccess</span><span class="pi">:</span> <span class="s">to * by * read</span>
-</code></pre>
-		</div>
-	</div>
-	<p>This time there’s no need to include <code class="language-plaintext highlighter-rouge">by anonymous auth</code> because who checks the login shell for authentication?</p>
-	<p>Now we can verify that <code class="language-plaintext highlighter-rouge">chsh.ldap</code> is working correctly:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">ibug@ldap:~$</span><span class="w"> </span>chsh.ldap
-<span class="go">LDAP password for ibug:
-Enter the new value, or press ENTER for the default
-  Login Shell [/bin/bash]: /bin/zsh
-</span><span class="gp">ibug@ldap:~$</span><span class="w"> </span>getent passwd | <span class="nb">grep </span>ibug
-<span class="go">ibug:x:1000:1000:iBug:/home/ibug:/bin/zsh
-</span><span class="gp">ibug@ldap:~$</span><span class="w">
-</span></code></pre>
-		</div>
-	</div>
-	<h2 id="afterword">Afterword</h2>
-	<p>LDAP is a powerful tool to manage a wide range of things, including hosts (like <code class="language-plaintext highlighter-rouge">/etc/hosts</code>) and even Sudo rules, with increasing complexity to set up. There’s also Active Directory on Windows platform that shares the same concepts and is even inter-operable with LDAP.</p>
-	<p>LDAP also supports plugins that enables automatic configuration of certain attributes, like “group membership”, where the plugin adds a corresponding <code class="language-plaintext highlighter-rouge">memberOf</code> for users when a <code class="language-plaintext highlighter-rouge">member</code> entry is created under a group. However, this plugin doesn’t work with the <code class="language-plaintext highlighter-rouge">posixGroup</code> object class and requires the conflicting <code class="language-plaintext highlighter-rouge">groupOfNames</code> object class. Fortunately, this does not affect the ability to lookup groups from users, since traditionally the user-group relationship is stored one-way only in <code class="language-plaintext highlighter-rouge">/etc/group</code>, and PAM by default tries to look it up this way.</p>
-	<p>If you need access control, OpenSSH supports <a href="https://man7.org/linux/man-pages/man5/sshd_config.5.html">an <code class="language-plaintext highlighter-rouge">AllowGroup</code> directive</a> to restrict login to certain groups, which you can then remotely configure in LDAP.</p>
-	<h2 id="references">References</h2>
-	<ul>
-		<li><a href="https://harrychen.xyz/2021/01/17/openldap-linux-auth/">使用 OpenLDAP 在 Linux 上进行中心化用户管理 - Harry Chen’s blog</a></li>
-		<li><a href="https://access.redhat.com/documentation/en-us/red_hat_directory_server/11/html/administration_guide/managing_the_nss_database_used_by_directory_server">9.3. Managing the NSS Database Used by Directory Server</a> (Red Hat Documentation)</li>
-		<li><a href="https://en.wikipedia.org/wiki/Bcrypt">Bcrypt - Wikipedia</a></li>
-		<li><a href="https://hohnstaedt.de/xca/">XCA</a></li>
-		<li>
-			<p><a href="https://github.com/arthurdejong/nss-pam-ldapd/commit/1025d5de336d8c9585b79df3154b5649da344281">The commit</a> that fixes <code class="language-plaintext highlighter-rouge">chsh.ldap</code></p>
-		</li>
-	</ul>
-	]]></content><author><name>iBug</name></author><category term="tech" /><category term="linux" /><category term="server" /><category term="ldap" /><summary type="html"><![CDATA[LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes the most serious dedication to set up and maintain, yet the slightest agitation to fail.]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="development" /><category term="c++" /><category term="algorithm" /><summary type="html"><![CDATA[The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.]]></summary></entry></feed>

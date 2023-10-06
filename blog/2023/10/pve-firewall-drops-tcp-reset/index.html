@@ -1,0 +1,650 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>Debugging Proxmox VE Firewall Dropping TCP Reset Packets - iBug</title>
+		<meta name="description" content="A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.">
+		<meta name="author" content="iBug">
+		<meta property="article:author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="Debugging Proxmox VE Firewall Dropping TCP Reset Packets">
+		<meta property="og:url" content="https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset/">
+		<meta property="og:description" content="A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2023-10-06T00:00:00+00:00">
+		<meta property="article:modified_time" content="2023-10-06T13:37:51+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset/">
+		<script type="application/ld+json">
+			{
+			  "@context": "https://schema.org",
+
+			    "@type": "Person",
+			    "name": "iBug",
+			    "url": "https://ibug.io/"
+
+			}
+		</script>
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script>
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=c068ed9">
+		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<meta name="theme-color" content="#EDEDED">
+		<script>
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+	</head>
+	<body class="layout--single">
+		<nav class="skip-links">
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt="iBug"></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a href="/about/">About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/blog/">Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/projects/">Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/friends/">Friends</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/cn/">中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<i class="fas fa-search"></i>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay"
+  style=" background-image: url('/image/header/mountain-1.jpg');"
+>
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						Debugging Proxmox VE Firewall Dropping TCP Reset Packets
+					</h1>
+					<p class="page__meta">
+						<span class="page__meta-date">
+							<i class="far fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2023-10-06T00:00:00+00:00">Oct 6, 2023</time>
+						</span>
+						<span class="page__meta-sep"></span>
+						<span class="page__meta-readtime">
+							<i class="far fa-clock" aria-hidden="true"></i>
+							11 minute read
+						</span>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person">
+						<div class="author__avatar">
+							<img src="/image/avatar.png" alt="iBug" itemprop="image">
+						</div>
+						<div class="author__content">
+							<h3 class="author__name" itemprop="name">iBug</h3>
+							<div class="author__bio" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer"><i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox" />
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/bookmarks/"><i class="fas fa-fw fa-bookmark"></i> Bookmarks</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="Debugging Proxmox VE Firewall Dropping TCP Reset Packets">
+					<meta itemprop="description" content="A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.">
+					<meta itemprop="datePublished" content="2023-10-06T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2023-10-06T13:37:51+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#searching">Searching for information</a></li>
+										<li><a href="#reviewing">Reviewing information</a></li>
+										<li><a href="#tcpdump">Inspecting packet captures</a></li>
+										<li><a href="#conntrack">Inspecting conntrack</a></li>
+										<li><a href="#solution">Finding the solution</a></li>
+										<li><a href="#conclusion">Conclusion</a></li>
+									</ul>
+								</nav>
+							</aside>
+							<p>A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.</p>
+							<p>When I reviewed my edited Nginx configuration and tried visiting the new website, I received a 504 Gateway Timeout error after <code class="language-plaintext highlighter-rouge">curl</code> hung for a minute. Knowing that the web server had yet to be set up, I was expecting a 502 Bad Gateway error. I quickly recalled the conditions for Nginx to return these specific errors: 502 if the upstream server is immediately known down, and 504 if the upstream server is up but not responding.</p>
+							<p>Since the actual web application hadn’t been set up yet, the new VM should have nothing listening on the configured ports. Consequently, the kernel should immediately respond with a TCP Reset for any incoming connections. To verify this, I ran <code class="language-plaintext highlighter-rouge">tcpdump</code> on both sides to check if the TCP reset packets actually came out. To my surprise, the packets were indeed sent out from the new VM, but the gateway server received nothing. So there was certainly something wrong with the firewall. I took a glance at the output of <code class="language-plaintext highlighter-rouge">pve-firewall compile</code>. They were very structured and adequately easy to understand, but I couldn’t immediately identify anything wrong. Things were apparently more complicated than I had previously anticipated.</p>
+							<h2 id="searching">Searching for information</h2>
+							<p>As usual, the first thing to try is Googling. Searching for <code class="language-plaintext highlighter-rouge">pve firewall tcp reset</code> brought <a href="https://forum.proxmox.com/threads/tcp-rst-packets-dropped-by-pve-firewall.56300/">this post on Proxmox Forum</a> as the first result. Their symptoms were precisely the same as mine:</p>
+							<blockquote>
+								<ul>
+									<li>Assume we have a service running on TCP port 12354</li>
+									<li>Clients can communicate with it while running</li>
+									<li>While service is down, clients recieved “Connection timed out” (no answer) even if OS send TCP RST packets:</li>
+								</ul>
+								<p>[…]</p>
+								<p>However, these RST packets are dropped somewhere in PVE firewall.<br />
+									On the VM options :</p>
+								<ul>
+									<li>Firewall &gt; Options &gt; Firewall = No, Has no effect</li>
+									<li>Firewall &gt; Options &gt; * Policy = ACCEPT, Has no effect (even with NO rule in active for this VM)</li>
+									<li>Hardware &gt; Network Device &gt; <code class="language-plaintext highlighter-rouge">firewall=0</code>, allows packets RST to pass!</li>
+								</ul>
+							</blockquote>
+							<p>I gave the last suggestion a try, and it worked! I could now see connections immediately reset on the gateway server, and Nginx started producing 502 errors. But I was still confused why this happened in the first place. The first thread contained nothing else useful, so I continued scanning through other search results and noticed <a href="https://forum.proxmox.com/threads/turning-on-the-pve-firewall-stops-vm-lxc-connectivity.55634/#post-261316">another post</a> about another seemingly unrelated problem, with a plausible solution:</p>
+							<blockquote>
+								<p>[…], and the fix was just to add the <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> in the <code class="language-plaintext highlighter-rouge">host.fw</code> for each node - I didn’t have to do anything other than that.</p>
+							</blockquote>
+							<p>That seemed understandable to me, so I gave it a try as well, and to my pleasure, it also worked.</p>
+							<p>Regrettably, useful information ceased to exist online beyond this, and it was far from painting the whole picture. So anything further would have to be uncovered on my own.</p>
+							<h2 id="reviewing">Reviewing information</h2>
+							<p>I reviewed the two helpful workarounds and made myself abundantly clear about their effects:</p>
+							<ul>
+								<li>
+									<p>Disabling the firewall on the virtual network device stops PVE from bridging the interface an extra time, as shown in the following diagram:</p>
+									<p><img src="/image/pve-firewall/pve-fwbr.png" alt="PVE Firewall Diagram" /></p>
+								</li>
+								<li>
+									<p>Adding <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> removes one single iptables rule:</p>
+									<div class="language-shell highlighter-rouge">
+										<div class="highlight">
+											<pre class="highlight"><code><span class="nt">-A</span> PVEFW-FORWARD <span class="nt">-m</span> conntrack <span class="nt">--ctstate</span> INVALID <span class="nt">-j</span> DROP
+</code></pre>
+										</div>
+    </div>
+								</li>
+							</ul>
+							<p>I couldn’t figure out how the first difference was relevant, but the second one provided an important clue: The firewall was dropping TCP Reset packets because conntrack considered them invalid.</p>
+							<p>Conntrack (<strong>conn</strong>ection <strong>track</strong>ing) is a Linux kernel subsystem that tracks network connections and aids in stateful packet inspection and network address translation. The first packet of a connection is considered “NEW”, and subsequent packets from the same connection are considered “ESTABLISHED”, including the TCP Reset packet when it’s first seen, which causes conntrack to delete the connection entry.</p>
+							<p>There was still yet anything obvious, so time to start debugging.</p>
+							<h2 id="tcpdump">Inspecting packet captures</h2>
+							<p>I ran <code class="language-plaintext highlighter-rouge">tcpdump -ni any host 172.31.0.2 and host 172.31.1.11 and tcp</code> on the PVE host to capture packets between the two VMs. This is what I got (output trimmed):</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>tcpdump: data link type LINUX_SLL2
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+16:33:11.911184 veth101i1 P   IP 172.31.0.2.50198 &gt; 172.31.1.11.80: Flags [S], seq 3404503761, win 64240
+16:33:11.911202 fwln101i1 Out IP 172.31.0.2.50198 &gt; 172.31.1.11.80: Flags [S], seq 3404503761, win 64240
+16:33:11.911203 fwpr101p1 P   IP 172.31.0.2.50198 &gt; 172.31.1.11.80: Flags [S], seq 3404503761, win 64240
+16:33:11.911206 fwpr811p0 Out IP 172.31.0.2.50198 &gt; 172.31.1.11.80: Flags [S], seq 3404503761, win 64240
+16:33:11.911207 fwln811i0 P   IP 172.31.0.2.50198 &gt; 172.31.1.11.80: Flags [S], seq 3404503761, win 64240
+16:33:11.911213 tap811i0  Out IP 172.31.0.2.50198 &gt; 172.31.1.11.80: Flags [S], seq 3404503761, win 64240
+16:33:11.911262 tap811i0  P   IP 172.31.1.11.80 &gt; 172.31.0.2.50198: Flags [R.], seq 0, ack 3404503762, win 0, length 0
+16:33:11.911267 fwln811i0 Out IP 172.31.1.11.80 &gt; 172.31.0.2.50198: Flags [R.], seq 0, ack 1, win 0, length 0
+16:33:11.911269 fwpr811p0 P   IP 172.31.1.11.80 &gt; 172.31.0.2.50198: Flags [R.], seq 0, ack 1, win 0, length 0
+^C
+9 packets captured
+178 packets received by filter
+0 packets dropped by kernel
+</code></pre>
+								</div>
+							</div>
+							<p><img src="/image/pve-firewall/fw-diagram-1.png" alt="Diagram" /></p>
+							<p>The first thing to notice is the ACK number. After coming from <code class="language-plaintext highlighter-rouge">tap811i0</code>, it suddenly became 1 with no apparent reason. I struggled on this for a good while and temporarily put it aside.</p>
+							<p>Adding <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> to the firewall options and capturing packets again, I got the following:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+16:46:15.243002 veth101i1 P   IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
+16:46:15.243015 fwln101i1 Out IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
+16:46:15.243016 fwpr101p1 P   IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
+16:46:15.243020 fwpr811p0 Out IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
+16:46:15.243021 fwln811i0 P   IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
+16:46:15.243027 tap811i0  Out IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
+16:46:15.243076 tap811i0  P   IP 172.31.1.11.80 &gt; 172.31.0.2.58784: Flags [R.], seq 0, ack 301948897, win 0, length 0
+16:46:15.243081 fwln811i0 Out IP 172.31.1.11.80 &gt; 172.31.0.2.58784: Flags [R.], seq 0, ack 1, win 0, length 0
+16:46:15.243083 fwpr811p0 P   IP 172.31.1.11.80 &gt; 172.31.0.2.58784: Flags [R.], seq 0, ack 1, win 0, length 0
+16:46:15.243086 fwpr101p1 Out IP 172.31.1.11.80 &gt; 172.31.0.2.58784: Flags [R.], seq 0, ack 1, win 0, length 0
+16:46:15.243087 fwln101i1 P   IP 172.31.1.11.80 &gt; 172.31.0.2.58784: Flags [R.], seq 0, ack 1, win 0, length 0
+16:46:15.243090 veth101i1 Out IP 172.31.1.11.80 &gt; 172.31.0.2.58784: Flags [R.], seq 0, ack 1, win 0, length 0
+^C
+</code></pre>
+								</div>
+							</div>
+							<p><img src="/image/pve-firewall/fw-diagram-2.png" alt="Diagram" /></p>
+							<p>This time while the ACK number was still wrong, the RST packet somehow got through. Ignoring the ACK numbers for now, the output suggested that the RST packet was dropped between <code class="language-plaintext highlighter-rouge">fwpr811p0 P</code> and <code class="language-plaintext highlighter-rouge">fwln811i0 Out</code>. That was the main bridge <code class="language-plaintext highlighter-rouge">vmbr0</code>. All right then, that was where the <code class="language-plaintext highlighter-rouge">PVEFW-FORWARD</code> chain kicked in, so at this point the RST packet was <code class="language-plaintext highlighter-rouge">--ctstate INVALID</code>. Everything was logical so far.</p>
+							<p>So how about disabling firewall for the interface on VM 811?</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+17:19:01.812030 veth101i1 P   IP 172.31.0.2.39734 &gt; 172.31.1.11.80: Flags [S], seq 1128018611, win 64240
+17:19:01.812045 fwln101i1 Out IP 172.31.0.2.39734 &gt; 172.31.1.11.80: Flags [S], seq 1128018611, win 64240
+17:19:01.812046 fwpr101p1 P   IP 172.31.0.2.39734 &gt; 172.31.1.11.80: Flags [S], seq 1128018611, win 64240
+17:19:01.812051 tap811i0  Out IP 172.31.0.2.39734 &gt; 172.31.1.11.80: Flags [S], seq 1128018611, win 64240
+17:19:01.812178 tap811i0  P   IP 172.31.1.11.80 &gt; 172.31.0.2.39734: Flags [R.], seq 0, ack 1128018612, win 0, length 0
+17:19:01.812183 fwpr101p1 Out IP 172.31.1.11.80 &gt; 172.31.0.2.39734: Flags [R.], seq 0, ack 1, win 0, length 0
+17:19:01.812185 fwln101i1 P   IP 172.31.1.11.80 &gt; 172.31.0.2.39734: Flags [R.], seq 0, ack 1, win 0, length 0
+17:19:01.812190 veth101i1 Out IP 172.31.1.11.80 &gt; 172.31.0.2.39734: Flags [R.], seq 0, ack 1, win 0, length 0
+^C
+</code></pre>
+								</div>
+							</div>
+							<p><img src="/image/pve-firewall/fw-diagram-3.png" alt="Diagram" /></p>
+							<p>This time <code class="language-plaintext highlighter-rouge">fwbr811i0</code> was missing, and the RST packet didn’t get dropped at <code class="language-plaintext highlighter-rouge">vmbr0</code>. I was left totally confused.</p>
+							<p>I decided to sort out the ACK number issue, but ended up asking my friends for help. It turned out this was well documented in <code class="language-plaintext highlighter-rouge">tcpdump(8)</code>:</p>
+							<blockquote>
+								<p><code class="language-plaintext highlighter-rouge">-S</code><br />
+									<code class="language-plaintext highlighter-rouge">--absolute-tcp-sequence-numbers</code><br />
+									Print absolute, rather than relative, TCP sequence numbers.</p>
+							</blockquote>
+							<p>This certainly came out unexpected, but at least I was assured there was nothing wrong with the ACK numbers.</p>
+							<p>Up to now, that’s one more step forward, and a small conclusion:</p>
+							<ul>
+								<li>At the point the RST packet reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, it was already <code class="language-plaintext highlighter-rouge">--ctstate INVALID</code>.</li>
+							</ul>
+							<p>But how? As far as I knew, when the RST packet came out, it should still be considered part of the connection, and thus should be <code class="language-plaintext highlighter-rouge">--ctstate ESTABLISHED</code>. I was still missing something.</p>
+							<p>Time to investigate conntrack.</p>
+							<h2 id="conntrack">Inspecting conntrack</h2>
+							<p><code class="language-plaintext highlighter-rouge">conntrack</code> is the tool to inspect and modify conntrack entries. I ran <code class="language-plaintext highlighter-rouge">conntrack -L</code> to list all entries, only to realize it’s inefficient. So instead, I ran <code class="language-plaintext highlighter-rouge">conntrack -E</code> to watch for “events” in real time, so that I could compare the output with <code class="language-plaintext highlighter-rouge">tcpdump</code>. Except that the entire connection concluded so quickly that I couldn’t identify anything.</p>
+							<p>I had to add artificial delays to the packets to clearly separate each hop that the RST packet goes through:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>tc qdisc add dev tap811i0 root netem delay 200ms
+tc qdisc add dev fwln811i0 root netem delay 200ms
+</code></pre>
+								</div>
+							</div>
+							<p>I also tuned the output on both sides to show the timestamp in a consistent format. For conntrack, <code class="language-plaintext highlighter-rouge">-o timestamp</code> produced Unix timestamps (which is the only supported format), so for <code class="language-plaintext highlighter-rouge">tcpdump</code> I also resorted to <code class="language-plaintext highlighter-rouge">-tt</code> to show Unix timestamps as well.</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>conntrack <span class="nt">-E</span> <span class="nt">-o</span> timestamp <span class="nt">-s</span> 172.31.0.2 <span class="nt">-d</span> 172.31.1.11
+tcpdump <span class="nt">-ttSni</span> any host 172.31.0.2 and host 172.31.1.11 and tcp
+</code></pre>
+								</div>
+							</div>
+							<p>Now I could watch the outputs on two separate tmux panes. The problem immediately emerged (blank lines added for readability):</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+1696412047.886575 veth101i1 P   IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
+1696412047.886592 fwln101i1 Out IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
+1696412047.886594 fwpr101p1 P   IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
+1696412047.886599 fwpr811p0 Out IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
+1696412047.886600 fwln811i0 P   IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
+
+1696412048.086620 tap811i0  Out IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
+1696412048.086841 tap811i0  P   IP 172.31.1.11.80 &gt; 172.31.0.2.47066: Flags [R.]
+
+1696412048.286919 fwln811i0 Out IP 172.31.1.11.80 &gt; 172.31.0.2.47066: Flags [R.]
+1696412048.286930 fwpr811p0 P   IP 172.31.1.11.80 &gt; 172.31.0.2.47066: Flags [R.]
+^C
+</code></pre>
+								</div>
+							</div>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>[1696412047.886657]         [NEW] tcp      6 120 SYN_SENT src=172.31.0.2 dst=172.31.1.11 sport=47066 dport=80 [UNREPLIED] src=172.31.1.11 dst=172.31.0.2 sport=80 dport=47066
+[1696412048.086899]     [DESTROY] tcp      6 119 CLOSE src=172.31.0.2 dst=172.31.1.11 sport=47066 dport=80 [UNREPLIED] src=172.31.1.11 dst=172.31.0.2 sport=80 dport=47066
+</code></pre>
+								</div>
+							</div>
+							<p>The artificial delays and the timestamps were absolutely useful: It was clear that the corresponding conntrack connection was destroyed as soon as the RST packet passed through <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, before it came out via <code class="language-plaintext highlighter-rouge">fwln811i0</code>. When it reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, the connection was already gone, and the RST packet was considered invalid.</p>
+							<p><img src="/image/pve-firewall/fw-diagram-4.png" alt="Diagram" /></p>
+							<p>It also became explainable how <code class="language-plaintext highlighter-rouge">firewall=0</code> on the virtual network device remedied the issue: It removed an extra bridge <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, so the connection stayed alive when the RST packet reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, at which point a previous rule for <code class="language-plaintext highlighter-rouge">--ctstate ESTABLISHED</code> gave an <code class="language-plaintext highlighter-rouge">ACCEPT</code> verdict. While it was still <code class="language-plaintext highlighter-rouge">INVALID</code> when passing through <code class="language-plaintext highlighter-rouge">fwbr101i1</code>, there was no rule concerning <code class="language-plaintext highlighter-rouge">--ctstate</code> at play, so it slipped through this stage with no problem.</p>
+							<p>After double-checking the intention of the extra <code class="language-plaintext highlighter-rouge">fwbr*</code> bridge, I drew the conclusion that <strong>this must be a bug with PVE Firewall</strong>. I reported it on the Proxmox VE bug tracker as <a href="https://bugzilla.proxmox.com/show_bug.cgi?id=4983">#4983</a>, and soon received a reply:</p>
+							<blockquote>
+								<p>Thank you for the detailed write-up!</p>
+								<p>This is a known limitation for our kind of firewall setup, since the conntrack is shared between all interfaces on the host.</p>
+								<p>[…]</p>
+								<p>If you know of any other way to avoid this happening, other than using conntrack zones, I’d be happy to take a look.</p>
+							</blockquote>
+							<p>So they admitted that this was a limitation but without a satisfactory solution. Guess I’m still on my own, though.</p>
+							<h2 id="solution">Finding the solution</h2>
+							<p>The actual problem is, when passing through <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, the RST packet isn’t supposed to be processed by conntrack by then. There is no <code class="language-plaintext highlighter-rouge">sysctl</code> option to disable conntrack on a specific interface (or even just all bridges altogether), but at the right time the rarely-used <code class="language-plaintext highlighter-rouge">raw</code> table came to my mind. It didn’t take long to work this out:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>iptables <span class="nt">-t</span> raw <span class="nt">-A</span> PREROUTING <span class="nt">-i</span> fwbr+ <span class="nt">-j</span> CT <span class="nt">--notrack</span>
+</code></pre>
+								</div>
+							</div>
+							<p>After verifying this is the intended solution, I added it as a reply to the bug report. At the time of writing this blog post, the bug report is still open, but I’m sure it’s to be resolved soon.</p>
+							<h2 id="conclusion">Conclusion</h2>
+							<p>Debugging Linux networking has always been a pain for its lack of proper tools and its complexity. Most of the times even reading and understanding packet captures requires immense knowledge of the protocols and all the involved components, as well as scrutinizing every single detail available. Sometimes it’s even necessary to think outside the box but fortunately not today.</p>
+							<p>Also worth mentioning is that it’s easy to suspect the fault of another piece of software, but detailed investigation is always necessary to actually lay the blame.</p>
+							<p>Just as a late reminder, useful bug reports always require detailed information and solid evidence. Glad I was able to have them at hand this time.</p>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/linux" class="page__taxonomy-item" rel="tag">linux</a><span class="sep">, </span>
+									<a href="/tag/networking" class="page__taxonomy-item" rel="tag">networking</a><span class="sep">, </span>
+									<a href="/tag/proxmox-ve" class="page__taxonomy-item" rel="tag">proxmox-ve</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2023-10-06">Oct 6, 2023</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=Debugging+Proxmox+VE+Firewall+Dropping+TCP+Reset+Packets%20https%3A%2F%2Fibug.io%2Fblog%2F2023%2F10%2Fpve-firewall-drops-tcp-reset%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2023%2F10%2Fpve-firewall-drops-tcp-reset%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2023%2F10%2Fpve-firewall-drops-tcp-reset%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/blog/2023/09/dual-protocol-vpn-port/" class="pagination--pager" title="Running a dual-protocol OpenVPN/WireGuard VPN server on one port
+">Previous</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+				<div class="page__related">
+					<h2 class="page__related-title">You may also enjoy</h2>
+					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/linux-container.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are w...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											24 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/vpn-imagine.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											15 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											16 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/ldap.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											14 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					<p>&copy; 2023 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
+					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
+					<p>
+						Site version <a href="/status" class="version-text">G-823</a>
+					</p>
+				</div>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<script>
+			// Including InstantSearch.js library and styling
+			const loadSearch = function() {
+			  const loadCSS = function(src) {
+			    var link = document.createElement('link');
+			    link.rel = 'stylesheet';
+			    link.type = 'text/css';
+			    link.href = src;
+			    link.media = 'all';
+			    document.head.appendChild(link);
+			  };
+
+			  var script = document.createElement('script');
+			  script.setAttribute("type", "text/javascript");
+			  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
+			  script.addEventListener("load", function() {
+			    // Instantiating InstantSearch.js with Algolia credentials
+			    const search = instantsearch({
+			      appId: '14DZKASAEJ',
+			      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			      indexName: 'iBug_website',
+			      searchParameters: {
+			        restrictSearchableAttributes: ['title', 'content']
+			      }
+			    });
+
+			    const hitTemplate = function(hit) {
+			      const url = hit.url;
+			      const title = hit._highlightResult.title.value;
+			      const content = hit._highlightResult.html.value;
+
+			      return `
+			        <div class="list__item">
+			          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			            <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			          </article>
+			        </div>
+			      `;
+			    }
+
+			    // Adding searchbar and results widgets
+			    search.addWidget(
+			      instantsearch.widgets.searchBox({
+			        container: '.search-searchbar',
+			        poweredBy: true,
+			        placeholder: 'Enter your search term...'
+			      })
+			    );
+			    search.addWidget(
+			      instantsearch.widgets.hits({
+			        container: '.search-hits',
+			        templates: {
+			          item: hitTemplate,
+			          empty: 'No results',
+			        }
+			      })
+			    );
+
+			    if(!search.started) {
+			      search.start();
+			    }
+			  });
+			  document.body.appendChild(script);
+
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
+			};
+
+			// Starting the search only when toggle is clicked
+			$(document).ready(function() {
+			  var scriptLoaded = false;
+
+			  $(".search__toggle").on("click", function() {
+			    if (!scriptLoaded) {
+			      loadSearch();
+			      scriptLoaded = true;
+			    }
+			  });
+			});
+		</script>
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-V93196TX91"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+
+			gtag('config', 'G-V93196TX91', { 'anonymize_ip': false});
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2023/10/pve-firewall-drops-tcp-reset"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	</body>
+</html>
