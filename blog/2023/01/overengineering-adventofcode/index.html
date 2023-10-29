@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=170c790">
+		<link rel="stylesheet" href="/assets/css/main.css?v=302bbd4">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -313,11 +313,11 @@
 										<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>./adventofcode <span class="nt">-p</span> 1-1 2022/inputs/1.txt
 <span class="go">71780
 
-Time: 875µs, Memory: 7.8 MiB
+Time: 875µs, Memory: 7.8&nbsp;MiB
 </span></code></pre>
 									</div>
 								</div>
-								<p>There’s one caveat here: The “Max RSS” value returned by <code class="language-plaintext highlighter-rouge">getrsage(2)</code> is the peak memory usage during the whole program’s lifetime, starting from when it’s forked from the parent process, when it inherits all mapped pages (resident set). Using an interactive Bash gives a minimum value of around 7.7 MiB, while using <code class="language-plaintext highlighter-rouge">sh -c './adventofcode -p'</code>, adding a level indirection, reduces the starting size to 1.2 MiB.</p>
+								<p>There’s one caveat here: The “Max RSS” value returned by <code class="language-plaintext highlighter-rouge">getrsage(2)</code> is the peak memory usage during the whole program’s lifetime, starting from when it’s forked from the parent process, when it inherits all mapped pages (resident set). Using an interactive Bash gives a minimum value of around 7.7&nbsp;MiB, while using <code class="language-plaintext highlighter-rouge">sh -c './adventofcode -p'</code>, adding a level indirection, reduces the starting size to 1.2&nbsp;MiB.</p>
 								<h3 id="multi-year">Adding multi-year support</h3>
 								<p>Up until now, the project has a flat layout with no subdirectories, and all Go source files start with <code class="language-plaintext highlighter-rouge">package main</code>. This is because I did not plan to support multiple years at the beginning. However, as I started working on puzzles from 2021, I realized that I need a better structure to support multiple years without worrying about namespace issues, like both years having a <code class="language-plaintext highlighter-rouge">Solution1_1</code> function.</p>
 								<p>Moving each year’s solutions into a subdirectory is a natural choice. However, <code class="language-plaintext highlighter-rouge">go build</code> doesn’t pick up subdirectories by default, so I have to find a way to make it work. There are also some minor name searching issues, like <code class="language-plaintext highlighter-rouge">RegisterSolution</code> being defined in <code class="language-plaintext highlighter-rouge">main.go</code> but used in every solution file.</p>
@@ -491,7 +491,7 @@ Time: 875µs, Memory: 7.8 MiB
 						<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 						<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 						<p>
-							Site version <a href="/status" class="version-text">G-830</a>
+							Site version <a href="/status" class="version-text">G-831</a>
 						</p>
 					</div>
 				</footer>

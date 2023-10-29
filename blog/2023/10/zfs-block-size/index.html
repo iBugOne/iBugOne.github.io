@@ -1,0 +1,657 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>Understanding ZFS block sizes - iBug</title>
+		<meta name="description" content="ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.">
+		<meta name="author" content="iBug">
+		<meta property="article:author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="Understanding ZFS block sizes">
+		<meta property="og:url" content="https://ibug.io/blog/2023/10/zfs-block-size/">
+		<meta property="og:description" content="ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2023-10-30T00:00:00+00:00">
+		<meta property="article:modified_time" content="2023-10-30T02:58:51+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2023/10/zfs-block-size/">
+		<script type="application/ld+json">
+			{
+			  "@context": "https://schema.org",
+
+			    "@type": "Person",
+			    "name": "iBug",
+			    "url": "https://ibug.io/"
+
+			}
+		</script>
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script>
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=302bbd4">
+		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<meta name="theme-color" content="#EDEDED">
+		<script>
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+	</head>
+	<body class="layout--single">
+		<nav class="skip-links">
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt="iBug"></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a href="/about/">About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/blog/">Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/projects/">Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/friends/">Friends</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/cn/">中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<i class="fas fa-search"></i>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay"
+  style=" background-image: url('/image/header/mountain-1.jpg');"
+>
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						Understanding ZFS block sizes
+					</h1>
+					<p class="page__lead">DisK Dream! It’s MyZFS!!!!!
+					</p>
+					<p class="page__meta">
+						<span class="page__meta-date">
+							<i class="far fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2023-10-30T00:00:00+00:00">Oct 30, 2023</time>
+						</span>
+						<span class="page__meta-sep"></span>
+						<span class="page__meta-readtime">
+							<i class="far fa-clock" aria-hidden="true"></i>
+							10 minute read
+						</span>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person">
+						<div class="author__avatar">
+							<img src="/image/avatar.png" alt="iBug" itemprop="image">
+						</div>
+						<div class="author__content">
+							<h3 class="author__name" itemprop="name">iBug</h3>
+							<div class="author__bio" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer"><i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox" />
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/open-source/"><i class="fas fa-fw fa-box-open"></i> Open Source</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/bookmarks/"><i class="fas fa-fw fa-bookmark"></i> Bookmarks</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="Understanding ZFS block sizes">
+					<meta itemprop="description" content="ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.">
+					<meta itemprop="datePublished" content="2023-10-30T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2023-10-30T02:58:51+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#logical-blocks">Logical blocks</a>
+											<ul>
+												<li><a href="#recordsize-and-volblocksize">“recordsize” and “volblocksize”</a></li>
+												<li><a href="#compression">Compression</a></li>
+											</ul>
+										</li>
+										<li><a href="#raidz">RAIDZ</a>
+											<ul>
+												<li><a href="#raidz-accounting">Accounting</a></li>
+											</ul>
+										</li>
+										<li><a href="#thoughts">Thoughts</a></li>
+										<li><a href="#references">References</a></li>
+									</ul>
+								</nav>
+							</aside>
+							<p>ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.</p>
+							<p>We’ll begin with a slide from a ZFS talk from Lustre<sup id="fnref:dilger" role="doc-noteref"><a href="#fn:dilger" class="footnote" rel="footnote">1</a></sup> (page 5):</p>
+							<figure class="">
+								<img src="/image/zfs/zfs-io-stack.png" alt="ZFS I/O Stack" />
+								<figcaption>
+									Figure 1. ZFS I/O Stack
+								</figcaption>
+							</figure>
+							<!-- This article will focus on the topmost layer (ZPL and DMU) and the lowermost layer (vdev and disk sectors). -->
+							<h2 id="logical-blocks">Logical blocks</h2>
+							<p>The first thing to understand is that there are at least two levels of “block” concepts in ZFS. There’s “logical blocks” on an upper layer (DMU), and “physical blocks” on a lower layer (vdev). The latter is easier to understand and it’s almost synonymous to “disk sectors”. It’s precisely the <code class="language-plaintext highlighter-rouge">ashift</code> parameter in <code class="language-plaintext highlighter-rouge">zpool create</code> command and usually matches the physical sector size of your disks (4&nbsp;KiB for modern disks). Once set, <code class="language-plaintext highlighter-rouge">ashift</code> is immutable and can only be changed when recreating the entire vdev array (fortunately not the entire pool<sup id="fnref:zfs101" role="doc-noteref"><a href="#fn:zfs101" class="footnote" rel="footnote">2</a></sup>). The “logical block”, however, is slightly more complicated, and beyond the expressibility of a few words. In short, it’s the smallest <em>meaningful</em> unit of data that ZFS can operate on, including reading, writing, checksumming, compression and deduplication.</p>
+							<h3 id="recordsize-and-volblocksize">“recordsize” and “volblocksize”</h3>
+							<p>You’ve probably seen <code class="language-plaintext highlighter-rouge">recordsize</code> being talked about extensively in ZFS tuning guides<sup id="fnref:tuning" role="doc-noteref"><a href="#fn:tuning" class="footnote" rel="footnote">3</a></sup>, which is already a great source of confusion. The default <code class="language-plaintext highlighter-rouge">recordsize</code> is 128&nbsp;KiB, which controls the <em>maximum</em> size of a logical block. The <em>actual</em> block size depends on the file you’re writing:</p>
+							<ul>
+								<li>If the file is smaller than or equal to <code class="language-plaintext highlighter-rouge">recordsize</code>, it’s stored as a single logical block of its size, rounded up to the nearest multiple of 512&nbsp;bytes.</li>
+								<li>If the file is larger than <code class="language-plaintext highlighter-rouge">recordsize</code>, it’s split into multiple logical blocks of <code class="language-plaintext highlighter-rouge">recordsize</code> each, with the last block being zero-padded to <code class="language-plaintext highlighter-rouge">recordsize</code>.</li>
+							</ul>
+							<p>As with other filesystems, if you change a small portion of a large file, only 128&nbsp;KiB (or whatever your <code class="language-plaintext highlighter-rouge">recordsize</code> is) is rewritten, along with new metadata and checksums. Large <code class="language-plaintext highlighter-rouge">recordsize</code> bloats the read/write amplification for random I/O workloads, while small <code class="language-plaintext highlighter-rouge">recordsize</code> increases the fragmentation and metadata overhead for large files. Note that ZFS always validates checksums, so every read operation is done on an entire block, even if only a few bytes are requested. So it is important to align your <code class="language-plaintext highlighter-rouge">recordsize</code> with your workload, like using 16&nbsp;KiB for (most) databases and 1&nbsp;MiB for media files. The default 128&nbsp;KiB is a good compromise for general-purpose workloads, and there certainly isn’t a one-size-fits-all solution. Also note that while <code class="language-plaintext highlighter-rouge">recordsize</code> can be changed on the fly, it only affects newly written data, and existing ones stay intact.</p>
+							<p>For ZVOLs, as you’d imagine, the rule is much simpler: Every block of <code class="language-plaintext highlighter-rouge">volblocksize</code> is a logical block, and it’s aligned to its own size. Since ZFS 2.2, the default <code class="language-plaintext highlighter-rouge">volblocksize</code> is 16&nbsp;KiB, providing a good balance between performance and compatibility.</p>
+							<h3 id="compression">Compression</h3>
+							<p>Compression is applied on a per-block basis, and compressed data is not shared between blocks. This is best shown with an example:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>zfs get compression tank/test
+<span class="go">NAME       PROPERTY     VALUE  SOURCE
+tank/test  compression  zstd   inherited from tank
+</span><span class="gp">$</span><span class="w"> </span><span class="nb">head</span> <span class="nt">-c</span> 131072 /dev/urandom <span class="o">&gt;</span> 128k
+<span class="gp">$</span><span class="w"> </span><span class="nb">cat </span>128k 128k 128k 128k 128k 128k 128k 128k <span class="o">&gt;</span> 1m
+<span class="gp">$</span><span class="w"> </span><span class="nb">du</span> <span class="nt">-sh</span> 128k 1m
+<span class="go">129K    128k
+1.1M    1m
+</span></code></pre>
+								</div>
+							</div>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span><span class="nb">head</span> <span class="nt">-c</span> 16384 /dev/urandom <span class="o">&gt;</span> 16k
+<span class="gp">$</span><span class="w"> </span><span class="nb">cat </span>16k 16k 16k 16k 16k 16k 16k 16k <span class="o">&gt;</span> 128k1
+<span class="gp">$</span><span class="w"> </span><span class="nb">cat </span>128k1 128k1 128k1 128k1 128k1 128k1 128k1 128k1 <span class="o">&gt;</span> 1m1
+<span class="gp">$</span><span class="w"> </span><span class="nb">du</span> <span class="nt">-sh</span> 16k 128k1 1m1
+<span class="go">17K     16k
+21K     128k1
+169K    1m1
+</span></code></pre>
+								</div>
+							</div>
+							<p>As you can see from <code class="language-plaintext highlighter-rouge">du</code>’s output above, despite containing 8 identical copies of the same 128&nbsp;KiB random data, the 1&nbsp;MiB file gains precisely nothing from compression, as each 128&nbsp;KiB block is compressed individually. The other test of combining 8 copies of 16&nbsp;KiB random data into one 128&nbsp;KiB file shows positive results, as the 128&nbsp;KiB file is only 21&nbsp;KiB in size. Similarly, the 1&nbsp;MiB file that contains 64 exact copies of the same 16&nbsp;KiB chunk is exactly 8 times the size of that 128&nbsp;KiB file, because the chunk data is not shared across 128&nbsp;KiB boundaries.</p>
+							<p>This brings up an interesting point: <strong>It’s beneficial to turn on compression even for filesystems with uncompressible data</strong><sup id="fnref:cks-1" role="doc-noteref"><a href="#fn:cks-1" class="footnote" rel="footnote">4</a></sup>. One direct impact is on the last block of a large file, where its zero-filled bytes up to <code class="language-plaintext highlighter-rouge">recordsize</code> compress very well. Using LZ4 or ZSTD, compression should have negligible impact on any reasonably modern CPU and reasonably sized disks.</p>
+							<p>There are two more noteworthy points about compression, both from <a href="https://openzfs.github.io/openzfs-docs/man/master/7/zfsprops.7.html"><code class="language-plaintext highlighter-rouge">man zfsprops.7</code></a>:</p>
+							<ol>
+								<li>
+									<blockquote>
+										<p>When any setting except <strong>off</strong> is selected, compression will explicitly check for blocks consisting of only zeroes (the NUL byte). When a zero-filled block is detected, it is stored as a hole and not compressed using the indicated compression algorithm.</p>
+									</blockquote>
+									<p>Instead of compressing entire blocks of zeroes like the last block of a large file, ZFS will not store anything about these zero blocks. Technically, this is done by omitting the corresponding ranges from the file’s indirect blocks<sup id="fnref:cks-1:1" role="doc-noteref"><a href="#fn:cks-1" class="footnote" rel="footnote">4</a></sup>.</p>
+									<p>Take this test for example: I created a file with 64&nbsp;KiB of urandom, then 256&nbsp;KiB of zeroes, then another 64&nbsp;KiB of urandom. The file is 384&nbsp;KiB in size, but only 128&nbsp;KiB is actually stored on disk:</p>
+									<div class="language-console highlighter-rouge">
+										<div class="highlight">
+											<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zfs create pool0/srv/test
+<span class="gp">#</span><span class="w"> </span><span class="nb">cat</span> &lt;<span class="o">(</span><span class="nb">head</span> <span class="nt">-c</span> 64K /dev/urandom<span class="o">)</span> &lt;<span class="o">(</span><span class="nb">head</span> <span class="nt">-c</span> 256K /dev/zero<span class="o">)</span> &lt;<span class="o">(</span><span class="nb">head</span> <span class="nt">-c</span> 64K /dev/urandom<span class="o">)</span> <span class="o">&gt;</span> /srv/test/test
+<span class="gp">#</span><span class="w"> </span><span class="nb">du</span> <span class="nt">-sh</span> /srv/test/test
+<span class="go">145K    /srv/test/test
+</span></code></pre>
+										</div>
+    </div>
+									<p>We can also examine the file’s indirect blocks with <code class="language-plaintext highlighter-rouge">zdb</code>:</p>
+									<div class="language-console highlighter-rouge">
+										<div class="highlight">
+											<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span><span class="nb">ls</span> <span class="nt">-li</span> /srv/test/test
+<span class="go">2 -rw-r--r-- 1 root root 393216 Oct 30 02:05 /srv/test/test
+</span><span class="gp">#</span><span class="w"> </span>zdb <span class="nt">-ddddd</span> pool0/srv/test 2
+<span class="go">[...]
+Indirect blocks:
+               0 L1  0:1791b7d3000:1000 20000L/1000P F=2 B=9769680/9769680 cksum=[...]
+               0  L0 0:1791b7b1000:11000 20000L/11000P F=1 B=9769680/9769680 cksum=[...]
+           40000  L0 0:1791b7c2000:11000 20000L/11000P F=1 B=9769680/9769680 cksum=[...]
+
+                segment [0000000000000000, 0000000000020000) size  128K
+                segment [0000000000040000, 0000000000060000) size  128K
+</span></code></pre>
+										</div>
+    </div>
+									<p>Here we can see only two L0 blocks allocated, each being 20000 (hex, dec = 131072) bytes logical and 11000 (hex, dec = 69632) bytes physical in size. The two L0 blocks match the two segments shown at the bottom, with the middle segment nowhere to be found.</p>
+								</li>
+								<li>
+									<blockquote>
+										<p>Any block being compressed must be no larger than 7/8 of its original size after compression, otherwise the compression will not be considered worthwhile and the block saved uncompressed. […] for example, 8&nbsp;KiB blocks on disks with 4&nbsp;KiB disk sectors must compress to 1/2 or less of their original size.</p>
+									</blockquote>
+									<p>This one should be self-explanatory.</p>
+								</li>
+							</ol>
+							<h2 id="raidz">RAIDZ</h2>
+							<p>Up until now we’ve only talked about logical blocks, which are all on the higher layers of the ZFS hierarchy. RAIDZ is where physical blocks (disk sectors) really come into play and adds another field of confusion.</p>
+							<p>Unlike traditional RAID 5/6/7<sup class="no-select">(?)</sup> that combine disks into an array and presents a single volume for the filesystem, RAIDZ handles each <em>logical block</em> separately. I’ll cite this illustration from Delphix<sup id="fnref:delphix" role="doc-noteref"><a href="#fn:delphix" class="footnote" rel="footnote">5</a></sup> to explain:</p>
+							<figure class="">
+								<img src="/image/zfs/raidz-block-layout.png" alt="RAID-Z block layout" />
+								<figcaption>
+									Figure 2. RAID-Z block layout
+								</figcaption>
+							</figure>
+							<p>This example shows a 5-wide RAID-Z1 setup.</p>
+							<ul>
+								<li>A single-sector block takes another sector for parity, like the dark red block on row 3.</li>
+								<li>
+									<p>Multi-sector blocks are striped across disks, with parity sectors inserted every 4 sectors, matching the data-to-parity ratio of the vdev array.</p>
+									<ul>
+										<li>You may have noticed that parity sectors for the same block are always stored on the same disk that resembles RAID-4 instead of RAID-5. Keep in mind that ZFS reads, writes and verifies entire blocks, so interleaving parity sectors across disks will not provide any benefit, while keeping “stripes” on the same disk simplifies the logic for validation and reconstruction.</li>
+									</ul>
+								</li>
+								<li>In order to avoid unusable fragments, ZFS requires each allocated block to be padded to a multiple of (<em>p+1</em>) sectors, where <em>p</em> is the number of parity disks. For example, RAID-Z1 requires each block to be padded to a multiple of 2 sectors, and RAID-Z2 requires each block to be padded to a multiple of 3 sectors. This can be seen on rows 7 to 9, where the X sectors are reserved for parity padding.</li>
+							</ul>
+							<p>This design allows RAID to play well with ZFS’s log-structured design and avoids the need for read-modify-write cycles. Consequently, the RAID overhead is now dependent on your data and is no longer an intrinsic property of the RAID level and array width. The same Delphix article shares a nice spreadsheet<sup id="fnref:delphix-spreadsheet" role="doc-noteref"><a href="#fn:delphix-spreadsheet" class="footnote" rel="footnote">6</a></sup> that calculates RAID overhead for you:</p>
+							<p><a href="https://docs.google.com/a/delphix.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/"><img src="/image/zfs/raidz1-parity-overhead.png" alt="Size of parity overhead for RAID-Z1" /></a></p>
+							<h3 id="raidz-accounting">Accounting</h3>
+							<p>Accounting the storage space for a RAIDZ array is as problematic as it seems: There’s no way to calculate the available space in advance without knowledge on the block size pattern.</p>
+							<p>ZFS works around this by showing an estimate, assuming all data were stored as 128&nbsp;KiB blocks<sup id="fnref:zfs-4599" role="doc-noteref"><a href="#fn:zfs-4599" class="footnote" rel="footnote">7</a></sup>. On my test setup with five 16&nbsp;GiB disks in RAID-Z1 and <code class="language-plaintext highlighter-rouge">ashift=12</code>, the available space shows as 61.5G, while <code class="language-plaintext highlighter-rouge">zpool</code> shows the raw size as 79.5G:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zpool create <span class="nt">-o</span> <span class="nv">ashift</span><span class="o">=</span>12 <span class="nb">test </span>raidz1 nvme3n1p<span class="o">{</span>1,2,3,4,5<span class="o">}</span>
+<span class="gp">#</span><span class="w"> </span>zfs list <span class="nb">test</span>
+<span class="go">NAME   USED  AVAIL     REFER  MOUNTPOINT
+test   614K  61.5G      153K  /test
+</span><span class="gp">#</span><span class="w"> </span>zpool list <span class="nb">test</span>
+<span class="go">NAME   SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
+test  79.5G   768K  79.5G        -         -     0%     0%  1.00x    ONLINE  -
+</span></code></pre>
+								</div>
+							</div>
+							<p>When I increase <code class="language-plaintext highlighter-rouge">ashift</code> to 15 (32&nbsp;KiB sectors), the available space drops quite a bit, even if <code class="language-plaintext highlighter-rouge">zpool</code> shows the same raw size:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zpool create <span class="nt">-o</span> <span class="nv">ashift</span><span class="o">=</span>15 <span class="nb">test </span>raidz1 nvme3n1p<span class="o">{</span>1,2,3,4,5<span class="o">}</span>
+<span class="gp">#</span><span class="w"> </span>zfs list <span class="nb">test</span>
+<span class="go">NAME   USED  AVAIL     REFER  MOUNTPOINT
+test  4.00M  51.3G     1023K  /test
+</span><span class="gp">#</span><span class="w"> </span>zpool list <span class="nb">test</span>
+<span class="go">NAME   SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
+test  79.5G  7.31M  79.5G        -         -     0%     0%  1.00x    ONLINE  -
+</span></code></pre>
+								</div>
+							</div>
+							<p>In both cases, calculating the “raw” disk space from the available space gives roughly congruent results:</p>
+							<ul>
+								<li>61.5&nbsp;GiB × (1 + 25%) = 76.9&nbsp;GiB</li>
+								<li>51.3&nbsp;GiB × (1 + 50%) = 76.9&nbsp;GiB</li>
+							</ul>
+							<p>The default <code class="language-plaintext highlighter-rouge">refreservation</code> for non-sparse ZVOLs exhibits a similar behavior:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zfs create <span class="nt">-V</span> 4G <span class="nt">-o</span> <span class="nv">volblocksize</span><span class="o">=</span>8K <span class="nb">test</span>/v8k
+<span class="gp">#</span><span class="w"> </span>zfs create <span class="nt">-V</span> 4G <span class="nt">-o</span> <span class="nv">volblocksize</span><span class="o">=</span>16K <span class="nb">test</span>/v16k
+<span class="gp">#</span><span class="w"> </span>zfs get refreservation <span class="nb">test</span>/v8k <span class="nb">test</span>/v16k
+<span class="go">NAME       PROPERTY        VALUE      SOURCE
+test/v16k  refreservation  4.86G      local
+test/v8k   refreservation  6.53G      local
+</span></code></pre>
+								</div>
+							</div>
+							<p>Interestingly, neither of the <code class="language-plaintext highlighter-rouge">refreservation</code> sizes matches the RAID overhead as calculated in the Delphix spreadsheet<sup id="fnref:delphix-spreadsheet:1" role="doc-noteref"><a href="#fn:delphix-spreadsheet" class="footnote" rel="footnote">6</a></sup>, as you would expect some 6.0&nbsp;GiB for the 16k-volblocksized ZVOL and some 8.0&nbsp;GiB for the 8k-volblocksized one. <strong>Let’s just don’t forget that the whole accounting system assumed 128&nbsp;KiB blocks and scaled by that<sup id="fnref:acct-128k" role="doc-noteref"><a href="#fn:acct-128k" class="footnote" rel="footnote">8</a></sup>.</strong> So the actual meaning of 4.86G and 6.53G would be “the <em>equivalent</em> space if volblocksize had been 128&nbsp;KiB”. If we multiply both values by 1.25 (overhead for 128&nbsp;KiB blocks and 5-wide RAIDZ), we get 6.08&nbsp;GiB and 8.16&nbsp;GiB of raw disk spaces respectively, both of which match more closely the expected values. The final minor difference is due to the different amount of metadata required for different number of blocks.</p>
+							<h2 id="thoughts">Thoughts</h2>
+							<p>I never imagined I would delve this deep into ZFS when I first stumbled upon the question. There are lots of good write-ups on individual components of ZFS all around the web, and <a href="https://utcc.utoronto.ca/~cks/space/blog/">Chris Siebenmann’s blog</a> in particular. But few combine all the pieces together and paint the whole picture, so I had to spend some time synthesizing them by myself. As you’ve seen in the Luster slide, ZFS is so complex a beast that it’s hard to digest in its entirety. So for now I have no idea how much effort I would put into learning it, nor any future blogs I would write. But anyways, that’s one large mystery solved, for myself and my readers (you), and time to call it a day.</p>
+							<h2 id="references">References</h2>
+							<div class="footnotes" role="doc-endnotes">
+								<ol>
+									<li id="fn:dilger" role="doc-endnote">
+										<p>Andreas Dilger (2010) <a href="https://wiki.lustre.org/images/4/49/Beijing-2010.2-ZFS_overview_3.1_Dilger.pdf">ZFS Features &amp; Concepts TOI</a> <a href="#fnref:dilger" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+									</li>
+									<li id="fn:zfs101" role="doc-endnote">
+										<p>Jim Salter (2020) <a href="https://arstechnica.com/information-technology/2020/05/zfs-101-understanding-zfs-storage-and-performance/">ZFS 101 – Understanding ZFS storage and performance</a> <a href="#fnref:zfs101" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+									</li>
+									<li id="fn:tuning" role="doc-endnote">
+										<p>OpenZFS <a href="https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Workload%20Tuning.html">Workload Tuning</a> <a href="#fnref:tuning" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+									</li>
+									<li id="fn:cks-1" role="doc-endnote">
+										<p>Chris Siebenmann (2017) <a href="https://utcc.utoronto.ca/~cks/space/blog/solaris/ZFSFilePartialAndHoleStorage">ZFS’s recordsize, holes in files, and partial blocks</a> <a href="#fnref:cks-1" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:cks-1:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
+									</li>
+									<li id="fn:delphix" role="doc-endnote">
+										<p>Matthew Ahrens (2014) <a href="https://www.delphix.com/blog/zfs-raidz-stripe-width-or-how-i-learned-stop-worrying-and-love-raidz">How I Learned to Stop Worrying and Love RAIDZ</a> <a href="#fnref:delphix" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+									</li>
+									<li id="fn:delphix-spreadsheet" role="doc-endnote">
+										<p><a href="https://docs.google.com/a/delphix.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/">RAID-Z parity cost</a> (Google Sheets) <a href="#fnref:delphix-spreadsheet" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:delphix-spreadsheet:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
+									</li>
+									<li id="fn:zfs-4599" role="doc-endnote">
+										<p>openzfs/zfs#4599 (2016) <a href="https://github.com/openzfs/zfs/issues/4599">disk usage wrong when using larger recordsize, raidz and ashift=12</a> <a href="#fnref:zfs-4599" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+									</li>
+									<li id="fn:acct-128k" role="doc-endnote">
+										<p>Mike Gerdts (2019) <a href="https://github.com/illumos/illumos-gate/blob/b73ccab03ec36581b1ae5945ef1fee1d06c79ccf/usr/src/lib/libzfs/common/libzfs_dataset.c#L5118">(Code comment in <code class="language-plaintext highlighter-rouge">libzfs_dataset.c</code>)</a> <a href="#fnref:acct-128k" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+									</li>
+								</ol>
+							</div>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/linux" class="page__taxonomy-item" rel="tag">linux</a><span class="sep">, </span>
+									<a href="/tag/zfs" class="page__taxonomy-item" rel="tag">zfs</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2023-10-30">Oct 30, 2023</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=Understanding+ZFS+block+sizes%20https%3A%2F%2Fibug.io%2Fblog%2F2023%2F10%2Fzfs-block-size%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2023%2F10%2Fzfs-block-size%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2023%2F10%2Fzfs-block-size%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/blog/2023/10/pve-firewall-drops-tcp-reset/" class="pagination--pager" title="Debugging Proxmox VE Firewall Dropping TCP Reset Packets
+">Previous</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+				<div class="page__related">
+					<h2 class="page__related-title">You may also enjoy</h2>
+					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/linux-container.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are w...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											24 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/24.png" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2022/05/programming-24-game/" rel="permalink">Taking the 24 puzzle game to the next level
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now a...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2022-05-25T00:00:00+00:00">May 25, 2022</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											19 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											16 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/vpn-imagine.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											15 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					<p>&copy; 2023 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
+					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
+					<p>
+						Site version <a href="/status" class="version-text">G-831</a>
+					</p>
+				</div>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<script>
+			// Including InstantSearch.js library and styling
+			const loadSearch = function() {
+			  const loadCSS = function(src) {
+			    var link = document.createElement('link');
+			    link.rel = 'stylesheet';
+			    link.type = 'text/css';
+			    link.href = src;
+			    link.media = 'all';
+			    document.head.appendChild(link);
+			  };
+
+			  var script = document.createElement('script');
+			  script.setAttribute("type", "text/javascript");
+			  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
+			  script.addEventListener("load", function() {
+			    // Instantiating InstantSearch.js with Algolia credentials
+			    const search = instantsearch({
+			      appId: '14DZKASAEJ',
+			      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			      indexName: 'iBug_website',
+			      searchParameters: {
+			        restrictSearchableAttributes: ['title', 'content']
+			      }
+			    });
+
+			    const hitTemplate = function(hit) {
+			      const url = hit.url;
+			      const title = hit._highlightResult.title.value;
+			      const content = hit._highlightResult.html.value;
+
+			      return `
+			        <div class="list__item">
+			          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			            <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			          </article>
+			        </div>
+			      `;
+			    }
+
+			    // Adding searchbar and results widgets
+			    search.addWidget(
+			      instantsearch.widgets.searchBox({
+			        container: '.search-searchbar',
+			        poweredBy: true,
+			        placeholder: 'Enter your search term...'
+			      })
+			    );
+			    search.addWidget(
+			      instantsearch.widgets.hits({
+			        container: '.search-hits',
+			        templates: {
+			          item: hitTemplate,
+			          empty: 'No results',
+			        }
+			      })
+			    );
+
+			    if(!search.started) {
+			      search.start();
+			    }
+			  });
+			  document.body.appendChild(script);
+
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
+			};
+
+			// Starting the search only when toggle is clicked
+			$(document).ready(function() {
+			  var scriptLoaded = false;
+
+			  $(".search__toggle").on("click", function() {
+			    if (!scriptLoaded) {
+			      loadSearch();
+			      scriptLoaded = true;
+			    }
+			  });
+			});
+		</script>
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-V93196TX91"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+
+			gtag('config', 'G-V93196TX91', { 'anonymize_ip': false});
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/blog/2023/10/zfs-block-size/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2023/10/zfs-block-size"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	</body>
+</html>

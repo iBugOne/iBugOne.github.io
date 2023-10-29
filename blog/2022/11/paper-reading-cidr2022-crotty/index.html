@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=170c790">
+		<link rel="stylesheet" href="/assets/css/main.css?v=302bbd4">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -233,7 +233,7 @@
 									<li><code class="language-plaintext highlighter-rouge">mmap()</code> maps a file to memory. The <code class="language-plaintext highlighter-rouge">MAP_SHARED</code> flag allows changes to be (eventually) persisted back to disk, while the <code class="language-plaintext highlighter-rouge">MAP_PRIVATE</code> flag indicates that modifications are discarded (private to the process). These flags cannot be changed after the mapping is created.</li>
 									<li><code class="language-plaintext highlighter-rouge">madvise()</code> provides hints to the OS about how the mapped file will be accessed.
 										<ul>
-											<li>With <code class="language-plaintext highlighter-rouge">MADV_NORMAL</code>, (at least for Linux) loads 32 pages (128 KiB) for every page fault.</li>
+											<li>With <code class="language-plaintext highlighter-rouge">MADV_NORMAL</code>, (at least for Linux) loads 32 pages (128&nbsp;KiB) for every page fault.</li>
 											<li>With <code class="language-plaintext highlighter-rouge">MADV_RANDOM</code>, the OS only loads the exact missing page.</li>
 											<li>With <code class="language-plaintext highlighter-rouge">MADV_SEQUENTIAL</code>, the OS loads more pages in advance.</li>
 										</ul>
@@ -472,7 +472,7 @@
 						<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 						<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 						<p>
-							Site version <a href="/status" class="version-text">G-830</a>
+							Site version <a href="/status" class="version-text">G-831</a>
 						</p>
 					</div>
 				</footer>

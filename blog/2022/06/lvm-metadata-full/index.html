@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=170c790">
+		<link rel="stylesheet" href="/assets/css/main.css?v=302bbd4">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -199,7 +199,7 @@
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>lvcreate <span class="nt">-L</span> 4M <span class="nt">-n</span> test-1721 <span class="nb">test</span>
-<span class="go">  VG test 1723 metadata on /dev/sdc1 (521759 bytes) exceeds maximum metadata size (521472 bytes)
+<span class="go">  VG test 1723 metadata on /dev/sdc1 (521759&nbsp;bytes) exceeds maximum metadata size (521472&nbsp;bytes)
   Failed to write VG test.
 </span><span class="gp">root@iBug-Server:~#</span><span class="w"> </span><span class="c"># wut?</span>
 </code></pre>
@@ -258,7 +258,7 @@ vgextend <span class="nb">test</span> /dev/sdd
 							<p>Partly to my surprise, a warning popped up:</p>
 							<div class="language-shell highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code>VG <span class="nb">test </span>1723 metadata on /dev/sdc1 <span class="o">(</span>521615 bytes<span class="o">)</span> exceeds maximum metadata size <span class="o">(</span>521472 bytes<span class="o">)</span>
+									<pre class="highlight"><code>VG <span class="nb">test </span>1723 metadata on /dev/sdc1 <span class="o">(</span>521615&nbsp;bytes<span class="o">)</span> exceeds maximum metadata size <span class="o">(</span>521472&nbsp;bytes<span class="o">)</span>
 WARNING: Failed to write an MDA of VG test.
 Volume group <span class="s2">"test"</span> successfully extended
 </code></pre>
@@ -277,7 +277,7 @@ Volume group <span class="s2">"test"</span> successfully extended
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>lvcreate <span class="nt">-L</span> 1M <span class="nt">-n</span> test-1721 <span class="nb">test</span>
-<span class="go">  Rounding up size to full physical extent 4.00 MiB
+<span class="go">  Rounding up size to full physical extent 4.00&nbsp;MiB
   Logical volume "test-1721" created.
 </span><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>pvs <span class="nt">-o</span> name,mda_size,mda_free
 <span class="go">  PV         PMdaSize  PMdaFree
@@ -446,7 +446,7 @@ Volume group <span class="s2">"test"</span> successfully extended
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-830</a>
+						Site version <a href="/status" class="version-text">G-831</a>
 					</p>
 				</div>
 			</footer>

@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=170c790">
+		<link rel="stylesheet" href="/assets/css/main.css?v=302bbd4">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -380,7 +380,7 @@
 							</ul>
 							<h2 id="34-主程序逻辑">3.4 主程序逻辑</h2>
 							<p>主程序负责处理命令行参数（使用 getopt 库灵活处理）并实际创建连接和发送/接收数据。命令行参数的用法可以通过 <code class="language-plaintext highlighter-rouge">btsend --help</code> 或 <code class="language-plaintext highlighter-rouge">btrecv --help</code> 命令查看，支持指定地址、端口等，其中文件名必须给出。</p>
-							<p>为了减少内存使用，同时由于后端 backTCP 也支持，文件将以 64 KiB 的块大小读入，按块发送或接收。</p>
+							<p>为了减少内存使用，同时由于后端 backTCP 也支持，文件将以 64 KiB 的块大小读入，按块发送或接收。</p>
 							<h2 id="35-优点与不足">3.5 优点与不足</h2>
 							<h3 id="优点">优点</h3>
 							<ul>
@@ -419,7 +419,7 @@
 							<p><img src="/image/backTCP/4.png" alt=""></p>
 							<p><img src="/image/backTCP/5.png" alt=""></p>
 							<h2 id="45-结论">4.5 结论</h2>
-							<p>根据控制台输出，可以看到，不论是直接传输还是经过测试信道“捣蛋”时的传输，都可以完整传输一个 150 KB 的文件。在有测试信道时，发送端和接收端都能正确检测丢包和乱序，并采取合适的措施确保接收到的数据块是完整的。同时接收端也能够使用 ACK 包头中的信息，让发送端仅传回丢失的包，然后从缓冲区中恢复完整的书架序列，说明选择重传的功能也正确工作。</p>
+							<p>根据控制台输出，可以看到，不论是直接传输还是经过测试信道“捣蛋”时的传输，都可以完整传输一个 150 KB 的文件。在有测试信道时，发送端和接收端都能正确检测丢包和乱序，并采取合适的措施确保接收到的数据块是完整的。同时接收端也能够使用 ACK 包头中的信息，让发送端仅传回丢失的包，然后从缓冲区中恢复完整的书架序列，说明选择重传的功能也正确工作。</p>
 						</section>
 						<footer class="page__meta">
 							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2021-02-22">Feb 22, 2021</time></p>
@@ -468,7 +468,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-830</a>
+						Site version <a href="/status" class="version-text">G-831</a>
 					</p>
 				</div>
 			</footer>

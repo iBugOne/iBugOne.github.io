@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=170c790">
+		<link rel="stylesheet" href="/assets/css/main.css?v=302bbd4">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/5/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -187,7 +187,7 @@
 									</ul>
 								</nav>
 							</aside>
-							<p>This November I found a discount from one of my favorite VPS providers, <a href="https://go.ibugone.com/vps-hk">NETfront</a>. They offered <strong>Linux VPS with 2 vCPUs and 2 GB RAM</strong> at HK$56/mo, and also <strong>Windows VPS with 4 vCPUs and 4 GB RAM</strong> at HK$49/mo. Looks strange, right? Why buy the crappy Linux VPS when you can have a better configuration with <em>less</em> money (if possible)?</p>
+							<p>This November I found a discount from one of my favorite VPS providers, <a href="https://go.ibugone.com/vps-hk">NETfront</a>. They offered <strong>Linux VPS with 2 vCPUs and 2&nbsp;GB RAM</strong> at HK$56/mo, and also <strong>Windows VPS with 4 vCPUs and 4&nbsp;GB RAM</strong> at HK$49/mo. Looks strange, right? Why buy the crappy Linux VPS when you can have a better configuration with <em>less</em> money (if possible)?</p>
 							<p class="notice--primary"><strong>Note</strong>: I knew this VPS provider ran <a href="https://www.proxmox.com/en/proxmox-ve">Proxmox VE</a> because I already had their VPSs. They’d give you a Proxmox VE noVNC console when you click “Console” to manage your VPS, from which you know they’re using QEMU/KVM as their virtualization platform. Direct access to QEMU screen is <em>awesome</em>!</p>
 							<h2 id="get-vps">Get a VPS</h2>
 							<p>First I head to the shopping cart to order a Windows VPS.</p>
@@ -196,7 +196,7 @@
 							<p>Completely expected, only Windows images are available for choosing.</p>
 							<p><img src="/image/linux/ipxe/vps-create.png" alt="VPS creation page" /></p>
 							<p>That doesn’t matter, since I’m prepared to bypass the provided VM images and set it up on my own, so I picked <em>Disabled</em> for KVM OS Template. Hopefully it’ll speed up the VM creation process a bit, which, well, wouldn’t matter after all 😊.</p>
-							<p>The next part involves a bit of patient waiting. The VM creation took quite a few minutes, perhaps to reserve that 128 GB of HDD? It would probably make sense to wipe the reserved area lest any previous data be left behind, which is a good practice in terms of security. Whatever, now the new VPS is ready, and I can see some basic information about it. I take down the IP address because later in iPXE environment I need to configure it as a static IP address.</p>
+							<p>The next part involves a bit of patient waiting. The VM creation took quite a few minutes, perhaps to reserve that 128&nbsp;GB of HDD? It would probably make sense to wipe the reserved area lest any previous data be left behind, which is a good practice in terms of security. Whatever, now the new VPS is ready, and I can see some basic information about it. I take down the IP address because later in iPXE environment I need to configure it as a static IP address.</p>
 							<p><img src="/image/linux/ipxe/vps-status.png" alt="VPS ready" /></p>
 							<p>Because I did not choose an OS template for the VPS, it must boot from network (which is true even if I <em>did</em> take a template).</p>
 							<p><img src="/image/linux/ipxe/vps-boot-order.png" alt="Set boot order of VPS" style="border-radius: 6px;" /></p>
@@ -234,7 +234,7 @@ chain <span class="nt">--autofree</span> http://boot.netboot.xyz
 							<p><img src="/image/linux/ipxe/ipxe-install-debian-disk.png" alt="Configure disk partitions for Debian" /></p>
 							<p>Select <code class="language-plaintext highlighter-rouge">deb.debian.org</code> as package source since this is a Hong Kong VPS and not a mainland China one, and proceed through the rest of the process. After a reboot, I can see the login screen of the newly installed OS. Hooray!</p>
 							<p><img src="/image/linux/ipxe/debian-ok.png" alt="Debian ready" /></p>
-							<p>If I replace <code class="language-plaintext highlighter-rouge">linux-image-amd64</code> with <code class="language-plaintext highlighter-rouge">linux-image-cloud-amd64</code>, I can free up some 100 MB disk space than the default setup:</p>
+							<p>If I replace <code class="language-plaintext highlighter-rouge">linux-image-amd64</code> with <code class="language-plaintext highlighter-rouge">linux-image-cloud-amd64</code>, I can free up some 100&nbsp;MB disk space than the default setup:</p>
 							<p><img src="/image/linux/ipxe/debian-df.png" alt="Debian DF" /></p>
 							<p>That’s it. With just some small efforts, this is now an afforable, high-spec Linux VPS.</p>
 							<p>While the VPS control panel would never offer Linux templates should anything go wrong, it’s always possible to boot from iPXE again for a “rescue environment”.</p>
@@ -396,7 +396,7 @@ chain <span class="nt">--autofree</span> http://boot.netboot.xyz
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-830</a>
+						Site version <a href="/status" class="version-text">G-831</a>
 					</p>
 				</div>
 			</footer>

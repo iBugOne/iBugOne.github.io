@@ -1,54 +1,244 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.2">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2023-10-25T13:06:07+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Debugging Proxmox VE Firewall Dropping TCP Reset Packets</title><link href="https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset/" rel="alternate" type="text/html" title="Debugging Proxmox VE Firewall Dropping TCP Reset Packets" /><published>2023-10-06T00:00:00+00:00</published><updated>2023-10-06T13:37:51+00:00</updated><id>https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset</id><content type="html" xml:base="https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset/"><![CDATA[<p>A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.</p>
-			<p>When I reviewed my edited Nginx configuration and tried visiting the new website, I received a 504 Gateway Timeout error after <code class="language-plaintext highlighter-rouge">curl</code> hung for a minute. Knowing that the web server had yet to be set up, I was expecting a 502 Bad Gateway error. I quickly recalled the conditions for Nginx to return these specific errors: 502 if the upstream server is immediately known down, and 504 if the upstream server is up but not responding.</p>
-			<p>Since the actual web application hadn’t been set up yet, the new VM should have nothing listening on the configured ports. Consequently, the kernel should immediately respond with a TCP Reset for any incoming connections. To verify this, I ran <code class="language-plaintext highlighter-rouge">tcpdump</code> on both sides to check if the TCP reset packets actually came out. To my surprise, the packets were indeed sent out from the new VM, but the gateway server received nothing. So there was certainly something wrong with the firewall. I took a glance at the output of <code class="language-plaintext highlighter-rouge">pve-firewall compile</code>. They were very structured and adequately easy to understand, but I couldn’t immediately identify anything wrong. Things were apparently more complicated than I had previously anticipated.</p>
-			<h2 id="searching">Searching for information</h2>
-			<p>As usual, the first thing to try is Googling. Searching for <code class="language-plaintext highlighter-rouge">pve firewall tcp reset</code> brought <a href="https://forum.proxmox.com/threads/tcp-rst-packets-dropped-by-pve-firewall.56300/">this post on Proxmox Forum</a> as the first result. Their symptoms were precisely the same as mine:</p>
-			<blockquote>
-				<ul>
-					<li>Assume we have a service running on TCP port 12354</li>
-					<li>Clients can communicate with it while running</li>
-					<li>While service is down, clients recieved “Connection timed out” (no answer) even if OS send TCP RST packets:</li>
-				</ul>
-				<p>[…]</p>
-				<p>However, these RST packets are dropped somewhere in PVE firewall.<br />
-					On the VM options :</p>
-				<ul>
-					<li>Firewall &gt; Options &gt; Firewall = No, Has no effect</li>
-					<li>Firewall &gt; Options &gt; * Policy = ACCEPT, Has no effect (even with NO rule in active for this VM)</li>
-					<li>Hardware &gt; Network Device &gt; <code class="language-plaintext highlighter-rouge">firewall=0</code>, allows packets RST to pass!</li>
-				</ul>
-			</blockquote>
-			<p>I gave the last suggestion a try, and it worked! I could now see connections immediately reset on the gateway server, and Nginx started producing 502 errors. But I was still confused why this happened in the first place. The first thread contained nothing else useful, so I continued scanning through other search results and noticed <a href="https://forum.proxmox.com/threads/turning-on-the-pve-firewall-stops-vm-lxc-connectivity.55634/#post-261316">another post</a> about another seemingly unrelated problem, with a plausible solution:</p>
-			<blockquote>
-				<p>[…], and the fix was just to add the <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> in the <code class="language-plaintext highlighter-rouge">host.fw</code> for each node - I didn’t have to do anything other than that.</p>
-			</blockquote>
-			<p>That seemed understandable to me, so I gave it a try as well, and to my pleasure, it also worked.</p>
-			<p>Regrettably, useful information ceased to exist online beyond this, and it was far from painting the whole picture. So anything further would have to be uncovered on my own.</p>
-			<h2 id="reviewing">Reviewing information</h2>
-			<p>I reviewed the two helpful workarounds and made myself abundantly clear about their effects:</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.2">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2023-10-29T19:21:13+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Understanding ZFS block sizes</title><link href="https://ibug.io/blog/2023/10/zfs-block-size/" rel="alternate" type="text/html" title="Understanding ZFS block sizes" /><published>2023-10-30T00:00:00+00:00</published><updated>2023-10-30T02:58:51+00:00</updated><id>https://ibug.io/blog/2023/10/zfs-block-size</id><content type="html" xml:base="https://ibug.io/blog/2023/10/zfs-block-size/"><![CDATA[<p>ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.</p>
+			<p>We’ll begin with a slide from a ZFS talk from Lustre<sup id="fnref:dilger" role="doc-noteref"><a href="#fn:dilger" class="footnote" rel="footnote">1</a></sup> (page 5):</p>
+			<figure class="">
+				<img src="/image/zfs/zfs-io-stack.png" alt="ZFS I/O Stack" />
+				<figcaption>
+					Figure 1. ZFS I/O Stack
+				</figcaption>
+			</figure>
+			<!-- This article will focus on the topmost layer (ZPL and DMU) and the lowermost layer (vdev and disk sectors). -->
+			<h2 id="logical-blocks">Logical blocks</h2>
+			<p>The first thing to understand is that there are at least two levels of “block” concepts in ZFS. There’s “logical blocks” on an upper layer (DMU), and “physical blocks” on a lower layer (vdev). The latter is easier to understand and it’s almost synonymous to “disk sectors”. It’s precisely the <code class="language-plaintext highlighter-rouge">ashift</code> parameter in <code class="language-plaintext highlighter-rouge">zpool create</code> command and usually matches the physical sector size of your disks (4 KiB for modern disks). Once set, <code class="language-plaintext highlighter-rouge">ashift</code> is immutable and can only be changed when recreating the entire vdev array (fortunately not the entire pool<sup id="fnref:zfs101" role="doc-noteref"><a href="#fn:zfs101" class="footnote" rel="footnote">2</a></sup>). The “logical block”, however, is slightly more complicated, and beyond the expressibility of a few words. In short, it’s the smallest <em>meaningful</em> unit of data that ZFS can operate on, including reading, writing, checksumming, compression and deduplication.</p>
+			<h3 id="recordsize-and-volblocksize">“recordsize” and “volblocksize”</h3>
+			<p>You’ve probably seen <code class="language-plaintext highlighter-rouge">recordsize</code> being talked about extensively in ZFS tuning guides<sup id="fnref:tuning" role="doc-noteref"><a href="#fn:tuning" class="footnote" rel="footnote">3</a></sup>, which is already a great source of confusion. The default <code class="language-plaintext highlighter-rouge">recordsize</code> is 128 KiB, which controls the <em>maximum</em> size of a logical block. The <em>actual</em> block size depends on the file you’re writing:</p>
 			<ul>
+				<li>If the file is smaller than or equal to <code class="language-plaintext highlighter-rouge">recordsize</code>, it’s stored as a single logical block of its size, rounded up to the nearest multiple of 512 bytes.</li>
+				<li>If the file is larger than <code class="language-plaintext highlighter-rouge">recordsize</code>, it’s split into multiple logical blocks of <code class="language-plaintext highlighter-rouge">recordsize</code> each, with the last block being zero-padded to <code class="language-plaintext highlighter-rouge">recordsize</code>.</li>
+			</ul>
+			<p>As with other filesystems, if you change a small portion of a large file, only 128 KiB (or whatever your <code class="language-plaintext highlighter-rouge">recordsize</code> is) is rewritten, along with new metadata and checksums. Large <code class="language-plaintext highlighter-rouge">recordsize</code> bloats the read/write amplification for random I/O workloads, while small <code class="language-plaintext highlighter-rouge">recordsize</code> increases the fragmentation and metadata overhead for large files. Note that ZFS always validates checksums, so every read operation is done on an entire block, even if only a few bytes are requested. So it is important to align your <code class="language-plaintext highlighter-rouge">recordsize</code> with your workload, like using 16 KiB for (most) databases and 1 MiB for media files. The default 128 KiB is a good compromise for general-purpose workloads, and there certainly isn’t a one-size-fits-all solution. Also note that while <code class="language-plaintext highlighter-rouge">recordsize</code> can be changed on the fly, it only affects newly written data, and existing ones stay intact.</p>
+			<p>For ZVOLs, as you’d imagine, the rule is much simpler: Every block of <code class="language-plaintext highlighter-rouge">volblocksize</code> is a logical block, and it’s aligned to its own size. Since ZFS 2.2, the default <code class="language-plaintext highlighter-rouge">volblocksize</code> is 16 KiB, providing a good balance between performance and compatibility.</p>
+			<h3 id="compression">Compression</h3>
+			<p>Compression is applied on a per-block basis, and compressed data is not shared between blocks. This is best shown with an example:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>zfs get compression tank/test
+<span class="go">NAME       PROPERTY     VALUE  SOURCE
+tank/test  compression  zstd   inherited from tank
+</span><span class="gp">$</span><span class="w"> </span><span class="nb">head</span> <span class="nt">-c</span> 131072 /dev/urandom <span class="o">&gt;</span> 128k
+<span class="gp">$</span><span class="w"> </span><span class="nb">cat </span>128k 128k 128k 128k 128k 128k 128k 128k <span class="o">&gt;</span> 1m
+<span class="gp">$</span><span class="w"> </span><span class="nb">du</span> <span class="nt">-sh</span> 128k 1m
+<span class="go">129K    128k
+1.1M    1m
+</span></code></pre>
+				</div>
+			</div>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span><span class="nb">head</span> <span class="nt">-c</span> 16384 /dev/urandom <span class="o">&gt;</span> 16k
+<span class="gp">$</span><span class="w"> </span><span class="nb">cat </span>16k 16k 16k 16k 16k 16k 16k 16k <span class="o">&gt;</span> 128k1
+<span class="gp">$</span><span class="w"> </span><span class="nb">cat </span>128k1 128k1 128k1 128k1 128k1 128k1 128k1 128k1 <span class="o">&gt;</span> 1m1
+<span class="gp">$</span><span class="w"> </span><span class="nb">du</span> <span class="nt">-sh</span> 16k 128k1 1m1
+<span class="go">17K     16k
+21K     128k1
+169K    1m1
+</span></code></pre>
+				</div>
+			</div>
+			<p>As you can see from <code class="language-plaintext highlighter-rouge">du</code>’s output above, despite containing 8 identical copies of the same 128 KiB random data, the 1 MiB file gains precisely nothing from compression, as each 128 KiB block is compressed individually. The other test of combining 8 copies of 16 KiB random data into one 128 KiB file shows positive results, as the 128 KiB file is only 21 KiB in size. Similarly, the 1 MiB file that contains 64 exact copies of the same 16 KiB chunk is exactly 8 times the size of that 128 KiB file, because the chunk data is not shared across 128 KiB boundaries.</p>
+			<p>This brings up an interesting point: <strong>It’s beneficial to turn on compression even for filesystems with uncompressible data</strong><sup id="fnref:cks-1" role="doc-noteref"><a href="#fn:cks-1" class="footnote" rel="footnote">4</a></sup>. One direct impact is on the last block of a large file, where its zero-filled bytes up to <code class="language-plaintext highlighter-rouge">recordsize</code> compress very well. Using LZ4 or ZSTD, compression should have negligible impact on any reasonably modern CPU and reasonably sized disks.</p>
+			<p>There are two more noteworthy points about compression, both from <a href="https://openzfs.github.io/openzfs-docs/man/master/7/zfsprops.7.html"><code class="language-plaintext highlighter-rouge">man zfsprops.7</code></a>:</p>
+			<ol>
 				<li>
-					<p>Disabling the firewall on the virtual network device stops PVE from bridging the interface an extra time, as shown in the following diagram:</p>
-					<p><img src="/image/pve-firewall/pve-fwbr.png" alt="PVE Firewall Diagram" /></p>
-				</li>
-				<li>
-					<p>Adding <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> removes one single iptables rule:</p>
-					<div class="language-shell highlighter-rouge">
+					<blockquote>
+						<p>When any setting except <strong>off</strong> is selected, compression will explicitly check for blocks consisting of only zeroes (the NUL byte). When a zero-filled block is detected, it is stored as a hole and not compressed using the indicated compression algorithm.</p>
+					</blockquote>
+					<p>Instead of compressing entire blocks of zeroes like the last block of a large file, ZFS will not store anything about these zero blocks. Technically, this is done by omitting the corresponding ranges from the file’s indirect blocks<sup id="fnref:cks-1:1" role="doc-noteref"><a href="#fn:cks-1" class="footnote" rel="footnote">4</a></sup>.</p>
+					<p>Take this test for example: I created a file with 64 KiB of urandom, then 256 KiB of zeroes, then another 64 KiB of urandom. The file is 384 KiB in size, but only 128 KiB is actually stored on disk:</p>
+					<div class="language-console highlighter-rouge">
 						<div class="highlight">
-							<pre class="highlight"><code><span class="nt">-A</span> PVEFW-FORWARD <span class="nt">-m</span> conntrack <span class="nt">--ctstate</span> INVALID <span class="nt">-j</span> DROP
-</code></pre>
+							<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zfs create pool0/srv/test
+<span class="gp">#</span><span class="w"> </span><span class="nb">cat</span> &lt;<span class="o">(</span><span class="nb">head</span> <span class="nt">-c</span> 64K /dev/urandom<span class="o">)</span> &lt;<span class="o">(</span><span class="nb">head</span> <span class="nt">-c</span> 256K /dev/zero<span class="o">)</span> &lt;<span class="o">(</span><span class="nb">head</span> <span class="nt">-c</span> 64K /dev/urandom<span class="o">)</span> <span class="o">&gt;</span> /srv/test/test
+<span class="gp">#</span><span class="w"> </span><span class="nb">du</span> <span class="nt">-sh</span> /srv/test/test
+<span class="go">145K    /srv/test/test
+</span></code></pre>
 						</div>
     </div>
+					<p>We can also examine the file’s indirect blocks with <code class="language-plaintext highlighter-rouge">zdb</code>:</p>
+					<div class="language-console highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span><span class="nb">ls</span> <span class="nt">-li</span> /srv/test/test
+<span class="go">2 -rw-r--r-- 1 root root 393216 Oct 30 02:05 /srv/test/test
+</span><span class="gp">#</span><span class="w"> </span>zdb <span class="nt">-ddddd</span> pool0/srv/test 2
+<span class="go">[...]
+Indirect blocks:
+               0 L1  0:1791b7d3000:1000 20000L/1000P F=2 B=9769680/9769680 cksum=[...]
+               0  L0 0:1791b7b1000:11000 20000L/11000P F=1 B=9769680/9769680 cksum=[...]
+           40000  L0 0:1791b7c2000:11000 20000L/11000P F=1 B=9769680/9769680 cksum=[...]
+
+                segment [0000000000000000, 0000000000020000) size  128K
+                segment [0000000000040000, 0000000000060000) size  128K
+</span></code></pre>
+						</div>
+    </div>
+					<p>Here we can see only two L0 blocks allocated, each being 20000 (hex, dec = 131072) bytes logical and 11000 (hex, dec = 69632) bytes physical in size. The two L0 blocks match the two segments shown at the bottom, with the middle segment nowhere to be found.</p>
 				</li>
+				<li>
+					<blockquote>
+						<p>Any block being compressed must be no larger than 7/8 of its original size after compression, otherwise the compression will not be considered worthwhile and the block saved uncompressed. […] for example, 8 KiB blocks on disks with 4 KiB disk sectors must compress to 1/2 or less of their original size.</p>
+					</blockquote>
+					<p>This one should be self-explanatory.</p>
+				</li>
+			</ol>
+			<h2 id="raidz">RAIDZ</h2>
+			<p>Up until now we’ve only talked about logical blocks, which are all on the higher layers of the ZFS hierarchy. RAIDZ is where physical blocks (disk sectors) really come into play and adds another field of confusion.</p>
+			<p>Unlike traditional RAID 5/6/7<sup class="no-select">(?)</sup> that combine disks into an array and presents a single volume for the filesystem, RAIDZ handles each <em>logical block</em> separately. I’ll cite this illustration from Delphix<sup id="fnref:delphix" role="doc-noteref"><a href="#fn:delphix" class="footnote" rel="footnote">5</a></sup> to explain:</p>
+			<figure class="">
+				<img src="/image/zfs/raidz-block-layout.png" alt="RAID-Z block layout" />
+				<figcaption>
+					Figure 2. RAID-Z block layout
+				</figcaption>
+			</figure>
+			<p>This example shows a 5-wide RAID-Z1 setup.</p>
+			<ul>
+				<li>A single-sector block takes another sector for parity, like the dark red block on row 3.</li>
+				<li>
+					<p>Multi-sector blocks are striped across disks, with parity sectors inserted every 4 sectors, matching the data-to-parity ratio of the vdev array.</p>
+					<ul>
+						<li>You may have noticed that parity sectors for the same block are always stored on the same disk that resembles RAID-4 instead of RAID-5. Keep in mind that ZFS reads, writes and verifies entire blocks, so interleaving parity sectors across disks will not provide any benefit, while keeping “stripes” on the same disk simplifies the logic for validation and reconstruction.</li>
+					</ul>
+				</li>
+				<li>In order to avoid unusable fragments, ZFS requires each allocated block to be padded to a multiple of (<em>p+1</em>) sectors, where <em>p</em> is the number of parity disks. For example, RAID-Z1 requires each block to be padded to a multiple of 2 sectors, and RAID-Z2 requires each block to be padded to a multiple of 3 sectors. This can be seen on rows 7 to 9, where the X sectors are reserved for parity padding.</li>
 			</ul>
-			<p>I couldn’t figure out how the first difference was relevant, but the second one provided an important clue: The firewall was dropping TCP Reset packets because conntrack considered them invalid.</p>
-			<p>Conntrack (<strong>conn</strong>ection <strong>track</strong>ing) is a Linux kernel subsystem that tracks network connections and aids in stateful packet inspection and network address translation. The first packet of a connection is considered “NEW”, and subsequent packets from the same connection are considered “ESTABLISHED”, including the TCP Reset packet when it’s first seen, which causes conntrack to delete the connection entry.</p>
-			<p>There was still yet anything obvious, so time to start debugging.</p>
-			<h2 id="tcpdump">Inspecting packet captures</h2>
-			<p>I ran <code class="language-plaintext highlighter-rouge">tcpdump -ni any host 172.31.0.2 and host 172.31.1.11 and tcp</code> on the PVE host to capture packets between the two VMs. This is what I got (output trimmed):</p>
-			<div class="language-text highlighter-rouge">
+			<p>This design allows RAID to play well with ZFS’s log-structured design and avoids the need for read-modify-write cycles. Consequently, the RAID overhead is now dependent on your data and is no longer an intrinsic property of the RAID level and array width. The same Delphix article shares a nice spreadsheet<sup id="fnref:delphix-spreadsheet" role="doc-noteref"><a href="#fn:delphix-spreadsheet" class="footnote" rel="footnote">6</a></sup> that calculates RAID overhead for you:</p>
+			<p><a href="https://docs.google.com/a/delphix.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/"><img src="/image/zfs/raidz1-parity-overhead.png" alt="Size of parity overhead for RAID-Z1" /></a></p>
+			<h3 id="raidz-accounting">Accounting</h3>
+			<p>Accounting the storage space for a RAIDZ array is as problematic as it seems: There’s no way to calculate the available space in advance without knowledge on the block size pattern.</p>
+			<p>ZFS works around this by showing an estimate, assuming all data were stored as 128 KiB blocks<sup id="fnref:zfs-4599" role="doc-noteref"><a href="#fn:zfs-4599" class="footnote" rel="footnote">7</a></sup>. On my test setup with five 16 GiB disks in RAID-Z1 and <code class="language-plaintext highlighter-rouge">ashift=12</code>, the available space shows as 61.5G, while <code class="language-plaintext highlighter-rouge">zpool</code> shows the raw size as 79.5G:</p>
+			<div class="language-console highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code>tcpdump: data link type LINUX_SLL2
+					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zpool create <span class="nt">-o</span> <span class="nv">ashift</span><span class="o">=</span>12 <span class="nb">test </span>raidz1 nvme3n1p<span class="o">{</span>1,2,3,4,5<span class="o">}</span>
+<span class="gp">#</span><span class="w"> </span>zfs list <span class="nb">test</span>
+<span class="go">NAME   USED  AVAIL     REFER  MOUNTPOINT
+test   614K  61.5G      153K  /test
+</span><span class="gp">#</span><span class="w"> </span>zpool list <span class="nb">test</span>
+<span class="go">NAME   SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
+test  79.5G   768K  79.5G        -         -     0%     0%  1.00x    ONLINE  -
+</span></code></pre>
+				</div>
+			</div>
+			<p>When I increase <code class="language-plaintext highlighter-rouge">ashift</code> to 15 (32 KiB sectors), the available space drops quite a bit, even if <code class="language-plaintext highlighter-rouge">zpool</code> shows the same raw size:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zpool create <span class="nt">-o</span> <span class="nv">ashift</span><span class="o">=</span>15 <span class="nb">test </span>raidz1 nvme3n1p<span class="o">{</span>1,2,3,4,5<span class="o">}</span>
+<span class="gp">#</span><span class="w"> </span>zfs list <span class="nb">test</span>
+<span class="go">NAME   USED  AVAIL     REFER  MOUNTPOINT
+test  4.00M  51.3G     1023K  /test
+</span><span class="gp">#</span><span class="w"> </span>zpool list <span class="nb">test</span>
+<span class="go">NAME   SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
+test  79.5G  7.31M  79.5G        -         -     0%     0%  1.00x    ONLINE  -
+</span></code></pre>
+				</div>
+			</div>
+			<p>In both cases, calculating the “raw” disk space from the available space gives roughly congruent results:</p>
+			<ul>
+				<li>61.5 GiB × (1 + 25%) = 76.9 GiB</li>
+				<li>51.3 GiB × (1 + 50%) = 76.9 GiB</li>
+			</ul>
+			<p>The default <code class="language-plaintext highlighter-rouge">refreservation</code> for non-sparse ZVOLs exhibits a similar behavior:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zfs create <span class="nt">-V</span> 4G <span class="nt">-o</span> <span class="nv">volblocksize</span><span class="o">=</span>8K <span class="nb">test</span>/v8k
+<span class="gp">#</span><span class="w"> </span>zfs create <span class="nt">-V</span> 4G <span class="nt">-o</span> <span class="nv">volblocksize</span><span class="o">=</span>16K <span class="nb">test</span>/v16k
+<span class="gp">#</span><span class="w"> </span>zfs get refreservation <span class="nb">test</span>/v8k <span class="nb">test</span>/v16k
+<span class="go">NAME       PROPERTY        VALUE      SOURCE
+test/v16k  refreservation  4.86G      local
+test/v8k   refreservation  6.53G      local
+</span></code></pre>
+				</div>
+			</div>
+			<p>Interestingly, neither of the <code class="language-plaintext highlighter-rouge">refreservation</code> sizes matches the RAID overhead as calculated in the Delphix spreadsheet<sup id="fnref:delphix-spreadsheet:1" role="doc-noteref"><a href="#fn:delphix-spreadsheet" class="footnote" rel="footnote">6</a></sup>, as you would expect some 6.0 GiB for the 16k-volblocksized ZVOL and some 8.0 GiB for the 8k-volblocksized one. <strong>Let’s just don’t forget that the whole accounting system assumed 128 KiB blocks and scaled by that<sup id="fnref:acct-128k" role="doc-noteref"><a href="#fn:acct-128k" class="footnote" rel="footnote">8</a></sup>.</strong> So the actual meaning of 4.86G and 6.53G would be “the <em>equivalent</em> space if volblocksize had been 128 KiB”. If we multiply both values by 1.25 (overhead for 128 KiB blocks and 5-wide RAIDZ), we get 6.08 GiB and 8.16 GiB of raw disk spaces respectively, both of which match more closely the expected values. The final minor difference is due to the different amount of metadata required for different number of blocks.</p>
+			<h2 id="thoughts">Thoughts</h2>
+			<p>I never imagined I would delve this deep into ZFS when I first stumbled upon the question. There are lots of good write-ups on individual components of ZFS all around the web, and <a href="https://utcc.utoronto.ca/~cks/space/blog/">Chris Siebenmann’s blog</a> in particular. But few combine all the pieces together and paint the whole picture, so I had to spend some time synthesizing them by myself. As you’ve seen in the Luster slide, ZFS is so complex a beast that it’s hard to digest in its entirety. So for now I have no idea how much effort I would put into learning it, nor any future blogs I would write. But anyways, that’s one large mystery solved, for myself and my readers (you), and time to call it a day.</p>
+			<h2 id="references">References</h2>
+			<div class="footnotes" role="doc-endnotes">
+				<ol>
+					<li id="fn:dilger" role="doc-endnote">
+						<p>Andreas Dilger (2010) <a href="https://wiki.lustre.org/images/4/49/Beijing-2010.2-ZFS_overview_3.1_Dilger.pdf">ZFS Features &amp; Concepts TOI</a> <a href="#fnref:dilger" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+					</li>
+					<li id="fn:zfs101" role="doc-endnote">
+						<p>Jim Salter (2020) <a href="https://arstechnica.com/information-technology/2020/05/zfs-101-understanding-zfs-storage-and-performance/">ZFS 101 – Understanding ZFS storage and performance</a> <a href="#fnref:zfs101" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+					</li>
+					<li id="fn:tuning" role="doc-endnote">
+						<p>OpenZFS <a href="https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Workload%20Tuning.html">Workload Tuning</a> <a href="#fnref:tuning" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+					</li>
+					<li id="fn:cks-1" role="doc-endnote">
+						<p>Chris Siebenmann (2017) <a href="https://utcc.utoronto.ca/~cks/space/blog/solaris/ZFSFilePartialAndHoleStorage">ZFS’s recordsize, holes in files, and partial blocks</a> <a href="#fnref:cks-1" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:cks-1:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
+					</li>
+					<li id="fn:delphix" role="doc-endnote">
+						<p>Matthew Ahrens (2014) <a href="https://www.delphix.com/blog/zfs-raidz-stripe-width-or-how-i-learned-stop-worrying-and-love-raidz">How I Learned to Stop Worrying and Love RAIDZ</a> <a href="#fnref:delphix" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+					</li>
+					<li id="fn:delphix-spreadsheet" role="doc-endnote">
+						<p><a href="https://docs.google.com/a/delphix.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/">RAID-Z parity cost</a> (Google Sheets) <a href="#fnref:delphix-spreadsheet" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:delphix-spreadsheet:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
+					</li>
+					<li id="fn:zfs-4599" role="doc-endnote">
+						<p>openzfs/zfs#4599 (2016) <a href="https://github.com/openzfs/zfs/issues/4599">disk usage wrong when using larger recordsize, raidz and ashift=12</a> <a href="#fnref:zfs-4599" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+					</li>
+					<li id="fn:acct-128k" role="doc-endnote">
+						<p>Mike Gerdts (2019) <a href="https://github.com/illumos/illumos-gate/blob/b73ccab03ec36581b1ae5945ef1fee1d06c79ccf/usr/src/lib/libzfs/common/libzfs_dataset.c#L5118">(Code comment in <code class="language-plaintext highlighter-rouge">libzfs_dataset.c</code>)</a> <a href="#fnref:acct-128k" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+					</li>
+				</ol>
+			</div>
+			]]></content><author><name>iBug</name></author><category term="linux" /><category term="zfs" /><summary type="html"><![CDATA[ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.]]></summary></entry><entry><title type="html">Debugging Proxmox VE Firewall Dropping TCP Reset Packets</title><link href="https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset/" rel="alternate" type="text/html" title="Debugging Proxmox VE Firewall Dropping TCP Reset Packets" /><published>2023-10-06T00:00:00+00:00</published><updated>2023-10-06T13:37:51+00:00</updated><id>https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset</id><content type="html" xml:base="https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset/"><![CDATA[<p>A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.</p>
+		<p>When I reviewed my edited Nginx configuration and tried visiting the new website, I received a 504 Gateway Timeout error after <code class="language-plaintext highlighter-rouge">curl</code> hung for a minute. Knowing that the web server had yet to be set up, I was expecting a 502 Bad Gateway error. I quickly recalled the conditions for Nginx to return these specific errors: 502 if the upstream server is immediately known down, and 504 if the upstream server is up but not responding.</p>
+		<p>Since the actual web application hadn’t been set up yet, the new VM should have nothing listening on the configured ports. Consequently, the kernel should immediately respond with a TCP Reset for any incoming connections. To verify this, I ran <code class="language-plaintext highlighter-rouge">tcpdump</code> on both sides to check if the TCP reset packets actually came out. To my surprise, the packets were indeed sent out from the new VM, but the gateway server received nothing. So there was certainly something wrong with the firewall. I took a glance at the output of <code class="language-plaintext highlighter-rouge">pve-firewall compile</code>. They were very structured and adequately easy to understand, but I couldn’t immediately identify anything wrong. Things were apparently more complicated than I had previously anticipated.</p>
+		<h2 id="searching">Searching for information</h2>
+		<p>As usual, the first thing to try is Googling. Searching for <code class="language-plaintext highlighter-rouge">pve firewall tcp reset</code> brought <a href="https://forum.proxmox.com/threads/tcp-rst-packets-dropped-by-pve-firewall.56300/">this post on Proxmox Forum</a> as the first result. Their symptoms were precisely the same as mine:</p>
+		<blockquote>
+			<ul>
+				<li>Assume we have a service running on TCP port 12354</li>
+				<li>Clients can communicate with it while running</li>
+				<li>While service is down, clients recieved “Connection timed out” (no answer) even if OS send TCP RST packets:</li>
+			</ul>
+			<p>[…]</p>
+			<p>However, these RST packets are dropped somewhere in PVE firewall.<br />
+				On the VM options :</p>
+			<ul>
+				<li>Firewall &gt; Options &gt; Firewall = No, Has no effect</li>
+				<li>Firewall &gt; Options &gt; * Policy = ACCEPT, Has no effect (even with NO rule in active for this VM)</li>
+				<li>Hardware &gt; Network Device &gt; <code class="language-plaintext highlighter-rouge">firewall=0</code>, allows packets RST to pass!</li>
+			</ul>
+		</blockquote>
+		<p>I gave the last suggestion a try, and it worked! I could now see connections immediately reset on the gateway server, and Nginx started producing 502 errors. But I was still confused why this happened in the first place. The first thread contained nothing else useful, so I continued scanning through other search results and noticed <a href="https://forum.proxmox.com/threads/turning-on-the-pve-firewall-stops-vm-lxc-connectivity.55634/#post-261316">another post</a> about another seemingly unrelated problem, with a plausible solution:</p>
+		<blockquote>
+			<p>[…], and the fix was just to add the <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> in the <code class="language-plaintext highlighter-rouge">host.fw</code> for each node - I didn’t have to do anything other than that.</p>
+		</blockquote>
+		<p>That seemed understandable to me, so I gave it a try as well, and to my pleasure, it also worked.</p>
+		<p>Regrettably, useful information ceased to exist online beyond this, and it was far from painting the whole picture. So anything further would have to be uncovered on my own.</p>
+		<h2 id="reviewing">Reviewing information</h2>
+		<p>I reviewed the two helpful workarounds and made myself abundantly clear about their effects:</p>
+		<ul>
+			<li>
+				<p>Disabling the firewall on the virtual network device stops PVE from bridging the interface an extra time, as shown in the following diagram:</p>
+				<p><img src="/image/pve-firewall/pve-fwbr.png" alt="PVE Firewall Diagram" /></p>
+			</li>
+			<li>
+				<p>Adding <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> removes one single iptables rule:</p>
+				<div class="language-shell highlighter-rouge">
+					<div class="highlight">
+						<pre class="highlight"><code><span class="nt">-A</span> PVEFW-FORWARD <span class="nt">-m</span> conntrack <span class="nt">--ctstate</span> INVALID <span class="nt">-j</span> DROP
+</code></pre>
+					</div>
+    </div>
+			</li>
+		</ul>
+		<p>I couldn’t figure out how the first difference was relevant, but the second one provided an important clue: The firewall was dropping TCP Reset packets because conntrack considered them invalid.</p>
+		<p>Conntrack (<strong>conn</strong>ection <strong>track</strong>ing) is a Linux kernel subsystem that tracks network connections and aids in stateful packet inspection and network address translation. The first packet of a connection is considered “NEW”, and subsequent packets from the same connection are considered “ESTABLISHED”, including the TCP Reset packet when it’s first seen, which causes conntrack to delete the connection entry.</p>
+		<p>There was still yet anything obvious, so time to start debugging.</p>
+		<h2 id="tcpdump">Inspecting packet captures</h2>
+		<p>I ran <code class="language-plaintext highlighter-rouge">tcpdump -ni any host 172.31.0.2 and host 172.31.1.11 and tcp</code> on the PVE host to capture packets between the two VMs. This is what I got (output trimmed):</p>
+		<div class="language-text highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>tcpdump: data link type LINUX_SLL2
 tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
 listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
 16:33:11.911184 veth101i1 P   IP 172.31.0.2.50198 &gt; 172.31.1.11.80: Flags [S], seq 3404503761, win 64240
@@ -65,14 +255,14 @@ listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144
 178 packets received by filter
 0 packets dropped by kernel
 </code></pre>
-				</div>
 			</div>
-			<p><img src="/image/pve-firewall/fw-diagram-1.png" alt="Diagram" /></p>
-			<p>The first thing to notice is the ACK number. After coming from <code class="language-plaintext highlighter-rouge">tap811i0</code>, it suddenly became 1 with no apparent reason. I struggled on this for a good while and temporarily put it aside.</p>
-			<p>Adding <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> to the firewall options and capturing packets again, I got the following:</p>
-			<div class="language-text highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+		</div>
+		<p><img src="/image/pve-firewall/fw-diagram-1.png" alt="Diagram" /></p>
+		<p>The first thing to notice is the ACK number. After coming from <code class="language-plaintext highlighter-rouge">tap811i0</code>, it suddenly became 1 with no apparent reason. I struggled on this for a good while and temporarily put it aside.</p>
+		<p>Adding <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> to the firewall options and capturing packets again, I got the following:</p>
+		<div class="language-text highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
 16:46:15.243002 veth101i1 P   IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
 16:46:15.243015 fwln101i1 Out IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
 16:46:15.243016 fwpr101p1 P   IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
@@ -87,14 +277,14 @@ listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144
 16:46:15.243090 veth101i1 Out IP 172.31.1.11.80 &gt; 172.31.0.2.58784: Flags [R.], seq 0, ack 1, win 0, length 0
 ^C
 </code></pre>
-				</div>
 			</div>
-			<p><img src="/image/pve-firewall/fw-diagram-2.png" alt="Diagram" /></p>
-			<p>This time while the ACK number was still wrong, the RST packet somehow got through. Ignoring the ACK numbers for now, the output suggested that the RST packet was dropped between <code class="language-plaintext highlighter-rouge">fwpr811p0 P</code> and <code class="language-plaintext highlighter-rouge">fwln811i0 Out</code>. That was the main bridge <code class="language-plaintext highlighter-rouge">vmbr0</code>. All right then, that was where the <code class="language-plaintext highlighter-rouge">PVEFW-FORWARD</code> chain kicked in, so at this point the RST packet was <code class="language-plaintext highlighter-rouge">--ctstate INVALID</code>. Everything was logical so far.</p>
-			<p>So how about disabling firewall for the interface on VM 811?</p>
-			<div class="language-text highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+		</div>
+		<p><img src="/image/pve-firewall/fw-diagram-2.png" alt="Diagram" /></p>
+		<p>This time while the ACK number was still wrong, the RST packet somehow got through. Ignoring the ACK numbers for now, the output suggested that the RST packet was dropped between <code class="language-plaintext highlighter-rouge">fwpr811p0 P</code> and <code class="language-plaintext highlighter-rouge">fwln811i0 Out</code>. That was the main bridge <code class="language-plaintext highlighter-rouge">vmbr0</code>. All right then, that was where the <code class="language-plaintext highlighter-rouge">PVEFW-FORWARD</code> chain kicked in, so at this point the RST packet was <code class="language-plaintext highlighter-rouge">--ctstate INVALID</code>. Everything was logical so far.</p>
+		<p>So how about disabling firewall for the interface on VM 811?</p>
+		<div class="language-text highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
 17:19:01.812030 veth101i1 P   IP 172.31.0.2.39734 &gt; 172.31.1.11.80: Flags [S], seq 1128018611, win 64240
 17:19:01.812045 fwln101i1 Out IP 172.31.0.2.39734 &gt; 172.31.1.11.80: Flags [S], seq 1128018611, win 64240
 17:19:01.812046 fwpr101p1 P   IP 172.31.0.2.39734 &gt; 172.31.1.11.80: Flags [S], seq 1128018611, win 64240
@@ -105,45 +295,45 @@ listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144
 17:19:01.812190 veth101i1 Out IP 172.31.1.11.80 &gt; 172.31.0.2.39734: Flags [R.], seq 0, ack 1, win 0, length 0
 ^C
 </code></pre>
-				</div>
 			</div>
-			<p><img src="/image/pve-firewall/fw-diagram-3.png" alt="Diagram" /></p>
-			<p>This time <code class="language-plaintext highlighter-rouge">fwbr811i0</code> was missing, and the RST packet didn’t get dropped at <code class="language-plaintext highlighter-rouge">vmbr0</code>. I was left totally confused.</p>
-			<p>I decided to sort out the ACK number issue, but ended up asking my friends for help. It turned out this was well documented in <code class="language-plaintext highlighter-rouge">tcpdump(8)</code>:</p>
-			<blockquote>
-				<p><code class="language-plaintext highlighter-rouge">-S</code><br />
-					<code class="language-plaintext highlighter-rouge">--absolute-tcp-sequence-numbers</code><br />
-					Print absolute, rather than relative, TCP sequence numbers.</p>
-			</blockquote>
-			<p>This certainly came out unexpected, but at least I was assured there was nothing wrong with the ACK numbers.</p>
-			<p>Up to now, that’s one more step forward, and a small conclusion:</p>
-			<ul>
-				<li>At the point the RST packet reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, it was already <code class="language-plaintext highlighter-rouge">--ctstate INVALID</code>.</li>
-			</ul>
-			<p>But how? As far as I knew, when the RST packet came out, it should still be considered part of the connection, and thus should be <code class="language-plaintext highlighter-rouge">--ctstate ESTABLISHED</code>. I was still missing something.</p>
-			<p>Time to investigate conntrack.</p>
-			<h2 id="conntrack">Inspecting conntrack</h2>
-			<p><code class="language-plaintext highlighter-rouge">conntrack</code> is the tool to inspect and modify conntrack entries. I ran <code class="language-plaintext highlighter-rouge">conntrack -L</code> to list all entries, only to realize it’s inefficient. So instead, I ran <code class="language-plaintext highlighter-rouge">conntrack -E</code> to watch for “events” in real time, so that I could compare the output with <code class="language-plaintext highlighter-rouge">tcpdump</code>. Except that the entire connection concluded so quickly that I couldn’t identify anything.</p>
-			<p>I had to add artificial delays to the packets to clearly separate each hop that the RST packet goes through:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>tc qdisc add dev tap811i0 root netem delay 200ms
+		</div>
+		<p><img src="/image/pve-firewall/fw-diagram-3.png" alt="Diagram" /></p>
+		<p>This time <code class="language-plaintext highlighter-rouge">fwbr811i0</code> was missing, and the RST packet didn’t get dropped at <code class="language-plaintext highlighter-rouge">vmbr0</code>. I was left totally confused.</p>
+		<p>I decided to sort out the ACK number issue, but ended up asking my friends for help. It turned out this was well documented in <code class="language-plaintext highlighter-rouge">tcpdump(8)</code>:</p>
+		<blockquote>
+			<p><code class="language-plaintext highlighter-rouge">-S</code><br />
+				<code class="language-plaintext highlighter-rouge">--absolute-tcp-sequence-numbers</code><br />
+				Print absolute, rather than relative, TCP sequence numbers.</p>
+		</blockquote>
+		<p>This certainly came out unexpected, but at least I was assured there was nothing wrong with the ACK numbers.</p>
+		<p>Up to now, that’s one more step forward, and a small conclusion:</p>
+		<ul>
+			<li>At the point the RST packet reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, it was already <code class="language-plaintext highlighter-rouge">--ctstate INVALID</code>.</li>
+		</ul>
+		<p>But how? As far as I knew, when the RST packet came out, it should still be considered part of the connection, and thus should be <code class="language-plaintext highlighter-rouge">--ctstate ESTABLISHED</code>. I was still missing something.</p>
+		<p>Time to investigate conntrack.</p>
+		<h2 id="conntrack">Inspecting conntrack</h2>
+		<p><code class="language-plaintext highlighter-rouge">conntrack</code> is the tool to inspect and modify conntrack entries. I ran <code class="language-plaintext highlighter-rouge">conntrack -L</code> to list all entries, only to realize it’s inefficient. So instead, I ran <code class="language-plaintext highlighter-rouge">conntrack -E</code> to watch for “events” in real time, so that I could compare the output with <code class="language-plaintext highlighter-rouge">tcpdump</code>. Except that the entire connection concluded so quickly that I couldn’t identify anything.</p>
+		<p>I had to add artificial delays to the packets to clearly separate each hop that the RST packet goes through:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>tc qdisc add dev tap811i0 root netem delay 200ms
 tc qdisc add dev fwln811i0 root netem delay 200ms
 </code></pre>
-				</div>
 			</div>
-			<p>I also tuned the output on both sides to show the timestamp in a consistent format. For conntrack, <code class="language-plaintext highlighter-rouge">-o timestamp</code> produced Unix timestamps (which is the only supported format), so for <code class="language-plaintext highlighter-rouge">tcpdump</code> I also resorted to <code class="language-plaintext highlighter-rouge">-tt</code> to show Unix timestamps as well.</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>conntrack <span class="nt">-E</span> <span class="nt">-o</span> timestamp <span class="nt">-s</span> 172.31.0.2 <span class="nt">-d</span> 172.31.1.11
+		</div>
+		<p>I also tuned the output on both sides to show the timestamp in a consistent format. For conntrack, <code class="language-plaintext highlighter-rouge">-o timestamp</code> produced Unix timestamps (which is the only supported format), so for <code class="language-plaintext highlighter-rouge">tcpdump</code> I also resorted to <code class="language-plaintext highlighter-rouge">-tt</code> to show Unix timestamps as well.</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>conntrack <span class="nt">-E</span> <span class="nt">-o</span> timestamp <span class="nt">-s</span> 172.31.0.2 <span class="nt">-d</span> 172.31.1.11
 tcpdump <span class="nt">-ttSni</span> any host 172.31.0.2 and host 172.31.1.11 and tcp
 </code></pre>
-				</div>
 			</div>
-			<p>Now I could watch the outputs on two separate tmux panes. The problem immediately emerged (blank lines added for readability):</p>
-			<div class="language-text highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+		</div>
+		<p>Now I could watch the outputs on two separate tmux panes. The problem immediately emerged (blank lines added for readability):</p>
+		<div class="language-text highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
 1696412047.886575 veth101i1 P   IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
 1696412047.886592 fwln101i1 Out IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
 1696412047.886594 fwpr101p1 P   IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
@@ -157,96 +347,96 @@ tcpdump <span class="nt">-ttSni</span> any host 172.31.0.2 and host 172.31.1.11 
 1696412048.286930 fwpr811p0 P   IP 172.31.1.11.80 &gt; 172.31.0.2.47066: Flags [R.]
 ^C
 </code></pre>
-				</div>
 			</div>
-			<div class="language-text highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>[1696412047.886657]         [NEW] tcp      6 120 SYN_SENT src=172.31.0.2 dst=172.31.1.11 sport=47066 dport=80 [UNREPLIED] src=172.31.1.11 dst=172.31.0.2 sport=80 dport=47066
+		</div>
+		<div class="language-text highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>[1696412047.886657]         [NEW] tcp      6 120 SYN_SENT src=172.31.0.2 dst=172.31.1.11 sport=47066 dport=80 [UNREPLIED] src=172.31.1.11 dst=172.31.0.2 sport=80 dport=47066
 [1696412048.086899]     [DESTROY] tcp      6 119 CLOSE src=172.31.0.2 dst=172.31.1.11 sport=47066 dport=80 [UNREPLIED] src=172.31.1.11 dst=172.31.0.2 sport=80 dport=47066
 </code></pre>
-				</div>
 			</div>
-			<p>The artificial delays and the timestamps were absolutely useful: It was clear that the corresponding conntrack connection was destroyed as soon as the RST packet passed through <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, before it came out via <code class="language-plaintext highlighter-rouge">fwln811i0</code>. When it reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, the connection was already gone, and the RST packet was considered invalid.</p>
-			<p><img src="/image/pve-firewall/fw-diagram-4.png" alt="Diagram" /></p>
-			<p>It also became explainable how <code class="language-plaintext highlighter-rouge">firewall=0</code> on the virtual network device remedied the issue: It removed an extra bridge <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, so the connection stayed alive when the RST packet reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, at which point a previous rule for <code class="language-plaintext highlighter-rouge">--ctstate ESTABLISHED</code> gave an <code class="language-plaintext highlighter-rouge">ACCEPT</code> verdict. While it was still <code class="language-plaintext highlighter-rouge">INVALID</code> when passing through <code class="language-plaintext highlighter-rouge">fwbr101i1</code>, there was no rule concerning <code class="language-plaintext highlighter-rouge">--ctstate</code> at play, so it slipped through this stage with no problem.</p>
-			<p>After double-checking the intention of the extra <code class="language-plaintext highlighter-rouge">fwbr*</code> bridge, I drew the conclusion that <strong>this must be a bug with PVE Firewall</strong>. I reported it on the Proxmox VE bug tracker as <a href="https://bugzilla.proxmox.com/show_bug.cgi?id=4983">#4983</a>, and soon received a reply:</p>
-			<blockquote>
-				<p>Thank you for the detailed write-up!</p>
-				<p>This is a known limitation for our kind of firewall setup, since the conntrack is shared between all interfaces on the host.</p>
-				<p>[…]</p>
-				<p>If you know of any other way to avoid this happening, other than using conntrack zones, I’d be happy to take a look.</p>
-			</blockquote>
-			<p>So they admitted that this was a limitation but without a satisfactory solution. Guess I’m still on my own, though.</p>
-			<h2 id="solution">Finding the solution</h2>
-			<p>The actual problem is, when passing through <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, the RST packet isn’t supposed to be processed by conntrack by then. There is no <code class="language-plaintext highlighter-rouge">sysctl</code> option to disable conntrack on a specific interface (or even just all bridges altogether), but at the right time the rarely-used <code class="language-plaintext highlighter-rouge">raw</code> table came to my mind. It didn’t take long to work this out:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>iptables <span class="nt">-t</span> raw <span class="nt">-A</span> PREROUTING <span class="nt">-i</span> fwbr+ <span class="nt">-j</span> CT <span class="nt">--notrack</span>
-</code></pre>
-				</div>
-			</div>
-			<p>After verifying this is the intended solution, I added it as a reply to the bug report. At the time of writing this blog post, the bug report is still open, but I’m sure it’s to be resolved soon.</p>
-			<h2 id="conclusion">Conclusion</h2>
-			<p>Debugging Linux networking has always been a pain for its lack of proper tools and its complexity. Most of the times even reading and understanding packet captures requires immense knowledge of the protocols and all the involved components, as well as scrutinizing every single detail available. Sometimes it’s even necessary to think outside the box but fortunately not today.</p>
-			<p>Also worth mentioning is that it’s easy to suspect the fault of another piece of software, but detailed investigation is always necessary to actually lay the blame.</p>
-			<p>Just as a late reminder, useful bug reports always require detailed information and solid evidence. Glad I was able to have them at hand this time.</p>
-			]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><category term="proxmox-ve" /><summary type="html"><![CDATA[A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.]]></summary></entry><entry><title type="html">Running a dual-protocol OpenVPN/WireGuard VPN server on one port</title><link href="https://ibug.io/blog/2023/09/dual-protocol-vpn-port/" rel="alternate" type="text/html" title="Running a dual-protocol OpenVPN/WireGuard VPN server on one port" /><published>2023-09-26T00:00:00+00:00</published><updated>2023-09-26T14:26:49+00:00</updated><id>https://ibug.io/blog/2023/09/dual-protocol-vpn-port</id><content type="html" xml:base="https://ibug.io/blog/2023/09/dual-protocol-vpn-port/"><![CDATA[<p>Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.</p>
-		<p>In previous times, OpenVPN was the general preference for personal VPN services. Since the emergence of WireGuard, however, popularity has shifted significantly for its simplicity and performance. A challenge presents itself as there’s only one UDP port numbered 53, making it seemingly impossible to run both OpenVPN and WireGuard on the same port.</p>
-		<p>There solution hinges itself on a little bit of insights.</p>
-		<h2 id="inspiration">Inspiration</h2>
-		<p>In a similar situation, many local proxy software like Shadowsocks and V2ray support a feature called “mixed mode”, which accepts both HTTP and SOCKS5 connections on the same TCP port. This also seems impossible at first glance, but with a bit of knowledge in both protocols, it’s actually easy to pull it off.</p>
-		<ul>
-			<li>An HTTP proxy request, just like other HTTP requests, begins with an HTTP verb. In proxy requests, it’s either <code class="language-plaintext highlighter-rouge">GET</code> or <code class="language-plaintext highlighter-rouge">CONNECT</code>,</li>
-			<li>A SOCKS proxy request begins with a 1-byte header containing its version, which is <code class="language-plaintext highlighter-rouge">0x04</code> for SOCKS4 or <code class="language-plaintext highlighter-rouge">0x05</code> for SOCKS5.</li>
-		</ul>
-		<p>Now there’s a clear line between the two protocols, and we can identify them by looking at the first byte of the request. This is how most proxy implementations work, like <a href="https://github.com/3proxy/3proxy/commit/fb56b7d307a7bce1f2109c73864bad7c71716f3b#diff-e268b23274bc9df1b2c0957dfa85d684519282ed611f6135e795205e53fb6e3b">3proxy</a> and <a href="https://github.com/nadoo/glider/blob/4f12a4f3082940d8a4c56ba4f06f02a72d90d5d6/proxy/mixed/mixed.go#L84">glider</a>.</p>
-		<p>So the question is, is there a similar trait between OpenVPN and WireGuard? The answer is, as you would expect, yes.</p>
-		<h2 id="protocols">Protocols</h2>
-		<p>WireGuard runs over UDP and defines 4 packet types: 3 for handshake and 1 for data. All 4 packet types share the same 4-byte <a href="https://github.com/WireGuard/wireguard-linux/blob/fa41884c1c6deb6774135390e5813a97184903e0/drivers/net/wireguard/messages.h#L65">header</a>:</p>
-		<div class="language-rust highlighter-rouge">
+		</div>
+		<p>The artificial delays and the timestamps were absolutely useful: It was clear that the corresponding conntrack connection was destroyed as soon as the RST packet passed through <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, before it came out via <code class="language-plaintext highlighter-rouge">fwln811i0</code>. When it reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, the connection was already gone, and the RST packet was considered invalid.</p>
+		<p><img src="/image/pve-firewall/fw-diagram-4.png" alt="Diagram" /></p>
+		<p>It also became explainable how <code class="language-plaintext highlighter-rouge">firewall=0</code> on the virtual network device remedied the issue: It removed an extra bridge <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, so the connection stayed alive when the RST packet reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, at which point a previous rule for <code class="language-plaintext highlighter-rouge">--ctstate ESTABLISHED</code> gave an <code class="language-plaintext highlighter-rouge">ACCEPT</code> verdict. While it was still <code class="language-plaintext highlighter-rouge">INVALID</code> when passing through <code class="language-plaintext highlighter-rouge">fwbr101i1</code>, there was no rule concerning <code class="language-plaintext highlighter-rouge">--ctstate</code> at play, so it slipped through this stage with no problem.</p>
+		<p>After double-checking the intention of the extra <code class="language-plaintext highlighter-rouge">fwbr*</code> bridge, I drew the conclusion that <strong>this must be a bug with PVE Firewall</strong>. I reported it on the Proxmox VE bug tracker as <a href="https://bugzilla.proxmox.com/show_bug.cgi?id=4983">#4983</a>, and soon received a reply:</p>
+		<blockquote>
+			<p>Thank you for the detailed write-up!</p>
+			<p>This is a known limitation for our kind of firewall setup, since the conntrack is shared between all interfaces on the host.</p>
+			<p>[…]</p>
+			<p>If you know of any other way to avoid this happening, other than using conntrack zones, I’d be happy to take a look.</p>
+		</blockquote>
+		<p>So they admitted that this was a limitation but without a satisfactory solution. Guess I’m still on my own, though.</p>
+		<h2 id="solution">Finding the solution</h2>
+		<p>The actual problem is, when passing through <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, the RST packet isn’t supposed to be processed by conntrack by then. There is no <code class="language-plaintext highlighter-rouge">sysctl</code> option to disable conntrack on a specific interface (or even just all bridges altogether), but at the right time the rarely-used <code class="language-plaintext highlighter-rouge">raw</code> table came to my mind. It didn’t take long to work this out:</p>
+		<div class="language-shell highlighter-rouge">
 			<div class="highlight">
-				<pre class="highlight"><code><span class="k">struct</span> <span class="n">message_header</span> <span class="p">{</span>
+				<pre class="highlight"><code>iptables <span class="nt">-t</span> raw <span class="nt">-A</span> PREROUTING <span class="nt">-i</span> fwbr+ <span class="nt">-j</span> CT <span class="nt">--notrack</span>
+</code></pre>
+			</div>
+		</div>
+		<p>After verifying this is the intended solution, I added it as a reply to the bug report. At the time of writing this blog post, the bug report is still open, but I’m sure it’s to be resolved soon.</p>
+		<h2 id="conclusion">Conclusion</h2>
+		<p>Debugging Linux networking has always been a pain for its lack of proper tools and its complexity. Most of the times even reading and understanding packet captures requires immense knowledge of the protocols and all the involved components, as well as scrutinizing every single detail available. Sometimes it’s even necessary to think outside the box but fortunately not today.</p>
+		<p>Also worth mentioning is that it’s easy to suspect the fault of another piece of software, but detailed investigation is always necessary to actually lay the blame.</p>
+		<p>Just as a late reminder, useful bug reports always require detailed information and solid evidence. Glad I was able to have them at hand this time.</p>
+		]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><category term="proxmox-ve" /><summary type="html"><![CDATA[A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.]]></summary></entry><entry><title type="html">Running a dual-protocol OpenVPN/WireGuard VPN server on one port</title><link href="https://ibug.io/blog/2023/09/dual-protocol-vpn-port/" rel="alternate" type="text/html" title="Running a dual-protocol OpenVPN/WireGuard VPN server on one port" /><published>2023-09-26T00:00:00+00:00</published><updated>2023-09-26T14:26:49+00:00</updated><id>https://ibug.io/blog/2023/09/dual-protocol-vpn-port</id><content type="html" xml:base="https://ibug.io/blog/2023/09/dual-protocol-vpn-port/"><![CDATA[<p>Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.</p>
+	<p>In previous times, OpenVPN was the general preference for personal VPN services. Since the emergence of WireGuard, however, popularity has shifted significantly for its simplicity and performance. A challenge presents itself as there’s only one UDP port numbered 53, making it seemingly impossible to run both OpenVPN and WireGuard on the same port.</p>
+	<p>There solution hinges itself on a little bit of insights.</p>
+	<h2 id="inspiration">Inspiration</h2>
+	<p>In a similar situation, many local proxy software like Shadowsocks and V2ray support a feature called “mixed mode”, which accepts both HTTP and SOCKS5 connections on the same TCP port. This also seems impossible at first glance, but with a bit of knowledge in both protocols, it’s actually easy to pull it off.</p>
+	<ul>
+		<li>An HTTP proxy request, just like other HTTP requests, begins with an HTTP verb. In proxy requests, it’s either <code class="language-plaintext highlighter-rouge">GET</code> or <code class="language-plaintext highlighter-rouge">CONNECT</code>,</li>
+		<li>A SOCKS proxy request begins with a 1-byte header containing its version, which is <code class="language-plaintext highlighter-rouge">0x04</code> for SOCKS4 or <code class="language-plaintext highlighter-rouge">0x05</code> for SOCKS5.</li>
+	</ul>
+	<p>Now there’s a clear line between the two protocols, and we can identify them by looking at the first byte of the request. This is how most proxy implementations work, like <a href="https://github.com/3proxy/3proxy/commit/fb56b7d307a7bce1f2109c73864bad7c71716f3b#diff-e268b23274bc9df1b2c0957dfa85d684519282ed611f6135e795205e53fb6e3b">3proxy</a> and <a href="https://github.com/nadoo/glider/blob/4f12a4f3082940d8a4c56ba4f06f02a72d90d5d6/proxy/mixed/mixed.go#L84">glider</a>.</p>
+	<p>So the question is, is there a similar trait between OpenVPN and WireGuard? The answer is, as you would expect, yes.</p>
+	<h2 id="protocols">Protocols</h2>
+	<p>WireGuard runs over UDP and defines 4 packet types: 3 for handshake and 1 for data. All 4 packet types share the same 4-byte <a href="https://github.com/WireGuard/wireguard-linux/blob/fa41884c1c6deb6774135390e5813a97184903e0/drivers/net/wireguard/messages.h#L65">header</a>:</p>
+	<div class="language-rust highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">struct</span> <span class="n">message_header</span> <span class="p">{</span>
     <span class="nb">u8</span> <span class="k">type</span><span class="p">;</span>
     <span class="nb">u8</span> <span class="n">reserved_zero</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Similarly, all OpenVPN packet types share the same 1-byte <a href="https://build.openvpn.net/doxygen/network_protocol.html#network_protocol_external_types">header</a>:</p>
-		<div class="language-c highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">struct</span> <span class="n">header_byte</span> <span class="p">{</span>
+	</div>
+	<p>Similarly, all OpenVPN packet types share the same 1-byte <a href="https://build.openvpn.net/doxygen/network_protocol.html#network_protocol_external_types">header</a>:</p>
+	<div class="language-c highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">struct</span> <span class="n">header_byte</span> <span class="p">{</span>
     <span class="kt">uint8_t</span> <span class="n">opcpde</span> <span class="o">:</span> <span class="mi">5</span><span class="p">;</span>
     <span class="kt">uint8_t</span> <span class="n">key_id</span> <span class="o">:</span> <span class="mi">3</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>It’s worth noting that 0 is not a defined opcode, so the smallest valid value for this byte is 8, as <code class="language-plaintext highlighter-rouge">key_id</code> can be anything from 0 to 7.</p>
-		<h2 id="implementation">Implementation</h2>
-		<p>Now that we have the packet format for both protocols understood, we can implement a classifier that filters traffic in one protocol from the other.</p>
-		<p>Considering that the WireGuard packet format is much simpler than that of OpenVPN, I choose to identify WireGuard. With kernel firewall <code class="language-plaintext highlighter-rouge">iptables</code>, options are abundant, though I find <code class="language-plaintext highlighter-rouge">u32</code> the easiest:</p>
-		<div class="language-sh highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">*</span>nat
+	</div>
+	<p>It’s worth noting that 0 is not a defined opcode, so the smallest valid value for this byte is 8, as <code class="language-plaintext highlighter-rouge">key_id</code> can be anything from 0 to 7.</p>
+	<h2 id="implementation">Implementation</h2>
+	<p>Now that we have the packet format for both protocols understood, we can implement a classifier that filters traffic in one protocol from the other.</p>
+	<p>Considering that the WireGuard packet format is much simpler than that of OpenVPN, I choose to identify WireGuard. With kernel firewall <code class="language-plaintext highlighter-rouge">iptables</code>, options are abundant, though I find <code class="language-plaintext highlighter-rouge">u32</code> the easiest:</p>
+	<div class="language-sh highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">*</span>nat
 :iBugVPN - <span class="o">[</span>0:0]
 <span class="nt">-A</span> PREROUTING <span class="nt">-m</span> addrtype <span class="nt">--dst-type</span> LOCAL <span class="nt">-p</span> udp <span class="nt">--dport</span> 53 <span class="nt">-j</span> iBugVPN
 <span class="nt">-A</span> iBugVPN <span class="nt">-m</span> u32 <span class="nt">--u32</span> <span class="s2">"25 &amp; 0xFF = 1:4 &amp;&amp; 28 &amp; 0xFFFFFF = 0"</span> <span class="nt">-j</span> REDIRECT <span class="nt">--to-port</span> 51820
 <span class="nt">-A</span> iBugVPN <span class="nt">-j</span> REDIRECT <span class="nt">--to-port</span> 1194
 COMMIT
 </code></pre>
-			</div>
 		</div>
-		<p>With both OpenVPN and WireGuard running on their standard ports, this will redirect each protocol to its respective service port. While these rules only operate on the initial packet, Linux conntrack will handle the rest of the connection.</p>
-		<p>The <code class="language-plaintext highlighter-rouge">u32</code> match is explained:</p>
-		<ul>
-			<li>Basic syntax: <code class="language-plaintext highlighter-rouge">&lt;offset&gt; [operators...] = &lt;range&gt;</code>, where <code class="language-plaintext highlighter-rouge">&lt;offset&gt;</code> is relative to the IP header. For UDP over IPv4, the application payload starts from 28 (20 bytes of IPv4 and 8 bytes of UDP)</li>
-			<li><code class="language-plaintext highlighter-rouge">25 &amp; 0xFF = 1:4</code>: The 28th byte is in range <code class="language-plaintext highlighter-rouge">1:4</code>.</li>
-			<li><code class="language-plaintext highlighter-rouge">28 &amp; 0xFFFFFF = 0</code>: The 29th to 31th bytes are all zero.</li>
-		</ul>
-		<p>For IPv6, you just need to increase the offset by 20 (IPv6 header is 40 bytes), so the rule becomes <code class="language-plaintext highlighter-rouge">45 &amp; 0xFF = 1:4 &amp;&amp; 48 &amp; 0xFFFFFF = 0</code>.</p>
-		<p>This VPN server is running like a hearse so proofs are left out for brevity.</p>
-		]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.]]></summary></entry><entry><title type="html">Vlab 远程教学云桌面</title><link href="https://ibug.io/blog/2023/08/nju-talk/" rel="alternate" type="text/html" title="Vlab 远程教学云桌面" /><published>2023-08-19T00:00:00+00:00</published><updated>2023-08-19T13:50:40+00:00</updated><id>https://ibug.io/blog/2023/08/nju-talk</id><content type="html" xml:base="https://ibug.io/blog/2023/08/nju-talk/"><![CDATA[<section id="title">
+	</div>
+	<p>With both OpenVPN and WireGuard running on their standard ports, this will redirect each protocol to its respective service port. While these rules only operate on the initial packet, Linux conntrack will handle the rest of the connection.</p>
+	<p>The <code class="language-plaintext highlighter-rouge">u32</code> match is explained:</p>
+	<ul>
+		<li>Basic syntax: <code class="language-plaintext highlighter-rouge">&lt;offset&gt; [operators...] = &lt;range&gt;</code>, where <code class="language-plaintext highlighter-rouge">&lt;offset&gt;</code> is relative to the IP header. For UDP over IPv4, the application payload starts from 28 (20 bytes of IPv4 and 8 bytes of UDP)</li>
+		<li><code class="language-plaintext highlighter-rouge">25 &amp; 0xFF = 1:4</code>: The 28th byte is in range <code class="language-plaintext highlighter-rouge">1:4</code>.</li>
+		<li><code class="language-plaintext highlighter-rouge">28 &amp; 0xFFFFFF = 0</code>: The 29th to 31th bytes are all zero.</li>
+	</ul>
+	<p>For IPv6, you just need to increase the offset by 20 (IPv6 header is 40 bytes), so the rule becomes <code class="language-plaintext highlighter-rouge">45 &amp; 0xFF = 1:4 &amp;&amp; 48 &amp; 0xFFFFFF = 0</code>.</p>
+	<p>This VPN server is running like a hearse so proofs are left out for brevity.</p>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.]]></summary></entry><entry><title type="html">Vlab 远程教学云桌面</title><link href="https://ibug.io/blog/2023/08/nju-talk/" rel="alternate" type="text/html" title="Vlab 远程教学云桌面" /><published>2023-08-19T00:00:00+00:00</published><updated>2023-08-19T13:50:40+00:00</updated><id>https://ibug.io/blog/2023/08/nju-talk</id><content type="html" xml:base="https://ibug.io/blog/2023/08/nju-talk/"><![CDATA[<section id="title">
 		<h1 class="title">Vlab<br>
 			远程教学云桌面</h1>
 		<p class="date">iBug @ USTC</p>
@@ -1519,769 +1709,4 @@ Volume group <span class="s2">"test"</span> successfully extended
 	<p>LVM by default stores an identical copy of the metadata on every PV that belongs to the same VG. Using this “solution”, the complete metadata is only stored on the newly created PV. You certainly want to use reliable storage for this new PV as it’s now a <a href="https://en.wikipedia.org/wiki/Single_point_of_failure">SPOF</a> of the whole VG.</p>
 	<p>If in any case you want a copy of the metadata for inspection or to recover a failed VG (hope you don’t need to do that), LVM maintains automatic backups under <code class="language-plaintext highlighter-rouge">/etc/lvm/backup</code>. They’re in their original form, are text-based (so easily readable), and are ready for use with <code class="language-plaintext highlighter-rouge">vgcfgrestore</code>.</p>
 	<p>Indeed, the recommended solution is to create a new, larger VG and migrate your data ASAP. After all, data security matters the most.</p>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><summary type="html"><![CDATA[An LVM volume group (VG) on our Proxmox VE cluster has failed to create new logical volumes, reporting that its metadata was full. At first this appears to be easy, “fine I’ll just add more space for metadata”, but it quickly revealed to be an versity to struggle through.]]></summary></entry><entry><title type="html">Taking the 24 puzzle game to the next level</title><link href="https://ibug.io/blog/2022/05/programming-24-game/" rel="alternate" type="text/html" title="Taking the 24 puzzle game to the next level" /><published>2022-05-25T00:00:00+00:00</published><updated>2022-06-02T00:13:13+00:00</updated><id>https://ibug.io/blog/2022/05/programming-24-game</id><content type="html" xml:base="https://ibug.io/blog/2022/05/programming-24-game/"><![CDATA[<p>The <a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 game</a> is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.</p>
-	<p>Getting a program that determines whether a set of 4 numbers is solvable is easy, as there are only as many possible combinations as 4 numbers can form. Even a simple brute-force search won’t take long to determine the solution. So I will go through the search algorithm and see how much improvement can be made.</p>
-	<h2 id="searching">Searching for answers</h2>
-	<p>Obviously it’s not going to be a good idea to enumerate all the arrangements and search by filling in the numbers, so we’re going to think about this from bottom-up.</p>
-	<p>Starting from two numbers, it’s easy to enumerate all 4 arithmetic operators for <code class="language-plaintext highlighter-rouge">a?b</code> and <code class="language-plaintext highlighter-rouge">b?a</code>, with addition and multiplication being <a href="https://en.wikipedia.org/wiki/Commutative_property">commutative</a> (i.e. <code class="language-plaintext highlighter-rouge">a+b</code> and <code class="language-plaintext highlighter-rouge">b+a</code> are identical), resulting in a total of 6 operations.</p>
-	<p>Taking this to a three-number setup. We can reduce it to the two-number case by picking two of the numbers and applying an operation. This can be generalized to an arbitrary number of inputs. As long as we’re cutting down a number at every recursion, we’ll eventually cover all possible combinations of all inputs and come to a conclusion.</p>
-	<p>With only one input number, we compare it with our search target to see if it’s an answer we want. One little note here is that <a href="https://stackoverflow.com/q/588004/5958455"><code class="language-plaintext highlighter-rouge">0.1 + 0.2 != 0.3</code></a>, so floating-point number equality must be handled with caution.</p>
-	<p>I wrote my initial versions of the 24 program in Go, and here’s the snippet on recursive searching:</p>
-	<div class="language-go highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">var</span> <span class="n">target</span> <span class="kt">float64</span>
-
-<span class="k">func</span> <span class="n">CompareFloat</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">threshold</span> <span class="kt">float64</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">Abs</span><span class="p">(</span><span class="n">a</span><span class="o">-</span><span class="n">b</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">threshold</span>
-<span class="p">}</span>
-
-<span class="k">func</span> <span class="n">Find24</span><span class="p">(</span><span class="n">nodes</span> <span class="p">[]</span><span class="o">*</span><span class="n">Expression</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span> <span class="o">==</span> <span class="m">1</span> <span class="p">{</span>
-        <span class="n">result</span> <span class="o">:=</span> <span class="n">CompareFloat</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="m">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="m">1e-6</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">result</span> <span class="p">{</span>
-            <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="m">0</span><span class="p">]</span><span class="o">.</span><span class="n">repr</span><span class="p">,</span> <span class="s">"="</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-        <span class="p">}</span>
-        <span class="k">return</span> <span class="n">result</span>
-    <span class="p">}</span>
-    <span class="n">result</span> <span class="o">:=</span> <span class="no">false</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">);</span> <span class="n">i</span><span class="o">++</span> <span class="p">{</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">);</span> <span class="n">j</span><span class="o">++</span> <span class="p">{</span>
-            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">j</span> <span class="p">{</span>
-                <span class="k">continue</span>
-            <span class="p">}</span>
-            <span class="n">newNodes</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="o">*</span><span class="n">Expression</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">1</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">k</span> <span class="o">:=</span> <span class="m">0</span><span class="p">;</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">);</span> <span class="n">k</span><span class="o">++</span> <span class="p">{</span>
-                <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="n">i</span> <span class="o">||</span> <span class="n">k</span> <span class="o">==</span> <span class="n">j</span> <span class="p">{</span>
-                    <span class="k">continue</span>
-                <span class="p">}</span>
-                <span class="n">newNodes</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">newNodes</span><span class="p">,</span> <span class="n">nodes</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
-            <span class="p">}</span>
-            <span class="n">newNodes</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">newNodes</span><span class="p">,</span> <span class="nb">new</span><span class="p">(</span><span class="n">Expression</span><span class="p">))</span>
-            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">j</span> <span class="p">{</span>
-                <span class="n">newNodes</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="sc">'+'</span><span class="p">)</span>
-                <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">||</span> <span class="n">Find24</span><span class="p">(</span><span class="n">newNodes</span><span class="p">)</span>
-                <span class="n">newNodes</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="sc">'*'</span><span class="p">)</span>
-                <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">||</span> <span class="n">Find24</span><span class="p">(</span><span class="n">newNodes</span><span class="p">)</span>
-            <span class="p">}</span>
-            <span class="n">newNodes</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="sc">'-'</span><span class="p">)</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">||</span> <span class="n">Find24</span><span class="p">(</span><span class="n">newNodes</span><span class="p">)</span>
-            <span class="n">newNodes</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span><span class="o">-</span><span class="m">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nodes</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="sc">'/'</span><span class="p">)</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">||</span> <span class="n">Find24</span><span class="p">(</span><span class="n">newNodes</span><span class="p">)</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="n">result</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<h2 id="stringify">Generating the solution</h2>
-	<p>Without displaying the solution, the program can only get as far as a simple <a href="https://leetcode.com/problems/24-game/">LeetCode challenge</a> or another online judger. For anything to make the programming quiz more suitable as a school assignment, printing out the found solution is the next thing.</p>
-	<p>Apparently just joining the numbers and the operators together is not enough, as in many cases parentheses are required to denote specific order of operations over normal operator precedence. For example, <code class="language-plaintext highlighter-rouge">6*2+2</code> is not 24, but <code class="language-plaintext highlighter-rouge">6*(2+2)</code> is. Fortunately, blindly adding parentheses works just well, though duplicate or equivalent answers would be <em>extremely</em> common. No one would think that <code class="language-plaintext highlighter-rouge">(1+2)+3</code> and <code class="language-plaintext highlighter-rouge">1+(2+3)</code> makes any sensical difference, right? That’s because addition and multiplication are <a href="https://en.wikipedia.org/wiki/Associative_property">associative</a>. We also need to avoid adding parentheses around plain numbers, assuming we’re not dealing with negative inputs at this moment.</p>
-	<p>By enumerating all four operators and writing rules to carefully add parentheses when needed, we have a relatively logical <code class="language-plaintext highlighter-rouge">JoinExpression</code> function.</p>
-	<div class="language-go highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">type</span> <span class="n">Expression</span> <span class="k">struct</span> <span class="p">{</span>
-    <span class="n">value</span> <span class="kt">float64</span>
-    <span class="n">op</span>    <span class="kt">rune</span>
-    <span class="n">repr</span>  <span class="kt">string</span>
-<span class="p">}</span>
-
-<span class="k">func</span> <span class="n">JoinExpression</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="o">*</span><span class="n">Expression</span><span class="p">,</span> <span class="n">op</span> <span class="kt">rune</span><span class="p">)</span> <span class="o">*</span><span class="n">Expression</span> <span class="p">{</span>
-    <span class="k">var</span> <span class="n">value</span> <span class="kt">float64</span>
-    <span class="k">var</span> <span class="n">repr</span> <span class="kt">string</span>
-    <span class="k">switch</span> <span class="n">op</span> <span class="p">{</span>
-    <span class="k">case</span> <span class="sc">'+'</span><span class="o">:</span>
-        <span class="n">value</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="n">e2</span><span class="o">.</span><span class="n">value</span>
-        <span class="n">repr</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"%s+%s"</span><span class="p">,</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
-    <span class="k">case</span> <span class="sc">'-'</span><span class="o">:</span>
-        <span class="n">value</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="n">e2</span><span class="o">.</span><span class="n">value</span>
-        <span class="n">rhs</span> <span class="o">:=</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span>
-        <span class="k">if</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="p">{</span>
-            <span class="n">rhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
-        <span class="p">}</span>
-        <span class="n">repr</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"%s-%s"</span><span class="p">,</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
-    <span class="k">case</span> <span class="sc">'*'</span><span class="o">:</span>
-        <span class="n">value</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">value</span> <span class="o">*</span> <span class="n">e2</span><span class="o">.</span><span class="n">value</span>
-        <span class="n">lhs</span> <span class="o">:=</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span>
-        <span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e1</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="p">{</span>
-            <span class="n">lhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
-        <span class="p">}</span>
-        <span class="n">rhs</span> <span class="o">:=</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span>
-        <span class="k">if</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="p">{</span>
-            <span class="n">rhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
-        <span class="p">}</span>
-        <span class="n">repr</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"%s*%s"</span><span class="p">,</span> <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
-    <span class="k">case</span> <span class="sc">'/'</span><span class="o">:</span>
-        <span class="n">value</span> <span class="o">=</span> <span class="n">e1</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="n">e2</span><span class="o">.</span><span class="n">value</span>
-        <span class="n">lhs</span> <span class="o">:=</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span>
-        <span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e1</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="p">{</span>
-            <span class="n">lhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e1</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
-        <span class="p">}</span>
-        <span class="n">rhs</span> <span class="o">:=</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span>
-        <span class="k">if</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'+'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'-'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'*'</span> <span class="o">||</span> <span class="n">e2</span><span class="o">.</span><span class="n">op</span> <span class="o">==</span> <span class="sc">'/'</span> <span class="p">{</span>
-            <span class="n">rhs</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"(%s)"</span><span class="p">,</span> <span class="n">e2</span><span class="o">.</span><span class="n">repr</span><span class="p">)</span>
-        <span class="p">}</span>
-        <span class="n">repr</span> <span class="o">=</span> <span class="n">fmt</span><span class="o">.</span><span class="n">Sprintf</span><span class="p">(</span><span class="s">"%s/%s"</span><span class="p">,</span> <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="o">&amp;</span><span class="n">Expression</span><span class="p">{</span><span class="n">value</span><span class="o">:</span> <span class="n">value</span><span class="p">,</span> <span class="n">op</span><span class="o">:</span> <span class="n">op</span><span class="p">,</span> <span class="n">repr</span><span class="o">:</span> <span class="n">repr</span><span class="p">}</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Since plain numbers never need parantheses, their “operator” is assigned to a single dot (or any character not used in the code).</p>
-	<p>At this point, all that’s missing for a complete program is a <code class="language-plaintext highlighter-rouge">main()</code> function. To add a little bit of flexibility of changing the target value, I used Go’s standard library <code class="language-plaintext highlighter-rouge">flag</code> for parsing command-line arguments, though only a single option is needed now.</p>
-	<p>To avoid generating the same answer for any particular set of inputs, I shuffled the input numbers before doing the search.</p>
-	<div class="language-go highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">flag</span><span class="o">.</span><span class="n">Float64Var</span><span class="p">(</span><span class="o">&amp;</span><span class="n">target</span><span class="p">,</span> <span class="s">"t"</span><span class="p">,</span> <span class="m">24.0</span><span class="p">,</span> <span class="s">"target value"</span><span class="p">)</span>
-    <span class="n">flag</span><span class="o">.</span><span class="n">Parse</span><span class="p">()</span>
-
-    <span class="n">nums</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="o">*</span><span class="n">Expression</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">flag</span><span class="o">.</span><span class="n">Args</span><span class="p">()))</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">arg</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">flag</span><span class="o">.</span><span class="n">Args</span><span class="p">()</span> <span class="p">{</span>
-        <span class="n">value</span><span class="p">,</span> <span class="n">err</span> <span class="o">:=</span> <span class="n">strconv</span><span class="o">.</span><span class="n">ParseFloat</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="m">64</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">err</span> <span class="o">!=</span> <span class="no">nil</span> <span class="p">{</span>
-            <span class="nb">panic</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-        <span class="p">}</span>
-        <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">Expression</span><span class="p">{</span><span class="n">value</span><span class="o">:</span> <span class="n">value</span><span class="p">,</span> <span class="n">op</span><span class="o">:</span> <span class="sc">'.'</span><span class="p">,</span> <span class="n">repr</span><span class="o">:</span> <span class="n">arg</span><span class="p">}</span>
-    <span class="p">}</span>
-
-    <span class="n">rand</span><span class="o">.</span><span class="n">Seed</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">Now</span><span class="p">()</span><span class="o">.</span><span class="n">UnixNano</span><span class="p">())</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">nums</span> <span class="p">{</span>
-        <span class="n">j</span> <span class="o">:=</span> <span class="n">rand</span><span class="o">.</span><span class="n">Intn</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="m">1</span><span class="p">)</span>
-        <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">nums</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">nums</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-    <span class="p">}</span>
-
-    <span class="k">if</span> <span class="o">!</span><span class="n">Find24</span><span class="p">(</span><span class="n">nums</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="s">"No solution"</span><span class="p">)</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<div class="notice--primary">
-		<p>The complete program can be found <a href="https://gist.github.com/iBug/62610c759f7702071baaf884301ae067">here</a> and is ready to compile &amp; run.</p>
-		<p>This program can output lines among <code class="language-plaintext highlighter-rouge">(1+3)*(2+4) = 24</code> and <code class="language-plaintext highlighter-rouge">1*2*3*4 = 24</code>, which looks good so far.</p>
-	</div>
-	<h2 id="next-level">Next level: Reducing duplicate answers</h2>
-	<p>It’s easy to add a “show all answers” flag:</p>
-	<div class="language-go highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">var</span> <span class="n">allAnswers</span> <span class="kt">bool</span>
-
-<span class="k">func</span> <span class="n">main</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">flag</span><span class="o">.</span><span class="n">BoolVar</span><span class="p">(</span><span class="o">&amp;</span><span class="n">allAnswers</span><span class="p">,</span> <span class="s">"a"</span><span class="p">,</span> <span class="no">false</span><span class="p">,</span> <span class="s">"find all solutions"</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>And replace all <code class="language-plaintext highlighter-rouge">return result</code> with <code class="language-plaintext highlighter-rouge">return result &amp;&amp; !allAnswers</code> so that short-circuit expressions continue to run after finding an answer.</p>
-	<p>It does, however, prints a <em>lot</em> of redundant answers:</p>
-	<div class="language-plaintext highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>1*2*4*3 = 24
-1*3*2*4 = 24
-1*3*2*4 = 24
-1*4*2*3 = 24
-1*4*2*3 = 24
-2*1*4*3 = 24
-2*1*4*3 = 24
-2*3*1*4 = 24
-2*3*1*4 = 24
-</code></pre>
-		</div>
-	</div>
-	<p>Under the hood it could just be <code class="language-plaintext highlighter-rouge">(1*4)*(2*3)</code> and <code class="language-plaintext highlighter-rouge">1*(4*(2*3))</code>, which we don’t know for sure since we only omitted the parentheses.</p>
-	<h3 id="data-structures">Redesigning data structure</h3>
-	<p>We could fix this by flattening expressions so each addition and multiplication operator can have multiple operands. This also enables reliable sorting of elements, which is also pretty obvious.</p>
-	<p>There’s still more. We need to handle nested negativity. For example, <code class="language-plaintext highlighter-rouge">1-2+3</code> and <code class="language-plaintext highlighter-rouge">1-(2-3)</code> are really no different, and special care is to be taken when flattening. It also poses the challenge of sorting elements with mixed signs, as well as when parenthesizing them.</p>
-	<p>To keep the logic straightforward, instead of binary trees, we can use lists to store the operands. Subtracted elements can then be stored in another list under the same “group of additions”, and likewise is division. Finally, plain numbers still require their specialized handling.</p>
-	<div class="language-go highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">type</span> <span class="n">Expression</span> <span class="k">interface</span> <span class="p">{</span>
-    <span class="n">Value</span><span class="p">()</span> <span class="kt">float64</span>
-    <span class="n">Repr</span><span class="p">()</span> <span class="kt">string</span>
-<span class="p">}</span>
-
-<span class="k">type</span> <span class="n">AddGroup</span> <span class="k">struct</span> <span class="p">{</span>
-    <span class="n">Pos</span> <span class="p">[]</span><span class="n">Expression</span>
-    <span class="n">Neg</span> <span class="p">[]</span><span class="n">Expression</span>
-<span class="p">}</span>
-
-<span class="k">type</span> <span class="n">MulGroup</span> <span class="k">struct</span> <span class="p">{</span>
-    <span class="n">Pos</span> <span class="p">[]</span><span class="n">Expression</span>
-    <span class="n">Neg</span> <span class="p">[]</span><span class="n">Expression</span>
-<span class="p">}</span>
-
-<span class="k">type</span> <span class="n">Number</span> <span class="k">struct</span> <span class="p">{</span>
-    <span class="n">Val</span> <span class="kt">float64</span>
-    <span class="n">Str</span> <span class="kt">string</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Sorting is easy as long as there’s a well-defined “order”:</p>
-	<div class="language-go highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">func</span> <span class="n">CompareExpression</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="n">Expression</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">e2</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="no">true</span>
-    <span class="p">}</span>
-    <span class="k">if</span> <span class="n">e1</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">e2</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="no">false</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="n">strings</span><span class="o">.</span><span class="n">Compare</span><span class="p">(</span><span class="n">e1</span><span class="o">.</span><span class="n">Repr</span><span class="p">(),</span> <span class="n">e2</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span> <span class="o">&lt;</span> <span class="m">0</span>
-<span class="p">}</span>
-
-<span class="k">func</span> <span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span> <span class="p">[]</span><span class="n">Expression</span><span class="p">)</span> <span class="p">{</span>
-    <span class="n">sort</span><span class="o">.</span><span class="n">Slice</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="n">CompareExpression</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">e</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
-    <span class="p">})</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Calculating the value is also easy:</p>
-	<div class="language-go highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">AddGroup</span><span class="p">)</span> <span class="n">Value</span><span class="p">()</span> <span class="kt">float64</span> <span class="p">{</span>
-    <span class="k">var</span> <span class="n">s</span> <span class="kt">float64</span> <span class="o">=</span> <span class="m">0</span>
-    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
-        <span class="n">s</span> <span class="o">+=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
-    <span class="p">}</span>
-    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="p">{</span>
-        <span class="n">s</span> <span class="o">-=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="n">s</span>
-<span class="p">}</span>
-
-<span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">MulGroup</span><span class="p">)</span> <span class="n">Value</span><span class="p">()</span> <span class="kt">float64</span> <span class="p">{</span>
-    <span class="k">var</span> <span class="n">s</span> <span class="kt">float64</span> <span class="o">=</span> <span class="m">1</span>
-    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
-        <span class="n">s</span> <span class="o">*=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
-    <span class="p">}</span>
-    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="p">{</span>
-        <span class="n">s</span> <span class="o">/=</span> <span class="n">ee</span><span class="o">.</span><span class="n">Value</span><span class="p">()</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="n">s</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Generating representations for expressions has also been made easier and more consistent, as we no longer need to add parentheses for additions around subtractions, or multiplications around divisions. We only need parentheses around “groups of addition” among “groups of multiplication”. To ensure consistency, sort the expressions before producing strings.</p>
-	<div class="language-go highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">AddGroup</span><span class="p">)</span> <span class="n">Repr</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
-    <span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">)</span>
-    <span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">)</span>
-    <span class="k">var</span> <span class="n">s</span> <span class="n">strings</span><span class="o">.</span><span class="n">Builder</span>
-    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
-        <span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"+"</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span>
-    <span class="p">}</span>
-    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="p">{</span>
-        <span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"-"</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">String</span><span class="p">()[</span><span class="m">1</span><span class="o">:</span><span class="p">]</span>
-<span class="p">}</span>
-
-<span class="k">func</span> <span class="p">(</span><span class="n">e</span> <span class="o">*</span><span class="n">MulGroup</span><span class="p">)</span> <span class="n">Repr</span><span class="p">()</span> <span class="kt">string</span> <span class="p">{</span>
-    <span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">)</span>
-    <span class="n">SortExpression</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">)</span>
-    <span class="k">var</span> <span class="n">s</span> <span class="n">strings</span><span class="o">.</span><span class="n">Builder</span>
-    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="n">_</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">ee</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">Number</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
-            <span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"*"</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span>
-        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-            <span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"*("</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">()</span> <span class="o">+</span> <span class="s">")"</span><span class="p">)</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ee</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="n">_</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">ee</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">Number</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
-            <span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"/"</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">())</span>
-        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-            <span class="n">s</span><span class="o">.</span><span class="n">WriteString</span><span class="p">(</span><span class="s">"/("</span> <span class="o">+</span> <span class="n">ee</span><span class="o">.</span><span class="n">Repr</span><span class="p">()</span> <span class="o">+</span> <span class="s">")"</span><span class="p">)</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="n">s</span><span class="o">.</span><span class="n">String</span><span class="p">()[</span><span class="m">1</span><span class="o">:</span><span class="p">]</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Joining two elements into a new expression is now a little bit more complex, since we want to avoid nesting the same kind of groups. We need to check the types of the joining operands to determine whether we should append as a single element, or extract the lists and concatenate them. This also helps ensure that every group has at least one “positive” element, so it doesn’t begin with a minus sign or division.</p>
-	<div class="language-go highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">func</span> <span class="n">JoinAddGroup</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span> <span class="n">Expression</span><span class="p">,</span> <span class="n">neg2</span> <span class="kt">bool</span><span class="p">)</span> <span class="o">*</span><span class="n">AddGroup</span> <span class="p">{</span>
-    <span class="n">e</span> <span class="o">:=</span> <span class="nb">new</span><span class="p">(</span><span class="n">AddGroup</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">a1</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">e1</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">AddGroup</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
-        <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">a1</span><span class="o">.</span><span class="n">Pos</span><span class="o">...</span><span class="p">)</span>
-        <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">,</span> <span class="n">a1</span><span class="o">.</span><span class="n">Neg</span><span class="o">...</span><span class="p">)</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">e1</span><span class="p">)</span>
-    <span class="p">}</span>
-    <span class="k">if</span> <span class="n">a2</span><span class="p">,</span> <span class="n">ok</span> <span class="o">:=</span> <span class="n">e2</span><span class="o">.</span><span class="p">(</span><span class="o">*</span><span class="n">AddGroup</span><span class="p">);</span> <span class="n">ok</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="n">neg2</span> <span class="p">{</span>
-            <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">Neg</span><span class="o">...</span><span class="p">)</span>
-            <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">Pos</span><span class="o">...</span><span class="p">)</span>
-        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-            <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">Pos</span><span class="o">...</span><span class="p">)</span>
-            <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">Neg</span><span class="o">...</span><span class="p">)</span>
-        <span class="p">}</span>
-    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="n">neg2</span> <span class="p">{</span>
-            <span class="n">e</span><span class="o">.</span><span class="n">Neg</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Neg</span><span class="p">,</span> <span class="n">e2</span><span class="p">)</span>
-        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-            <span class="n">e</span><span class="o">.</span><span class="n">Pos</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Pos</span><span class="p">,</span> <span class="n">e2</span><span class="p">)</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="n">e</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>A <code class="language-plaintext highlighter-rouge">neg2</code> switch is provided to determine between <code class="language-plaintext highlighter-rouge">e1+e2</code> and <code class="language-plaintext highlighter-rouge">e1-e2</code> as we don’t want separate code for handling subtraction.</p>
-	<p>The exact same code is used for <code class="language-plaintext highlighter-rouge">JoinMulGroup</code> with only the types replaced. (This is why I switched to C++ after this point: Function templates are much more friendly for this kind of repeated logic.)</p>
-	<h3 id="deduplicating">Deduplicating</h3>
-	<p>With reliable expression flattening and sorting in place, we can now deduplicate results by comparing string representation:</p>
-	<div class="language-go highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">var</span> <span class="n">answers</span> <span class="p">[]</span><span class="kt">string</span>
-
-<span class="k">func</span> <span class="n">EvalResult</span><span class="p">(</span><span class="n">e</span> <span class="n">Expression</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
-    <span class="n">result</span> <span class="o">:=</span> <span class="n">CompareFloat</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">Value</span><span class="p">(),</span> <span class="n">target</span><span class="p">,</span> <span class="m">1e-6</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">result</span> <span class="p">{</span>
-        <span class="n">s</span> <span class="o">:=</span> <span class="n">e</span><span class="o">.</span><span class="n">Repr</span><span class="p">()</span>
-        <span class="n">duplicate</span> <span class="o">:=</span> <span class="no">false</span>
-        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">ans</span> <span class="o">:=</span> <span class="k">range</span> <span class="n">answers</span> <span class="p">{</span>
-            <span class="k">if</span> <span class="n">ans</span> <span class="o">==</span> <span class="n">s</span> <span class="p">{</span>
-                <span class="n">duplicate</span> <span class="o">=</span> <span class="no">true</span>
-                <span class="k">break</span>
-            <span class="p">}</span>
-        <span class="p">}</span>
-        <span class="k">if</span> <span class="o">!</span><span class="n">duplicate</span> <span class="p">{</span>
-            <span class="n">fmt</span><span class="o">.</span><span class="n">Println</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="s">"="</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-            <span class="n">answers</span> <span class="o">=</span> <span class="nb">append</span><span class="p">(</span><span class="n">answers</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="n">result</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">allAnswers</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>This is about as far as the new data structure can bring us. The current program handles structural duplicates very well: Running on input <code class="language-plaintext highlighter-rouge">1 2 3 4</code> produces only 4 results:</p>
-	<div class="language-plaintext highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>4*(1+2+3) = 24
-1*2*3*4 = 24
-2*3*4/1 = 24
-(1+3)*(2+4) = 24
-</code></pre>
-		</div>
-	</div>
-	<p class="notice--primary">The complete code so far can be found <a href="https://gist.github.com/iBug/b0e3d7dc11e53ac53df5f6d0438ad3b5">here</a>.</p>
-	<h2 id="advanced">Advanced level: More deduplication, and optimization</h2>
-	<p>On a side note, I switched to C++ at this point because I found Go’s comprehensive runtime <em>cumbersome</em>, and its lack of compiler optimization is specifically detrimental for such computing tasks. C++ has everything I need, including dynamic arrays (<code class="language-plaintext highlighter-rouge">vector</code>), dynamic typing (RTTI via <code class="language-plaintext highlighter-rouge">virtual</code> functions and <code class="language-plaintext highlighter-rouge">dynamic_cast</code>) and hash sets (<code class="language-plaintext highlighter-rouge">unordered_set</code>). C++ also has the advantage of supporting function templates and inheritance, which helps greatly with duplicate logic. The only thing missing from Go is a standard library for parsing command-line arguments, which bothers very little as I don’t need complex parsing rules. (There are external libraries that I want to avoid, such as POSIX <code class="language-plaintext highlighter-rouge">getopt()</code>.)</p>
-	<h3 id="cpp">Switching to C++</h3>
-	<p>To mimic the <code class="language-plaintext highlighter-rouge">Expression</code> interface in Go, I created an abstract base class:</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
-    <span class="k">virtual</span> <span class="o">~</span><span class="n">Expression</span><span class="p">()</span> <span class="p">{}</span>
-    <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">normalize</span><span class="p">()</span> <span class="p">{}</span>
-    <span class="k">virtual</span> <span class="k">operator</span> <span class="n">string</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">virtual</span> <span class="k">operator</span> <span class="kt">double</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-<span class="p">};</span>
-</code></pre>
-		</div>
-	</div>
-	<p>I also took this chance to separate <code class="language-plaintext highlighter-rouge">string()</code> from <code class="language-plaintext highlighter-rouge">normalize()</code>, since they really could do different things and not necessarily together.</p>
-	<p>The additive group and multiplicative group can also have some commonalities extracted into a new base class, to allow even more shared code.</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">struct</span> <span class="nc">ExpressionGroup</span> <span class="o">:</span> <span class="n">Expression</span> <span class="p">{</span>
-    <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;</span> <span class="n">positive</span><span class="p">;</span>
-    <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;</span> <span class="n">negative</span><span class="p">;</span>
-
-    <span class="kt">void</span> <span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
-        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
-            <span class="n">e</span><span class="o">-&gt;</span><span class="n">normalize</span><span class="p">();</span>
-        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
-            <span class="n">e</span><span class="o">-&gt;</span><span class="n">normalize</span><span class="p">();</span>
-        <span class="n">sort_expressions</span><span class="p">(</span><span class="n">positive</span><span class="p">);</span>
-        <span class="n">sort_expressions</span><span class="p">(</span><span class="n">negative</span><span class="p">);</span>
-    <span class="p">}</span>
-<span class="p">};</span>
-
-<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">T</span><span class="p">&gt;</span>
-<span class="n">T</span><span class="o">*</span> <span class="nf">join_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span> <span class="n">Expression</span><span class="o">*</span> <span class="n">b</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">negative</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">static_assert</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_base_of</span><span class="o">&lt;</span><span class="n">ExpressionGroup</span><span class="p">,</span> <span class="n">T</span><span class="o">&gt;::</span><span class="n">value</span><span class="p">,</span>
-                  <span class="s">"T must be derived from ExpressionGroup"</span><span class="p">);</span>
-    <span class="c1">// implementation</span>
-<span class="p">}</span>
-
-<span class="kr">inline</span> <span class="n">AdditiveGroup</span><span class="o">*</span>
-<span class="nf">join_additive_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span>
-                    <span class="n">Expression</span><span class="o">*</span> <span class="n">b</span><span class="p">,</span>
-                    <span class="kt">bool</span> <span class="n">negative</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="n">join_group</span><span class="o">&lt;</span><span class="n">AdditiveGroup</span><span class="o">&gt;</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">negative</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="kr">inline</span> <span class="n">MultiplicativeGroup</span><span class="o">*</span>
-<span class="nf">join_multiplicative_group</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">a</span><span class="p">,</span>
-                          <span class="n">Expression</span><span class="o">*</span> <span class="n">b</span><span class="p">,</span>
-                          <span class="kt">bool</span> <span class="n">negative</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="n">join_group</span><span class="o">&lt;</span><span class="n">MultiplicativeGroup</span><span class="o">&gt;</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">negative</span><span class="p">);</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<h3 id="double-negativity">Double-negativity in multiplicative groups</h3>
-	<p>When fed with input <code class="language-plaintext highlighter-rouge">1 1 4 9</code>, the above Go program produces 2 results:</p>
-	<div class="language-plaintext highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>(4-1)*(9-1) = 24
-(1-9)*(1-4) = 24
-</code></pre>
-		</div>
-	</div>
-	<p>To fix this, we examine how many additive groups that can be “inverted” under a multiplicative group, and invert them in pairs.</p>
-	<p>We consider an additive group <em>invertible</em> if it evaluates to a negative value and has at least one subtracted element:</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
-    <span class="k">virtual</span> <span class="kt">void</span> <span class="n">invert</span><span class="p">()</span> <span class="p">{}</span>
-    <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">is_invertible</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="nb">false</span><span class="p">;</span> <span class="p">}</span>
-<span class="p">};</span>
-
-<span class="k">struct</span> <span class="nc">ExpressionGroup</span> <span class="o">:</span> <span class="n">Expression</span> <span class="p">{</span>
-    <span class="kt">bool</span> <span class="n">is_invertible</span><span class="p">()</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="o">!</span><span class="n">negative</span><span class="p">.</span><span class="n">empty</span><span class="p">();</span>
-    <span class="p">}</span>
-<span class="p">};</span>
-
-<span class="k">struct</span> <span class="nc">AdditiveGroup</span> <span class="o">:</span> <span class="n">ExpressionGroup</span> <span class="p">{</span>
-    <span class="kt">void</span> <span class="n">invert</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
-        <span class="n">std</span><span class="o">::</span><span class="n">swap</span><span class="p">(</span><span class="n">positive</span><span class="p">,</span> <span class="n">negative</span><span class="p">);</span>
-    <span class="p">}</span>
-
-    <span class="kt">bool</span> <span class="nf">is_invertible</span><span class="p">()</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
-        <span class="k">return</span> <span class="kt">double</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="k">this</span><span class="o">-&gt;</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">is_invertible</span><span class="p">();</span>
-    <span class="p">}</span>
-<span class="p">};</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Note that the default implementation for <code class="language-plaintext highlighter-rouge">invert()</code> and <code class="language-plaintext highlighter-rouge">is_invertible()</code> applies to plain numbers as they can’t just grab a minus sign and become inverted.</p>
-	<p>Now we have the necessary APIs for fixing multiplicative groups:</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kt">void</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
-    <span class="kt">int</span> <span class="n">neg_count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
-        <span class="n">neg_count</span> <span class="o">+=</span> <span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">();</span>
-    <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
-        <span class="n">neg_count</span> <span class="o">+=</span> <span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">();</span>
-    <span class="n">neg_count</span> <span class="o">-=</span> <span class="n">neg_count</span> <span class="o">%</span> <span class="mi">2</span><span class="p">;</span>
-    <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">neg_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="k">break</span><span class="p">;</span>
-        <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span> <span class="p">{</span>
-            <span class="n">e</span><span class="o">-&gt;</span><span class="n">invert</span><span class="p">();</span>
-            <span class="n">neg_count</span><span class="o">--</span><span class="p">;</span>
-        <span class="p">}</span>
-    <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">neg_count</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="k">break</span><span class="p">;</span>
-        <span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span> <span class="p">{</span>
-            <span class="n">e</span><span class="o">-&gt;</span><span class="n">invert</span><span class="p">();</span>
-            <span class="n">neg_count</span><span class="o">--</span><span class="p">;</span>
-        <span class="p">}</span>
-    <span class="k">this</span><span class="o">-&gt;</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">();</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Because normalization doesn’t change the value of an expression, we call it only when we need a string representation. This means we can normalize after determining whether it’s a solution.</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">answers</span><span class="p">;</span>
-
-<span class="kt">bool</span> <span class="nf">eval_result</span><span class="p">(</span><span class="n">Expression</span><span class="o">*</span> <span class="n">node</span><span class="p">)</span> <span class="p">{</span>
-    <span class="kt">bool</span> <span class="n">result</span> <span class="o">=</span> <span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="n">node</span><span class="p">,</span> <span class="n">target</span><span class="p">);</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">node</span><span class="o">-&gt;</span><span class="n">normalize</span><span class="p">();</span>
-        <span class="k">auto</span> <span class="n">expr</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="o">*</span><span class="n">node</span><span class="p">);</span>
-        <span class="k">auto</span> <span class="n">is_new_answer</span> <span class="o">=</span> <span class="n">answers</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">expr</span><span class="p">).</span><span class="n">second</span><span class="p">;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">is_new_answer</span><span class="p">)</span>
-            <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">expr</span> <span class="o">&lt;&lt;</span> <span class="s">" = "</span> <span class="o">&lt;&lt;</span> <span class="n">target</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<h3 id="negative-subtraction">Subtracting negative values</h3>
-	<p>When fed with input <code class="language-plaintext highlighter-rouge">1 1 4 9</code>, the above Go program produces 7 results, among which are these two:</p>
-	<div class="language-plaintext highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>4+(7-3)*5 = 24
-4-(3-7)*5 = 24
-</code></pre>
-		</div>
-	</div>
-	<p>Apparently they are no more than a pair of <code class="language-plaintext highlighter-rouge">a+b</code> and <code class="language-plaintext highlighter-rouge">a-(-b)</code> variants. The latter form is just boring.</p>
-	<p>Now, in addition to additive groups, we need to implement inversion for multiplicative groups as well. This one isn’t hard either, just iterate through its children and see if any of them is invertible:</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">struct</span> <span class="nc">MultiplicativeGroup</span> <span class="o">:</span> <span class="n">ExpressionGroup</span> <span class="p">{</span>
-    <span class="kt">bool</span> <span class="n">is_invertible</span><span class="p">()</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="p">(</span><span class="kt">double</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-        <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span>
-                <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
-        <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span>
-                <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
-        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="kt">void</span> <span class="nf">invert</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
-        <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span> <span class="p">{</span>
-                <span class="n">e</span><span class="o">-&gt;</span><span class="n">invert</span><span class="p">();</span>
-                <span class="k">return</span><span class="p">;</span>
-            <span class="p">}</span>
-        <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span> <span class="p">{</span>
-                <span class="n">e</span><span class="o">-&gt;</span><span class="n">invert</span><span class="p">();</span>
-                <span class="k">return</span><span class="p">;</span>
-            <span class="p">}</span>
-    <span class="p">}</span>
-<span class="p">};</span>
-</code></pre>
-		</div>
-	</div>
-	<p>We also have extra things to do than sorting when normalizing an additive group. That is, to move all invertible children from the negative list to the positive list, inverting all involved.</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kt">void</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
-    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">negative</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">negative</span><span class="p">.</span><span class="n">end</span><span class="p">();)</span> <span class="p">{</span>
-        <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">=</span> <span class="o">*</span><span class="n">it</span><span class="p">;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_invertible</span><span class="p">())</span> <span class="p">{</span>
-            <span class="n">e</span><span class="o">-&gt;</span><span class="n">invert</span><span class="p">();</span>
-            <span class="n">positive</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
-            <span class="n">it</span> <span class="o">=</span> <span class="n">negative</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">it</span><span class="p">);</span>
-        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-            <span class="o">++</span><span class="n">it</span><span class="p">;</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-    <span class="k">this</span><span class="o">-&gt;</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">();</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<h3 id="identity-elements">Substracting zeros and dividing by ones</h3>
-	<p>Zero is the <a href="https://en.wikipedia.org/wiki/Identity_element">identity element</a> of addition, and one is that of multiplication. This means <code class="language-plaintext highlighter-rouge">a+0=a-0=a</code> and <code class="language-plaintext highlighter-rouge">a*1=a/1=a</code>. We can normalize <code class="language-plaintext highlighter-rouge">-0</code> into <code class="language-plaintext highlighter-rouge">+0</code> and <code class="language-plaintext highlighter-rouge">/1</code> into <code class="language-plaintext highlighter-rouge">*1</code>. This one’s even easier since it only moves elements from the negative list to the positive list.</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kt">void</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
-    <span class="c1">// ...</span>
-    <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span> <span class="p">{</span>
-        <span class="n">positive</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
-        <span class="n">it</span> <span class="o">=</span> <span class="n">negative</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">it</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="c1">// ...</span>
-<span class="p">}</span> 
-</code></pre>
-		</div>
-	</div>
-	<p>For multiplicative groups, we can go one step further and take care of <code class="language-plaintext highlighter-rouge">/(-1)</code> as well:</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kt">void</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">normalize</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
-    <span class="c1">// ...</span>
-    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">negative</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">negative</span><span class="p">.</span><span class="n">end</span><span class="p">();)</span> <span class="p">{</span>
-        <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">=</span> <span class="o">*</span><span class="n">it</span><span class="p">;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">||</span> <span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">))</span> <span class="p">{</span>
-            <span class="n">positive</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
-            <span class="n">it</span> <span class="o">=</span> <span class="n">negative</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">it</span><span class="p">);</span>
-        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-            <span class="o">++</span><span class="n">it</span><span class="p">;</span>
-        <span class="p">}</span>
-    <span class="p">}</span>
-    <span class="c1">// ...</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<h3 id="memoization">Memoizing intermediate results</h3>
-	<p>For small inputs like only 4 numbers, there are only up to 36×18×6=3,888 leaf nodes to search, so any working algorithm shouldn’t run for more than tens of milliseconds. But why limit to 4 input numbers, a pretty artificial value, when the algorithm is designed to scale and handle inputs of any sizes?</p>
-	<p>With 8 input numbers, the latest Go program runs from 20 seconds to more than a minute. It’s easily imaginable that there are a lot of duplicate intermediate search nodes, like <code class="language-plaintext highlighter-rouge">(a+b) (c+d)</code> and <code class="language-plaintext highlighter-rouge">(c+d) (a+b)</code>. Searching further down these states wastes a lot of time. Given that we already have normalization and sorting facilities, it’s straightforward to serialize an intermediate state, save it in a set, and prune repeated search branches.</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">states</span><span class="p">;</span>
-
-<span class="kt">bool</span> <span class="nf">dedup_state</span><span class="p">(</span><span class="k">const</span> <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;&amp;</span> <span class="n">nodes</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">use_states</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-    <span class="k">auto</span> <span class="n">n</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">;</span>
-    <span class="n">sort_expressions</span><span class="p">(</span><span class="n">n</span><span class="p">);</span>
-    <span class="n">stringstream</span> <span class="n">ss</span><span class="p">;</span>
-    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span>
-        <span class="n">e</span><span class="o">-&gt;</span><span class="n">normalize</span><span class="p">();</span>
-        <span class="n">ss</span> <span class="o">&lt;&lt;</span> <span class="s">":"</span> <span class="o">&lt;&lt;</span> <span class="n">string</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="k">return</span> <span class="o">!</span><span class="n">states</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">ss</span><span class="p">.</span><span class="n">str</span><span class="p">()).</span><span class="n">second</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Then at the beginning of the recursive <code class="language-plaintext highlighter-rouge">search()</code> function, right after the evaluation branch, we add the pruning logic:</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kt">bool</span> <span class="nf">search</span><span class="p">(</span><span class="k">const</span> <span class="n">vector</span><span class="o">&lt;</span><span class="n">Expression</span><span class="o">*&gt;&amp;</span> <span class="n">nodes</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">nodes</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">eval_result</span><span class="p">(</span><span class="n">nodes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">all_answers</span><span class="p">;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">dedup_state</span><span class="p">(</span><span class="n">nodes</span><span class="p">))</span>
-        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-</code></pre>
-		</div>
-	</div>
-	<p>My testing shows that this optimization brings a speedup of 1.5× to 2×, depending on input pattern. On extreme cases like 8 ones, the speedup even goes over 4×.</p>
-	<p>Finally, to use the right tool for the right job:</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="n">use_states</span> <span class="o">=</span> <span class="n">nums</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">;</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Because generating and hashing strings could be expensive, and there aren’t enough duplicates for small inputs, I chose to enable mid-way deduplication only for inputs with 5 or more numbers.</p>
-	<h3 id="placement">Placement of zeros and ones</h3>
-	<p>The last thing to handle is the placement of no-ops, like <code class="language-plaintext highlighter-rouge">*1</code> and <code class="language-plaintext highlighter-rouge">+3-3</code>. While it could be arithmetically different between <code class="language-plaintext highlighter-rouge">a+b-b</code> and <code class="language-plaintext highlighter-rouge">a*b/b</code>, or between <code class="language-plaintext highlighter-rouge">a*1+b</code> and <code class="language-plaintext highlighter-rouge">(a+b)*1</code>, one would think the difference is minimal when playing with cards in reality.</p>
-	<p>Taking the same convention as on the <a href="https://www.4nums.com/theory/"><em>4 Numbers</em></a> website, points 7 and 8, the following rules is defined as “preferences for duplicates”:</p>
-	<ul>
-		<li>Multiplying by ±1 happens on the topmost multiplication group, so <code class="language-plaintext highlighter-rouge">1*2+3*4</code> becomes <code class="language-plaintext highlighter-rouge">1*(2+3*4)</code>, except when there’s a pair of additive no-ops: <code class="language-plaintext highlighter-rouge">(a+b)*1+c-c</code> is preferred over <code class="language-plaintext highlighter-rouge">(a+b+c-c)*1</code>.</li>
-		<li>A pair of same numbers cancelling each other must be done with addition and subtraction, and must happen at the topmost layer, so <code class="language-plaintext highlighter-rouge">a*b/b+c</code> becomes <code class="language-plaintext highlighter-rouge">a+c+b-b</code>. This applies to ones.</li>
-	</ul>
-	<p>Now put them into code. If we try to fix it the same way as normalizing, there’s a fundamental difference from previous deduplication methods: The other normalization don’t modify the components (structurally) but only move them around, while the handling of zeros and ones will have to extract numbers from sub-expressions and place them elsewhere. This breaks two things:</p>
-	<ul>
-		<li>The searching algorithm assumes numbers and expressions aren’t modified in recursions. Continuing to do so might cause the search to miss potential solutions.</li>
-		<li>After cleaning up <code class="language-plaintext highlighter-rouge">shared_ptr</code>s, memory allocation is handled manually. Breaking the existing tree structure makes tracking objects <em>much</em> harder, and it’s easier to reach a memory leak or whatever.</li>
-	</ul>
-	<p>So I had to give up normalizing this one. But there must be a solution.</p>
-	<p>Turning our attention back to the recursive searching. It performs a comprehensive enumeration of possible combinations of every pair of numbers, and therefore must be able to form every possible expression tree from the given numbers.</p>
-	<p>Right, we could just define the “canonical forms” and reject solutions coming in non-canonical forms.</p>
-	<p>Starting off with the base form. The sole boolean argument is necessary because certain structures should live in the top layer, and they need special treatment.</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">struct</span> <span class="nc">Expression</span> <span class="p">{</span>
-    <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">is_top_level</span> <span class="o">=</span> <span class="nb">true</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span> <span class="p">}</span>
-<span class="p">};</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Obviously for plain numbers there’s nothing we can do, so this virtual function is not overridden for <code class="language-plaintext highlighter-rouge">struct Number</code>.</p>
-	<p>Now for the expression groups. Recursive checking is required, and more specific rules are to be provided by further overrides in the two kinds of specialized groups.</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">struct</span> <span class="nc">ExpressionGroup</span> <span class="o">:</span> <span class="n">Expression</span> <span class="p">{</span>
-    <span class="kt">bool</span> <span class="n">has_negative_pairs</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span>
-        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e1</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
-            <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e2</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
-                <span class="k">if</span> <span class="p">(</span><span class="n">is_equal</span><span class="p">(</span><span class="kt">double</span><span class="p">(</span><span class="o">*</span><span class="n">e1</span><span class="p">),</span> <span class="kt">double</span><span class="p">(</span><span class="o">*</span><span class="n">e2</span><span class="p">)))</span>
-                    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
-        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-    <span class="p">}</span>
-
-    <span class="kt">bool</span> <span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">is_top_level</span> <span class="o">=</span> <span class="nb">true</span><span class="p">)</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
-        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_canonical</span><span class="p">(</span><span class="nb">false</span><span class="p">))</span>
-                <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_canonical</span><span class="p">(</span><span class="nb">false</span><span class="p">))</span>
-                <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-        <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
-    <span class="p">}</span>
-<span class="p">};</span>
-</code></pre>
-		</div>
-	</div>
-	<p>The extra function is provided as a helper to shorten specialized code for descendants.</p>
-	<p>Multiplicative groups are easier to deal with: A top-level MG permits multiplying by ones, but only a single one.</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kt">bool</span> <span class="n">MultiplicativeGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">allow_ones</span> <span class="o">=</span> <span class="nb">true</span><span class="p">)</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="n">allow_ones</span><span class="p">))</span>
-        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-    <span class="kt">int</span> <span class="n">ones</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
-        <span class="n">ones</span> <span class="o">+=</span> <span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="n">e</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">allow_ones</span> <span class="o">&amp;&amp;</span> <span class="n">ones</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">ones</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-    <span class="k">return</span> <span class="o">!</span><span class="n">has_negative_pairs</span><span class="p">();</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Additive groups are a bit complicated, as they could contain a (technically) second-level MG while still permitting them to have multiply-by-ones. So instead of calling their <code class="language-plaintext highlighter-rouge">is_canonical()</code> with <code class="language-plaintext highlighter-rouge">false</code>, the argument should be inherited from the AG itself.</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="kt">bool</span> <span class="n">AdditiveGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="kt">bool</span> <span class="n">is_top_level</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">is_top_level</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">positive</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_canonical</span><span class="p">(</span><span class="k">dynamic_cast</span><span class="o">&lt;</span><span class="n">MultiplicativeGroup</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">nullptr</span><span class="p">))</span>
-                <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-        <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="n">e</span> <span class="o">:</span> <span class="n">negative</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">e</span><span class="o">-&gt;</span><span class="n">is_canonical</span><span class="p">(</span><span class="k">dynamic_cast</span><span class="o">&lt;</span><span class="n">MultiplicativeGroup</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">nullptr</span><span class="p">))</span>
-                <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-        <span class="p">}</span>
-        <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">ExpressionGroup</span><span class="o">::</span><span class="n">is_canonical</span><span class="p">(</span><span class="n">is_top_level</span><span class="p">))</span>
-        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
-    <span class="k">return</span> <span class="o">!</span><span class="n">has_negative_pairs</span><span class="p">();</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Unfortunately, this is practically ineffective. Solutions like <code class="language-plaintext highlighter-rouge">1*4+4*5</code> keep popping up. The missing details are:</p>
-	<ul>
-		<li>A sub-MG inherits its top-level-like behavior if it’s the only MG among all children of a top-level AG</li>
-		<li>An AG permits a top-level child MG if it’s otherwise a no-op. For example, <code class="language-plaintext highlighter-rouge">24*1+5-5</code> but not <code class="language-plaintext highlighter-rouge">8*1+8+8</code></li>
-	</ul>
-	<p>For the first point, we need to count all children and see how many of them are MGs, and for the second point we can check if the value of the AG equals to its only child MG. So wrap that up:</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">mg_count</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">is_equal</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">,</span> <span class="o">*</span><span class="n">mg</span><span class="p">))</span> <span class="p">{</span> <span class="p">...</span> <span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Now the program is correctly reporting that <code class="language-plaintext highlighter-rouge">1 8 8 8</code> has a single solution <code class="language-plaintext highlighter-rouge">(8+8+8)*1</code>, except that it stops producing solutions for <code class="language-plaintext highlighter-rouge">5 6 7 7</code>.</p>
-	<p>Notice that the only solution is <code class="language-plaintext highlighter-rouge">(5-7/7)*6</code>, and that we’re rejecting instead of normalizing this kind of “non-canonical” forms. The problem is that <code class="language-plaintext highlighter-rouge">7/7</code> acts as a concrete one for subtraction, instead of a no-op. Should have checked if there are other operands for multiplying…</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">return</span> <span class="o">!</span><span class="p">(</span><span class="n">positive</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">has_negative_pairs</span><span class="p">());</span>
-</code></pre>
-		</div>
-	</div>
-	<p>The program is still reporting “No solutions” for <code class="language-plaintext highlighter-rouge">1 5 5 5</code>, which has the same root cause. In the sole solution <code class="language-plaintext highlighter-rouge">(5-1/5)*5</code>, the 1 in the MG doesn’t act as a no-op, either. Time to wrap up with another guard.</p>
-	<div class="language-cpp highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">if</span> <span class="p">(</span><span class="n">positive</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span> <span class="cm">/* check for ones */</span> <span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<h2 id="postface">Postface</h2>
-	<p>The <em>4 Numbers</em> website provides a comprehensive list of all 1362 solvable quadruples from 1 to 13 (i.e. formed with a standard 52-card set). Just grab the page and do some HTML processing, and a good test suite is readily available.</p>
-	<p><a href="https://gist.github.com/iBug/ea958ca7f1270128d58b5176858d71cb">Here</a>’s the final version of the C++ code. It gives solutions to 1362 test cases where all of them are identical to those on the <em>4 Numbers</em> website.</p>
-	<p>The problem originates from a course <em>Program Design II</em> where a friend of mine works as a TA this semester.</p>
-	<h2 id="references">References</h2>
-	<ul>
-		<li><a href="https://en.wikipedia.org/wiki/24_(puzzle)">24 (puzzle) - Wikipedia</a></li>
-		<li>
-			<p><a href="https://www.4nums.com/theory/">Definition of “distinct” by <em>4 Numbers</em> website</a></p>
-		</li>
-	</ul>
-	]]></content><author><name>iBug</name></author><category term="development" /><category term="c++" /><category term="algorithm" /><summary type="html"><![CDATA[The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now also a common intermediate-level programming practice.]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><summary type="html"><![CDATA[An LVM volume group (VG) on our Proxmox VE cluster has failed to create new logical volumes, reporting that its metadata was full. At first this appears to be easy, “fine I’ll just add more space for metadata”, but it quickly revealed to be an versity to struggle through.]]></summary></entry></feed>
