@@ -1,27 +1,87 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.2">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2023-11-18T17:23:14+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Understanding ZFS block sizes</title><link href="https://ibug.io/blog/2023/10/zfs-block-size/" rel="alternate" type="text/html" title="Understanding ZFS block sizes" /><published>2023-10-30T00:00:00+00:00</published><updated>2023-10-30T02:58:51+00:00</updated><id>https://ibug.io/blog/2023/10/zfs-block-size</id><content type="html" xml:base="https://ibug.io/blog/2023/10/zfs-block-size/"><![CDATA[<p>ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.</p>
-			<p>We’ll begin with a slide from a ZFS talk from Lustre<sup id="fnref:dilger" role="doc-noteref"><a href="#fn:dilger" class="footnote" rel="footnote">1</a></sup> (page 5):</p>
-			<figure class="">
-				<img src="/image/zfs/zfs-io-stack.png" alt="ZFS I/O Stack" />
-				<figcaption>
-					Figure 1. ZFS I/O Stack
-				</figcaption>
-			</figure>
-			<!-- This article will focus on the topmost layer (ZPL and DMU) and the lowermost layer (vdev and disk sectors). -->
-			<h2 id="logical-blocks">Logical blocks</h2>
-			<p>The first thing to understand is that there are at least two levels of “block” concepts in ZFS. There’s “logical blocks” on an upper layer (DMU), and “physical blocks” on a lower layer (vdev). The latter is easier to understand and it’s almost synonymous to “disk sectors”. It’s precisely the <code class="language-plaintext highlighter-rouge">ashift</code> parameter in <code class="language-plaintext highlighter-rouge">zpool create</code> command and usually matches the physical sector size of your disks (4 KiB for modern disks). Once set, <code class="language-plaintext highlighter-rouge">ashift</code> is immutable and can only be changed when recreating the entire vdev array (fortunately not the entire pool<sup id="fnref:zfs101" role="doc-noteref"><a href="#fn:zfs101" class="footnote" rel="footnote">2</a></sup>). The “logical block”, however, is slightly more complicated, and beyond the expressibility of a few words. In short, it’s the smallest <em>meaningful</em> unit of data that ZFS can operate on, including reading, writing, checksumming, compression and deduplication.</p>
-			<h3 id="recordsize-and-volblocksize">“recordsize” and “volblocksize”</h3>
-			<p>You’ve probably seen <code class="language-plaintext highlighter-rouge">recordsize</code> being talked about extensively in ZFS tuning guides<sup id="fnref:tuning" role="doc-noteref"><a href="#fn:tuning" class="footnote" rel="footnote">3</a></sup>, which is already a great source of confusion. The default <code class="language-plaintext highlighter-rouge">recordsize</code> is 128 KiB, which controls the <em>maximum</em> size of a logical block. The <em>actual</em> block size depends on the file you’re writing:</p>
-			<ul>
-				<li>If the file is smaller than or equal to <code class="language-plaintext highlighter-rouge">recordsize</code>, it’s stored as a single logical block of its size, rounded up to the nearest multiple of 512 bytes.</li>
-				<li>If the file is larger than <code class="language-plaintext highlighter-rouge">recordsize</code>, it’s split into multiple logical blocks of <code class="language-plaintext highlighter-rouge">recordsize</code> each, with the last block being zero-padded to <code class="language-plaintext highlighter-rouge">recordsize</code>.</li>
-			</ul>
-			<p>As with other filesystems, if you change a small portion of a large file, only 128 KiB (or whatever your <code class="language-plaintext highlighter-rouge">recordsize</code> is) is rewritten, along with new metadata and checksums. Large <code class="language-plaintext highlighter-rouge">recordsize</code> bloats the read/write amplification for random I/O workloads, while small <code class="language-plaintext highlighter-rouge">recordsize</code> increases the fragmentation and metadata overhead for large files. Note that ZFS always validates checksums, so every read operation is done on an entire block, even if only a few bytes are requested. So it is important to align your <code class="language-plaintext highlighter-rouge">recordsize</code> with your workload, like using 16 KiB for (most) databases and 1 MiB for media files. The default 128 KiB is a good compromise for general-purpose workloads, and there certainly isn’t a one-size-fits-all solution. Also note that while <code class="language-plaintext highlighter-rouge">recordsize</code> can be changed on the fly, it only affects newly written data, and existing ones stay intact.</p>
-			<p>For ZVOLs, as you’d imagine, the rule is much simpler: Every block of <code class="language-plaintext highlighter-rouge">volblocksize</code> is a logical block, and it’s aligned to its own size. Since ZFS 2.2, the default <code class="language-plaintext highlighter-rouge">volblocksize</code> is 16 KiB, providing a good balance between performance and compatibility.</p>
-			<h3 id="compression">Compression</h3>
-			<p>Compression is applied on a per-block basis, and compressed data is not shared between blocks. This is best shown with an example:</p>
-			<div class="language-console highlighter-rouge">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-01-07T20:42:57+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Visualizing Weather Forecast with Grafana</title><link href="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/" rel="alternate" type="text/html" title="Visualizing Weather Forecast with Grafana" /><published>2024-01-08T00:00:00+00:00</published><updated>2024-01-08T04:40:54+00:00</updated><id>https://ibug.io/blog/2024/01/weather-forecast-with-grafana</id><content type="html" xml:base="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/"><![CDATA[<p>Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get it to work as a weather forecast dashboard, instead of any historical time-series data.</p>
+			<p>I choose <a href="https://open.caiyunapp.com/%E5%BD%A9%E4%BA%91%E5%A4%A9%E6%B0%94_API_%E4%B8%80%E8%A7%88%E8%A1%A8">CaiYun Weather (彩云天气) API</a> for having previous experience with it, as well as its unlimited free tier. I must admit that I initially came up with this idea for having seen the presence of <a href="https://grafana.com/grafana/plugins/marcusolsson-json-datasource/">JSON API datasource plugin</a> for Grafana, which reminds me of CaiYun’s JSON API being a perfect fit.</p>
+			<h2 id="json-api-datasource">JSON API Datasource</h2>
+			<p>Configuring the datasource seems easy at first, like just inserting the URL and configure HTTP headers as needed. Since CY’s API puts the API key in the URL path, there’s no headers to configure. So I can just put a single URL and save it.</p>
+			<div class="language-shell highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>zfs get compression tank/test
+					<pre class="highlight"><code>https://api.caiyunapp.com/v2.5/TAkhjf8d1nlSlspN/121.6544,25.1552/hourly.json
+</code></pre>
+				</div>
+			</div>
+			<p>I choose the hourly API so I can have forecast for the upcoming 48 hours.</p>
+			<p>So far this is a readily available datasource that I can query. But after reviewing the <a href="https://grafana.github.io/grafana-json-datasource/query-editor">JSON query editor</a>, I decided to chop off the last segments of the URL and leave just the part up to the API key:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>https://api.caiyunapp.com/v2.5/TAkhjf8d1nlSlspN/
+</code></pre>
+				</div>
+			</div>
+			<p>The point here is, the query editor allows specifying an extra Path, which appears to be concatenated with this URL in the datasource configuration. Notably, I can then put the coordinates in a variable, use it in the query, and build a single dashboard for many cities.</p>
+			<h2 id="dashboard-variables">Dashboard variables</h2>
+			<p>Now that I have the query format planned, I can add a dashboard variable for selecting cities.</p>
+			<p>First things first, since I’m going to use the same datasource for all panels, I first add a variable for the datasource and restrict it to “CaiYun Weather”:</p>
+			<p><img src="/image/grafana/dashboard-variable-datasource.png" alt="Datasource variable" /></p>
+			<p>Then I add a variable <code class="language-plaintext highlighter-rouge">$location</code> for the city name, and provide it with a list of cities I want to show. The variable type would be “Custom” since this is just a human-maintained list. There certainly are better ways like using a relational database or an external API, making it easier to update, but for now I’d like to keep it simple.</p>
+			<div class="language-text highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>Beijing : 116.4074\,39.9042,Shanghai : 121.4691\,31.2243,Guangzhou : 113.2644\,23.1291,Shenzhen : 114.0596\,22.5429
+</code></pre>
+				</div>
+			</div>
+			<h2 id="panels">Panels</h2>
+			<p>First and foremost, the most intuitive metric to show is temperature. I add a time series panel and configure it to graph the temperature. Start by building the query:</p>
+			<ul>
+				<li>Datasource: Select <code class="language-plaintext highlighter-rouge">${datasource}</code></li>
+				<li>Query A:
+					<ul>
+						<li>Path: <code class="language-plaintext highlighter-rouge">/${location}/hourly.json</code></li>
+						<li>Fields:
+							<ul>
+								<li>JSONPath: <code class="language-plaintext highlighter-rouge">$.result.hourly.temperature[*].value</code>, Type: <code class="language-plaintext highlighter-rouge">Number</code>, Alias: <code class="language-plaintext highlighter-rouge">${location:text}</code></li>
+								<li>JSONPath: <code class="language-plaintext highlighter-rouge">$.result.hourly.temperature[*].datetime</code>, Type: <code class="language-plaintext highlighter-rouge">Time</code></li>
+							</ul>
+						</li>
+					</ul>
+				</li>
+			</ul>
+			<p>I stumbled on getting the <em>time</em> series to display correctly. It wasn’t anywhere obvious in the documentation for the JSON API plugin, but a series with Type = Time is required. Fortunately, CY’s API returns the time in ISO 8601 format in the <code class="language-plaintext highlighter-rouge">datetime</code> field, so I can feed it directly to Grafana.</p>
+			<p>So far so good, except Grafana shows “No data”. I realized Grafana is trying to show past data, but apparently a weather forecast provides <em>future</em> data. I need to change the time range to “now” and “now + 48h”. Ideally, this time range is fixed and not affected by the time range selector, since after all it’s limited by the API.</p>
+			<p>This is another place where I spent half an hour on Google. The answer is “Relative time” in “Query options”. Its format, however, is again unintuitive. While <a href="https://community.grafana.com/t/how-to-give-different-time-ranges-for-grafana-panels-i-am-using-azure-monitor-as-data-source/80300">community posts</a> shows <code class="language-plaintext highlighter-rouge">1d</code> for “last 1 day” and the <a href="https://grafana.com/docs/grafana/latest/panels-visualizations/query-transform-data/">official docs</a> gives several examples on using <code class="language-plaintext highlighter-rouge">now</code>, none of them told me how to indicate “next 48 hours”. The answer is just <code class="language-plaintext highlighter-rouge">+48h</code> or <code class="language-plaintext highlighter-rouge">+2d</code>. Notably, entering <code class="language-plaintext highlighter-rouge">now+48h</code> would result in an error.</p>
+			<p>To make the graph look nicer, I set the unit to “°C”, limit decimals to 1, and set the Y-axis range to 0-40, and add a series of thresholds with colors to indicate the temperature range. Also worth mentioning is to make the graph change its color according to the temperature, so I set “Graph style → Gradient mode” to “Scheme” and “Standard options → Color scheme” to “From thresholds (by value)”.</p>
+			<p>Now this panel looks stunning.</p>
+			<p><img src="/image/grafana/caiyun-temperature-panel.png" alt="Temperature panel" /></p>
+			<h3 id="more-panels">More panels</h3>
+			<p>CY’s API offers a variety of weather data, so with little effort I can add more panels for humidity, precipitation and more, by duplicating the temperature panel and changing the query. I also need to change the unit and thresholds accordingly but that goes without saying.</p>
+			<p>There’s also a small piece worth displaying: A <code class="language-plaintext highlighter-rouge">description</code> text. It’s easy to put it in a “Stat” panel and display as “String” (instead of “Number”). And better yet, CY provides two descriptions: One for the next two hours, and one for the next two days. Two panels for two pieces of text, yeah.</p>
+			<p>One last thing I decided to leave out for now: The <code class="language-plaintext highlighter-rouge">skycon</code> field that describes the weather condition, like “CLEAR_DAY” or “RAIN”. It’d be comparably easy to add a panel for it, using “Value mapping” to change the text to something more human-readable, but I’m not at the high mood for it right now, so maybe I’ll pick it up later.</p>
+			<h2 id="results">Results</h2>
+			<p>Now I have a nice dashboard for viewing weather forecast for multiple cities:</p>
+			<p><img src="/image/grafana/caiyun-forecast-example.png" alt="Dashboard" /></p>
+			<p>If you’d like to try it yourself, I’ve published the dashboard on Grafana.com: <a href="https://grafana.com/grafana/dashboards/20259-weather-forecast/">Weather Forecast</a>. Just add the same datasource with your API key, and you can import my dashboard and start getting weather forecast for yourself.</p>
+			]]></content><author><name>iBug</name></author><category term="software" /><summary type="html"><![CDATA[Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get it to work as a weather forecast dashboard, instead of any historical time-series data.]]></summary></entry><entry><title type="html">Understanding ZFS block sizes</title><link href="https://ibug.io/blog/2023/10/zfs-block-size/" rel="alternate" type="text/html" title="Understanding ZFS block sizes" /><published>2023-10-30T00:00:00+00:00</published><updated>2023-10-30T02:58:51+00:00</updated><id>https://ibug.io/blog/2023/10/zfs-block-size</id><content type="html" xml:base="https://ibug.io/blog/2023/10/zfs-block-size/"><![CDATA[<p>ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.</p>
+		<p>We’ll begin with a slide from a ZFS talk from Lustre<sup id="fnref:dilger" role="doc-noteref"><a href="#fn:dilger" class="footnote" rel="footnote">1</a></sup> (page 5):</p>
+		<figure class="">
+			<img src="/image/zfs/zfs-io-stack.png" alt="ZFS I/O Stack" />
+			<figcaption>
+				Figure 1. ZFS I/O Stack
+			</figcaption>
+		</figure>
+		<!-- This article will focus on the topmost layer (ZPL and DMU) and the lowermost layer (vdev and disk sectors). -->
+		<h2 id="logical-blocks">Logical blocks</h2>
+		<p>The first thing to understand is that there are at least two levels of “block” concepts in ZFS. There’s “logical blocks” on an upper layer (DMU), and “physical blocks” on a lower layer (vdev). The latter is easier to understand and it’s almost synonymous to “disk sectors”. It’s precisely the <code class="language-plaintext highlighter-rouge">ashift</code> parameter in <code class="language-plaintext highlighter-rouge">zpool create</code> command and usually matches the physical sector size of your disks (4 KiB for modern disks). Once set, <code class="language-plaintext highlighter-rouge">ashift</code> is immutable and can only be changed when recreating the entire vdev array (fortunately not the entire pool<sup id="fnref:zfs101" role="doc-noteref"><a href="#fn:zfs101" class="footnote" rel="footnote">2</a></sup>). The “logical block”, however, is slightly more complicated, and beyond the expressibility of a few words. In short, it’s the smallest <em>meaningful</em> unit of data that ZFS can operate on, including reading, writing, checksumming, compression and deduplication.</p>
+		<h3 id="recordsize-and-volblocksize">“recordsize” and “volblocksize”</h3>
+		<p>You’ve probably seen <code class="language-plaintext highlighter-rouge">recordsize</code> being talked about extensively in ZFS tuning guides<sup id="fnref:tuning" role="doc-noteref"><a href="#fn:tuning" class="footnote" rel="footnote">3</a></sup>, which is already a great source of confusion. The default <code class="language-plaintext highlighter-rouge">recordsize</code> is 128 KiB, which controls the <em>maximum</em> size of a logical block. The <em>actual</em> block size depends on the file you’re writing:</p>
+		<ul>
+			<li>If the file is smaller than or equal to <code class="language-plaintext highlighter-rouge">recordsize</code>, it’s stored as a single logical block of its size, rounded up to the nearest multiple of 512 bytes.</li>
+			<li>If the file is larger than <code class="language-plaintext highlighter-rouge">recordsize</code>, it’s split into multiple logical blocks of <code class="language-plaintext highlighter-rouge">recordsize</code> each, with the last block being zero-padded to <code class="language-plaintext highlighter-rouge">recordsize</code>.</li>
+		</ul>
+		<p>As with other filesystems, if you change a small portion of a large file, only 128 KiB (or whatever your <code class="language-plaintext highlighter-rouge">recordsize</code> is) is rewritten, along with new metadata and checksums. Large <code class="language-plaintext highlighter-rouge">recordsize</code> bloats the read/write amplification for random I/O workloads, while small <code class="language-plaintext highlighter-rouge">recordsize</code> increases the fragmentation and metadata overhead for large files. Note that ZFS always validates checksums, so every read operation is done on an entire block, even if only a few bytes are requested. So it is important to align your <code class="language-plaintext highlighter-rouge">recordsize</code> with your workload, like using 16 KiB for (most) databases and 1 MiB for media files. The default 128 KiB is a good compromise for general-purpose workloads, and there certainly isn’t a one-size-fits-all solution. Also note that while <code class="language-plaintext highlighter-rouge">recordsize</code> can be changed on the fly, it only affects newly written data, and existing ones stay intact.</p>
+		<p>For ZVOLs, as you’d imagine, the rule is much simpler: Every block of <code class="language-plaintext highlighter-rouge">volblocksize</code> is a logical block, and it’s aligned to its own size. Since ZFS 2.2, the default <code class="language-plaintext highlighter-rouge">volblocksize</code> is 16 KiB, providing a good balance between performance and compatibility.</p>
+		<h3 id="compression">Compression</h3>
+		<p>Compression is applied on a per-block basis, and compressed data is not shared between blocks. This is best shown with an example:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>zfs get compression tank/test
 <span class="go">NAME       PROPERTY     VALUE  SOURCE
 tank/test  compression  zstd   inherited from tank
 </span><span class="gp">$</span><span class="w"> </span><span class="nb">head</span> <span class="nt">-c</span> 131072 /dev/urandom <span class="o">&gt;</span> 128k
@@ -30,11 +90,11 @@ tank/test  compression  zstd   inherited from tank
 <span class="go">129K    128k
 1.1M    1m
 </span></code></pre>
-				</div>
 			</div>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span><span class="nb">head</span> <span class="nt">-c</span> 16384 /dev/urandom <span class="o">&gt;</span> 16k
+		</div>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span><span class="nb">head</span> <span class="nt">-c</span> 16384 /dev/urandom <span class="o">&gt;</span> 16k
 <span class="gp">$</span><span class="w"> </span><span class="nb">cat </span>16k 16k 16k 16k 16k 16k 16k 16k <span class="o">&gt;</span> 128k1
 <span class="gp">$</span><span class="w"> </span><span class="nb">cat </span>128k1 128k1 128k1 128k1 128k1 128k1 128k1 128k1 <span class="o">&gt;</span> 1m1
 <span class="gp">$</span><span class="w"> </span><span class="nb">du</span> <span class="nt">-sh</span> 16k 128k1 1m1
@@ -42,31 +102,31 @@ tank/test  compression  zstd   inherited from tank
 21K     128k1
 169K    1m1
 </span></code></pre>
-				</div>
 			</div>
-			<p>As you can see from <code class="language-plaintext highlighter-rouge">du</code>’s output above, despite containing 8 identical copies of the same 128 KiB random data, the 1 MiB file gains precisely nothing from compression, as each 128 KiB block is compressed individually. The other test of combining 8 copies of 16 KiB random data into one 128 KiB file shows positive results, as the 128 KiB file is only 21 KiB in size. Similarly, the 1 MiB file that contains 64 exact copies of the same 16 KiB chunk is exactly 8 times the size of that 128 KiB file, because the chunk data is not shared across 128 KiB boundaries.</p>
-			<p>This brings up an interesting point: <strong>It’s beneficial to turn on compression even for filesystems with uncompressible data</strong><sup id="fnref:cks-1" role="doc-noteref"><a href="#fn:cks-1" class="footnote" rel="footnote">4</a></sup>. One direct impact is on the last block of a large file, where its zero-filled bytes up to <code class="language-plaintext highlighter-rouge">recordsize</code> compress very well. Using LZ4 or ZSTD, compression should have negligible impact on any reasonably modern CPU and reasonably sized disks.</p>
-			<p>There are two more noteworthy points about compression, both from <a href="https://openzfs.github.io/openzfs-docs/man/master/7/zfsprops.7.html"><code class="language-plaintext highlighter-rouge">man zfsprops.7</code></a>:</p>
-			<ol>
-				<li>
-					<blockquote>
-						<p>When any setting except <strong>off</strong> is selected, compression will explicitly check for blocks consisting of only zeroes (the NUL byte). When a zero-filled block is detected, it is stored as a hole and not compressed using the indicated compression algorithm.</p>
-					</blockquote>
-					<p>Instead of compressing entire blocks of zeroes like the last block of a large file, ZFS will not store anything about these zero blocks. Technically, this is done by omitting the corresponding ranges from the file’s indirect blocks<sup id="fnref:cks-1:1" role="doc-noteref"><a href="#fn:cks-1" class="footnote" rel="footnote">4</a></sup>.</p>
-					<p>Take this test for example: I created a file with 64 KiB of urandom, then 256 KiB of zeroes, then another 64 KiB of urandom. The file is 384 KiB in size, but only 128 KiB is actually stored on disk:</p>
-					<div class="language-console highlighter-rouge">
-						<div class="highlight">
-							<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zfs create pool0/srv/test
+		</div>
+		<p>As you can see from <code class="language-plaintext highlighter-rouge">du</code>’s output above, despite containing 8 identical copies of the same 128 KiB random data, the 1 MiB file gains precisely nothing from compression, as each 128 KiB block is compressed individually. The other test of combining 8 copies of 16 KiB random data into one 128 KiB file shows positive results, as the 128 KiB file is only 21 KiB in size. Similarly, the 1 MiB file that contains 64 exact copies of the same 16 KiB chunk is exactly 8 times the size of that 128 KiB file, because the chunk data is not shared across 128 KiB boundaries.</p>
+		<p>This brings up an interesting point: <strong>It’s beneficial to turn on compression even for filesystems with uncompressible data</strong><sup id="fnref:cks-1" role="doc-noteref"><a href="#fn:cks-1" class="footnote" rel="footnote">4</a></sup>. One direct impact is on the last block of a large file, where its zero-filled bytes up to <code class="language-plaintext highlighter-rouge">recordsize</code> compress very well. Using LZ4 or ZSTD, compression should have negligible impact on any reasonably modern CPU and reasonably sized disks.</p>
+		<p>There are two more noteworthy points about compression, both from <a href="https://openzfs.github.io/openzfs-docs/man/master/7/zfsprops.7.html"><code class="language-plaintext highlighter-rouge">man zfsprops.7</code></a>:</p>
+		<ol>
+			<li>
+				<blockquote>
+					<p>When any setting except <strong>off</strong> is selected, compression will explicitly check for blocks consisting of only zeroes (the NUL byte). When a zero-filled block is detected, it is stored as a hole and not compressed using the indicated compression algorithm.</p>
+				</blockquote>
+				<p>Instead of compressing entire blocks of zeroes like the last block of a large file, ZFS will not store anything about these zero blocks. Technically, this is done by omitting the corresponding ranges from the file’s indirect blocks<sup id="fnref:cks-1:1" role="doc-noteref"><a href="#fn:cks-1" class="footnote" rel="footnote">4</a></sup>.</p>
+				<p>Take this test for example: I created a file with 64 KiB of urandom, then 256 KiB of zeroes, then another 64 KiB of urandom. The file is 384 KiB in size, but only 128 KiB is actually stored on disk:</p>
+				<div class="language-console highlighter-rouge">
+					<div class="highlight">
+						<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zfs create pool0/srv/test
 <span class="gp">#</span><span class="w"> </span><span class="nb">cat</span> &lt;<span class="o">(</span><span class="nb">head</span> <span class="nt">-c</span> 64K /dev/urandom<span class="o">)</span> &lt;<span class="o">(</span><span class="nb">head</span> <span class="nt">-c</span> 256K /dev/zero<span class="o">)</span> &lt;<span class="o">(</span><span class="nb">head</span> <span class="nt">-c</span> 64K /dev/urandom<span class="o">)</span> <span class="o">&gt;</span> /srv/test/test
 <span class="gp">#</span><span class="w"> </span><span class="nb">du</span> <span class="nt">-sh</span> /srv/test/test
 <span class="go">145K    /srv/test/test
 </span></code></pre>
-						</div>
+					</div>
     </div>
-					<p>We can also examine the file’s indirect blocks with <code class="language-plaintext highlighter-rouge">zdb</code>:</p>
-					<div class="language-console highlighter-rouge">
-						<div class="highlight">
-							<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span><span class="nb">ls</span> <span class="nt">-li</span> /srv/test/test
+				<p>We can also examine the file’s indirect blocks with <code class="language-plaintext highlighter-rouge">zdb</code>:</p>
+				<div class="language-console highlighter-rouge">
+					<div class="highlight">
+						<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span><span class="nb">ls</span> <span class="nt">-li</span> /srv/test/test
 <span class="go">2 -rw-r--r-- 1 root root 393216 Oct 30 02:05 /srv/test/test
 </span><span class="gp">#</span><span class="w"> </span>zdb <span class="nt">-ddddd</span> pool0/srv/test 2
 <span class="go">[...]
@@ -78,45 +138,45 @@ Indirect blocks:
                 segment [0000000000000000, 0000000000020000) size  128K
                 segment [0000000000040000, 0000000000060000) size  128K
 </span></code></pre>
-						</div>
+					</div>
     </div>
-					<p>Here we can see only two L0 blocks allocated, each being 20000 (hex, dec = 131072) bytes logical and 11000 (hex, dec = 69632) bytes physical in size. The two L0 blocks match the two segments shown at the bottom, with the middle segment nowhere to be found.</p>
-				</li>
-				<li>
-					<blockquote>
-						<p>Any block being compressed must be no larger than 7/8 of its original size after compression, otherwise the compression will not be considered worthwhile and the block saved uncompressed. […] for example, 8 KiB blocks on disks with 4 KiB disk sectors must compress to 1/2 or less of their original size.</p>
-					</blockquote>
-					<p>This one should be self-explanatory.</p>
-				</li>
-			</ol>
-			<h2 id="raidz">RAIDZ</h2>
-			<p>Up until now we’ve only talked about logical blocks, which are all on the higher layers of the ZFS hierarchy. RAIDZ is where physical blocks (disk sectors) really come into play and adds another field of confusion.</p>
-			<p>Unlike traditional RAID 5/6/7<sup class="no-select">(?)</sup> that combine disks into an array and presents a single volume for the filesystem, RAIDZ handles each <em>logical block</em> separately. I’ll cite this illustration from Delphix<sup id="fnref:delphix" role="doc-noteref"><a href="#fn:delphix" class="footnote" rel="footnote">5</a></sup> to explain:</p>
-			<figure class="">
-				<img src="/image/zfs/raidz-block-layout.png" alt="RAID-Z block layout" />
-				<figcaption>
-					Figure 2. RAID-Z block layout
-				</figcaption>
-			</figure>
-			<p>This example shows a 5-wide RAID-Z1 setup.</p>
-			<ul>
-				<li>A single-sector block takes another sector for parity, like the dark red block on row 3.</li>
-				<li>
-					<p>Multi-sector blocks are striped across disks, with parity sectors inserted every 4 sectors, matching the data-to-parity ratio of the vdev array.</p>
-					<ul>
-						<li>You may have noticed that parity sectors for the same block are always stored on the same disk that resembles RAID-4 instead of RAID-5. Keep in mind that ZFS reads, writes and verifies entire blocks, so interleaving parity sectors across disks will not provide any benefit, while keeping “stripes” on the same disk simplifies the logic for validation and reconstruction.</li>
-					</ul>
-				</li>
-				<li>In order to avoid unusable fragments, ZFS requires each allocated block to be padded to a multiple of (<em>p+1</em>) sectors, where <em>p</em> is the number of parity disks. For example, RAID-Z1 requires each block to be padded to a multiple of 2 sectors, and RAID-Z2 requires each block to be padded to a multiple of 3 sectors. This can be seen on rows 7 to 9, where the X sectors are reserved for parity padding.</li>
-			</ul>
-			<p>This design allows RAID to play well with ZFS’s log-structured design and avoids the need for read-modify-write cycles. Consequently, the RAID overhead is now dependent on your data and is no longer an intrinsic property of the RAID level and array width. The same Delphix article shares a nice spreadsheet<sup id="fnref:delphix-spreadsheet" role="doc-noteref"><a href="#fn:delphix-spreadsheet" class="footnote" rel="footnote">6</a></sup> that calculates RAID overhead for you:</p>
-			<p><a href="https://docs.google.com/a/delphix.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/"><img src="/image/zfs/raidz1-parity-overhead.png" alt="Size of parity overhead for RAID-Z1" /></a></p>
-			<h3 id="raidz-accounting">Accounting</h3>
-			<p>Accounting the storage space for a RAIDZ array is as problematic as it seems: There’s no way to calculate the available space in advance without knowledge on the block size pattern.</p>
-			<p>ZFS works around this by showing an estimate, assuming all data were stored as 128 KiB blocks<sup id="fnref:zfs-4599" role="doc-noteref"><a href="#fn:zfs-4599" class="footnote" rel="footnote">7</a></sup>. On my test setup with five 16 GiB disks in RAID-Z1 and <code class="language-plaintext highlighter-rouge">ashift=12</code>, the available space shows as 61.5G, while <code class="language-plaintext highlighter-rouge">zpool</code> shows the raw size as 79.5G:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zpool create <span class="nt">-o</span> <span class="nv">ashift</span><span class="o">=</span>12 <span class="nb">test </span>raidz1 nvme3n1p<span class="o">{</span>1,2,3,4,5<span class="o">}</span>
+				<p>Here we can see only two L0 blocks allocated, each being 20000 (hex, dec = 131072) bytes logical and 11000 (hex, dec = 69632) bytes physical in size. The two L0 blocks match the two segments shown at the bottom, with the middle segment nowhere to be found.</p>
+			</li>
+			<li>
+				<blockquote>
+					<p>Any block being compressed must be no larger than 7/8 of its original size after compression, otherwise the compression will not be considered worthwhile and the block saved uncompressed. […] for example, 8 KiB blocks on disks with 4 KiB disk sectors must compress to 1/2 or less of their original size.</p>
+				</blockquote>
+				<p>This one should be self-explanatory.</p>
+			</li>
+		</ol>
+		<h2 id="raidz">RAIDZ</h2>
+		<p>Up until now we’ve only talked about logical blocks, which are all on the higher layers of the ZFS hierarchy. RAIDZ is where physical blocks (disk sectors) really come into play and adds another field of confusion.</p>
+		<p>Unlike traditional RAID 5/6/7<sup class="no-select">(?)</sup> that combine disks into an array and presents a single volume for the filesystem, RAIDZ handles each <em>logical block</em> separately. I’ll cite this illustration from Delphix<sup id="fnref:delphix" role="doc-noteref"><a href="#fn:delphix" class="footnote" rel="footnote">5</a></sup> to explain:</p>
+		<figure class="">
+			<img src="/image/zfs/raidz-block-layout.png" alt="RAID-Z block layout" />
+			<figcaption>
+				Figure 2. RAID-Z block layout
+			</figcaption>
+		</figure>
+		<p>This example shows a 5-wide RAID-Z1 setup.</p>
+		<ul>
+			<li>A single-sector block takes another sector for parity, like the dark red block on row 3.</li>
+			<li>
+				<p>Multi-sector blocks are striped across disks, with parity sectors inserted every 4 sectors, matching the data-to-parity ratio of the vdev array.</p>
+				<ul>
+					<li>You may have noticed that parity sectors for the same block are always stored on the same disk that resembles RAID-4 instead of RAID-5. Keep in mind that ZFS reads, writes and verifies entire blocks, so interleaving parity sectors across disks will not provide any benefit, while keeping “stripes” on the same disk simplifies the logic for validation and reconstruction.</li>
+				</ul>
+			</li>
+			<li>In order to avoid unusable fragments, ZFS requires each allocated block to be padded to a multiple of (<em>p+1</em>) sectors, where <em>p</em> is the number of parity disks. For example, RAID-Z1 requires each block to be padded to a multiple of 2 sectors, and RAID-Z2 requires each block to be padded to a multiple of 3 sectors. This can be seen on rows 7 to 9, where the X sectors are reserved for parity padding.</li>
+		</ul>
+		<p>This design allows RAID to play well with ZFS’s log-structured design and avoids the need for read-modify-write cycles. Consequently, the RAID overhead is now dependent on your data and is no longer an intrinsic property of the RAID level and array width. The same Delphix article shares a nice spreadsheet<sup id="fnref:delphix-spreadsheet" role="doc-noteref"><a href="#fn:delphix-spreadsheet" class="footnote" rel="footnote">6</a></sup> that calculates RAID overhead for you:</p>
+		<p><a href="https://docs.google.com/a/delphix.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/"><img src="/image/zfs/raidz1-parity-overhead.png" alt="Size of parity overhead for RAID-Z1" /></a></p>
+		<h3 id="raidz-accounting">Accounting</h3>
+		<p>Accounting the storage space for a RAIDZ array is as problematic as it seems: There’s no way to calculate the available space in advance without knowledge on the block size pattern.</p>
+		<p>ZFS works around this by showing an estimate, assuming all data were stored as 128 KiB blocks<sup id="fnref:zfs-4599" role="doc-noteref"><a href="#fn:zfs-4599" class="footnote" rel="footnote">7</a></sup>. On my test setup with five 16 GiB disks in RAID-Z1 and <code class="language-plaintext highlighter-rouge">ashift=12</code>, the available space shows as 61.5G, while <code class="language-plaintext highlighter-rouge">zpool</code> shows the raw size as 79.5G:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zpool create <span class="nt">-o</span> <span class="nv">ashift</span><span class="o">=</span>12 <span class="nb">test </span>raidz1 nvme3n1p<span class="o">{</span>1,2,3,4,5<span class="o">}</span>
 <span class="gp">#</span><span class="w"> </span>zfs list <span class="nb">test</span>
 <span class="go">NAME   USED  AVAIL     REFER  MOUNTPOINT
 test   614K  61.5G      153K  /test
@@ -124,12 +184,12 @@ test   614K  61.5G      153K  /test
 <span class="go">NAME   SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
 test  79.5G   768K  79.5G        -         -     0%     0%  1.00x    ONLINE  -
 </span></code></pre>
-				</div>
 			</div>
-			<p>When I increase <code class="language-plaintext highlighter-rouge">ashift</code> to 15 (32 KiB sectors), the available space drops quite a bit, even if <code class="language-plaintext highlighter-rouge">zpool</code> shows the same raw size:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zpool create <span class="nt">-o</span> <span class="nv">ashift</span><span class="o">=</span>15 <span class="nb">test </span>raidz1 nvme3n1p<span class="o">{</span>1,2,3,4,5<span class="o">}</span>
+		</div>
+		<p>When I increase <code class="language-plaintext highlighter-rouge">ashift</code> to 15 (32 KiB sectors), the available space drops quite a bit, even if <code class="language-plaintext highlighter-rouge">zpool</code> shows the same raw size:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zpool create <span class="nt">-o</span> <span class="nv">ashift</span><span class="o">=</span>15 <span class="nb">test </span>raidz1 nvme3n1p<span class="o">{</span>1,2,3,4,5<span class="o">}</span>
 <span class="gp">#</span><span class="w"> </span>zfs list <span class="nb">test</span>
 <span class="go">NAME   USED  AVAIL     REFER  MOUNTPOINT
 test  4.00M  51.3G     1023K  /test
@@ -137,108 +197,108 @@ test  4.00M  51.3G     1023K  /test
 <span class="go">NAME   SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
 test  79.5G  7.31M  79.5G        -         -     0%     0%  1.00x    ONLINE  -
 </span></code></pre>
-				</div>
 			</div>
-			<p>In both cases, calculating the “raw” disk space from the available space gives roughly congruent results:</p>
-			<ul>
-				<li>61.5 GiB × (1 + 25%) = 76.9 GiB</li>
-				<li>51.3 GiB × (1 + 50%) = 76.9 GiB</li>
-			</ul>
-			<p>The default <code class="language-plaintext highlighter-rouge">refreservation</code> for non-sparse ZVOLs exhibits a similar behavior:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zfs create <span class="nt">-V</span> 4G <span class="nt">-o</span> <span class="nv">volblocksize</span><span class="o">=</span>8K <span class="nb">test</span>/v8k
+		</div>
+		<p>In both cases, calculating the “raw” disk space from the available space gives roughly congruent results:</p>
+		<ul>
+			<li>61.5 GiB × (1 + 25%) = 76.9 GiB</li>
+			<li>51.3 GiB × (1 + 50%) = 76.9 GiB</li>
+		</ul>
+		<p>The default <code class="language-plaintext highlighter-rouge">refreservation</code> for non-sparse ZVOLs exhibits a similar behavior:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zfs create <span class="nt">-V</span> 4G <span class="nt">-o</span> <span class="nv">volblocksize</span><span class="o">=</span>8K <span class="nb">test</span>/v8k
 <span class="gp">#</span><span class="w"> </span>zfs create <span class="nt">-V</span> 4G <span class="nt">-o</span> <span class="nv">volblocksize</span><span class="o">=</span>16K <span class="nb">test</span>/v16k
 <span class="gp">#</span><span class="w"> </span>zfs get refreservation <span class="nb">test</span>/v8k <span class="nb">test</span>/v16k
 <span class="go">NAME       PROPERTY        VALUE      SOURCE
 test/v16k  refreservation  4.86G      local
 test/v8k   refreservation  6.53G      local
 </span></code></pre>
-				</div>
 			</div>
-			<p>Interestingly, neither of the <code class="language-plaintext highlighter-rouge">refreservation</code> sizes matches the RAID overhead as calculated in the Delphix spreadsheet<sup id="fnref:delphix-spreadsheet:1" role="doc-noteref"><a href="#fn:delphix-spreadsheet" class="footnote" rel="footnote">6</a></sup>, as you would expect some 6.0 GiB for the 16k-volblocksized ZVOL and some 8.0 GiB for the 8k-volblocksized one. <strong>Let’s just don’t forget that the whole accounting system assumed 128 KiB blocks and scaled by that<sup id="fnref:acct-128k" role="doc-noteref"><a href="#fn:acct-128k" class="footnote" rel="footnote">8</a></sup>.</strong> So the actual meaning of 4.86G and 6.53G would be “the <em>equivalent</em> space if volblocksize had been 128 KiB”. If we multiply both values by 1.25 (overhead for 128 KiB blocks and 5-wide RAIDZ), we get 6.08 GiB and 8.16 GiB of raw disk spaces respectively, both of which match more closely the expected values. The final minor difference is due to the different amount of metadata required for different number of blocks.</p>
-			<h2 id="thoughts">Thoughts</h2>
-			<p>I never imagined I would delve this deep into ZFS when I first stumbled upon the question. There are lots of good write-ups on individual components of ZFS all around the web, and <a href="https://utcc.utoronto.ca/~cks/space/blog/">Chris Siebenmann’s blog</a> in particular. But few combine all the pieces together and paint the whole picture, so I had to spend some time synthesizing them by myself. As you’ve seen in the Luster slide, ZFS is so complex a beast that it’s hard to digest in its entirety. So for now I have no idea how much effort I would put into learning it, nor any future blogs I would write. But anyways, that’s one large mystery solved, for myself and my readers (you), and time to call it a day.</p>
-			<h2 id="references">References</h2>
-			<div class="footnotes" role="doc-endnotes">
-				<ol>
-					<li id="fn:dilger" role="doc-endnote">
-						<p>Andreas Dilger (2010) <a href="https://wiki.lustre.org/images/4/49/Beijing-2010.2-ZFS_overview_3.1_Dilger.pdf">ZFS Features &amp; Concepts TOI</a> <a href="#fnref:dilger" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-					</li>
-					<li id="fn:zfs101" role="doc-endnote">
-						<p>Jim Salter (2020) <a href="https://arstechnica.com/information-technology/2020/05/zfs-101-understanding-zfs-storage-and-performance/">ZFS 101 – Understanding ZFS storage and performance</a> <a href="#fnref:zfs101" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-					</li>
-					<li id="fn:tuning" role="doc-endnote">
-						<p>OpenZFS <a href="https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Workload%20Tuning.html">Workload Tuning</a> <a href="#fnref:tuning" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-					</li>
-					<li id="fn:cks-1" role="doc-endnote">
-						<p>Chris Siebenmann (2017) <a href="https://utcc.utoronto.ca/~cks/space/blog/solaris/ZFSFilePartialAndHoleStorage">ZFS’s recordsize, holes in files, and partial blocks</a> <a href="#fnref:cks-1" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:cks-1:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
-					</li>
-					<li id="fn:delphix" role="doc-endnote">
-						<p>Matthew Ahrens (2014) <a href="https://www.delphix.com/blog/zfs-raidz-stripe-width-or-how-i-learned-stop-worrying-and-love-raidz">How I Learned to Stop Worrying and Love RAIDZ</a> <a href="#fnref:delphix" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-					</li>
-					<li id="fn:delphix-spreadsheet" role="doc-endnote">
-						<p><a href="https://docs.google.com/a/delphix.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/">RAID-Z parity cost</a> (Google Sheets) <a href="#fnref:delphix-spreadsheet" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:delphix-spreadsheet:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
-					</li>
-					<li id="fn:zfs-4599" role="doc-endnote">
-						<p>openzfs/zfs#4599 (2016) <a href="https://github.com/openzfs/zfs/issues/4599">disk usage wrong when using larger recordsize, raidz and ashift=12</a> <a href="#fnref:zfs-4599" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-					</li>
-					<li id="fn:acct-128k" role="doc-endnote">
-						<p>Mike Gerdts (2019) <a href="https://github.com/illumos/illumos-gate/blob/b73ccab03ec36581b1ae5945ef1fee1d06c79ccf/usr/src/lib/libzfs/common/libzfs_dataset.c#L5118">(Code comment in <code class="language-plaintext highlighter-rouge">libzfs_dataset.c</code>)</a> <a href="#fnref:acct-128k" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-					</li>
-				</ol>
-			</div>
-			]]></content><author><name>iBug</name></author><category term="linux" /><category term="zfs" /><summary type="html"><![CDATA[ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.]]></summary></entry><entry><title type="html">Debugging Proxmox VE Firewall Dropping TCP Reset Packets</title><link href="https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset/" rel="alternate" type="text/html" title="Debugging Proxmox VE Firewall Dropping TCP Reset Packets" /><published>2023-10-06T00:00:00+00:00</published><updated>2023-10-06T13:37:51+00:00</updated><id>https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset</id><content type="html" xml:base="https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset/"><![CDATA[<p>A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.</p>
-		<p>When I reviewed my edited Nginx configuration and tried visiting the new website, I received a 504 Gateway Timeout error after <code class="language-plaintext highlighter-rouge">curl</code> hung for a minute. Knowing that the web server had yet to be set up, I was expecting a 502 Bad Gateway error. I quickly recalled the conditions for Nginx to return these specific errors: 502 if the upstream server is immediately known down, and 504 if the upstream server is up but not responding.</p>
-		<p>Since the actual web application hadn’t been set up yet, the new VM should have nothing listening on the configured ports. Consequently, the kernel should immediately respond with a TCP Reset for any incoming connections. To verify this, I ran <code class="language-plaintext highlighter-rouge">tcpdump</code> on both sides to check if the TCP reset packets actually came out. To my surprise, the packets were indeed sent out from the new VM, but the gateway server received nothing. So there was certainly something wrong with the firewall. I took a glance at the output of <code class="language-plaintext highlighter-rouge">pve-firewall compile</code>. They were very structured and adequately easy to understand, but I couldn’t immediately identify anything wrong. Things were apparently more complicated than I had previously anticipated.</p>
-		<h2 id="searching">Searching for information</h2>
-		<p>As usual, the first thing to try is Googling. Searching for <code class="language-plaintext highlighter-rouge">pve firewall tcp reset</code> brought <a href="https://forum.proxmox.com/threads/tcp-rst-packets-dropped-by-pve-firewall.56300/">this post on Proxmox Forum</a> as the first result. Their symptoms were precisely the same as mine:</p>
-		<blockquote>
-			<ul>
-				<li>Assume we have a service running on TCP port 12354</li>
-				<li>Clients can communicate with it while running</li>
-				<li>While service is down, clients recieved “Connection timed out” (no answer) even if OS send TCP RST packets:</li>
-			</ul>
-			<p>[…]</p>
-			<p>However, these RST packets are dropped somewhere in PVE firewall.<br />
-				On the VM options :</p>
-			<ul>
-				<li>Firewall &gt; Options &gt; Firewall = No, Has no effect</li>
-				<li>Firewall &gt; Options &gt; * Policy = ACCEPT, Has no effect (even with NO rule in active for this VM)</li>
-				<li>Hardware &gt; Network Device &gt; <code class="language-plaintext highlighter-rouge">firewall=0</code>, allows packets RST to pass!</li>
-			</ul>
-		</blockquote>
-		<p>I gave the last suggestion a try, and it worked! I could now see connections immediately reset on the gateway server, and Nginx started producing 502 errors. But I was still confused why this happened in the first place. The first thread contained nothing else useful, so I continued scanning through other search results and noticed <a href="https://forum.proxmox.com/threads/turning-on-the-pve-firewall-stops-vm-lxc-connectivity.55634/#post-261316">another post</a> about another seemingly unrelated problem, with a plausible solution:</p>
-		<blockquote>
-			<p>[…], and the fix was just to add the <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> in the <code class="language-plaintext highlighter-rouge">host.fw</code> for each node - I didn’t have to do anything other than that.</p>
-		</blockquote>
-		<p>That seemed understandable to me, so I gave it a try as well, and to my pleasure, it also worked.</p>
-		<p>Regrettably, useful information ceased to exist online beyond this, and it was far from painting the whole picture. So anything further would have to be uncovered on my own.</p>
-		<h2 id="reviewing">Reviewing information</h2>
-		<p>I reviewed the two helpful workarounds and made myself abundantly clear about their effects:</p>
+		</div>
+		<p>Interestingly, neither of the <code class="language-plaintext highlighter-rouge">refreservation</code> sizes matches the RAID overhead as calculated in the Delphix spreadsheet<sup id="fnref:delphix-spreadsheet:1" role="doc-noteref"><a href="#fn:delphix-spreadsheet" class="footnote" rel="footnote">6</a></sup>, as you would expect some 6.0 GiB for the 16k-volblocksized ZVOL and some 8.0 GiB for the 8k-volblocksized one. <strong>Let’s just don’t forget that the whole accounting system assumed 128 KiB blocks and scaled by that<sup id="fnref:acct-128k" role="doc-noteref"><a href="#fn:acct-128k" class="footnote" rel="footnote">8</a></sup>.</strong> So the actual meaning of 4.86G and 6.53G would be “the <em>equivalent</em> space if volblocksize had been 128 KiB”. If we multiply both values by 1.25 (overhead for 128 KiB blocks and 5-wide RAIDZ), we get 6.08 GiB and 8.16 GiB of raw disk spaces respectively, both of which match more closely the expected values. The final minor difference is due to the different amount of metadata required for different number of blocks.</p>
+		<h2 id="thoughts">Thoughts</h2>
+		<p>I never imagined I would delve this deep into ZFS when I first stumbled upon the question. There are lots of good write-ups on individual components of ZFS all around the web, and <a href="https://utcc.utoronto.ca/~cks/space/blog/">Chris Siebenmann’s blog</a> in particular. But few combine all the pieces together and paint the whole picture, so I had to spend some time synthesizing them by myself. As you’ve seen in the Luster slide, ZFS is so complex a beast that it’s hard to digest in its entirety. So for now I have no idea how much effort I would put into learning it, nor any future blogs I would write. But anyways, that’s one large mystery solved, for myself and my readers (you), and time to call it a day.</p>
+		<h2 id="references">References</h2>
+		<div class="footnotes" role="doc-endnotes">
+			<ol>
+				<li id="fn:dilger" role="doc-endnote">
+					<p>Andreas Dilger (2010) <a href="https://wiki.lustre.org/images/4/49/Beijing-2010.2-ZFS_overview_3.1_Dilger.pdf">ZFS Features &amp; Concepts TOI</a> <a href="#fnref:dilger" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+				</li>
+				<li id="fn:zfs101" role="doc-endnote">
+					<p>Jim Salter (2020) <a href="https://arstechnica.com/information-technology/2020/05/zfs-101-understanding-zfs-storage-and-performance/">ZFS 101 – Understanding ZFS storage and performance</a> <a href="#fnref:zfs101" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+				</li>
+				<li id="fn:tuning" role="doc-endnote">
+					<p>OpenZFS <a href="https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Workload%20Tuning.html">Workload Tuning</a> <a href="#fnref:tuning" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+				</li>
+				<li id="fn:cks-1" role="doc-endnote">
+					<p>Chris Siebenmann (2017) <a href="https://utcc.utoronto.ca/~cks/space/blog/solaris/ZFSFilePartialAndHoleStorage">ZFS’s recordsize, holes in files, and partial blocks</a> <a href="#fnref:cks-1" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:cks-1:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
+				</li>
+				<li id="fn:delphix" role="doc-endnote">
+					<p>Matthew Ahrens (2014) <a href="https://www.delphix.com/blog/zfs-raidz-stripe-width-or-how-i-learned-stop-worrying-and-love-raidz">How I Learned to Stop Worrying and Love RAIDZ</a> <a href="#fnref:delphix" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+				</li>
+				<li id="fn:delphix-spreadsheet" role="doc-endnote">
+					<p><a href="https://docs.google.com/a/delphix.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/">RAID-Z parity cost</a> (Google Sheets) <a href="#fnref:delphix-spreadsheet" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:delphix-spreadsheet:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
+				</li>
+				<li id="fn:zfs-4599" role="doc-endnote">
+					<p>openzfs/zfs#4599 (2016) <a href="https://github.com/openzfs/zfs/issues/4599">disk usage wrong when using larger recordsize, raidz and ashift=12</a> <a href="#fnref:zfs-4599" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+				</li>
+				<li id="fn:acct-128k" role="doc-endnote">
+					<p>Mike Gerdts (2019) <a href="https://github.com/illumos/illumos-gate/blob/b73ccab03ec36581b1ae5945ef1fee1d06c79ccf/usr/src/lib/libzfs/common/libzfs_dataset.c#L5118">(Code comment in <code class="language-plaintext highlighter-rouge">libzfs_dataset.c</code>)</a> <a href="#fnref:acct-128k" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+				</li>
+			</ol>
+		</div>
+		]]></content><author><name>iBug</name></author><category term="linux" /><category term="zfs" /><summary type="html"><![CDATA[ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.]]></summary></entry><entry><title type="html">Debugging Proxmox VE Firewall Dropping TCP Reset Packets</title><link href="https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset/" rel="alternate" type="text/html" title="Debugging Proxmox VE Firewall Dropping TCP Reset Packets" /><published>2023-10-06T00:00:00+00:00</published><updated>2023-10-06T13:37:51+00:00</updated><id>https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset</id><content type="html" xml:base="https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset/"><![CDATA[<p>A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.</p>
+	<p>When I reviewed my edited Nginx configuration and tried visiting the new website, I received a 504 Gateway Timeout error after <code class="language-plaintext highlighter-rouge">curl</code> hung for a minute. Knowing that the web server had yet to be set up, I was expecting a 502 Bad Gateway error. I quickly recalled the conditions for Nginx to return these specific errors: 502 if the upstream server is immediately known down, and 504 if the upstream server is up but not responding.</p>
+	<p>Since the actual web application hadn’t been set up yet, the new VM should have nothing listening on the configured ports. Consequently, the kernel should immediately respond with a TCP Reset for any incoming connections. To verify this, I ran <code class="language-plaintext highlighter-rouge">tcpdump</code> on both sides to check if the TCP reset packets actually came out. To my surprise, the packets were indeed sent out from the new VM, but the gateway server received nothing. So there was certainly something wrong with the firewall. I took a glance at the output of <code class="language-plaintext highlighter-rouge">pve-firewall compile</code>. They were very structured and adequately easy to understand, but I couldn’t immediately identify anything wrong. Things were apparently more complicated than I had previously anticipated.</p>
+	<h2 id="searching">Searching for information</h2>
+	<p>As usual, the first thing to try is Googling. Searching for <code class="language-plaintext highlighter-rouge">pve firewall tcp reset</code> brought <a href="https://forum.proxmox.com/threads/tcp-rst-packets-dropped-by-pve-firewall.56300/">this post on Proxmox Forum</a> as the first result. Their symptoms were precisely the same as mine:</p>
+	<blockquote>
 		<ul>
-			<li>
-				<p>Disabling the firewall on the virtual network device stops PVE from bridging the interface an extra time, as shown in the following diagram:</p>
-				<p><img src="/image/pve-firewall/pve-fwbr.png" alt="PVE Firewall Diagram" /></p>
-			</li>
-			<li>
-				<p>Adding <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> removes one single iptables rule:</p>
-				<div class="language-shell highlighter-rouge">
-					<div class="highlight">
-						<pre class="highlight"><code><span class="nt">-A</span> PVEFW-FORWARD <span class="nt">-m</span> conntrack <span class="nt">--ctstate</span> INVALID <span class="nt">-j</span> DROP
-</code></pre>
-					</div>
-    </div>
-			</li>
+			<li>Assume we have a service running on TCP port 12354</li>
+			<li>Clients can communicate with it while running</li>
+			<li>While service is down, clients recieved “Connection timed out” (no answer) even if OS send TCP RST packets:</li>
 		</ul>
-		<p>I couldn’t figure out how the first difference was relevant, but the second one provided an important clue: The firewall was dropping TCP Reset packets because conntrack considered them invalid.</p>
-		<p>Conntrack (<strong>conn</strong>ection <strong>track</strong>ing) is a Linux kernel subsystem that tracks network connections and aids in stateful packet inspection and network address translation. The first packet of a connection is considered “NEW”, and subsequent packets from the same connection are considered “ESTABLISHED”, including the TCP Reset packet when it’s first seen, which causes conntrack to delete the connection entry.</p>
-		<p>There was still yet anything obvious, so time to start debugging.</p>
-		<h2 id="tcpdump">Inspecting packet captures</h2>
-		<p>I ran <code class="language-plaintext highlighter-rouge">tcpdump -ni any host 172.31.0.2 and host 172.31.1.11 and tcp</code> on the PVE host to capture packets between the two VMs. This is what I got (output trimmed):</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>tcpdump: data link type LINUX_SLL2
+		<p>[…]</p>
+		<p>However, these RST packets are dropped somewhere in PVE firewall.<br />
+			On the VM options :</p>
+		<ul>
+			<li>Firewall &gt; Options &gt; Firewall = No, Has no effect</li>
+			<li>Firewall &gt; Options &gt; * Policy = ACCEPT, Has no effect (even with NO rule in active for this VM)</li>
+			<li>Hardware &gt; Network Device &gt; <code class="language-plaintext highlighter-rouge">firewall=0</code>, allows packets RST to pass!</li>
+		</ul>
+	</blockquote>
+	<p>I gave the last suggestion a try, and it worked! I could now see connections immediately reset on the gateway server, and Nginx started producing 502 errors. But I was still confused why this happened in the first place. The first thread contained nothing else useful, so I continued scanning through other search results and noticed <a href="https://forum.proxmox.com/threads/turning-on-the-pve-firewall-stops-vm-lxc-connectivity.55634/#post-261316">another post</a> about another seemingly unrelated problem, with a plausible solution:</p>
+	<blockquote>
+		<p>[…], and the fix was just to add the <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> in the <code class="language-plaintext highlighter-rouge">host.fw</code> for each node - I didn’t have to do anything other than that.</p>
+	</blockquote>
+	<p>That seemed understandable to me, so I gave it a try as well, and to my pleasure, it also worked.</p>
+	<p>Regrettably, useful information ceased to exist online beyond this, and it was far from painting the whole picture. So anything further would have to be uncovered on my own.</p>
+	<h2 id="reviewing">Reviewing information</h2>
+	<p>I reviewed the two helpful workarounds and made myself abundantly clear about their effects:</p>
+	<ul>
+		<li>
+			<p>Disabling the firewall on the virtual network device stops PVE from bridging the interface an extra time, as shown in the following diagram:</p>
+			<p><img src="/image/pve-firewall/pve-fwbr.png" alt="PVE Firewall Diagram" /></p>
+		</li>
+		<li>
+			<p>Adding <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> removes one single iptables rule:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="nt">-A</span> PVEFW-FORWARD <span class="nt">-m</span> conntrack <span class="nt">--ctstate</span> INVALID <span class="nt">-j</span> DROP
+</code></pre>
+				</div>
+    </div>
+		</li>
+	</ul>
+	<p>I couldn’t figure out how the first difference was relevant, but the second one provided an important clue: The firewall was dropping TCP Reset packets because conntrack considered them invalid.</p>
+	<p>Conntrack (<strong>conn</strong>ection <strong>track</strong>ing) is a Linux kernel subsystem that tracks network connections and aids in stateful packet inspection and network address translation. The first packet of a connection is considered “NEW”, and subsequent packets from the same connection are considered “ESTABLISHED”, including the TCP Reset packet when it’s first seen, which causes conntrack to delete the connection entry.</p>
+	<p>There was still yet anything obvious, so time to start debugging.</p>
+	<h2 id="tcpdump">Inspecting packet captures</h2>
+	<p>I ran <code class="language-plaintext highlighter-rouge">tcpdump -ni any host 172.31.0.2 and host 172.31.1.11 and tcp</code> on the PVE host to capture packets between the two VMs. This is what I got (output trimmed):</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>tcpdump: data link type LINUX_SLL2
 tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
 listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
 16:33:11.911184 veth101i1 P   IP 172.31.0.2.50198 &gt; 172.31.1.11.80: Flags [S], seq 3404503761, win 64240
@@ -255,14 +315,14 @@ listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144
 178 packets received by filter
 0 packets dropped by kernel
 </code></pre>
-			</div>
 		</div>
-		<p><img src="/image/pve-firewall/fw-diagram-1.png" alt="Diagram" /></p>
-		<p>The first thing to notice is the ACK number. After coming from <code class="language-plaintext highlighter-rouge">tap811i0</code>, it suddenly became 1 with no apparent reason. I struggled on this for a good while and temporarily put it aside.</p>
-		<p>Adding <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> to the firewall options and capturing packets again, I got the following:</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+	</div>
+	<p><img src="/image/pve-firewall/fw-diagram-1.png" alt="Diagram" /></p>
+	<p>The first thing to notice is the ACK number. After coming from <code class="language-plaintext highlighter-rouge">tap811i0</code>, it suddenly became 1 with no apparent reason. I struggled on this for a good while and temporarily put it aside.</p>
+	<p>Adding <code class="language-plaintext highlighter-rouge">nf_conntrack_allow_invalid: 1</code> to the firewall options and capturing packets again, I got the following:</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
 16:46:15.243002 veth101i1 P   IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
 16:46:15.243015 fwln101i1 Out IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
 16:46:15.243016 fwpr101p1 P   IP 172.31.0.2.58784 &gt; 172.31.1.11.80: Flags [S], seq 301948896, win 64240
@@ -277,14 +337,14 @@ listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144
 16:46:15.243090 veth101i1 Out IP 172.31.1.11.80 &gt; 172.31.0.2.58784: Flags [R.], seq 0, ack 1, win 0, length 0
 ^C
 </code></pre>
-			</div>
 		</div>
-		<p><img src="/image/pve-firewall/fw-diagram-2.png" alt="Diagram" /></p>
-		<p>This time while the ACK number was still wrong, the RST packet somehow got through. Ignoring the ACK numbers for now, the output suggested that the RST packet was dropped between <code class="language-plaintext highlighter-rouge">fwpr811p0 P</code> and <code class="language-plaintext highlighter-rouge">fwln811i0 Out</code>. That was the main bridge <code class="language-plaintext highlighter-rouge">vmbr0</code>. All right then, that was where the <code class="language-plaintext highlighter-rouge">PVEFW-FORWARD</code> chain kicked in, so at this point the RST packet was <code class="language-plaintext highlighter-rouge">--ctstate INVALID</code>. Everything was logical so far.</p>
-		<p>So how about disabling firewall for the interface on VM 811?</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+	</div>
+	<p><img src="/image/pve-firewall/fw-diagram-2.png" alt="Diagram" /></p>
+	<p>This time while the ACK number was still wrong, the RST packet somehow got through. Ignoring the ACK numbers for now, the output suggested that the RST packet was dropped between <code class="language-plaintext highlighter-rouge">fwpr811p0 P</code> and <code class="language-plaintext highlighter-rouge">fwln811i0 Out</code>. That was the main bridge <code class="language-plaintext highlighter-rouge">vmbr0</code>. All right then, that was where the <code class="language-plaintext highlighter-rouge">PVEFW-FORWARD</code> chain kicked in, so at this point the RST packet was <code class="language-plaintext highlighter-rouge">--ctstate INVALID</code>. Everything was logical so far.</p>
+	<p>So how about disabling firewall for the interface on VM 811?</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
 17:19:01.812030 veth101i1 P   IP 172.31.0.2.39734 &gt; 172.31.1.11.80: Flags [S], seq 1128018611, win 64240
 17:19:01.812045 fwln101i1 Out IP 172.31.0.2.39734 &gt; 172.31.1.11.80: Flags [S], seq 1128018611, win 64240
 17:19:01.812046 fwpr101p1 P   IP 172.31.0.2.39734 &gt; 172.31.1.11.80: Flags [S], seq 1128018611, win 64240
@@ -295,45 +355,45 @@ listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144
 17:19:01.812190 veth101i1 Out IP 172.31.1.11.80 &gt; 172.31.0.2.39734: Flags [R.], seq 0, ack 1, win 0, length 0
 ^C
 </code></pre>
-			</div>
 		</div>
-		<p><img src="/image/pve-firewall/fw-diagram-3.png" alt="Diagram" /></p>
-		<p>This time <code class="language-plaintext highlighter-rouge">fwbr811i0</code> was missing, and the RST packet didn’t get dropped at <code class="language-plaintext highlighter-rouge">vmbr0</code>. I was left totally confused.</p>
-		<p>I decided to sort out the ACK number issue, but ended up asking my friends for help. It turned out this was well documented in <code class="language-plaintext highlighter-rouge">tcpdump(8)</code>:</p>
-		<blockquote>
-			<p><code class="language-plaintext highlighter-rouge">-S</code><br />
-				<code class="language-plaintext highlighter-rouge">--absolute-tcp-sequence-numbers</code><br />
-				Print absolute, rather than relative, TCP sequence numbers.</p>
-		</blockquote>
-		<p>This certainly came out unexpected, but at least I was assured there was nothing wrong with the ACK numbers.</p>
-		<p>Up to now, that’s one more step forward, and a small conclusion:</p>
-		<ul>
-			<li>At the point the RST packet reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, it was already <code class="language-plaintext highlighter-rouge">--ctstate INVALID</code>.</li>
-		</ul>
-		<p>But how? As far as I knew, when the RST packet came out, it should still be considered part of the connection, and thus should be <code class="language-plaintext highlighter-rouge">--ctstate ESTABLISHED</code>. I was still missing something.</p>
-		<p>Time to investigate conntrack.</p>
-		<h2 id="conntrack">Inspecting conntrack</h2>
-		<p><code class="language-plaintext highlighter-rouge">conntrack</code> is the tool to inspect and modify conntrack entries. I ran <code class="language-plaintext highlighter-rouge">conntrack -L</code> to list all entries, only to realize it’s inefficient. So instead, I ran <code class="language-plaintext highlighter-rouge">conntrack -E</code> to watch for “events” in real time, so that I could compare the output with <code class="language-plaintext highlighter-rouge">tcpdump</code>. Except that the entire connection concluded so quickly that I couldn’t identify anything.</p>
-		<p>I had to add artificial delays to the packets to clearly separate each hop that the RST packet goes through:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>tc qdisc add dev tap811i0 root netem delay 200ms
+	</div>
+	<p><img src="/image/pve-firewall/fw-diagram-3.png" alt="Diagram" /></p>
+	<p>This time <code class="language-plaintext highlighter-rouge">fwbr811i0</code> was missing, and the RST packet didn’t get dropped at <code class="language-plaintext highlighter-rouge">vmbr0</code>. I was left totally confused.</p>
+	<p>I decided to sort out the ACK number issue, but ended up asking my friends for help. It turned out this was well documented in <code class="language-plaintext highlighter-rouge">tcpdump(8)</code>:</p>
+	<blockquote>
+		<p><code class="language-plaintext highlighter-rouge">-S</code><br />
+			<code class="language-plaintext highlighter-rouge">--absolute-tcp-sequence-numbers</code><br />
+			Print absolute, rather than relative, TCP sequence numbers.</p>
+	</blockquote>
+	<p>This certainly came out unexpected, but at least I was assured there was nothing wrong with the ACK numbers.</p>
+	<p>Up to now, that’s one more step forward, and a small conclusion:</p>
+	<ul>
+		<li>At the point the RST packet reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, it was already <code class="language-plaintext highlighter-rouge">--ctstate INVALID</code>.</li>
+	</ul>
+	<p>But how? As far as I knew, when the RST packet came out, it should still be considered part of the connection, and thus should be <code class="language-plaintext highlighter-rouge">--ctstate ESTABLISHED</code>. I was still missing something.</p>
+	<p>Time to investigate conntrack.</p>
+	<h2 id="conntrack">Inspecting conntrack</h2>
+	<p><code class="language-plaintext highlighter-rouge">conntrack</code> is the tool to inspect and modify conntrack entries. I ran <code class="language-plaintext highlighter-rouge">conntrack -L</code> to list all entries, only to realize it’s inefficient. So instead, I ran <code class="language-plaintext highlighter-rouge">conntrack -E</code> to watch for “events” in real time, so that I could compare the output with <code class="language-plaintext highlighter-rouge">tcpdump</code>. Except that the entire connection concluded so quickly that I couldn’t identify anything.</p>
+	<p>I had to add artificial delays to the packets to clearly separate each hop that the RST packet goes through:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>tc qdisc add dev tap811i0 root netem delay 200ms
 tc qdisc add dev fwln811i0 root netem delay 200ms
 </code></pre>
-			</div>
 		</div>
-		<p>I also tuned the output on both sides to show the timestamp in a consistent format. For conntrack, <code class="language-plaintext highlighter-rouge">-o timestamp</code> produced Unix timestamps (which is the only supported format), so for <code class="language-plaintext highlighter-rouge">tcpdump</code> I also resorted to <code class="language-plaintext highlighter-rouge">-tt</code> to show Unix timestamps as well.</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>conntrack <span class="nt">-E</span> <span class="nt">-o</span> timestamp <span class="nt">-s</span> 172.31.0.2 <span class="nt">-d</span> 172.31.1.11
+	</div>
+	<p>I also tuned the output on both sides to show the timestamp in a consistent format. For conntrack, <code class="language-plaintext highlighter-rouge">-o timestamp</code> produced Unix timestamps (which is the only supported format), so for <code class="language-plaintext highlighter-rouge">tcpdump</code> I also resorted to <code class="language-plaintext highlighter-rouge">-tt</code> to show Unix timestamps as well.</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>conntrack <span class="nt">-E</span> <span class="nt">-o</span> timestamp <span class="nt">-s</span> 172.31.0.2 <span class="nt">-d</span> 172.31.1.11
 tcpdump <span class="nt">-ttSni</span> any host 172.31.0.2 and host 172.31.1.11 and tcp
 </code></pre>
-			</div>
 		</div>
-		<p>Now I could watch the outputs on two separate tmux panes. The problem immediately emerged (blank lines added for readability):</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
+	</div>
+	<p>Now I could watch the outputs on two separate tmux panes. The problem immediately emerged (blank lines added for readability):</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 262144 bytes
 1696412047.886575 veth101i1 P   IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
 1696412047.886592 fwln101i1 Out IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
 1696412047.886594 fwpr101p1 P   IP 172.31.0.2.47066 &gt; 172.31.1.11.80: Flags [S]
@@ -347,40 +407,40 @@ tcpdump <span class="nt">-ttSni</span> any host 172.31.0.2 and host 172.31.1.11 
 1696412048.286930 fwpr811p0 P   IP 172.31.1.11.80 &gt; 172.31.0.2.47066: Flags [R.]
 ^C
 </code></pre>
-			</div>
 		</div>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>[1696412047.886657]         [NEW] tcp      6 120 SYN_SENT src=172.31.0.2 dst=172.31.1.11 sport=47066 dport=80 [UNREPLIED] src=172.31.1.11 dst=172.31.0.2 sport=80 dport=47066
+	</div>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>[1696412047.886657]         [NEW] tcp      6 120 SYN_SENT src=172.31.0.2 dst=172.31.1.11 sport=47066 dport=80 [UNREPLIED] src=172.31.1.11 dst=172.31.0.2 sport=80 dport=47066
 [1696412048.086899]     [DESTROY] tcp      6 119 CLOSE src=172.31.0.2 dst=172.31.1.11 sport=47066 dport=80 [UNREPLIED] src=172.31.1.11 dst=172.31.0.2 sport=80 dport=47066
 </code></pre>
-			</div>
 		</div>
-		<p>The artificial delays and the timestamps were absolutely useful: It was clear that the corresponding conntrack connection was destroyed as soon as the RST packet passed through <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, before it came out via <code class="language-plaintext highlighter-rouge">fwln811i0</code>. When it reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, the connection was already gone, and the RST packet was considered invalid.</p>
-		<p><img src="/image/pve-firewall/fw-diagram-4.png" alt="Diagram" /></p>
-		<p>It also became explainable how <code class="language-plaintext highlighter-rouge">firewall=0</code> on the virtual network device remedied the issue: It removed an extra bridge <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, so the connection stayed alive when the RST packet reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, at which point a previous rule for <code class="language-plaintext highlighter-rouge">--ctstate ESTABLISHED</code> gave an <code class="language-plaintext highlighter-rouge">ACCEPT</code> verdict. While it was still <code class="language-plaintext highlighter-rouge">INVALID</code> when passing through <code class="language-plaintext highlighter-rouge">fwbr101i1</code>, there was no rule concerning <code class="language-plaintext highlighter-rouge">--ctstate</code> at play, so it slipped through this stage with no problem.</p>
-		<p>After double-checking the intention of the extra <code class="language-plaintext highlighter-rouge">fwbr*</code> bridge, I drew the conclusion that <strong>this must be a bug with PVE Firewall</strong>. I reported it on the Proxmox VE bug tracker as <a href="https://bugzilla.proxmox.com/show_bug.cgi?id=4983">#4983</a>, and soon received a reply:</p>
-		<blockquote>
-			<p>Thank you for the detailed write-up!</p>
-			<p>This is a known limitation for our kind of firewall setup, since the conntrack is shared between all interfaces on the host.</p>
-			<p>[…]</p>
-			<p>If you know of any other way to avoid this happening, other than using conntrack zones, I’d be happy to take a look.</p>
-		</blockquote>
-		<p>So they admitted that this was a limitation but without a satisfactory solution. Guess I’m still on my own, though.</p>
-		<h2 id="solution">Finding the solution</h2>
-		<p>The actual problem is, when passing through <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, the RST packet isn’t supposed to be processed by conntrack by then. There is no <code class="language-plaintext highlighter-rouge">sysctl</code> option to disable conntrack on a specific interface (or even just all bridges altogether), but at the right time the rarely-used <code class="language-plaintext highlighter-rouge">raw</code> table came to my mind. It didn’t take long to work this out:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>iptables <span class="nt">-t</span> raw <span class="nt">-A</span> PREROUTING <span class="nt">-i</span> fwbr+ <span class="nt">-j</span> CT <span class="nt">--notrack</span>
+	</div>
+	<p>The artificial delays and the timestamps were absolutely useful: It was clear that the corresponding conntrack connection was destroyed as soon as the RST packet passed through <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, before it came out via <code class="language-plaintext highlighter-rouge">fwln811i0</code>. When it reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, the connection was already gone, and the RST packet was considered invalid.</p>
+	<p><img src="/image/pve-firewall/fw-diagram-4.png" alt="Diagram" /></p>
+	<p>It also became explainable how <code class="language-plaintext highlighter-rouge">firewall=0</code> on the virtual network device remedied the issue: It removed an extra bridge <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, so the connection stayed alive when the RST packet reached <code class="language-plaintext highlighter-rouge">vmbr0</code>, at which point a previous rule for <code class="language-plaintext highlighter-rouge">--ctstate ESTABLISHED</code> gave an <code class="language-plaintext highlighter-rouge">ACCEPT</code> verdict. While it was still <code class="language-plaintext highlighter-rouge">INVALID</code> when passing through <code class="language-plaintext highlighter-rouge">fwbr101i1</code>, there was no rule concerning <code class="language-plaintext highlighter-rouge">--ctstate</code> at play, so it slipped through this stage with no problem.</p>
+	<p>After double-checking the intention of the extra <code class="language-plaintext highlighter-rouge">fwbr*</code> bridge, I drew the conclusion that <strong>this must be a bug with PVE Firewall</strong>. I reported it on the Proxmox VE bug tracker as <a href="https://bugzilla.proxmox.com/show_bug.cgi?id=4983">#4983</a>, and soon received a reply:</p>
+	<blockquote>
+		<p>Thank you for the detailed write-up!</p>
+		<p>This is a known limitation for our kind of firewall setup, since the conntrack is shared between all interfaces on the host.</p>
+		<p>[…]</p>
+		<p>If you know of any other way to avoid this happening, other than using conntrack zones, I’d be happy to take a look.</p>
+	</blockquote>
+	<p>So they admitted that this was a limitation but without a satisfactory solution. Guess I’m still on my own, though.</p>
+	<h2 id="solution">Finding the solution</h2>
+	<p>The actual problem is, when passing through <code class="language-plaintext highlighter-rouge">fwbr811i0</code>, the RST packet isn’t supposed to be processed by conntrack by then. There is no <code class="language-plaintext highlighter-rouge">sysctl</code> option to disable conntrack on a specific interface (or even just all bridges altogether), but at the right time the rarely-used <code class="language-plaintext highlighter-rouge">raw</code> table came to my mind. It didn’t take long to work this out:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>iptables <span class="nt">-t</span> raw <span class="nt">-A</span> PREROUTING <span class="nt">-i</span> fwbr+ <span class="nt">-j</span> CT <span class="nt">--notrack</span>
 </code></pre>
-			</div>
 		</div>
-		<p>After verifying this is the intended solution, I added it as a reply to the bug report. At the time of writing this blog post, the bug report is still open, but I’m sure it’s to be resolved soon.</p>
-		<h2 id="conclusion">Conclusion</h2>
-		<p>Debugging Linux networking has always been a pain for its lack of proper tools and its complexity. Most of the times even reading and understanding packet captures requires immense knowledge of the protocols and all the involved components, as well as scrutinizing every single detail available. Sometimes it’s even necessary to think outside the box but fortunately not today.</p>
-		<p>Also worth mentioning is that it’s easy to suspect the fault of another piece of software, but detailed investigation is always necessary to actually lay the blame.</p>
-		<p>Just as a late reminder, useful bug reports always require detailed information and solid evidence. Glad I was able to have them at hand this time.</p>
-		]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><category term="proxmox-ve" /><summary type="html"><![CDATA[A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.]]></summary></entry><entry><title type="html">Running a dual-protocol OpenVPN/WireGuard VPN server on one port</title><link href="https://ibug.io/blog/2023/09/dual-protocol-vpn-port/" rel="alternate" type="text/html" title="Running a dual-protocol OpenVPN/WireGuard VPN server on one port" /><published>2023-09-26T00:00:00+00:00</published><updated>2023-09-26T14:26:49+00:00</updated><id>https://ibug.io/blog/2023/09/dual-protocol-vpn-port</id><content type="html" xml:base="https://ibug.io/blog/2023/09/dual-protocol-vpn-port/"><![CDATA[<p>Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.</p>
+	</div>
+	<p>After verifying this is the intended solution, I added it as a reply to the bug report. At the time of writing this blog post, the bug report is still open, but I’m sure it’s to be resolved soon.</p>
+	<h2 id="conclusion">Conclusion</h2>
+	<p>Debugging Linux networking has always been a pain for its lack of proper tools and its complexity. Most of the times even reading and understanding packet captures requires immense knowledge of the protocols and all the involved components, as well as scrutinizing every single detail available. Sometimes it’s even necessary to think outside the box but fortunately not today.</p>
+	<p>Also worth mentioning is that it’s easy to suspect the fault of another piece of software, but detailed investigation is always necessary to actually lay the blame.</p>
+	<p>Just as a late reminder, useful bug reports always require detailed information and solid evidence. Glad I was able to have them at hand this time.</p>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><category term="proxmox-ve" /><summary type="html"><![CDATA[A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.]]></summary></entry><entry><title type="html">Running a dual-protocol OpenVPN/WireGuard VPN server on one port</title><link href="https://ibug.io/blog/2023/09/dual-protocol-vpn-port/" rel="alternate" type="text/html" title="Running a dual-protocol OpenVPN/WireGuard VPN server on one port" /><published>2023-09-26T00:00:00+00:00</published><updated>2023-09-26T14:26:49+00:00</updated><id>https://ibug.io/blog/2023/09/dual-protocol-vpn-port</id><content type="html" xml:base="https://ibug.io/blog/2023/09/dual-protocol-vpn-port/"><![CDATA[<p>Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.</p>
 	<p>In previous times, OpenVPN was the general preference for personal VPN services. Since the emergence of WireGuard, however, popularity has shifted significantly for its simplicity and performance. A challenge presents itself as there’s only one UDP port numbered 53, making it seemingly impossible to run both OpenVPN and WireGuard on the same port.</p>
 	<p>There solution hinges itself on a little bit of insights.</p>
 	<h2 id="inspiration">Inspiration</h2>
@@ -436,7 +496,7 @@ COMMIT
 	</ul>
 	<p>For IPv6, you just need to increase the offset by 20 (IPv6 header is 40 bytes), so the rule becomes <code class="language-plaintext highlighter-rouge">45 &amp; 0xFF = 1:4 &amp;&amp; 48 &amp; 0xFFFFFF = 0</code>.</p>
 	<p>This VPN server is running like a hearse so proofs are left out for brevity.</p>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.]]></summary></entry><entry><title type="html">Vlab 远程教学云桌面</title><link href="https://ibug.io/blog/2023/08/nju-talk/" rel="alternate" type="text/html" title="Vlab 远程教学云桌面" /><published>2023-08-19T00:00:00+00:00</published><updated>2023-08-19T13:50:40+00:00</updated><id>https://ibug.io/blog/2023/08/nju-talk</id><content type="html" xml:base="https://ibug.io/blog/2023/08/nju-talk/"><![CDATA[<section id="title">
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.]]></summary></entry><entry><title type="html">Vlab 远程教学云桌面</title><link href="https://ibug.io/blog/2023/08/nju-talk/" rel="alternate" type="text/html" title="Vlab 远程教学云桌面" /><published>2023-08-19T00:00:00+00:00</published><updated>2024-01-08T04:40:54+00:00</updated><id>https://ibug.io/blog/2023/08/nju-talk</id><content type="html" xml:base="https://ibug.io/blog/2023/08/nju-talk/"><![CDATA[<section id="title">
 		<h1 class="title">Vlab<br>
 			远程教学云桌面</h1>
 		<p class="date">iBug @ USTC</p>
@@ -825,7 +885,7 @@ Failed to write VG test.</code></pre>
 		<h1>谢谢！</h1>
 		<p><small>本页面的链接：<a href="https://ibug.io/p/59"><i class="fas fa-fw fa-link"></i> ibug.io/p/59</a></small></p>
 	</section>
-	]]></content><author><name>iBug</name></author><category term="tags" /><category term="tags" /></entry><entry><title type="html">Prolonging eMMC Life Span with Proxmox VE</title><link href="https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/" rel="alternate" type="text/html" title="Prolonging eMMC Life Span with Proxmox VE" /><published>2023-07-15T00:00:00+00:00</published><updated>2023-07-15T20:32:06+00:00</updated><id>https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve</id><content type="html" xml:base="https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/"><![CDATA[<p>Since my blog on <a href="/p/49">installing Proxmox VE on eMMC</a>, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, as eMMCs typically do not offer the level of endurance as anything better than USB flash drives. Among many concerns, the most important one is the limited number of write cycles that an eMMC can sustain, while Proxmox VE, being an enterprise-grade product, has to constantly write stuff like logs to the storage. I came across <a href="https://fat-nerds.com/dot-nerd/cut-down-proxmox-ve-emmc-sd-read-write/">this blog (fat-nerds.com)</a> on reducing eMMC writes on a Proxmox VE installation on a single-board computer from a Hong Kong guy, so I figure I’d share my ideas here.</p>
+	]]></content><author><name>iBug</name></author></entry><entry><title type="html">Prolonging eMMC Life Span with Proxmox VE</title><link href="https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/" rel="alternate" type="text/html" title="Prolonging eMMC Life Span with Proxmox VE" /><published>2023-07-15T00:00:00+00:00</published><updated>2023-07-15T20:32:06+00:00</updated><id>https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve</id><content type="html" xml:base="https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/"><![CDATA[<p>Since my blog on <a href="/p/49">installing Proxmox VE on eMMC</a>, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, as eMMCs typically do not offer the level of endurance as anything better than USB flash drives. Among many concerns, the most important one is the limited number of write cycles that an eMMC can sustain, while Proxmox VE, being an enterprise-grade product, has to constantly write stuff like logs to the storage. I came across <a href="https://fat-nerds.com/dot-nerd/cut-down-proxmox-ve-emmc-sd-read-write/">this blog (fat-nerds.com)</a> on reducing eMMC writes on a Proxmox VE installation on a single-board computer from a Hong Kong guy, so I figure I’d share my ideas here.</p>
 	<p>This article will be a remix of the original blog, with some of my own experiences blended in.</p>
 	<p>As a courtesy, here’s the disclaimer from the original blog:</p>
 	<blockquote>
@@ -1614,99 +1674,4 @@ f.get_chunk(
 			<p>You need to rush a product to the market and do not care about data consistency or long-term engineering headaches.</p>
 		</li>
 	</ul>
-	]]></content><author><name>iBug</name></author><category term="paper-reading" /><summary type="html"><![CDATA[Paper reading for [CIDR 2022] Are You Sure You Want to Use MMAP in Your Database Management System? by Crotty et al.]]></summary></entry><entry><title type="html">LVM metadata exceeds maximum metadata size, now what next?</title><link href="https://ibug.io/blog/2022/06/lvm-metadata-full/" rel="alternate" type="text/html" title="LVM metadata exceeds maximum metadata size, now what next?" /><published>2022-06-19T00:00:00+00:00</published><updated>2022-06-19T22:06:07+00:00</updated><id>https://ibug.io/blog/2022/06/lvm-metadata-full</id><content type="html" xml:base="https://ibug.io/blog/2022/06/lvm-metadata-full/"><![CDATA[<p>An LVM volume group (VG) on our Proxmox VE cluster has failed to create new logical volumes, reporting that its metadata was full. At first this appears to be easy, “fine I’ll just add more space for metadata”, but it quickly revealed to be an versity to struggle through.</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>lvcreate <span class="nt">-L</span> 4M <span class="nt">-n</span> test-1721 <span class="nb">test</span>
-<span class="go">  VG test 1723 metadata on /dev/sdc1 (521759 bytes) exceeds maximum metadata size (521472 bytes)
-  Failed to write VG test.
-</span><span class="gp">root@iBug-Server:~#</span><span class="w"> </span><span class="c"># wut?</span>
-</code></pre>
-		</div>
-	</div>
-	<h2 id="problems">Problems</h2>
-	<p>It isn’t hard to imagine that, just like regular disks need a partition table, LVM also needs its “partition table”, called <em>LVM metadata</em>, to store its information about PVs, VGs and LVs. It grows with the complexity of a VG, like number of PVs and configuration of LVs.</p>
-	<p>The metadata size and capacity of a PV and a VG can be inspected with <code class="language-plaintext highlighter-rouge">pvdisplay</code> and <code class="language-plaintext highlighter-rouge">vgdisplay</code>, respectively.</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>pvdisplay <span class="nt">-C</span> <span class="nt">-o</span> name,mda_size,mda_free
-<span class="go">  PV         PMdaSize  PMdaFree
-  /dev/sdc1   1020.00k        0
-</span><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>vgdisplay <span class="nt">-C</span> <span class="nt">-o</span> name,mda_size,mda_free
-<span class="go">  VG   VMdaSize  VMdaFree
-  test  1020.00k        0
-</span></code></pre>
-		</div>
-	</div>
-	<p>The metadata area (whence <code class="language-plaintext highlighter-rouge">mda</code>) is where LVM stores volume information. The trouble comes from the fact that LVM MDA has multiple oddities going against intuition, which adds to the complexity of findin a solution.</p>
-	<h3 id="1-metadata-is-an-ambiguous-term">1. “Metadata” is an ambiguous term</h3>
-	<p>If you just go ahead and search for “LVM metadata size”, you’ll be surprised to see how irrelevant the search results are. In fact, they’re about “thin pool metadata”, which is a discrete LV usually named <code class="language-plaintext highlighter-rouge">poolname_tmeta</code>.</p>
-	<p>In fact, the correct answer is in the man page, which should show up as the first Google result, <a href="https://man7.org/linux/man-pages/man8/pvcreate.8.html"><code class="language-plaintext highlighter-rouge">pvcreate(8)</code></a>. This is where I discovered the use of <code class="language-plaintext highlighter-rouge">pvs</code> and <code class="language-plaintext highlighter-rouge">vgs</code> to get the sizes.</p>
-	<h3 id="2-the-default-mda-size-is-fixed">2. The default MDA size is fixed</h3>
-	<p>Contrary to common expectations, the default value for MDA size is <em>fixed</em> and does not scale with PV size or VG size. This is explained in the man page, right above <code class="language-plaintext highlighter-rouge">pvs -o mda_size</code>.</p>
-	<p>This is not the case, however, for LVM Thin Pools. It’s not known what the design considerations are behind this.</p>
-	<h3 id="3-the-size-of-the-mda-cannot-be-changed-after-creation">3. The size of the MDA cannot be changed after creation</h3>
-	<p>As many would probably have, I also thought that “fine, I’ll just expand the size for the MDA”, and started digging through Google and relevant man pages. Another quarter-hour was spent trying to find how to do this, only to find that it can only be set at the creation of the PV. This was confirmed by <a href="https://forum.proxmox.com/threads/cannot-create-more-snapshot-without-deleting-some-olds-one.110112/">this Proxmox forum post</a>.</p>
-	<h3 id="4-reducing-metadata-copies-does-not-free-up-space">4. Reducing “metadata copies” does not free up space</h3>
-	<p>There’s also a <code class="language-plaintext highlighter-rouge">pvmetadatacopies</code> option listed in both <code class="language-plaintext highlighter-rouge">vgchange(8)</code> and <code class="language-plaintext highlighter-rouge">pvchange(8)</code>, which appears tempting to give a try. Unfortunately, opposite to intuition again, this does not free up half of the MDA space. Setting it to 1 down from the default 2 produces no visible changes.</p>
-	<h2 id="finding-the-solution">Finding the solution</h2>
-	<p>At this point I had figured out a silhouette for the problem I was facing: A VG on a single PV, fixed MDA size, no room to free up any metadata.</p>
-	<p>Fortunately, the shared SAN target supports “overcommitting”, meaning I can have an extra LUN with little effort. Given that the utilized storage is slightly over 50%, it’s not possible to move data onto the new LUN. Even if there were enough free space, moving data would take an infeasible amount of time. Ideally this new LUN shouldn’t be too large, to minimize possible aftermath should the underlying disk group goes full.</p>
-	<p>So, how can this trouble be overcome, with the help of a new LUN?</p>
-	<hr />
-	<p>Digging into this level of details, Google is unable to help, so I had to resort to man pages, if I did not have to check the source codes.</p>
-	<p>Looking at <code class="language-plaintext highlighter-rouge">pvchange(8)</code>, the only modifiable property of an existing PV is <code class="language-plaintext highlighter-rouge">metadataignore</code>. It instructs LVM to ignore the MDA for a PV.</p>
-	<p>A possible solution has arisen: Create a new PV with large enough MDA, merge it into the VG, and disable metadata storage on the old PV.</p>
-	<h2 id="solution">Solution</h2>
-	<p>I created a new LUN in the storage server’s dashboard and loaded it onto all servers in the cluster using <code class="language-plaintext highlighter-rouge">iscsiadm</code>:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>iscsiadm <span class="nt">-m</span> session <span class="nt">--rescan</span>
-</code></pre>
-		</div>
-	</div>
-	<p>The rescan may have some delay so I continued monitoring it for a minute before <code class="language-plaintext highlighter-rouge">/dev/sdd</code> showed up on all hosts.</p>
-	<p>Now I turn the new block device into a PV and add it to the problematic VG:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>pvcreate <span class="nt">--metadatasize</span> 64m /dev/sdd
-vgextend <span class="nb">test</span> /dev/sdd
-</code></pre>
-		</div>
-	</div>
-	<p>Partly to my surprise, a warning popped up:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>VG <span class="nb">test </span>1723 metadata on /dev/sdc1 <span class="o">(</span>521615 bytes<span class="o">)</span> exceeds maximum metadata size <span class="o">(</span>521472 bytes<span class="o">)</span>
-WARNING: Failed to write an MDA of VG test.
-Volume group <span class="s2">"test"</span> successfully extended
-</code></pre>
-		</div>
-	</div>
-	<p>This one isn’t hard to understand: The VG metadata must record the identifiers of all participating PVs, so adding a PV means more metadata to be stored.</p>
-	<p>So before pulling this off, I had to remove a LV temporarily. I had a few laying around for testing purposes, so finding one to get rid of was not hard. After that I could repeat the <code class="language-plaintext highlighter-rouge">vgextend</code> command without a single warning.</p>
-	<p>Next I exclude the original PV from storing metadata:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>pvchange <span class="nt">--metadataignore</span> y /dev/sdc1
-</code></pre>
-		</div>
-	</div>
-	<p>Now I can add another LV inside this VG without error:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>lvcreate <span class="nt">-L</span> 1M <span class="nt">-n</span> test-1721 <span class="nb">test</span>
-<span class="go">  Rounding up size to full physical extent 4.00 MiB
-  Logical volume "test-1721" created.
-</span><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>pvs <span class="nt">-o</span> name,mda_size,mda_free
-<span class="go">  PV         PMdaSize  PMdaFree
-  /dev/sdc1   1020.00k        0
-  /dev/sdd     &lt;65.00m   &lt;32.00m
-</span></code></pre>
-		</div>
-	</div>
-	<h2 id="caveats">Caveats</h2>
-	<p>LVM by default stores an identical copy of the metadata on every PV that belongs to the same VG. Using this “solution”, the complete metadata is only stored on the newly created PV. You certainly want to use reliable storage for this new PV as it’s now a <a href="https://en.wikipedia.org/wiki/Single_point_of_failure">SPOF</a> of the whole VG.</p>
-	<p>If in any case you want a copy of the metadata for inspection or to recover a failed VG (hope you don’t need to do that), LVM maintains automatic backups under <code class="language-plaintext highlighter-rouge">/etc/lvm/backup</code>. They’re in their original form, are text-based (so easily readable), and are ready for use with <code class="language-plaintext highlighter-rouge">vgcfgrestore</code>.</p>
-	<p>Indeed, the recommended solution is to create a new, larger VG and migrate your data ASAP. After all, data security matters the most.</p>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><summary type="html"><![CDATA[An LVM volume group (VG) on our Proxmox VE cluster has failed to create new logical volumes, reporting that its metadata was full. At first this appears to be easy, “fine I’ll just add more space for metadata”, but it quickly revealed to be an versity to struggle through.]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="paper-reading" /><summary type="html"><![CDATA[Paper reading for [CIDR 2022] Are You Sure You Want to Use MMAP in Your Database Management System? by Crotty et al.]]></summary></entry></feed>

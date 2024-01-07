@@ -310,7 +310,7 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2023/08/nju-talk/</loc>
-			<lastmod>2023-08-19T13:50:40+00:00</lastmod>
+			<lastmod>2024-01-08T04:40:54+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2023/09/dual-protocol-vpn-port/</loc>
@@ -323,6 +323,10 @@
 		<url>
 			<loc>https://ibug.io/blog/2023/10/zfs-block-size/</loc>
 			<lastmod>2023-10-30T02:58:51+00:00</lastmod>
+		</url>
+		<url>
+			<loc>https://ibug.io/blog/2024/01/weather-forecast-with-grafana/</loc>
+			<lastmod>2024-01-08T04:40:54+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/project/OJSandbox/</loc>
@@ -401,6 +405,9 @@
 			<loc>https://ibug.io/year/2023/</loc>
 		</url>
 		<url>
+			<loc>https://ibug.io/year/2024/</loc>
+		</url>
+		<url>
 			<loc>https://ibug.io/blog/</loc>
 			<lastmod>2021-02-26T00:17:56+00:00</lastmod>
 		</url>
@@ -430,6 +437,10 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/8/</loc>
+			<lastmod>2021-02-26T00:17:56+00:00</lastmod>
+		</url>
+		<url>
+			<loc>https://ibug.io/blog/9/</loc>
 			<lastmod>2021-02-26T00:17:56+00:00</lastmod>
 		</url>
 		<url>
@@ -532,9 +543,6 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/tag/minecraft/</loc>
-		</url>
-		<url>
-			<loc>https://ibug.io/tag/tags/</loc>
 		</url>
 		<url>
 			<loc>https://ibug.io/tag/zfs/</loc>
