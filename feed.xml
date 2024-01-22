@@ -1,87 +1,258 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-01-20T19:51:22+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Visualizing Weather Forecast with Grafana</title><link href="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/" rel="alternate" type="text/html" title="Visualizing Weather Forecast with Grafana" /><published>2024-01-08T00:00:00+00:00</published><updated>2024-01-08T04:40:54+00:00</updated><id>https://ibug.io/blog/2024/01/weather-forecast-with-grafana</id><content type="html" xml:base="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/"><![CDATA[<p>Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get it to work as a weather forecast dashboard, instead of any historical time-series data.</p>
-			<p>I choose <a href="https://open.caiyunapp.com/%E5%BD%A9%E4%BA%91%E5%A4%A9%E6%B0%94_API_%E4%B8%80%E8%A7%88%E8%A1%A8">CaiYun Weather (彩云天气) API</a> for having previous experience with it, as well as its unlimited free tier. I must admit that I initially came up with this idea for having seen the presence of <a href="https://grafana.com/grafana/plugins/marcusolsson-json-datasource/">JSON API datasource plugin</a> for Grafana, which reminds me of CaiYun’s JSON API being a perfect fit.</p>
-			<h2 id="json-api-datasource">JSON API Datasource</h2>
-			<p>Configuring the datasource seems easy at first, like just inserting the URL and configure HTTP headers as needed. Since CY’s API puts the API key in the URL path, there’s no headers to configure. So I can just put a single URL and save it.</p>
-			<div class="language-shell highlighter-rouge">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-01-22T22:01:10+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Understanding request limiting in Nginx</title><link href="https://ibug.io/blog/2024/01/nginx-limit-req/" rel="alternate" type="text/html" title="Understanding request limiting in Nginx" /><published>2024-01-23T00:00:00+00:00</published><updated>2024-01-23T06:00:45+00:00</updated><id>https://ibug.io/blog/2024/01/nginx-limit-req</id><content type="html" xml:base="https://ibug.io/blog/2024/01/nginx-limit-req/"><![CDATA[<p>Nginx has a built-in module <code class="language-plaintext highlighter-rouge">limit_req</code> for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.</p>
+			<p>As always, everything begins with <a href="https://nginx.org/en/docs/http/ngx_http_limit_req_module.html">the documentation</a>. A quick-start example is given:</p>
+			<div class="language-nginx highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code>https://api.caiyunapp.com/v2.5/TAkhjf8d1nlSlspN/121.6544,25.1552/hourly.json
+					<pre class="highlight"><code><span class="k">http</span> <span class="p">{</span>
+    <span class="kn">limit_req_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=one:10m</span> <span class="s">rate=1r/s</span><span class="p">;</span>
+
+    <span class="kn">...</span>
+
+    <span class="s">server</span> <span class="p">{</span>
+
+        <span class="kn">...</span>
+
+        <span class="s">location</span> <span class="n">/search/</span> <span class="p">{</span>
+            <span class="kn">limit_req</span> <span class="s">zone=one</span> <span class="s">burst=5</span><span class="p">;</span>
+        <span class="p">}</span>
 </code></pre>
 				</div>
 			</div>
-			<p>I choose the hourly API so I can have forecast for the upcoming 48 hours.</p>
-			<p>So far this is a readily available datasource that I can query. But after reviewing the <a href="https://grafana.github.io/grafana-json-datasource/query-editor">JSON query editor</a>, I decided to chop off the last segments of the URL and leave just the part up to the API key:</p>
-			<div class="language-shell highlighter-rouge">
+			<p>The basis is the <code class="language-plaintext highlighter-rouge">limit_req_zone</code> directive, which defines a shared memory zone for storing the states of the rate-limiting. Its arguments include the key, the size and the name of the zone, followed by the average or sustained rate limit. The rate limit has two possible units: <code class="language-plaintext highlighter-rouge">r/s</code> or <code class="language-plaintext highlighter-rouge">r/m</code>. It also says</p>
+			<blockquote>
+				<p>The limitation is done using the “<a href="https://en.wikipedia.org/wiki/Leaky_bucket">leaky bucket</a>” method.</p>
+			</blockquote>
+			<p>So far so good, except the burst limit is … specified on where it’s used? Moving on for now.</p>
+			<p>The <code class="language-plaintext highlighter-rouge">limit_req</code> directive specifies when the requests should be limited.</p>
+			<blockquote>
+				<p>If the requests rate exceeds the rate configured for a zone, their processing is delayed such that requests are processed at a defined rate.</p>
+			</blockquote>
+			<p>Seems pretty clear but slightly counter-intuitive. By default, burst requests are queued up and delayed until the rate is below the limit, whereas most common rate-limiting implementations would simply serve them.</p>
+			<p>I find it easier to understand this model with a queue. Each key defines a queue where items are popped at the specified rate (e.g. <code class="language-plaintext highlighter-rouge">1r/s</code>). Incoming requests are added to the queue, and are only served <em>upon exiting</em> the queue. The queue size is defined by the burst limit, and excess requests are dropped when the queue is full.</p>
+			<p><img src="/image/server/nginx-limit-req.png" alt="Default queue behavior" /></p>
+			<p>The more common behavior, however, requires an extra option:</p>
+			<blockquote>
+				<p>If delaying of excessive requests while requests are being limited is not desired, the parameter <code class="language-plaintext highlighter-rouge">nodelay</code> should be used:</p>
+				<div class="language-nginx highlighter-rouge">
+					<div class="highlight">
+						<pre class="highlight"><code><span class="k">limit_req</span> <span class="s">zone=one</span> <span class="s">burst=5</span> <span class="s">nodelay</span><span class="p">;</span>
+</code></pre>
+					</div>
+  </div>
+			</blockquote>
+			<p>With <code class="language-plaintext highlighter-rouge">nodelay</code>, requests are served as soon as they <em>enter the queue</em>:</p>
+			<p><img src="/image/server/nginx-limit-req-nodelay.png" alt="nodelay queue behavior" /></p>
+			<p>The next confusing option, conflicting with <code class="language-plaintext highlighter-rouge">nodelay</code>, is <code class="language-plaintext highlighter-rouge">delay</code>:</p>
+			<blockquote>
+				<p>The <code class="language-plaintext highlighter-rouge">delay</code> parameter specifies a limit at which excessive requests become delayed. Default value is zero, i.e. all excessive requests are delayed.</p>
+			</blockquote>
+			<p>After a bit of fiddling, I realized the model is now like this:</p>
+			<p><img src="/image/server/nginx-limit-req-delay.png" alt="delay queue behavior" /></p>
+			<p>So what <code class="language-plaintext highlighter-rouge">delay</code> actually means is to delay requests after this “delay limit” is reached. In other words, requests are served as soon as they arrive at the n-th position in the front of the queue.</p>
+			<p>During all these testing, I wasn’t happy with existing tools for testing, so I wrote my own one, despite its simplicity: <a href="https://gist.github.com/iBug/351b458633ff89fea0fc9f0edd07fc28">GitHub Gist</a>.</p>
+			<p>With this new tool, I can now (textually) visualize the behavior of different options. Under the <code class="language-plaintext highlighter-rouge">burst=5</code> and <code class="language-plaintext highlighter-rouge">delay=1</code> setup, the output is like this:</p>
+			<div class="language-console highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code>https://api.caiyunapp.com/v2.5/TAkhjf8d1nlSlspN/
+					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/test
+<span class="go">[1] Done [0s] [200 in 2ms]
+[2] Done [10ms] [200 in 1ms]
+[3] Done [21ms] [200 in 981ms]
+[4] Done [31ms] [200 in 1.972s]
+[5] Done [42ms] [200 in 2.962s]
+[6] Done [53ms] [200 in 3.948s]
+[7] Done [64ms] [503 in 0s]
+[8] Done [75ms] [503 in 1ms]
+[9] Done [85ms] [503 in 0s]
+[10] Done [95ms] [503 in 0s]
+</span></code></pre>
+				</div>
+			</div>
+			<p>If you try the tool yourself, the HTTP status codes are colored for even better prominence.</p>
+			<p>In the above example, the first request is served immediately as it also exits the queue immediately. The second request is queued at the front, and because <code class="language-plaintext highlighter-rouge">delay=1</code>, it’s also served immediately. Subsequent requests are queued up until the sixth when the queue becomes full. The seventh and thereafter are dropped.</p>
+			<p>If we change <code class="language-plaintext highlighter-rouge">delay=0</code>, the output becomes:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/test
+<span class="go">[1] Done [0s] [200 in 2ms]
+[2] Done [10ms] [200 in 993ms]
+[3] Done [21ms] [200 in 1.982s]
+[4] Done [32ms] [200 in 2.973s]
+[5] Done [43ms] [200 in 3.959s]
+[6] Done [54ms] [200 in 4.949s]
+[7] Done [65ms] [503 in 1ms]
+[8] Done [75ms] [503 in 1ms]
+[9] Done [85ms] [503 in 2ms]
+[10] Done [96ms] [503 in 1ms]
+</span></code></pre>
+				</div>
+			</div>
+			<p>Still only the first 6 requests are served, but the 2nd to the 6th are delayed by an additional second due to the removal of <code class="language-plaintext highlighter-rouge">delay=1</code>.</p>
+			<p>Under this model, the <code class="language-plaintext highlighter-rouge">nodelay</code> option can be understood as <code class="language-plaintext highlighter-rouge">delay=infinity</code>, while still respecting the <code class="language-plaintext highlighter-rouge">burst</code> limit.</p>
+			<p>One last question: Why is the burst limit specified at use time, instead of at zone definition? Only experiments can find out:</p>
+			<div class="language-nginx highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="k">location</span> <span class="n">/a</span> <span class="p">{</span>
+    <span class="kn">limit_req</span> <span class="s">zone=test</span> <span class="s">burst=1</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">location</span> <span class="n">/b</span> <span class="p">{</span>
+    <span class="kn">limit_req</span> <span class="s">zone=test</span> <span class="s">burst=5</span><span class="p">;</span>
+<span class="p">}</span>
 </code></pre>
 				</div>
 			</div>
-			<p>The point here is, the query editor allows specifying an extra Path, which appears to be concatenated with this URL in the datasource configuration. Notably, I can then put the coordinates in a variable, use it in the query, and build a single dashboard for many cities.</p>
-			<h2 id="dashboard-variables">Dashboard variables</h2>
-			<p>Now that I have the query format planned, I can add a dashboard variable for selecting cities.</p>
-			<p>First things first, since I’m going to use the same datasource for all panels, I first add a variable for the datasource and restrict it to “CaiYun Weather”:</p>
-			<p><img src="/image/grafana/dashboard-variable-datasource.png" alt="Datasource variable" /></p>
-			<p>Then I add a variable <code class="language-plaintext highlighter-rouge">$location</code> for the city name, and provide it with a list of cities I want to show. The variable type would be “Custom” since this is just a human-maintained list. There certainly are better ways like using a relational database or an external API, making it easier to update, but for now I’d like to keep it simple.</p>
-			<div class="language-text highlighter-rouge">
+			<p>Then I fire up two simultaneous batches of 10 requests each to <code class="language-plaintext highlighter-rouge">/a</code> and <code class="language-plaintext highlighter-rouge">/b</code> respectively:</p>
+			<div class="language-console highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code>Beijing : 116.4074\,39.9042,Shanghai : 121.4691\,31.2243,Guangzhou : 113.2644\,23.1291,Shenzhen : 114.0596\,22.5429
-</code></pre>
+					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/a
+<span class="go">[1] Done [0s] [200 in 2ms]
+[2] Done [10ms] [200 in 992ms]
+[3] Done [21ms] [503 in 0s]
+[4] Done [32ms] [503 in 0s]
+[5] Done [42ms] [503 in 0s]
+[6] Done [53ms] [503 in 0s]
+[7] Done [63ms] [503 in 0s]
+[8] Done [73ms] [503 in 0s]
+[9] Done [83ms] [503 in 0s]
+[10] Done [94ms] [503 in 0s]
+</span></code></pre>
 				</div>
 			</div>
-			<h2 id="panels">Panels</h2>
-			<p>First and foremost, the most intuitive metric to show is temperature. I add a time series panel and configure it to graph the temperature. Start by building the query:</p>
-			<ul>
-				<li>Datasource: Select <code class="language-plaintext highlighter-rouge">${datasource}</code></li>
-				<li>Query A:
-					<ul>
-						<li>Path: <code class="language-plaintext highlighter-rouge">/${location}/hourly.json</code></li>
-						<li>Fields:
-							<ul>
-								<li>JSONPath: <code class="language-plaintext highlighter-rouge">$.result.hourly.temperature[*].value</code>, Type: <code class="language-plaintext highlighter-rouge">Number</code>, Alias: <code class="language-plaintext highlighter-rouge">${location:text}</code></li>
-								<li>JSONPath: <code class="language-plaintext highlighter-rouge">$.result.hourly.temperature[*].datetime</code>, Type: <code class="language-plaintext highlighter-rouge">Time</code></li>
-							</ul>
-						</li>
-					</ul>
-				</li>
-			</ul>
-			<p>I stumbled on getting the <em>time</em> series to display correctly. It wasn’t anywhere obvious in the documentation for the JSON API plugin, but a series with Type = Time is required. Fortunately, CY’s API returns the time in ISO 8601 format in the <code class="language-plaintext highlighter-rouge">datetime</code> field, so I can feed it directly to Grafana.</p>
-			<p>So far so good, except Grafana shows “No data”. I realized Grafana is trying to show past data, but apparently a weather forecast provides <em>future</em> data. I need to change the time range to “now” and “now + 48h”. Ideally, this time range is fixed and not affected by the time range selector, since after all it’s limited by the API.</p>
-			<p>This is another place where I spent half an hour on Google. The answer is “Relative time” in “Query options”. Its format, however, is again unintuitive. While <a href="https://community.grafana.com/t/how-to-give-different-time-ranges-for-grafana-panels-i-am-using-azure-monitor-as-data-source/80300">community posts</a> shows <code class="language-plaintext highlighter-rouge">1d</code> for “last 1 day” and the <a href="https://grafana.com/docs/grafana/latest/panels-visualizations/query-transform-data/">official docs</a> gives several examples on using <code class="language-plaintext highlighter-rouge">now</code>, none of them told me how to indicate “next 48 hours”. The answer is just <code class="language-plaintext highlighter-rouge">+48h</code> or <code class="language-plaintext highlighter-rouge">+2d</code>. Notably, entering <code class="language-plaintext highlighter-rouge">now+48h</code> would result in an error.</p>
-			<p>To make the graph look nicer, I set the unit to “°C”, limit decimals to 1, and set the Y-axis range to 0-40, and add a series of thresholds with colors to indicate the temperature range. Also worth mentioning is to make the graph change its color according to the temperature, so I set “Graph style → Gradient mode” to “Scheme” and “Standard options → Color scheme” to “From thresholds (by value)”.</p>
-			<p>Now this panel looks stunning.</p>
-			<p><img src="/image/grafana/caiyun-temperature-panel.png" alt="Temperature panel" /></p>
-			<h3 id="more-panels">More panels</h3>
-			<p>CY’s API offers a variety of weather data, so with little effort I can add more panels for humidity, precipitation and more, by duplicating the temperature panel and changing the query. I also need to change the unit and thresholds accordingly but that goes without saying.</p>
-			<p>There’s also a small piece worth displaying: A <code class="language-plaintext highlighter-rouge">description</code> text. It’s easy to put it in a “Stat” panel and display as “String” (instead of “Number”). And better yet, CY provides two descriptions: One for the next two hours, and one for the next two days. Two panels for two pieces of text, yeah.</p>
-			<p>One last thing I decided to leave out for now: The <code class="language-plaintext highlighter-rouge">skycon</code> field that describes the weather condition, like “CLEAR_DAY” or “RAIN”. It’d be comparably easy to add a panel for it, using “Value mapping” to change the text to something more human-readable, but I’m not at the high mood for it right now, so maybe I’ll pick it up later.</p>
-			<h2 id="results">Results</h2>
-			<p>Now I have a nice dashboard for viewing weather forecast for multiple cities:</p>
-			<p><img src="/image/grafana/caiyun-forecast-example.png" alt="Dashboard" /></p>
-			<p>If you’d like to try it yourself, I’ve published the dashboard on Grafana.com: <a href="https://grafana.com/grafana/dashboards/20259-weather-forecast/">Weather Forecast</a>. Just add the same datasource with your API key, and you can import my dashboard and start getting weather forecast for yourself.</p>
-			]]></content><author><name>iBug</name></author><category term="software" /><summary type="html"><![CDATA[Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get it to work as a weather forecast dashboard, instead of any historical time-series data.]]></summary></entry><entry><title type="html">Understanding ZFS block sizes</title><link href="https://ibug.io/blog/2023/10/zfs-block-size/" rel="alternate" type="text/html" title="Understanding ZFS block sizes" /><published>2023-10-30T00:00:00+00:00</published><updated>2023-10-30T02:58:51+00:00</updated><id>https://ibug.io/blog/2023/10/zfs-block-size</id><content type="html" xml:base="https://ibug.io/blog/2023/10/zfs-block-size/"><![CDATA[<p>ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.</p>
-		<p>We’ll begin with a slide from a ZFS talk from Lustre<sup id="fnref:dilger" role="doc-noteref"><a href="#fn:dilger" class="footnote" rel="footnote">1</a></sup> (page 5):</p>
-		<figure class="">
-			<img src="/image/zfs/zfs-io-stack.png" alt="ZFS I/O Stack" />
-			<figcaption>
-				Figure 1. ZFS I/O Stack
-			</figcaption>
-		</figure>
-		<!-- This article will focus on the topmost layer (ZPL and DMU) and the lowermost layer (vdev and disk sectors). -->
-		<h2 id="logical-blocks">Logical blocks</h2>
-		<p>The first thing to understand is that there are at least two levels of “block” concepts in ZFS. There’s “logical blocks” on an upper layer (DMU), and “physical blocks” on a lower layer (vdev). The latter is easier to understand and it’s almost synonymous to “disk sectors”. It’s precisely the <code class="language-plaintext highlighter-rouge">ashift</code> parameter in <code class="language-plaintext highlighter-rouge">zpool create</code> command and usually matches the physical sector size of your disks (4 KiB for modern disks). Once set, <code class="language-plaintext highlighter-rouge">ashift</code> is immutable and can only be changed when recreating the entire vdev array (fortunately not the entire pool<sup id="fnref:zfs101" role="doc-noteref"><a href="#fn:zfs101" class="footnote" rel="footnote">2</a></sup>). The “logical block”, however, is slightly more complicated, and beyond the expressibility of a few words. In short, it’s the smallest <em>meaningful</em> unit of data that ZFS can operate on, including reading, writing, checksumming, compression and deduplication.</p>
-		<h3 id="recordsize-and-volblocksize">“recordsize” and “volblocksize”</h3>
-		<p>You’ve probably seen <code class="language-plaintext highlighter-rouge">recordsize</code> being talked about extensively in ZFS tuning guides<sup id="fnref:tuning" role="doc-noteref"><a href="#fn:tuning" class="footnote" rel="footnote">3</a></sup>, which is already a great source of confusion. The default <code class="language-plaintext highlighter-rouge">recordsize</code> is 128 KiB, which controls the <em>maximum</em> size of a logical block. The <em>actual</em> block size depends on the file you’re writing:</p>
-		<ul>
-			<li>If the file is smaller than or equal to <code class="language-plaintext highlighter-rouge">recordsize</code>, it’s stored as a single logical block of its size, rounded up to the nearest multiple of 512 bytes.</li>
-			<li>If the file is larger than <code class="language-plaintext highlighter-rouge">recordsize</code>, it’s split into multiple logical blocks of <code class="language-plaintext highlighter-rouge">recordsize</code> each, with the last block being zero-padded to <code class="language-plaintext highlighter-rouge">recordsize</code>.</li>
-		</ul>
-		<p>As with other filesystems, if you change a small portion of a large file, only 128 KiB (or whatever your <code class="language-plaintext highlighter-rouge">recordsize</code> is) is rewritten, along with new metadata and checksums. Large <code class="language-plaintext highlighter-rouge">recordsize</code> bloats the read/write amplification for random I/O workloads, while small <code class="language-plaintext highlighter-rouge">recordsize</code> increases the fragmentation and metadata overhead for large files. Note that ZFS always validates checksums, so every read operation is done on an entire block, even if only a few bytes are requested. So it is important to align your <code class="language-plaintext highlighter-rouge">recordsize</code> with your workload, like using 16 KiB for (most) databases and 1 MiB for media files. The default 128 KiB is a good compromise for general-purpose workloads, and there certainly isn’t a one-size-fits-all solution. Also note that while <code class="language-plaintext highlighter-rouge">recordsize</code> can be changed on the fly, it only affects newly written data, and existing ones stay intact.</p>
-		<p>For ZVOLs, as you’d imagine, the rule is much simpler: Every block of <code class="language-plaintext highlighter-rouge">volblocksize</code> is a logical block, and it’s aligned to its own size. Since ZFS 2.2, the default <code class="language-plaintext highlighter-rouge">volblocksize</code> is 16 KiB, providing a good balance between performance and compatibility.</p>
-		<h3 id="compression">Compression</h3>
-		<p>Compression is applied on a per-block basis, and compressed data is not shared between blocks. This is best shown with an example:</p>
-		<div class="language-console highlighter-rouge">
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/b
+<span class="go">[1] Done [0s] [200 in 1.862s]
+[2] Done [11ms] [200 in 2.852s]
+[3] Done [21ms] [200 in 3.842s]
+[4] Done [32ms] [200 in 4.832s]
+[5] Done [43ms] [503 in 1ms]
+[6] Done [54ms] [503 in 0s]
+[7] Done [64ms] [503 in 0s]
+[8] Done [75ms] [503 in 1ms]
+[9] Done [85ms] [503 in 0s]
+[10] Done [95ms] [503 in 1ms]
+</span></code></pre>
+				</div>
+			</div>
+			<p>As can be seen from the output, the batch to <code class="language-plaintext highlighter-rouge">/a</code> is served as usual, but the batch to <code class="language-plaintext highlighter-rouge">/b</code> is significantly delayed, and two fewer requests are served.</p>
+			<p>If I reverse the order of sending the batches, the result is different again:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/b
+<span class="go">[1] Done [0s] [200 in 2ms]
+[2] Done [10ms] [200 in 993ms]
+[3] Done [20ms] [200 in 1.982s]
+[4] Done [31ms] [200 in 2.974s]
+[5] Done [42ms] [200 in 3.963s]
+[6] Done [52ms] [200 in 4.955s]
+[7] Done [63ms] [503 in 0s]
+[8] Done [74ms] [503 in 0s]
+[9] Done [84ms] [503 in 0s]
+[10] Done [95ms] [503 in 0s]
+</span></code></pre>
+				</div>
+			</div>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/a
+<span class="go">[1] Done [0s] [503 in 1ms]
+[2] Done [10ms] [503 in 1ms]
+[3] Done [20ms] [503 in 0s]
+[4] Done [31ms] [503 in 0s]
+[5] Done [42ms] [503 in 0s]
+[6] Done [52ms] [503 in 0s]
+[7] Done [63ms] [503 in 1ms]
+[8] Done [73ms] [503 in 0s]
+[9] Done [83ms] [503 in 0s]
+[10] Done [93ms] [503 in 0s]
+</span></code></pre>
+				</div>
+			</div>
+			<p>This time the batch to <code class="language-plaintext highlighter-rouge">/b</code> is served as usual, but the entire batch to <code class="language-plaintext highlighter-rouge">/a</code> is rejected.</p>
+			<p>I am now convinced that the queue itself is shared between <code class="language-plaintext highlighter-rouge">/a</code> and <code class="language-plaintext highlighter-rouge">/b</code>, and each <code class="language-plaintext highlighter-rouge">limit_req</code> directive decides for itself whether and when to serve the requests. So when <code class="language-plaintext highlighter-rouge">/a</code> is served first, the queue holds one burst request, and <code class="language-plaintext highlighter-rouge">/b</code> fills the queue up to 5 requests. When <code class="language-plaintext highlighter-rouge">/b</code> is served first, the queue is already holding 5 requests and leaves no room for <code class="language-plaintext highlighter-rouge">/a</code>. Similarly, with the <code class="language-plaintext highlighter-rouge">delay</code> option, each <code class="language-plaintext highlighter-rouge">limit_req</code> directive can still decide when the request is ready to serve.</p>
+			<p>This is probably not the most straightforward design, and I can’t come up with a use case for this behavior. But at least now I understand how it works.</p>
+			]]></content><author><name>iBug</name></author><category term="server" /><category term="nginx" /><summary type="html"><![CDATA[Nginx has a built-in module limit_req for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.]]></summary></entry><entry><title type="html">Visualizing Weather Forecast with Grafana</title><link href="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/" rel="alternate" type="text/html" title="Visualizing Weather Forecast with Grafana" /><published>2024-01-08T00:00:00+00:00</published><updated>2024-01-08T04:40:54+00:00</updated><id>https://ibug.io/blog/2024/01/weather-forecast-with-grafana</id><content type="html" xml:base="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/"><![CDATA[<p>Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get it to work as a weather forecast dashboard, instead of any historical time-series data.</p>
+		<p>I choose <a href="https://open.caiyunapp.com/%E5%BD%A9%E4%BA%91%E5%A4%A9%E6%B0%94_API_%E4%B8%80%E8%A7%88%E8%A1%A8">CaiYun Weather (彩云天气) API</a> for having previous experience with it, as well as its unlimited free tier. I must admit that I initially came up with this idea for having seen the presence of <a href="https://grafana.com/grafana/plugins/marcusolsson-json-datasource/">JSON API datasource plugin</a> for Grafana, which reminds me of CaiYun’s JSON API being a perfect fit.</p>
+		<h2 id="json-api-datasource">JSON API Datasource</h2>
+		<p>Configuring the datasource seems easy at first, like just inserting the URL and configure HTTP headers as needed. Since CY’s API puts the API key in the URL path, there’s no headers to configure. So I can just put a single URL and save it.</p>
+		<div class="language-shell highlighter-rouge">
 			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>zfs get compression tank/test
+				<pre class="highlight"><code>https://api.caiyunapp.com/v2.5/TAkhjf8d1nlSlspN/121.6544,25.1552/hourly.json
+</code></pre>
+			</div>
+		</div>
+		<p>I choose the hourly API so I can have forecast for the upcoming 48 hours.</p>
+		<p>So far this is a readily available datasource that I can query. But after reviewing the <a href="https://grafana.github.io/grafana-json-datasource/query-editor">JSON query editor</a>, I decided to chop off the last segments of the URL and leave just the part up to the API key:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>https://api.caiyunapp.com/v2.5/TAkhjf8d1nlSlspN/
+</code></pre>
+			</div>
+		</div>
+		<p>The point here is, the query editor allows specifying an extra Path, which appears to be concatenated with this URL in the datasource configuration. Notably, I can then put the coordinates in a variable, use it in the query, and build a single dashboard for many cities.</p>
+		<h2 id="dashboard-variables">Dashboard variables</h2>
+		<p>Now that I have the query format planned, I can add a dashboard variable for selecting cities.</p>
+		<p>First things first, since I’m going to use the same datasource for all panels, I first add a variable for the datasource and restrict it to “CaiYun Weather”:</p>
+		<p><img src="/image/grafana/dashboard-variable-datasource.png" alt="Datasource variable" /></p>
+		<p>Then I add a variable <code class="language-plaintext highlighter-rouge">$location</code> for the city name, and provide it with a list of cities I want to show. The variable type would be “Custom” since this is just a human-maintained list. There certainly are better ways like using a relational database or an external API, making it easier to update, but for now I’d like to keep it simple.</p>
+		<div class="language-text highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>Beijing : 116.4074\,39.9042,Shanghai : 121.4691\,31.2243,Guangzhou : 113.2644\,23.1291,Shenzhen : 114.0596\,22.5429
+</code></pre>
+			</div>
+		</div>
+		<h2 id="panels">Panels</h2>
+		<p>First and foremost, the most intuitive metric to show is temperature. I add a time series panel and configure it to graph the temperature. Start by building the query:</p>
+		<ul>
+			<li>Datasource: Select <code class="language-plaintext highlighter-rouge">${datasource}</code></li>
+			<li>Query A:
+				<ul>
+					<li>Path: <code class="language-plaintext highlighter-rouge">/${location}/hourly.json</code></li>
+					<li>Fields:
+						<ul>
+							<li>JSONPath: <code class="language-plaintext highlighter-rouge">$.result.hourly.temperature[*].value</code>, Type: <code class="language-plaintext highlighter-rouge">Number</code>, Alias: <code class="language-plaintext highlighter-rouge">${location:text}</code></li>
+							<li>JSONPath: <code class="language-plaintext highlighter-rouge">$.result.hourly.temperature[*].datetime</code>, Type: <code class="language-plaintext highlighter-rouge">Time</code></li>
+						</ul>
+					</li>
+				</ul>
+			</li>
+		</ul>
+		<p>I stumbled on getting the <em>time</em> series to display correctly. It wasn’t anywhere obvious in the documentation for the JSON API plugin, but a series with Type = Time is required. Fortunately, CY’s API returns the time in ISO 8601 format in the <code class="language-plaintext highlighter-rouge">datetime</code> field, so I can feed it directly to Grafana.</p>
+		<p>So far so good, except Grafana shows “No data”. I realized Grafana is trying to show past data, but apparently a weather forecast provides <em>future</em> data. I need to change the time range to “now” and “now + 48h”. Ideally, this time range is fixed and not affected by the time range selector, since after all it’s limited by the API.</p>
+		<p>This is another place where I spent half an hour on Google. The answer is “Relative time” in “Query options”. Its format, however, is again unintuitive. While <a href="https://community.grafana.com/t/how-to-give-different-time-ranges-for-grafana-panels-i-am-using-azure-monitor-as-data-source/80300">community posts</a> shows <code class="language-plaintext highlighter-rouge">1d</code> for “last 1 day” and the <a href="https://grafana.com/docs/grafana/latest/panels-visualizations/query-transform-data/">official docs</a> gives several examples on using <code class="language-plaintext highlighter-rouge">now</code>, none of them told me how to indicate “next 48 hours”. The answer is just <code class="language-plaintext highlighter-rouge">+48h</code> or <code class="language-plaintext highlighter-rouge">+2d</code>. Notably, entering <code class="language-plaintext highlighter-rouge">now+48h</code> would result in an error.</p>
+		<p>To make the graph look nicer, I set the unit to “°C”, limit decimals to 1, and set the Y-axis range to 0-40, and add a series of thresholds with colors to indicate the temperature range. Also worth mentioning is to make the graph change its color according to the temperature, so I set “Graph style → Gradient mode” to “Scheme” and “Standard options → Color scheme” to “From thresholds (by value)”.</p>
+		<p>Now this panel looks stunning.</p>
+		<p><img src="/image/grafana/caiyun-temperature-panel.png" alt="Temperature panel" /></p>
+		<h3 id="more-panels">More panels</h3>
+		<p>CY’s API offers a variety of weather data, so with little effort I can add more panels for humidity, precipitation and more, by duplicating the temperature panel and changing the query. I also need to change the unit and thresholds accordingly but that goes without saying.</p>
+		<p>There’s also a small piece worth displaying: A <code class="language-plaintext highlighter-rouge">description</code> text. It’s easy to put it in a “Stat” panel and display as “String” (instead of “Number”). And better yet, CY provides two descriptions: One for the next two hours, and one for the next two days. Two panels for two pieces of text, yeah.</p>
+		<p>One last thing I decided to leave out for now: The <code class="language-plaintext highlighter-rouge">skycon</code> field that describes the weather condition, like “CLEAR_DAY” or “RAIN”. It’d be comparably easy to add a panel for it, using “Value mapping” to change the text to something more human-readable, but I’m not at the high mood for it right now, so maybe I’ll pick it up later.</p>
+		<h2 id="results">Results</h2>
+		<p>Now I have a nice dashboard for viewing weather forecast for multiple cities:</p>
+		<p><img src="/image/grafana/caiyun-forecast-example.png" alt="Dashboard" /></p>
+		<p>If you’d like to try it yourself, I’ve published the dashboard on Grafana.com: <a href="https://grafana.com/grafana/dashboards/20259-weather-forecast/">Weather Forecast</a>. Just add the same datasource with your API key, and you can import my dashboard and start getting weather forecast for yourself.</p>
+		]]></content><author><name>iBug</name></author><category term="software" /><summary type="html"><![CDATA[Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get it to work as a weather forecast dashboard, instead of any historical time-series data.]]></summary></entry><entry><title type="html">Understanding ZFS block sizes</title><link href="https://ibug.io/blog/2023/10/zfs-block-size/" rel="alternate" type="text/html" title="Understanding ZFS block sizes" /><published>2023-10-30T00:00:00+00:00</published><updated>2023-10-30T02:58:51+00:00</updated><id>https://ibug.io/blog/2023/10/zfs-block-size</id><content type="html" xml:base="https://ibug.io/blog/2023/10/zfs-block-size/"><![CDATA[<p>ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.</p>
+	<p>We’ll begin with a slide from a ZFS talk from Lustre<sup id="fnref:dilger" role="doc-noteref"><a href="#fn:dilger" class="footnote" rel="footnote">1</a></sup> (page 5):</p>
+	<figure class="">
+		<img src="/image/zfs/zfs-io-stack.png" alt="ZFS I/O Stack" />
+		<figcaption>
+			Figure 1. ZFS I/O Stack
+		</figcaption>
+	</figure>
+	<!-- This article will focus on the topmost layer (ZPL and DMU) and the lowermost layer (vdev and disk sectors). -->
+	<h2 id="logical-blocks">Logical blocks</h2>
+	<p>The first thing to understand is that there are at least two levels of “block” concepts in ZFS. There’s “logical blocks” on an upper layer (DMU), and “physical blocks” on a lower layer (vdev). The latter is easier to understand and it’s almost synonymous to “disk sectors”. It’s precisely the <code class="language-plaintext highlighter-rouge">ashift</code> parameter in <code class="language-plaintext highlighter-rouge">zpool create</code> command and usually matches the physical sector size of your disks (4 KiB for modern disks). Once set, <code class="language-plaintext highlighter-rouge">ashift</code> is immutable and can only be changed when recreating the entire vdev array (fortunately not the entire pool<sup id="fnref:zfs101" role="doc-noteref"><a href="#fn:zfs101" class="footnote" rel="footnote">2</a></sup>). The “logical block”, however, is slightly more complicated, and beyond the expressibility of a few words. In short, it’s the smallest <em>meaningful</em> unit of data that ZFS can operate on, including reading, writing, checksumming, compression and deduplication.</p>
+	<h3 id="recordsize-and-volblocksize">“recordsize” and “volblocksize”</h3>
+	<p>You’ve probably seen <code class="language-plaintext highlighter-rouge">recordsize</code> being talked about extensively in ZFS tuning guides<sup id="fnref:tuning" role="doc-noteref"><a href="#fn:tuning" class="footnote" rel="footnote">3</a></sup>, which is already a great source of confusion. The default <code class="language-plaintext highlighter-rouge">recordsize</code> is 128 KiB, which controls the <em>maximum</em> size of a logical block. The <em>actual</em> block size depends on the file you’re writing:</p>
+	<ul>
+		<li>If the file is smaller than or equal to <code class="language-plaintext highlighter-rouge">recordsize</code>, it’s stored as a single logical block of its size, rounded up to the nearest multiple of 512 bytes.</li>
+		<li>If the file is larger than <code class="language-plaintext highlighter-rouge">recordsize</code>, it’s split into multiple logical blocks of <code class="language-plaintext highlighter-rouge">recordsize</code> each, with the last block being zero-padded to <code class="language-plaintext highlighter-rouge">recordsize</code>.</li>
+	</ul>
+	<p>As with other filesystems, if you change a small portion of a large file, only 128 KiB (or whatever your <code class="language-plaintext highlighter-rouge">recordsize</code> is) is rewritten, along with new metadata and checksums. Large <code class="language-plaintext highlighter-rouge">recordsize</code> bloats the read/write amplification for random I/O workloads, while small <code class="language-plaintext highlighter-rouge">recordsize</code> increases the fragmentation and metadata overhead for large files. Note that ZFS always validates checksums, so every read operation is done on an entire block, even if only a few bytes are requested. So it is important to align your <code class="language-plaintext highlighter-rouge">recordsize</code> with your workload, like using 16 KiB for (most) databases and 1 MiB for media files. The default 128 KiB is a good compromise for general-purpose workloads, and there certainly isn’t a one-size-fits-all solution. Also note that while <code class="language-plaintext highlighter-rouge">recordsize</code> can be changed on the fly, it only affects newly written data, and existing ones stay intact.</p>
+	<p>For ZVOLs, as you’d imagine, the rule is much simpler: Every block of <code class="language-plaintext highlighter-rouge">volblocksize</code> is a logical block, and it’s aligned to its own size. Since ZFS 2.2, the default <code class="language-plaintext highlighter-rouge">volblocksize</code> is 16 KiB, providing a good balance between performance and compatibility.</p>
+	<h3 id="compression">Compression</h3>
+	<p>Compression is applied on a per-block basis, and compressed data is not shared between blocks. This is best shown with an example:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>zfs get compression tank/test
 <span class="go">NAME       PROPERTY     VALUE  SOURCE
 tank/test  compression  zstd   inherited from tank
 </span><span class="gp">$</span><span class="w"> </span><span class="nb">head</span> <span class="nt">-c</span> 131072 /dev/urandom <span class="o">&gt;</span> 128k
@@ -90,11 +261,11 @@ tank/test  compression  zstd   inherited from tank
 <span class="go">129K    128k
 1.1M    1m
 </span></code></pre>
-			</div>
 		</div>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span><span class="nb">head</span> <span class="nt">-c</span> 16384 /dev/urandom <span class="o">&gt;</span> 16k
+	</div>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span><span class="nb">head</span> <span class="nt">-c</span> 16384 /dev/urandom <span class="o">&gt;</span> 16k
 <span class="gp">$</span><span class="w"> </span><span class="nb">cat </span>16k 16k 16k 16k 16k 16k 16k 16k <span class="o">&gt;</span> 128k1
 <span class="gp">$</span><span class="w"> </span><span class="nb">cat </span>128k1 128k1 128k1 128k1 128k1 128k1 128k1 128k1 <span class="o">&gt;</span> 1m1
 <span class="gp">$</span><span class="w"> </span><span class="nb">du</span> <span class="nt">-sh</span> 16k 128k1 1m1
@@ -102,31 +273,31 @@ tank/test  compression  zstd   inherited from tank
 21K     128k1
 169K    1m1
 </span></code></pre>
-			</div>
 		</div>
-		<p>As you can see from <code class="language-plaintext highlighter-rouge">du</code>’s output above, despite containing 8 identical copies of the same 128 KiB random data, the 1 MiB file gains precisely nothing from compression, as each 128 KiB block is compressed individually. The other test of combining 8 copies of 16 KiB random data into one 128 KiB file shows positive results, as the 128 KiB file is only 21 KiB in size. Similarly, the 1 MiB file that contains 64 exact copies of the same 16 KiB chunk is exactly 8 times the size of that 128 KiB file, because the chunk data is not shared across 128 KiB boundaries.</p>
-		<p>This brings up an interesting point: <strong>It’s beneficial to turn on compression even for filesystems with uncompressible data</strong><sup id="fnref:cks-1" role="doc-noteref"><a href="#fn:cks-1" class="footnote" rel="footnote">4</a></sup>. One direct impact is on the last block of a large file, where its zero-filled bytes up to <code class="language-plaintext highlighter-rouge">recordsize</code> compress very well. Using LZ4 or ZSTD, compression should have negligible impact on any reasonably modern CPU and reasonably sized disks.</p>
-		<p>There are two more noteworthy points about compression, both from <a href="https://openzfs.github.io/openzfs-docs/man/master/7/zfsprops.7.html"><code class="language-plaintext highlighter-rouge">man zfsprops.7</code></a>:</p>
-		<ol>
-			<li>
-				<blockquote>
-					<p>When any setting except <strong>off</strong> is selected, compression will explicitly check for blocks consisting of only zeroes (the NUL byte). When a zero-filled block is detected, it is stored as a hole and not compressed using the indicated compression algorithm.</p>
-				</blockquote>
-				<p>Instead of compressing entire blocks of zeroes like the last block of a large file, ZFS will not store anything about these zero blocks. Technically, this is done by omitting the corresponding ranges from the file’s indirect blocks<sup id="fnref:cks-1:1" role="doc-noteref"><a href="#fn:cks-1" class="footnote" rel="footnote">4</a></sup>.</p>
-				<p>Take this test for example: I created a file with 64 KiB of urandom, then 256 KiB of zeroes, then another 64 KiB of urandom. The file is 384 KiB in size, but only 128 KiB is actually stored on disk:</p>
-				<div class="language-console highlighter-rouge">
-					<div class="highlight">
-						<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zfs create pool0/srv/test
+	</div>
+	<p>As you can see from <code class="language-plaintext highlighter-rouge">du</code>’s output above, despite containing 8 identical copies of the same 128 KiB random data, the 1 MiB file gains precisely nothing from compression, as each 128 KiB block is compressed individually. The other test of combining 8 copies of 16 KiB random data into one 128 KiB file shows positive results, as the 128 KiB file is only 21 KiB in size. Similarly, the 1 MiB file that contains 64 exact copies of the same 16 KiB chunk is exactly 8 times the size of that 128 KiB file, because the chunk data is not shared across 128 KiB boundaries.</p>
+	<p>This brings up an interesting point: <strong>It’s beneficial to turn on compression even for filesystems with uncompressible data</strong><sup id="fnref:cks-1" role="doc-noteref"><a href="#fn:cks-1" class="footnote" rel="footnote">4</a></sup>. One direct impact is on the last block of a large file, where its zero-filled bytes up to <code class="language-plaintext highlighter-rouge">recordsize</code> compress very well. Using LZ4 or ZSTD, compression should have negligible impact on any reasonably modern CPU and reasonably sized disks.</p>
+	<p>There are two more noteworthy points about compression, both from <a href="https://openzfs.github.io/openzfs-docs/man/master/7/zfsprops.7.html"><code class="language-plaintext highlighter-rouge">man zfsprops.7</code></a>:</p>
+	<ol>
+		<li>
+			<blockquote>
+				<p>When any setting except <strong>off</strong> is selected, compression will explicitly check for blocks consisting of only zeroes (the NUL byte). When a zero-filled block is detected, it is stored as a hole and not compressed using the indicated compression algorithm.</p>
+			</blockquote>
+			<p>Instead of compressing entire blocks of zeroes like the last block of a large file, ZFS will not store anything about these zero blocks. Technically, this is done by omitting the corresponding ranges from the file’s indirect blocks<sup id="fnref:cks-1:1" role="doc-noteref"><a href="#fn:cks-1" class="footnote" rel="footnote">4</a></sup>.</p>
+			<p>Take this test for example: I created a file with 64 KiB of urandom, then 256 KiB of zeroes, then another 64 KiB of urandom. The file is 384 KiB in size, but only 128 KiB is actually stored on disk:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zfs create pool0/srv/test
 <span class="gp">#</span><span class="w"> </span><span class="nb">cat</span> &lt;<span class="o">(</span><span class="nb">head</span> <span class="nt">-c</span> 64K /dev/urandom<span class="o">)</span> &lt;<span class="o">(</span><span class="nb">head</span> <span class="nt">-c</span> 256K /dev/zero<span class="o">)</span> &lt;<span class="o">(</span><span class="nb">head</span> <span class="nt">-c</span> 64K /dev/urandom<span class="o">)</span> <span class="o">&gt;</span> /srv/test/test
 <span class="gp">#</span><span class="w"> </span><span class="nb">du</span> <span class="nt">-sh</span> /srv/test/test
 <span class="go">145K    /srv/test/test
 </span></code></pre>
-					</div>
+				</div>
     </div>
-				<p>We can also examine the file’s indirect blocks with <code class="language-plaintext highlighter-rouge">zdb</code>:</p>
-				<div class="language-console highlighter-rouge">
-					<div class="highlight">
-						<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span><span class="nb">ls</span> <span class="nt">-li</span> /srv/test/test
+			<p>We can also examine the file’s indirect blocks with <code class="language-plaintext highlighter-rouge">zdb</code>:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span><span class="nb">ls</span> <span class="nt">-li</span> /srv/test/test
 <span class="go">2 -rw-r--r-- 1 root root 393216 Oct 30 02:05 /srv/test/test
 </span><span class="gp">#</span><span class="w"> </span>zdb <span class="nt">-ddddd</span> pool0/srv/test 2
 <span class="go">[...]
@@ -138,45 +309,45 @@ Indirect blocks:
                 segment [0000000000000000, 0000000000020000) size  128K
                 segment [0000000000040000, 0000000000060000) size  128K
 </span></code></pre>
-					</div>
+				</div>
     </div>
-				<p>Here we can see only two L0 blocks allocated, each being 20000 (hex, dec = 131072) bytes logical and 11000 (hex, dec = 69632) bytes physical in size. The two L0 blocks match the two segments shown at the bottom, with the middle segment nowhere to be found.</p>
-			</li>
-			<li>
-				<blockquote>
-					<p>Any block being compressed must be no larger than 7/8 of its original size after compression, otherwise the compression will not be considered worthwhile and the block saved uncompressed. […] for example, 8 KiB blocks on disks with 4 KiB disk sectors must compress to 1/2 or less of their original size.</p>
-				</blockquote>
-				<p>This one should be self-explanatory.</p>
-			</li>
-		</ol>
-		<h2 id="raidz">RAIDZ</h2>
-		<p>Up until now we’ve only talked about logical blocks, which are all on the higher layers of the ZFS hierarchy. RAIDZ is where physical blocks (disk sectors) really come into play and adds another field of confusion.</p>
-		<p>Unlike traditional RAID 5/6/7<sup class="no-select">(?)</sup> that combine disks into an array and presents a single volume for the filesystem, RAIDZ handles each <em>logical block</em> separately. I’ll cite this illustration from Delphix<sup id="fnref:delphix" role="doc-noteref"><a href="#fn:delphix" class="footnote" rel="footnote">5</a></sup> to explain:</p>
-		<figure class="">
-			<img src="/image/zfs/raidz-block-layout.png" alt="RAID-Z block layout" />
-			<figcaption>
-				Figure 2. RAID-Z block layout
-			</figcaption>
-		</figure>
-		<p>This example shows a 5-wide RAID-Z1 setup.</p>
-		<ul>
-			<li>A single-sector block takes another sector for parity, like the dark red block on row 3.</li>
-			<li>
-				<p>Multi-sector blocks are striped across disks, with parity sectors inserted every 4 sectors, matching the data-to-parity ratio of the vdev array.</p>
-				<ul>
-					<li>You may have noticed that parity sectors for the same block are always stored on the same disk that resembles RAID-4 instead of RAID-5. Keep in mind that ZFS reads, writes and verifies entire blocks, so interleaving parity sectors across disks will not provide any benefit, while keeping “stripes” on the same disk simplifies the logic for validation and reconstruction.</li>
-				</ul>
-			</li>
-			<li>In order to avoid unusable fragments, ZFS requires each allocated block to be padded to a multiple of (<em>p+1</em>) sectors, where <em>p</em> is the number of parity disks. For example, RAID-Z1 requires each block to be padded to a multiple of 2 sectors, and RAID-Z2 requires each block to be padded to a multiple of 3 sectors. This can be seen on rows 7 to 9, where the X sectors are reserved for parity padding.</li>
-		</ul>
-		<p>This design allows RAID to play well with ZFS’s log-structured design and avoids the need for read-modify-write cycles. Consequently, the RAID overhead is now dependent on your data and is no longer an intrinsic property of the RAID level and array width. The same Delphix article shares a nice spreadsheet<sup id="fnref:delphix-spreadsheet" role="doc-noteref"><a href="#fn:delphix-spreadsheet" class="footnote" rel="footnote">6</a></sup> that calculates RAID overhead for you:</p>
-		<p><a href="https://docs.google.com/a/delphix.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/"><img src="/image/zfs/raidz1-parity-overhead.png" alt="Size of parity overhead for RAID-Z1" /></a></p>
-		<h3 id="raidz-accounting">Accounting</h3>
-		<p>Accounting the storage space for a RAIDZ array is as problematic as it seems: There’s no way to calculate the available space in advance without knowledge on the block size pattern.</p>
-		<p>ZFS works around this by showing an estimate, assuming all data were stored as 128 KiB blocks<sup id="fnref:zfs-4599" role="doc-noteref"><a href="#fn:zfs-4599" class="footnote" rel="footnote">7</a></sup>. On my test setup with five 16 GiB disks in RAID-Z1 and <code class="language-plaintext highlighter-rouge">ashift=12</code>, the available space shows as 61.5G, while <code class="language-plaintext highlighter-rouge">zpool</code> shows the raw size as 79.5G:</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zpool create <span class="nt">-o</span> <span class="nv">ashift</span><span class="o">=</span>12 <span class="nb">test </span>raidz1 nvme3n1p<span class="o">{</span>1,2,3,4,5<span class="o">}</span>
+			<p>Here we can see only two L0 blocks allocated, each being 20000 (hex, dec = 131072) bytes logical and 11000 (hex, dec = 69632) bytes physical in size. The two L0 blocks match the two segments shown at the bottom, with the middle segment nowhere to be found.</p>
+		</li>
+		<li>
+			<blockquote>
+				<p>Any block being compressed must be no larger than 7/8 of its original size after compression, otherwise the compression will not be considered worthwhile and the block saved uncompressed. […] for example, 8 KiB blocks on disks with 4 KiB disk sectors must compress to 1/2 or less of their original size.</p>
+			</blockquote>
+			<p>This one should be self-explanatory.</p>
+		</li>
+	</ol>
+	<h2 id="raidz">RAIDZ</h2>
+	<p>Up until now we’ve only talked about logical blocks, which are all on the higher layers of the ZFS hierarchy. RAIDZ is where physical blocks (disk sectors) really come into play and adds another field of confusion.</p>
+	<p>Unlike traditional RAID 5/6/7<sup class="no-select">(?)</sup> that combine disks into an array and presents a single volume for the filesystem, RAIDZ handles each <em>logical block</em> separately. I’ll cite this illustration from Delphix<sup id="fnref:delphix" role="doc-noteref"><a href="#fn:delphix" class="footnote" rel="footnote">5</a></sup> to explain:</p>
+	<figure class="">
+		<img src="/image/zfs/raidz-block-layout.png" alt="RAID-Z block layout" />
+		<figcaption>
+			Figure 2. RAID-Z block layout
+		</figcaption>
+	</figure>
+	<p>This example shows a 5-wide RAID-Z1 setup.</p>
+	<ul>
+		<li>A single-sector block takes another sector for parity, like the dark red block on row 3.</li>
+		<li>
+			<p>Multi-sector blocks are striped across disks, with parity sectors inserted every 4 sectors, matching the data-to-parity ratio of the vdev array.</p>
+			<ul>
+				<li>You may have noticed that parity sectors for the same block are always stored on the same disk that resembles RAID-4 instead of RAID-5. Keep in mind that ZFS reads, writes and verifies entire blocks, so interleaving parity sectors across disks will not provide any benefit, while keeping “stripes” on the same disk simplifies the logic for validation and reconstruction.</li>
+			</ul>
+		</li>
+		<li>In order to avoid unusable fragments, ZFS requires each allocated block to be padded to a multiple of (<em>p+1</em>) sectors, where <em>p</em> is the number of parity disks. For example, RAID-Z1 requires each block to be padded to a multiple of 2 sectors, and RAID-Z2 requires each block to be padded to a multiple of 3 sectors. This can be seen on rows 7 to 9, where the X sectors are reserved for parity padding.</li>
+	</ul>
+	<p>This design allows RAID to play well with ZFS’s log-structured design and avoids the need for read-modify-write cycles. Consequently, the RAID overhead is now dependent on your data and is no longer an intrinsic property of the RAID level and array width. The same Delphix article shares a nice spreadsheet<sup id="fnref:delphix-spreadsheet" role="doc-noteref"><a href="#fn:delphix-spreadsheet" class="footnote" rel="footnote">6</a></sup> that calculates RAID overhead for you:</p>
+	<p><a href="https://docs.google.com/a/delphix.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/"><img src="/image/zfs/raidz1-parity-overhead.png" alt="Size of parity overhead for RAID-Z1" /></a></p>
+	<h3 id="raidz-accounting">Accounting</h3>
+	<p>Accounting the storage space for a RAIDZ array is as problematic as it seems: There’s no way to calculate the available space in advance without knowledge on the block size pattern.</p>
+	<p>ZFS works around this by showing an estimate, assuming all data were stored as 128 KiB blocks<sup id="fnref:zfs-4599" role="doc-noteref"><a href="#fn:zfs-4599" class="footnote" rel="footnote">7</a></sup>. On my test setup with five 16 GiB disks in RAID-Z1 and <code class="language-plaintext highlighter-rouge">ashift=12</code>, the available space shows as 61.5G, while <code class="language-plaintext highlighter-rouge">zpool</code> shows the raw size as 79.5G:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zpool create <span class="nt">-o</span> <span class="nv">ashift</span><span class="o">=</span>12 <span class="nb">test </span>raidz1 nvme3n1p<span class="o">{</span>1,2,3,4,5<span class="o">}</span>
 <span class="gp">#</span><span class="w"> </span>zfs list <span class="nb">test</span>
 <span class="go">NAME   USED  AVAIL     REFER  MOUNTPOINT
 test   614K  61.5G      153K  /test
@@ -184,12 +355,12 @@ test   614K  61.5G      153K  /test
 <span class="go">NAME   SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
 test  79.5G   768K  79.5G        -         -     0%     0%  1.00x    ONLINE  -
 </span></code></pre>
-			</div>
 		</div>
-		<p>When I increase <code class="language-plaintext highlighter-rouge">ashift</code> to 15 (32 KiB sectors), the available space drops quite a bit, even if <code class="language-plaintext highlighter-rouge">zpool</code> shows the same raw size:</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zpool create <span class="nt">-o</span> <span class="nv">ashift</span><span class="o">=</span>15 <span class="nb">test </span>raidz1 nvme3n1p<span class="o">{</span>1,2,3,4,5<span class="o">}</span>
+	</div>
+	<p>When I increase <code class="language-plaintext highlighter-rouge">ashift</code> to 15 (32 KiB sectors), the available space drops quite a bit, even if <code class="language-plaintext highlighter-rouge">zpool</code> shows the same raw size:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zpool create <span class="nt">-o</span> <span class="nv">ashift</span><span class="o">=</span>15 <span class="nb">test </span>raidz1 nvme3n1p<span class="o">{</span>1,2,3,4,5<span class="o">}</span>
 <span class="gp">#</span><span class="w"> </span>zfs list <span class="nb">test</span>
 <span class="go">NAME   USED  AVAIL     REFER  MOUNTPOINT
 test  4.00M  51.3G     1023K  /test
@@ -197,58 +368,58 @@ test  4.00M  51.3G     1023K  /test
 <span class="go">NAME   SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
 test  79.5G  7.31M  79.5G        -         -     0%     0%  1.00x    ONLINE  -
 </span></code></pre>
-			</div>
 		</div>
-		<p>In both cases, calculating the “raw” disk space from the available space gives roughly congruent results:</p>
-		<ul>
-			<li>61.5 GiB × (1 + 25%) = 76.9 GiB</li>
-			<li>51.3 GiB × (1 + 50%) = 76.9 GiB</li>
-		</ul>
-		<p>The default <code class="language-plaintext highlighter-rouge">refreservation</code> for non-sparse ZVOLs exhibits a similar behavior:</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zfs create <span class="nt">-V</span> 4G <span class="nt">-o</span> <span class="nv">volblocksize</span><span class="o">=</span>8K <span class="nb">test</span>/v8k
+	</div>
+	<p>In both cases, calculating the “raw” disk space from the available space gives roughly congruent results:</p>
+	<ul>
+		<li>61.5 GiB × (1 + 25%) = 76.9 GiB</li>
+		<li>51.3 GiB × (1 + 50%) = 76.9 GiB</li>
+	</ul>
+	<p>The default <code class="language-plaintext highlighter-rouge">refreservation</code> for non-sparse ZVOLs exhibits a similar behavior:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zfs create <span class="nt">-V</span> 4G <span class="nt">-o</span> <span class="nv">volblocksize</span><span class="o">=</span>8K <span class="nb">test</span>/v8k
 <span class="gp">#</span><span class="w"> </span>zfs create <span class="nt">-V</span> 4G <span class="nt">-o</span> <span class="nv">volblocksize</span><span class="o">=</span>16K <span class="nb">test</span>/v16k
 <span class="gp">#</span><span class="w"> </span>zfs get refreservation <span class="nb">test</span>/v8k <span class="nb">test</span>/v16k
 <span class="go">NAME       PROPERTY        VALUE      SOURCE
 test/v16k  refreservation  4.86G      local
 test/v8k   refreservation  6.53G      local
 </span></code></pre>
-			</div>
 		</div>
-		<p>Interestingly, neither of the <code class="language-plaintext highlighter-rouge">refreservation</code> sizes matches the RAID overhead as calculated in the Delphix spreadsheet<sup id="fnref:delphix-spreadsheet:1" role="doc-noteref"><a href="#fn:delphix-spreadsheet" class="footnote" rel="footnote">6</a></sup>, as you would expect some 6.0 GiB for the 16k-volblocksized ZVOL and some 8.0 GiB for the 8k-volblocksized one. <strong>Let’s just don’t forget that the whole accounting system assumed 128 KiB blocks and scaled by that<sup id="fnref:acct-128k" role="doc-noteref"><a href="#fn:acct-128k" class="footnote" rel="footnote">8</a></sup>.</strong> So the actual meaning of 4.86G and 6.53G would be “the <em>equivalent</em> space if volblocksize had been 128 KiB”. If we multiply both values by 1.25 (overhead for 128 KiB blocks and 5-wide RAIDZ), we get 6.08 GiB and 8.16 GiB of raw disk spaces respectively, both of which match more closely the expected values. The final minor difference is due to the different amount of metadata required for different number of blocks.</p>
-		<h2 id="thoughts">Thoughts</h2>
-		<p>I never imagined I would delve this deep into ZFS when I first stumbled upon the question. There are lots of good write-ups on individual components of ZFS all around the web, and <a href="https://utcc.utoronto.ca/~cks/space/blog/">Chris Siebenmann’s blog</a> in particular. But few combine all the pieces together and paint the whole picture, so I had to spend some time synthesizing them by myself. As you’ve seen in the Luster slide, ZFS is so complex a beast that it’s hard to digest in its entirety. So for now I have no idea how much effort I would put into learning it, nor any future blogs I would write. But anyways, that’s one large mystery solved, for myself and my readers (you), and time to call it a day.</p>
-		<h2 id="references">References</h2>
-		<div class="footnotes" role="doc-endnotes">
-			<ol>
-				<li id="fn:dilger" role="doc-endnote">
-					<p>Andreas Dilger (2010) <a href="https://wiki.lustre.org/images/4/49/Beijing-2010.2-ZFS_overview_3.1_Dilger.pdf">ZFS Features &amp; Concepts TOI</a> <a href="#fnref:dilger" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-				</li>
-				<li id="fn:zfs101" role="doc-endnote">
-					<p>Jim Salter (2020) <a href="https://arstechnica.com/information-technology/2020/05/zfs-101-understanding-zfs-storage-and-performance/">ZFS 101 – Understanding ZFS storage and performance</a> <a href="#fnref:zfs101" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-				</li>
-				<li id="fn:tuning" role="doc-endnote">
-					<p>OpenZFS <a href="https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Workload%20Tuning.html">Workload Tuning</a> <a href="#fnref:tuning" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-				</li>
-				<li id="fn:cks-1" role="doc-endnote">
-					<p>Chris Siebenmann (2017) <a href="https://utcc.utoronto.ca/~cks/space/blog/solaris/ZFSFilePartialAndHoleStorage">ZFS’s recordsize, holes in files, and partial blocks</a> <a href="#fnref:cks-1" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:cks-1:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
-				</li>
-				<li id="fn:delphix" role="doc-endnote">
-					<p>Matthew Ahrens (2014) <a href="https://www.delphix.com/blog/zfs-raidz-stripe-width-or-how-i-learned-stop-worrying-and-love-raidz">How I Learned to Stop Worrying and Love RAIDZ</a> <a href="#fnref:delphix" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-				</li>
-				<li id="fn:delphix-spreadsheet" role="doc-endnote">
-					<p><a href="https://docs.google.com/a/delphix.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/">RAID-Z parity cost</a> (Google Sheets) <a href="#fnref:delphix-spreadsheet" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:delphix-spreadsheet:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
-				</li>
-				<li id="fn:zfs-4599" role="doc-endnote">
-					<p>openzfs/zfs#4599 (2016) <a href="https://github.com/openzfs/zfs/issues/4599">disk usage wrong when using larger recordsize, raidz and ashift=12</a> <a href="#fnref:zfs-4599" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-				</li>
-				<li id="fn:acct-128k" role="doc-endnote">
-					<p>Mike Gerdts (2019) <a href="https://github.com/illumos/illumos-gate/blob/b73ccab03ec36581b1ae5945ef1fee1d06c79ccf/usr/src/lib/libzfs/common/libzfs_dataset.c#L5118">(Code comment in <code class="language-plaintext highlighter-rouge">libzfs_dataset.c</code>)</a> <a href="#fnref:acct-128k" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-				</li>
-			</ol>
-		</div>
-		]]></content><author><name>iBug</name></author><category term="linux" /><category term="zfs" /><summary type="html"><![CDATA[ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.]]></summary></entry><entry><title type="html">Debugging Proxmox VE Firewall Dropping TCP Reset Packets</title><link href="https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset/" rel="alternate" type="text/html" title="Debugging Proxmox VE Firewall Dropping TCP Reset Packets" /><published>2023-10-06T00:00:00+00:00</published><updated>2023-10-06T13:37:51+00:00</updated><id>https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset</id><content type="html" xml:base="https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset/"><![CDATA[<p>A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.</p>
+	</div>
+	<p>Interestingly, neither of the <code class="language-plaintext highlighter-rouge">refreservation</code> sizes matches the RAID overhead as calculated in the Delphix spreadsheet<sup id="fnref:delphix-spreadsheet:1" role="doc-noteref"><a href="#fn:delphix-spreadsheet" class="footnote" rel="footnote">6</a></sup>, as you would expect some 6.0 GiB for the 16k-volblocksized ZVOL and some 8.0 GiB for the 8k-volblocksized one. <strong>Let’s just don’t forget that the whole accounting system assumed 128 KiB blocks and scaled by that<sup id="fnref:acct-128k" role="doc-noteref"><a href="#fn:acct-128k" class="footnote" rel="footnote">8</a></sup>.</strong> So the actual meaning of 4.86G and 6.53G would be “the <em>equivalent</em> space if volblocksize had been 128 KiB”. If we multiply both values by 1.25 (overhead for 128 KiB blocks and 5-wide RAIDZ), we get 6.08 GiB and 8.16 GiB of raw disk spaces respectively, both of which match more closely the expected values. The final minor difference is due to the different amount of metadata required for different number of blocks.</p>
+	<h2 id="thoughts">Thoughts</h2>
+	<p>I never imagined I would delve this deep into ZFS when I first stumbled upon the question. There are lots of good write-ups on individual components of ZFS all around the web, and <a href="https://utcc.utoronto.ca/~cks/space/blog/">Chris Siebenmann’s blog</a> in particular. But few combine all the pieces together and paint the whole picture, so I had to spend some time synthesizing them by myself. As you’ve seen in the Luster slide, ZFS is so complex a beast that it’s hard to digest in its entirety. So for now I have no idea how much effort I would put into learning it, nor any future blogs I would write. But anyways, that’s one large mystery solved, for myself and my readers (you), and time to call it a day.</p>
+	<h2 id="references">References</h2>
+	<div class="footnotes" role="doc-endnotes">
+		<ol>
+			<li id="fn:dilger" role="doc-endnote">
+				<p>Andreas Dilger (2010) <a href="https://wiki.lustre.org/images/4/49/Beijing-2010.2-ZFS_overview_3.1_Dilger.pdf">ZFS Features &amp; Concepts TOI</a> <a href="#fnref:dilger" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+			</li>
+			<li id="fn:zfs101" role="doc-endnote">
+				<p>Jim Salter (2020) <a href="https://arstechnica.com/information-technology/2020/05/zfs-101-understanding-zfs-storage-and-performance/">ZFS 101 – Understanding ZFS storage and performance</a> <a href="#fnref:zfs101" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+			</li>
+			<li id="fn:tuning" role="doc-endnote">
+				<p>OpenZFS <a href="https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Workload%20Tuning.html">Workload Tuning</a> <a href="#fnref:tuning" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+			</li>
+			<li id="fn:cks-1" role="doc-endnote">
+				<p>Chris Siebenmann (2017) <a href="https://utcc.utoronto.ca/~cks/space/blog/solaris/ZFSFilePartialAndHoleStorage">ZFS’s recordsize, holes in files, and partial blocks</a> <a href="#fnref:cks-1" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:cks-1:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
+			</li>
+			<li id="fn:delphix" role="doc-endnote">
+				<p>Matthew Ahrens (2014) <a href="https://www.delphix.com/blog/zfs-raidz-stripe-width-or-how-i-learned-stop-worrying-and-love-raidz">How I Learned to Stop Worrying and Love RAIDZ</a> <a href="#fnref:delphix" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+			</li>
+			<li id="fn:delphix-spreadsheet" role="doc-endnote">
+				<p><a href="https://docs.google.com/a/delphix.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/">RAID-Z parity cost</a> (Google Sheets) <a href="#fnref:delphix-spreadsheet" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:delphix-spreadsheet:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
+			</li>
+			<li id="fn:zfs-4599" role="doc-endnote">
+				<p>openzfs/zfs#4599 (2016) <a href="https://github.com/openzfs/zfs/issues/4599">disk usage wrong when using larger recordsize, raidz and ashift=12</a> <a href="#fnref:zfs-4599" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+			</li>
+			<li id="fn:acct-128k" role="doc-endnote">
+				<p>Mike Gerdts (2019) <a href="https://github.com/illumos/illumos-gate/blob/b73ccab03ec36581b1ae5945ef1fee1d06c79ccf/usr/src/lib/libzfs/common/libzfs_dataset.c#L5118">(Code comment in <code class="language-plaintext highlighter-rouge">libzfs_dataset.c</code>)</a> <a href="#fnref:acct-128k" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+			</li>
+		</ol>
+	</div>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="zfs" /><summary type="html"><![CDATA[ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.]]></summary></entry><entry><title type="html">Debugging Proxmox VE Firewall Dropping TCP Reset Packets</title><link href="https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset/" rel="alternate" type="text/html" title="Debugging Proxmox VE Firewall Dropping TCP Reset Packets" /><published>2023-10-06T00:00:00+00:00</published><updated>2023-10-06T13:37:51+00:00</updated><id>https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset</id><content type="html" xml:base="https://ibug.io/blog/2023/10/pve-firewall-drops-tcp-reset/"><![CDATA[<p>A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.</p>
 	<p>When I reviewed my edited Nginx configuration and tried visiting the new website, I received a 504 Gateway Timeout error after <code class="language-plaintext highlighter-rouge">curl</code> hung for a minute. Knowing that the web server had yet to be set up, I was expecting a 502 Bad Gateway error. I quickly recalled the conditions for Nginx to return these specific errors: 502 if the upstream server is immediately known down, and 504 if the upstream server is up but not responding.</p>
 	<p>Since the actual web application hadn’t been set up yet, the new VM should have nothing listening on the configured ports. Consequently, the kernel should immediately respond with a TCP Reset for any incoming connections. To verify this, I ran <code class="language-plaintext highlighter-rouge">tcpdump</code> on both sides to check if the TCP reset packets actually came out. To my surprise, the packets were indeed sent out from the new VM, but the gateway server received nothing. So there was certainly something wrong with the firewall. I took a glance at the output of <code class="language-plaintext highlighter-rouge">pve-firewall compile</code>. They were very structured and adequately easy to understand, but I couldn’t immediately identify anything wrong. Things were apparently more complicated than I had previously anticipated.</p>
 	<h2 id="searching">Searching for information</h2>
@@ -1558,120 +1729,4 @@ f.get_chunk(
 		<li>Doing math correctly (LOL…)</li>
 	</ul>
 	<p>Finally, I want to credit my friend <a href="https://sirius1242.github.io/">sirius</a> for his unsurpassed knowledge of Minecraft, without whose help I would not have been able to take on this wonderful adventure.</p>
-	]]></content><author><name>iBug</name></author><category term="games" /><category term="minecraft" /><summary type="html"><![CDATA[While a friend was building an automatic brewing pipeline, our Create: Astral server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.]]></summary></entry><entry><title type="html">Paper Reading: Are You Sure You Want to Use MMAP in Your Database Management System?</title><link href="https://ibug.io/blog/2022/11/paper-reading-cidr2022-crotty/" rel="alternate" type="text/html" title="Paper Reading: Are You Sure You Want to Use MMAP in Your Database Management System?" /><published>2022-11-05T00:00:00+00:00</published><updated>2022-11-27T19:48:20+00:00</updated><id>https://ibug.io/blog/2022/11/paper-reading-cidr2022-crotty</id><content type="html" xml:base="https://ibug.io/blog/2022/11/paper-reading-cidr2022-crotty/"><![CDATA[<p>Paper reading for [CIDR 2022] <em>Are You Sure You Want to Use MMAP in Your Database Management System?</em> by Crotty et al.</p>
-	<p>This paper highlights the problems with using MMAP in database management systems.</p>
-	<h2 id="background">Background</h2>
-	<p>MMAP is a POSIX system call that transparently maps file content to process memory (the virtual address space of a process). This allows programmers to simplify the logical structure of program by leveraging the OS page cache as a replacement for a manually-maintained buffer pool.</p>
-	<p>A typical MMAP procedure goes as follows:</p>
-	<figure class="">
-		<img src="/image/papers/mmap-procedure.png" alt="A typical MMAP procedure" />
-		<figcaption>
-			A typical MMAP procedure
-		</figcaption>
-	</figure>
-	<ol>
-		<li>A process calls <code class="language-plaintext highlighter-rouge">mmap()</code> for an open file.</li>
-		<li>The OS reserves part of the process’s virtual address space, but does <em>not</em> load the file from disk. The process receives a pointer to the mapped address.</li>
-		<li>The process accesses the file using that pointer.</li>
-		<li>The OS tries to load the page, but no valid mapping exists, which results in a page fault.</li>
-		<li>The OS loads the file from disk to physical RAM.</li>
-		<li>The OS adds an entry to the page table of the process, mapping the virtual address to the physical address.</li>
-		<li>The initiating CPU caches this new page entry in its <a href="https://en.wikipedia.org/wiki/Translation_lookaside_buffer">Translation Lookaside Buffer (TLB)</a> for faster future accesses.</li>
-	</ol>
-	<p>A process can map as much data from files as the virtual address space permits, and the OS does all the dirty work behind the scenes.</p>
-	<p>Files loaded this way count towards the OS page cache (shows in htop as both <code class="language-plaintext highlighter-rouge">RES</code> and <code class="language-plaintext highlighter-rouge">SHR</code>), so the OS must evict pages when physical memory fills up. During page eviction, the OS must ensure that:</p>
-	<ul>
-		<li>Dirty (modified) pages are written back to disk (if applicable).</li>
-		<li>TLBs of all CPU cores are flushed. This is called <em>TLB shootdown</em>.</li>
-	</ul>
-	<p>Even though disk writes can be avoided on read-only workloads, TLB shootdowns are unavoidable. Worse, since modern CPUs do <em>not</em> provide TLB coherence, flushing TLBs is a costly operation.</p>
-	<h3 id="posix-api">Related POSIX APIs</h3>
-	<ul>
-		<li><code class="language-plaintext highlighter-rouge">mmap()</code> maps a file to memory. The <code class="language-plaintext highlighter-rouge">MAP_SHARED</code> flag allows changes to be (eventually) persisted back to disk, while the <code class="language-plaintext highlighter-rouge">MAP_PRIVATE</code> flag indicates that modifications are discarded (private to the process). These flags cannot be changed after the mapping is created.</li>
-		<li><code class="language-plaintext highlighter-rouge">madvise()</code> provides hints to the OS about how the mapped file will be accessed.
-			<ul>
-				<li>With <code class="language-plaintext highlighter-rouge">MADV_NORMAL</code>, (at least for Linux) loads 32 pages (128 KiB) for every page fault.</li>
-				<li>With <code class="language-plaintext highlighter-rouge">MADV_RANDOM</code>, the OS only loads the exact missing page.</li>
-				<li>With <code class="language-plaintext highlighter-rouge">MADV_SEQUENTIAL</code>, the OS loads more pages in advance.</li>
-			</ul>
-		</li>
-		<li><code class="language-plaintext highlighter-rouge">mlock()</code> locks the mapped file in physical memory, preventing the OS from evicting it. It does not, however, prevent the OS from flushing dirty pages to disk.</li>
-		<li><code class="language-plaintext highlighter-rouge">msync()</code> flushes any modifications to the file back to disk.</li>
-	</ul>
-	<h2 id="problems">Problems</h2>
-	<h3 id="transactional-safety">Transactional safety</h3>
-	<p>One important feature that DBMS provides is transactional safety, which is commonly referred to as <a href="https://en.wikipedia.org/wiki/ACID">the <em>ACID</em> properties</a>. Using MMAP on database files poses a threat to theses properties, as OS can transparently flush dirty pages to disk at any time, which the DBMS is has no control over.</p>
-	<p>To work around this problem, the paper summarizes three kinds of approaches:</p>
-	<ol>
-		<li>
-			<p><strong>OS copy-on-write</strong></p>
-			<p>The first approach maps the same file twice, one with <code class="language-plaintext highlighter-rouge">MAP_SHARED</code> and the other with <code class="language-plaintext highlighter-rouge">MAP_PRIVATE</code>. Any modification is first made to the private mapping, and then synchronized to the shared mapping. To maintain consistency, extra measures like a <a href="https://en.wikipedia.org/wiki/Write-ahead_logging">write-ahead log (WAL)</a> are often used together.</p>
-			<p>A noticeable problem with this approach is that as the database is being accessed, the DBMS will eventually end up with two full copies of the file in memory. While it’s possible to periodically shrink the private workspace, it adds extra complexity to the DBMS.</p>
-		</li>
-		<li>
-			<p><strong>Userspace copy-on-write</strong></p>
-			<p>The second approach is similar to the first, but instead of <code class="language-plaintext highlighter-rouge">mmap</code>-ing the file twice, the “private workspace” is maintained manually as a separate buffer. This approach is more flexible in terms of memory efficiency and manageability.</p>
-		</li>
-		<li>
-			<p><a href="https://en.wikipedia.org/wiki/Shadow_paging"><strong>Shadow paging</strong></a></p>
-			<p>Shadow paging is a traditional copy-on-write technique. The DBMS keeps two copies of the database file, one for the current version and the other for the next version. When a transaction is committed, the DBMS simply swaps the files.</p>
-			<p>One downside is obvious: the DBMS must maintain two copies of the database file, which is not ideal for large databases. Even though it is possible to keep only the delta between the two versions, and only maintain the primary and shadow page tables, it introduces more fragmentation and requires careful bookkeeping.</p>
-			<p>Additionally, as commitments happens on the whole-file level, this method does not scale well with write concurrency.</p>
-		</li>
-	</ol>
-	<h3 id="io-stalls">I/O stalls</h3>
-	<p>With traditional file I/O, the DBMS can use asynchronous I/O to avoid blocking the CPU.</p>
-	<p>However, with MMAP, as the OS evict pages in the background transparently, any access to the mapped file may block the thread. Despite having <code class="language-plaintext highlighter-rouge">mlock()</code>, it provides limited mitigation as the amount of locked pages is bounded. While <code class="language-plaintext highlighter-rouge">madvise()</code> helps with OS prefetching decisions, the control is still very coarse.</p>
-	<p>Last but not least, while it’s possible to spawn an extra background thread to prefetch pages, the added complexity defeats the purpose of using MMAP in the first place.</p>
-	<h3 id="error-handling">Error handling</h3>
-	<p>For DBMS with page-level checksums (to prevent disk corruption), the DBMS must revalidate the checksums after <em>every</em> read, as it has no way to know whether the same page has been evicted and re-read from disk.</p>
-	<p>For DBMS written in memory-unsafe languages like C (which is quite common), a bad pointer write can silently corrupt the database. With a traditional buffer pool, defensive measures can be implemented to avoid writing corrupted data to disk.</p>
-	<p>Finally, with traditional <code class="language-plaintext highlighter-rouge">read()</code>/<code class="language-plaintext highlighter-rouge">write()</code>, error handling resides in the same place as the I/O code. With MMAP, however, error handling must be done through a cumbersome <code class="language-plaintext highlighter-rouge">SIGBUS</code> handler.</p>
-	<h3 id="performance-issues">Performance issues</h3>
-	<p>While it is a common sense that MMAP is more performant than traditional file I/O by eliminating the system calls and extra memory copies, experiments suggest otherwise. Three issues are pointed out:</p>
-	<ul>
-		<li>Page table contention (it’s one single data structure for the whole process)</li>
-		<li>Single-threaded page eviction (Linux: <code class="language-plaintext highlighter-rouge">kswapd</code>)</li>
-		<li>TLB shootdowns (see above)</li>
-	</ul>
-	<h2 id="experimental-results">Experimental results</h2>
-	<div class="notice--primary">
-		<h4 class="no_toc" id="note-on-odirect"><i class="fas fa-fw fa-lightbulb"></i> Note on <code class="language-plaintext highlighter-rouge">O_DIRECT</code></h4>
-		<p>The FIO test uses the <code class="language-plaintext highlighter-rouge">O_DIRECT</code> flag to bypass the OS page cache. For a more detailed explanation, see <a href="https://stackoverflow.com/q/5055859/5958455">this Stack Overflow question</a>.</p>
-	</div>
-	<p>The paper presents two kinds of tasks: Random reading and sequential reading, to represent two typical kinds of database workload: <a href="https://www.ibm.com/cloud/blog/olap-vs-oltp">OLTP and OLAP</a>.</p>
-	<figure class="">
-		<img src="/image/papers/crotty-randread-iops.png" alt="IOPS by time for random read" />
-		<figcaption>
-			Random read - IOPS
-		</figcaption>
-	</figure>
-	<figure class="">
-		<img src="/image/papers/crotty-randread-tlbshootdowns.png" alt="TLB shootdowns by time for random read" />
-		<figcaption>
-			Random read - TLBshootdowns
-		</figcaption>
-	</figure>
-	<p>It is apparent that it doesn’t take long before MMAP can’t sustain its performance, which is due to the page cache filling up. The OS must work hard on evicting pages, which worsens the situation.</p>
-	<figure class="">
-		<img src="/image/papers/crotty-seqread-1ssd.png" alt="Bandwidth by time for single-SSD sequential read" />
-		<figcaption>
-			Sequential read - 1 SSD
-		</figcaption>
-	</figure>
-	<figure class="">
-		<img src="/image/papers/crotty-seqread-10ssds.png" alt="Bandwidth by time for 10-SSD sequential read" />
-		<figcaption>
-			Sequential read - 10 SSDs
-		</figcaption>
-	</figure>
-	<p>With sequential read, the performance gap is larger as disk bandwidth grows. While <code class="language-plaintext highlighter-rouge">fio</code> can almost saturate the bandwidth from 10 SSDs, MMAP’s performance stayed nearly the same. The authors attribute this to the single-threaded page eviction.</p>
-	<h2 id="conclusion">Conclusion</h2>
-	<p>In the final section, the paper makes an ironic comment, suggesting two cases when you <em>maybe</em> can use MMAP in a database product:</p>
-	<ul>
-		<li>Your working set (or the entire database) fits in memory and the workload is read-only.</li>
-		<li>
-			<p>You need to rush a product to the market and do not care about data consistency or long-term engineering headaches.</p>
-		</li>
-	</ul>
-	]]></content><author><name>iBug</name></author><category term="paper-reading" /><summary type="html"><![CDATA[Paper reading for [CIDR 2022] Are You Sure You Want to Use MMAP in Your Database Management System? by Crotty et al.]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="games" /><category term="minecraft" /><summary type="html"><![CDATA[While a friend was building an automatic brewing pipeline, our Create: Astral server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.]]></summary></entry></feed>

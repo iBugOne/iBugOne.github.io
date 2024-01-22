@@ -9,20 +9,20 @@
 	<head>
 		<meta charset="utf-8">
 		<!-- begin _includes/seo.html -->
-		<title>LVM metadata exceeds maximum metadata size, now what next? - iBug</title>
-		<meta name="description" content="An LVM volume group (VG) on our Proxmox VE cluster has failed to create new logical volumes, reporting that its metadata was full. At first this appears to be easy, “fine I’ll just add more space for metadata”, but it quickly revealed to be an versity to struggle through.">
+		<title>Understanding request limiting in Nginx - iBug</title>
+		<meta name="description" content="Nginx has a built-in module limit_req for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.">
 		<meta name="author" content="iBug">
 		<meta property="article:author" content="iBug">
 		<meta property="og:type" content="article">
 		<meta property="og:locale" content="en_US">
 		<meta property="og:site_name" content="iBug">
-		<meta property="og:title" content="LVM metadata exceeds maximum metadata size, now what next?">
-		<meta property="og:url" content="https://ibug.io/blog/2022/06/lvm-metadata-full/">
-		<meta property="og:description" content="An LVM volume group (VG) on our Proxmox VE cluster has failed to create new logical volumes, reporting that its metadata was full. At first this appears to be easy, “fine I’ll just add more space for metadata”, but it quickly revealed to be an versity to struggle through.">
+		<meta property="og:title" content="Understanding request limiting in Nginx">
+		<meta property="og:url" content="https://ibug.io/blog/2024/01/nginx-limit-req/">
+		<meta property="og:description" content="Nginx has a built-in module limit_req for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
-		<meta property="article:published_time" content="2022-06-19T00:00:00+00:00">
-		<meta property="article:modified_time" content="2022-06-19T22:06:07+00:00">
-		<link rel="canonical" href="https://ibug.io/blog/2022/06/lvm-metadata-full/">
+		<meta property="article:published_time" content="2024-01-23T00:00:00+00:00">
+		<meta property="article:modified_time" content="2024-01-23T06:00:45+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2024/01/nginx-limit-req/">
 		<script type="application/ld+json">
 			{
 			  "@context": "https://schema.org",
@@ -102,17 +102,17 @@
 >
 				<div class="wrapper">
 					<h1 id="page-title" class="page__title" itemprop="headline">
-						LVM metadata exceeds maximum metadata size, now what next?
+						Understanding request limiting in Nginx
 					</h1>
 					<p class="page__meta">
 						<span class="page__meta-date">
 							<i class="far fa-calendar-alt" aria-hidden="true"></i>
-							<time datetime="2022-06-19T00:00:00+00:00">Jun 19, 2022</time>
+							<time datetime="2024-01-23T00:00:00+00:00">Jan 23, 2024</time>
 						</span>
 						<span class="page__meta-sep"></span>
 						<span class="page__meta-readtime">
 							<i class="far fa-clock" aria-hidden="true"></i>
-							5 minute read
+							6 minute read
 						</span>
 					</p>
 				</div>
@@ -170,10 +170,10 @@
 					</nav>
 				</div>
 				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
-					<meta itemprop="headline" content="LVM metadata exceeds maximum metadata size, now what next?">
-					<meta itemprop="description" content="An LVM volume group (VG) on our Proxmox VE cluster has failed to create new logical volumes, reporting that its metadata was full. At first this appears to be easy, “fine I’ll just add more space for metadata”, but it quickly revealed to be an versity to struggle through.">
-					<meta itemprop="datePublished" content="2022-06-19T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2022-06-19T22:06:07+00:00">
+					<meta itemprop="headline" content="Understanding request limiting in Nginx">
+					<meta itemprop="description" content="Nginx has a built-in module limit_req for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.">
+					<meta itemprop="datePublished" content="2024-01-23T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2024-01-23T06:00:45+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -181,138 +181,200 @@
 									<header>
 										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
 									</header>
-									<ul class="toc__menu">
-										<li><a href="#problems">Problems</a>
-											<ul>
-												<li><a href="#1-metadata-is-an-ambiguous-term">1. “Metadata” is an ambiguous term</a></li>
-												<li><a href="#2-the-default-mda-size-is-fixed">2. The default MDA size is fixed</a></li>
-												<li><a href="#3-the-size-of-the-mda-cannot-be-changed-after-creation">3. The size of the MDA cannot be changed after creation</a></li>
-												<li><a href="#4-reducing-metadata-copies-does-not-free-up-space">4. Reducing “metadata copies” does not free up space</a></li>
-											</ul>
-										</li>
-										<li><a href="#finding-the-solution">Finding the solution</a></li>
-										<li><a href="#solution">Solution</a></li>
-										<li><a href="#caveats">Caveats</a></li>
-									</ul>
 								</nav>
 							</aside>
-							<p>An LVM volume group (VG) on our Proxmox VE cluster has failed to create new logical volumes, reporting that its metadata was full. At first this appears to be easy, “fine I’ll just add more space for metadata”, but it quickly revealed to be an versity to struggle through.</p>
-							<div class="language-console highlighter-rouge">
+							<p>Nginx has a built-in module <code class="language-plaintext highlighter-rouge">limit_req</code> for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.</p>
+							<p>As always, everything begins with <a href="https://nginx.org/en/docs/http/ngx_http_limit_req_module.html">the documentation</a>. A quick-start example is given:</p>
+							<div class="language-nginx highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>lvcreate <span class="nt">-L</span> 4M <span class="nt">-n</span> test-1721 <span class="nb">test</span>
-<span class="go">  VG test 1723 metadata on /dev/sdc1 (521759&nbsp;bytes) exceeds maximum metadata size (521472&nbsp;bytes)
-  Failed to write VG test.
-</span><span class="gp">root@iBug-Server:~#</span><span class="w"> </span><span class="c"># wut?</span>
+									<pre class="highlight"><code><span class="k">http</span> <span class="p">{</span>
+    <span class="kn">limit_req_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=one:10m</span> <span class="s">rate=1r/s</span><span class="p">;</span>
+
+    <span class="kn">...</span>
+
+    <span class="s">server</span> <span class="p">{</span>
+
+        <span class="kn">...</span>
+
+        <span class="s">location</span> <span class="n">/search/</span> <span class="p">{</span>
+            <span class="kn">limit_req</span> <span class="s">zone=one</span> <span class="s">burst=5</span><span class="p">;</span>
+        <span class="p">}</span>
 </code></pre>
 								</div>
 							</div>
-							<h2 id="problems">Problems</h2>
-							<p>It isn’t hard to imagine that, just like regular disks need a partition table, LVM also needs its “partition table”, called <em>LVM metadata</em>, to store its information about PVs, VGs and LVs. It grows with the complexity of a VG, like number of PVs and configuration of LVs.</p>
-							<p>The metadata size and capacity of a PV and a VG can be inspected with <code class="language-plaintext highlighter-rouge">pvdisplay</code> and <code class="language-plaintext highlighter-rouge">vgdisplay</code>, respectively.</p>
+							<p>The basis is the <code class="language-plaintext highlighter-rouge">limit_req_zone</code> directive, which defines a shared memory zone for storing the states of the rate-limiting. Its arguments include the key, the size and the name of the zone, followed by the average or sustained rate limit. The rate limit has two possible units: <code class="language-plaintext highlighter-rouge">r/s</code> or <code class="language-plaintext highlighter-rouge">r/m</code>. It also says</p>
+							<blockquote>
+								<p>The limitation is done using the “<a href="https://en.wikipedia.org/wiki/Leaky_bucket">leaky bucket</a>” method.</p>
+							</blockquote>
+							<p>So far so good, except the burst limit is … specified on where it’s used? Moving on for now.</p>
+							<p>The <code class="language-plaintext highlighter-rouge">limit_req</code> directive specifies when the requests should be limited.</p>
+							<blockquote>
+								<p>If the requests rate exceeds the rate configured for a zone, their processing is delayed such that requests are processed at a defined rate.</p>
+							</blockquote>
+							<p>Seems pretty clear but slightly counter-intuitive. By default, burst requests are queued up and delayed until the rate is below the limit, whereas most common rate-limiting implementations would simply serve them.</p>
+							<p>I find it easier to understand this model with a queue. Each key defines a queue where items are popped at the specified rate (e.g. <code class="language-plaintext highlighter-rouge">1r/s</code>). Incoming requests are added to the queue, and are only served <em>upon exiting</em> the queue. The queue size is defined by the burst limit, and excess requests are dropped when the queue is full.</p>
+							<p><img src="/image/server/nginx-limit-req.png" alt="Default queue behavior" /></p>
+							<p>The more common behavior, however, requires an extra option:</p>
+							<blockquote>
+								<p>If delaying of excessive requests while requests are being limited is not desired, the parameter <code class="language-plaintext highlighter-rouge">nodelay</code> should be used:</p>
+								<div class="language-nginx highlighter-rouge">
+									<div class="highlight">
+										<pre class="highlight"><code><span class="k">limit_req</span> <span class="s">zone=one</span> <span class="s">burst=5</span> <span class="s">nodelay</span><span class="p">;</span>
+</code></pre>
+									</div>
+  </div>
+							</blockquote>
+							<p>With <code class="language-plaintext highlighter-rouge">nodelay</code>, requests are served as soon as they <em>enter the queue</em>:</p>
+							<p><img src="/image/server/nginx-limit-req-nodelay.png" alt="nodelay queue behavior" /></p>
+							<p>The next confusing option, conflicting with <code class="language-plaintext highlighter-rouge">nodelay</code>, is <code class="language-plaintext highlighter-rouge">delay</code>:</p>
+							<blockquote>
+								<p>The <code class="language-plaintext highlighter-rouge">delay</code> parameter specifies a limit at which excessive requests become delayed. Default value is zero, i.e. all excessive requests are delayed.</p>
+							</blockquote>
+							<p>After a bit of fiddling, I realized the model is now like this:</p>
+							<p><img src="/image/server/nginx-limit-req-delay.png" alt="delay queue behavior" /></p>
+							<p>So what <code class="language-plaintext highlighter-rouge">delay</code> actually means is to delay requests after this “delay limit” is reached. In other words, requests are served as soon as they arrive at the n-th position in the front of the queue.</p>
+							<p>During all these testing, I wasn’t happy with existing tools for testing, so I wrote my own one, despite its simplicity: <a href="https://gist.github.com/iBug/351b458633ff89fea0fc9f0edd07fc28">GitHub Gist</a>.</p>
+							<p>With this new tool, I can now (textually) visualize the behavior of different options. Under the <code class="language-plaintext highlighter-rouge">burst=5</code> and <code class="language-plaintext highlighter-rouge">delay=1</code> setup, the output is like this:</p>
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>pvdisplay <span class="nt">-C</span> <span class="nt">-o</span> name,mda_size,mda_free
-<span class="go">  PV         PMdaSize  PMdaFree
-  /dev/sdc1   1020.00k        0
-</span><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>vgdisplay <span class="nt">-C</span> <span class="nt">-o</span> name,mda_size,mda_free
-<span class="go">  VG   VMdaSize  VMdaFree
-  test  1020.00k        0
+									<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/test
+<span class="go">[1] Done [0s] [200 in 2ms]
+[2] Done [10ms] [200 in 1ms]
+[3] Done [21ms] [200 in 981ms]
+[4] Done [31ms] [200 in 1.972s]
+[5] Done [42ms] [200 in 2.962s]
+[6] Done [53ms] [200 in 3.948s]
+[7] Done [64ms] [503 in 0s]
+[8] Done [75ms] [503 in 1ms]
+[9] Done [85ms] [503 in 0s]
+[10] Done [95ms] [503 in 0s]
 </span></code></pre>
 								</div>
 							</div>
-							<p>The metadata area (whence <code class="language-plaintext highlighter-rouge">mda</code>) is where LVM stores volume information. The trouble comes from the fact that LVM MDA has multiple oddities going against intuition, which adds to the complexity of findin a solution.</p>
-							<h3 id="1-metadata-is-an-ambiguous-term">1. “Metadata” is an ambiguous term</h3>
-							<p>If you just go ahead and search for “LVM metadata size”, you’ll be surprised to see how irrelevant the search results are. In fact, they’re about “thin pool metadata”, which is a discrete LV usually named <code class="language-plaintext highlighter-rouge">poolname_tmeta</code>.</p>
-							<p>In fact, the correct answer is in the man page, which should show up as the first Google result, <a href="https://man7.org/linux/man-pages/man8/pvcreate.8.html"><code class="language-plaintext highlighter-rouge">pvcreate(8)</code></a>. This is where I discovered the use of <code class="language-plaintext highlighter-rouge">pvs</code> and <code class="language-plaintext highlighter-rouge">vgs</code> to get the sizes.</p>
-							<h3 id="2-the-default-mda-size-is-fixed">2. The default MDA size is fixed</h3>
-							<p>Contrary to common expectations, the default value for MDA size is <em>fixed</em> and does not scale with PV size or VG size. This is explained in the man page, right above <code class="language-plaintext highlighter-rouge">pvs -o mda_size</code>.</p>
-							<p>This is not the case, however, for LVM Thin Pools. It’s not known what the design considerations are behind this.</p>
-							<h3 id="3-the-size-of-the-mda-cannot-be-changed-after-creation">3. The size of the MDA cannot be changed after creation</h3>
-							<p>As many would probably have, I also thought that “fine, I’ll just expand the size for the MDA”, and started digging through Google and relevant man pages. Another quarter-hour was spent trying to find how to do this, only to find that it can only be set at the creation of the PV. This was confirmed by <a href="https://forum.proxmox.com/threads/cannot-create-more-snapshot-without-deleting-some-olds-one.110112/">this Proxmox forum post</a>.</p>
-							<h3 id="4-reducing-metadata-copies-does-not-free-up-space">4. Reducing “metadata copies” does not free up space</h3>
-							<p>There’s also a <code class="language-plaintext highlighter-rouge">pvmetadatacopies</code> option listed in both <code class="language-plaintext highlighter-rouge">vgchange(8)</code> and <code class="language-plaintext highlighter-rouge">pvchange(8)</code>, which appears tempting to give a try. Unfortunately, opposite to intuition again, this does not free up half of the MDA space. Setting it to 1 down from the default 2 produces no visible changes.</p>
-							<h2 id="finding-the-solution">Finding the solution</h2>
-							<p>At this point I had figured out a silhouette for the problem I was facing: A VG on a single PV, fixed MDA size, no room to free up any metadata.</p>
-							<p>Fortunately, the shared SAN target supports “overcommitting”, meaning I can have an extra LUN with little effort. Given that the utilized storage is slightly over 50%, it’s not possible to move data onto the new LUN. Even if there were enough free space, moving data would take an infeasible amount of time. Ideally this new LUN shouldn’t be too large, to minimize possible aftermath should the underlying disk group goes full.</p>
-							<p>So, how can this trouble be overcome, with the help of a new LUN?</p>
-							<hr />
-							<p>Digging into this level of details, Google is unable to help, so I had to resort to man pages, if I did not have to check the source codes.</p>
-							<p>Looking at <code class="language-plaintext highlighter-rouge">pvchange(8)</code>, the only modifiable property of an existing PV is <code class="language-plaintext highlighter-rouge">metadataignore</code>. It instructs LVM to ignore the MDA for a PV.</p>
-							<p>A possible solution has arisen: Create a new PV with large enough MDA, merge it into the VG, and disable metadata storage on the old PV.</p>
-							<h2 id="solution">Solution</h2>
-							<p>I created a new LUN in the storage server’s dashboard and loaded it onto all servers in the cluster using <code class="language-plaintext highlighter-rouge">iscsiadm</code>:</p>
-							<div class="language-shell highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code>iscsiadm <span class="nt">-m</span> session <span class="nt">--rescan</span>
-</code></pre>
-								</div>
-							</div>
-							<p>The rescan may have some delay so I continued monitoring it for a minute before <code class="language-plaintext highlighter-rouge">/dev/sdd</code> showed up on all hosts.</p>
-							<p>Now I turn the new block device into a PV and add it to the problematic VG:</p>
-							<div class="language-shell highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code>pvcreate <span class="nt">--metadatasize</span> 64m /dev/sdd
-vgextend <span class="nb">test</span> /dev/sdd
-</code></pre>
-								</div>
-							</div>
-							<p>Partly to my surprise, a warning popped up:</p>
-							<div class="language-shell highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code>VG <span class="nb">test </span>1723 metadata on /dev/sdc1 <span class="o">(</span>521615&nbsp;bytes<span class="o">)</span> exceeds maximum metadata size <span class="o">(</span>521472&nbsp;bytes<span class="o">)</span>
-WARNING: Failed to write an MDA of VG test.
-Volume group <span class="s2">"test"</span> successfully extended
-</code></pre>
-								</div>
-							</div>
-							<p>This one isn’t hard to understand: The VG metadata must record the identifiers of all participating PVs, so adding a PV means more metadata to be stored.</p>
-							<p>So before pulling this off, I had to remove a LV temporarily. I had a few laying around for testing purposes, so finding one to get rid of was not hard. After that I could repeat the <code class="language-plaintext highlighter-rouge">vgextend</code> command without a single warning.</p>
-							<p>Next I exclude the original PV from storing metadata:</p>
-							<div class="language-shell highlighter-rouge">
-								<div class="highlight">
-									<pre class="highlight"><code>pvchange <span class="nt">--metadataignore</span> y /dev/sdc1
-</code></pre>
-								</div>
-							</div>
-							<p>Now I can add another LV inside this VG without error:</p>
+							<p>If you try the tool yourself, the HTTP status codes are colored for even better prominence.</p>
+							<p>In the above example, the first request is served immediately as it also exits the queue immediately. The second request is queued at the front, and because <code class="language-plaintext highlighter-rouge">delay=1</code>, it’s also served immediately. Subsequent requests are queued up until the sixth when the queue becomes full. The seventh and thereafter are dropped.</p>
+							<p>If we change <code class="language-plaintext highlighter-rouge">delay=0</code>, the output becomes:</p>
 							<div class="language-console highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>lvcreate <span class="nt">-L</span> 1M <span class="nt">-n</span> test-1721 <span class="nb">test</span>
-<span class="go">  Rounding up size to full physical extent 4.00&nbsp;MiB
-  Logical volume "test-1721" created.
-</span><span class="gp">root@iBug-Server:~#</span><span class="w"> </span>pvs <span class="nt">-o</span> name,mda_size,mda_free
-<span class="go">  PV         PMdaSize  PMdaFree
-  /dev/sdc1   1020.00k        0
-  /dev/sdd     &lt;65.00m   &lt;32.00m
+									<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/test
+<span class="go">[1] Done [0s] [200 in 2ms]
+[2] Done [10ms] [200 in 993ms]
+[3] Done [21ms] [200 in 1.982s]
+[4] Done [32ms] [200 in 2.973s]
+[5] Done [43ms] [200 in 3.959s]
+[6] Done [54ms] [200 in 4.949s]
+[7] Done [65ms] [503 in 1ms]
+[8] Done [75ms] [503 in 1ms]
+[9] Done [85ms] [503 in 2ms]
+[10] Done [96ms] [503 in 1ms]
 </span></code></pre>
 								</div>
 							</div>
-							<h2 id="caveats">Caveats</h2>
-							<p>LVM by default stores an identical copy of the metadata on every PV that belongs to the same VG. Using this “solution”, the complete metadata is only stored on the newly created PV. You certainly want to use reliable storage for this new PV as it’s now a <a href="https://en.wikipedia.org/wiki/Single_point_of_failure">SPOF</a> of the whole VG.</p>
-							<p>If in any case you want a copy of the metadata for inspection or to recover a failed VG (hope you don’t need to do that), LVM maintains automatic backups under <code class="language-plaintext highlighter-rouge">/etc/lvm/backup</code>. They’re in their original form, are text-based (so easily readable), and are ready for use with <code class="language-plaintext highlighter-rouge">vgcfgrestore</code>.</p>
-							<p>Indeed, the recommended solution is to create a new, larger VG and migrate your data ASAP. After all, data security matters the most.</p>
+							<p>Still only the first 6 requests are served, but the 2nd to the 6th are delayed by an additional second due to the removal of <code class="language-plaintext highlighter-rouge">delay=1</code>.</p>
+							<p>Under this model, the <code class="language-plaintext highlighter-rouge">nodelay</code> option can be understood as <code class="language-plaintext highlighter-rouge">delay=infinity</code>, while still respecting the <code class="language-plaintext highlighter-rouge">burst</code> limit.</p>
+							<p>One last question: Why is the burst limit specified at use time, instead of at zone definition? Only experiments can find out:</p>
+							<div class="language-nginx highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">location</span> <span class="n">/a</span> <span class="p">{</span>
+    <span class="kn">limit_req</span> <span class="s">zone=test</span> <span class="s">burst=1</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">location</span> <span class="n">/b</span> <span class="p">{</span>
+    <span class="kn">limit_req</span> <span class="s">zone=test</span> <span class="s">burst=5</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Then I fire up two simultaneous batches of 10 requests each to <code class="language-plaintext highlighter-rouge">/a</code> and <code class="language-plaintext highlighter-rouge">/b</code> respectively:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/a
+<span class="go">[1] Done [0s] [200 in 2ms]
+[2] Done [10ms] [200 in 992ms]
+[3] Done [21ms] [503 in 0s]
+[4] Done [32ms] [503 in 0s]
+[5] Done [42ms] [503 in 0s]
+[6] Done [53ms] [503 in 0s]
+[7] Done [63ms] [503 in 0s]
+[8] Done [73ms] [503 in 0s]
+[9] Done [83ms] [503 in 0s]
+[10] Done [94ms] [503 in 0s]
+</span></code></pre>
+								</div>
+							</div>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/b
+<span class="go">[1] Done [0s] [200 in 1.862s]
+[2] Done [11ms] [200 in 2.852s]
+[3] Done [21ms] [200 in 3.842s]
+[4] Done [32ms] [200 in 4.832s]
+[5] Done [43ms] [503 in 1ms]
+[6] Done [54ms] [503 in 0s]
+[7] Done [64ms] [503 in 0s]
+[8] Done [75ms] [503 in 1ms]
+[9] Done [85ms] [503 in 0s]
+[10] Done [95ms] [503 in 1ms]
+</span></code></pre>
+								</div>
+							</div>
+							<p>As can be seen from the output, the batch to <code class="language-plaintext highlighter-rouge">/a</code> is served as usual, but the batch to <code class="language-plaintext highlighter-rouge">/b</code> is significantly delayed, and two fewer requests are served.</p>
+							<p>If I reverse the order of sending the batches, the result is different again:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/b
+<span class="go">[1] Done [0s] [200 in 2ms]
+[2] Done [10ms] [200 in 993ms]
+[3] Done [20ms] [200 in 1.982s]
+[4] Done [31ms] [200 in 2.974s]
+[5] Done [42ms] [200 in 3.963s]
+[6] Done [52ms] [200 in 4.955s]
+[7] Done [63ms] [503 in 0s]
+[8] Done [74ms] [503 in 0s]
+[9] Done [84ms] [503 in 0s]
+[10] Done [95ms] [503 in 0s]
+</span></code></pre>
+								</div>
+							</div>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/a
+<span class="go">[1] Done [0s] [503 in 1ms]
+[2] Done [10ms] [503 in 1ms]
+[3] Done [20ms] [503 in 0s]
+[4] Done [31ms] [503 in 0s]
+[5] Done [42ms] [503 in 0s]
+[6] Done [52ms] [503 in 0s]
+[7] Done [63ms] [503 in 1ms]
+[8] Done [73ms] [503 in 0s]
+[9] Done [83ms] [503 in 0s]
+[10] Done [93ms] [503 in 0s]
+</span></code></pre>
+								</div>
+							</div>
+							<p>This time the batch to <code class="language-plaintext highlighter-rouge">/b</code> is served as usual, but the entire batch to <code class="language-plaintext highlighter-rouge">/a</code> is rejected.</p>
+							<p>I am now convinced that the queue itself is shared between <code class="language-plaintext highlighter-rouge">/a</code> and <code class="language-plaintext highlighter-rouge">/b</code>, and each <code class="language-plaintext highlighter-rouge">limit_req</code> directive decides for itself whether and when to serve the requests. So when <code class="language-plaintext highlighter-rouge">/a</code> is served first, the queue holds one burst request, and <code class="language-plaintext highlighter-rouge">/b</code> fills the queue up to 5 requests. When <code class="language-plaintext highlighter-rouge">/b</code> is served first, the queue is already holding 5 requests and leaves no room for <code class="language-plaintext highlighter-rouge">/a</code>. Similarly, with the <code class="language-plaintext highlighter-rouge">delay</code> option, each <code class="language-plaintext highlighter-rouge">limit_req</code> directive can still decide when the request is ready to serve.</p>
+							<p>This is probably not the most straightforward design, and I can’t come up with a use case for this behavior. But at least now I understand how it works.</p>
 						</section>
 						<footer class="page__meta">
 							<p class="page__taxonomy">
 								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
 								<span itemprop="keywords">
-									<a href="/tag/linux" class="page__taxonomy-item" rel="tag">linux</a><span class="sep">, </span>
+									<a href="/tag/nginx" class="page__taxonomy-item" rel="tag">nginx</a><span class="sep">, </span>
 									<a href="/tag/server" class="page__taxonomy-item" rel="tag">server</a>
 								</span>
 							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-06-19">Jun 19, 2022</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2024-01-23">Jan 23, 2024</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
-							<a href="https://twitter.com/intent/tweet?text=LVM+metadata+exceeds+maximum+metadata+size%2C+now+what+next%3F%20https%3A%2F%2Fibug.io%2Fblog%2F2022%2F06%2Flvm-metadata-full%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
-							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2022%2F06%2Flvm-metadata-full%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
-							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2022%2F06%2Flvm-metadata-full%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+							<a href="https://twitter.com/intent/tweet?text=Understanding+request+limiting+in+Nginx%20https%3A%2F%2Fibug.io%2Fblog%2F2024%2F01%2Fnginx-limit-req%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2024%2F01%2Fnginx-limit-req%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2024%2F01%2Fnginx-limit-req%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
 						</section>
 						<nav class="pagination">
-							<a href="/blog/2022/05/programming-24-game/" class="pagination--pager" title="Taking the 24 puzzle game to the next level
+							<a href="/blog/2024/01/weather-forecast-with-grafana/" class="pagination--pager" title="Visualizing Weather Forecast with Grafana
 ">Previous</a>
-							<a href="/blog/2022/11/paper-reading-cidr2022-crotty/" class="pagination--pager" title="Paper Reading: Are You Sure You Want to Use MMAP in Your Database Management System?
-">Next</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
 						</nav>
 					</div>
 					<div class="page__comments">
@@ -398,23 +460,23 @@ Volume group <span class="s2">"test"</span> successfully extended
 						<div class="grid__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<div class="archive__item-teaser">
-									<img src="/image/teaser/ldap.jpg" alt="">
+									<img src="/image/teaser/vpn-imagine.jpg" alt="">
 								</div>
 								<div class="archive__item-text">
 									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
+										<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
 										</a>
 									</h2>
-									<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
+									<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
 									<p class="page__meta">
 										<span class="page__meta-date">
 											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
+											<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
 										</span>
 										<span class="page__meta-sep"></span>
 										<span class="page__meta-readtime">
 											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											14 minute read
+											15 minute read
 										</span>
 									</p>
 								</div>
@@ -545,8 +607,8 @@ Volume group <span class="s2">"test"</span> successfully extended
 		</script>
 		<script>
 			var disqus_config = function () {
-			  this.page.url = "https://ibug.io/blog/2022/06/lvm-metadata-full/";  /* Replace PAGE_URL with your page's canonical URL variable */
-			  this.page.identifier = "/blog/2022/06/lvm-metadata-full"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			  this.page.url = "https://ibug.io/blog/2024/01/nginx-limit-req/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2024/01/nginx-limit-req"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
 			};
 			(function() { /* DON'T EDIT BELOW THIS LINE */
 			  var d = document, s = d.createElement('script');

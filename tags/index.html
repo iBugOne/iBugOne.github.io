@@ -38,7 +38,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=3d493c2">
+		<link rel="stylesheet" href="/assets/css/main.css?v=f6783be">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -163,13 +163,13 @@
 							</a>
 						</li>
 						<li>
-							<a href="#development">
-								<strong>development</strong> <span class="taxonomy__count">7</span>
+							<a href="#server">
+								<strong>server</strong> <span class="taxonomy__count">8</span>
 							</a>
 						</li>
 						<li>
-							<a href="#server">
-								<strong>server</strong> <span class="taxonomy__count">7</span>
+							<a href="#development">
+								<strong>development</strong> <span class="taxonomy__count">7</span>
 							</a>
 						</li>
 						<li>
@@ -305,6 +305,11 @@
 						<li>
 							<a href="#zfs">
 								<strong>zfs</strong> <span class="taxonomy__count">1</span>
+							</a>
+						</li>
+						<li>
+							<a href="#nginx">
+								<strong>nginx</strong> <span class="taxonomy__count">1</span>
 							</a>
 						</li>
 					</ul>
@@ -794,21 +799,21 @@
 						</div>
 						<a href="#page-title" class="back-to-top">Back to top &uarr;</a>
 					</section>
-					<section id="development" class="taxonomy__section">
-						<h2 class="archive__subtitle">development</h2>
+					<section id="server" class="taxonomy__section">
+						<h2 class="archive__subtitle">server</h2>
 						<div class="entries-list">
 							<div class="list__item">
 								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 									<div class="archive__item-text">
 										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2023/04/checkin-infrastructure/" rel="permalink">My automated Daily Health Report infrastructure
+											<a href="/blog/2024/01/nginx-limit-req/" rel="permalink">Understanding request limiting in Nginx
 											</a>
 										</h2>
-										<p class="archive__item-excerpt" itemprop="description">Back in the days when the Zero COVID policy was prevailing, our university introduced a Daily Health Report system. Students and faculty were mandated to submit a daily online form detailing their ...</p>
+										<p class="archive__item-excerpt" itemprop="description">Nginx has a built-in module limit_req for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happe...</p>
 										<p class="page__meta">
 											<span class="page__meta-date">
 												<i class="far fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2023-04-23T00:00:00+00:00">Apr 23, 2023</time>
+												<time datetime="2024-01-23T00:00:00+00:00">Jan 23, 2024</time>
 											</span>
 											<span class="page__meta-sep"></span>
 											<span class="page__meta-readtime">
@@ -819,151 +824,6 @@
 									</div>
 								</article>
 							</div>
-							<div class="list__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2023/01/overengineering-adventofcode/" rel="permalink">Overengineering Advent of Code 2022
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">Advent of Code (Wikipedia, link) is an annual event that releases a programming puzzle every day from December 1 to December 25. It’s a great chance to learn a new language or practice your skills.
-										</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2023-01-08T00:00:00+00:00">Jan 8, 2023</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-clock" aria-hidden="true"></i>
-												9 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="list__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-teaser">
-										<img src="/image/teaser/24.png" alt="">
-									</div>
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2022/05/programming-24-game/" rel="permalink">Taking the 24 puzzle game to the next level
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now a...</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2022-05-25T00:00:00+00:00">May 25, 2022</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-clock" aria-hidden="true"></i>
-												19 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="list__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2019/02/bootstrapping-make/" rel="permalink">Bootstrapping Make
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">Have C or C++ project to build? You may think, “Yeah this is very easy, I’ll just call the compiler to do so”, and yes, let’s take a look at an example.
-										</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2019-02-25T00:00:00+00:00">Feb 25, 2019</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-clock" aria-hidden="true"></i>
-												4 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="list__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2018/11/program-nexys4-ddr-with-storage/" rel="permalink">Programming the On-Board SPI Flash of Digilent Nexys4 DDR
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">This semester I have the course “Experiments of Digital Circuits”, the content of which is designing digital circuits using Vivado software, and writing Verilog code. Most of the lab papers require...</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2018-11-16T00:00:00+00:00">Nov 16, 2018</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-clock" aria-hidden="true"></i>
-												less than 1 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="list__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2018/09/batch-convert-with-vbs/" rel="permalink">Batch convert PowerPoint slideshow to PDF
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">The TL:DR line: If you want my script, you can get it here.
-										</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2018-09-12T00:00:00+00:00">Sep 12, 2018</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-clock" aria-hidden="true"></i>
-												1 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="list__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2018/05/python-reversi/" rel="permalink">Making a Reversi game with Python
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">As a casual attempt to accomplish a Grand Assignment, I created a Reversi game with Python. The project is open-source on GitHub and you can view it with the link above.
-										</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2018-05-10T00:00:00+00:00">May 10, 2018</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-clock" aria-hidden="true"></i>
-												3 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-						</div>
-						<a href="#page-title" class="back-to-top">Back to top &uarr;</a>
-					</section>
-					<section id="server" class="taxonomy__section">
-						<h2 class="archive__subtitle">server</h2>
-						<div class="entries-list">
 							<div class="list__item">
 								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 									<div class="archive__item-teaser">
@@ -1129,6 +989,173 @@
 											<span class="page__meta-readtime">
 												<i class="far fa-clock" aria-hidden="true"></i>
 												7 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+						</div>
+						<a href="#page-title" class="back-to-top">Back to top &uarr;</a>
+					</section>
+					<section id="development" class="taxonomy__section">
+						<h2 class="archive__subtitle">development</h2>
+						<div class="entries-list">
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2023/04/checkin-infrastructure/" rel="permalink">My automated Daily Health Report infrastructure
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">Back in the days when the Zero COVID policy was prevailing, our university introduced a Daily Health Report system. Students and faculty were mandated to submit a daily online form detailing their ...</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2023-04-23T00:00:00+00:00">Apr 23, 2023</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												6 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2023/01/overengineering-adventofcode/" rel="permalink">Overengineering Advent of Code 2022
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">Advent of Code (Wikipedia, link) is an annual event that releases a programming puzzle every day from December 1 to December 25. It’s a great chance to learn a new language or practice your skills.
+										</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2023-01-08T00:00:00+00:00">Jan 8, 2023</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												9 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-teaser">
+										<img src="/image/teaser/24.png" alt="">
+									</div>
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2022/05/programming-24-game/" rel="permalink">Taking the 24 puzzle game to the next level
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now a...</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2022-05-25T00:00:00+00:00">May 25, 2022</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												19 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2019/02/bootstrapping-make/" rel="permalink">Bootstrapping Make
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">Have C or C++ project to build? You may think, “Yeah this is very easy, I’ll just call the compiler to do so”, and yes, let’s take a look at an example.
+										</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2019-02-25T00:00:00+00:00">Feb 25, 2019</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												4 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2018/11/program-nexys4-ddr-with-storage/" rel="permalink">Programming the On-Board SPI Flash of Digilent Nexys4 DDR
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">This semester I have the course “Experiments of Digital Circuits”, the content of which is designing digital circuits using Vivado software, and writing Verilog code. Most of the lab papers require...</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2018-11-16T00:00:00+00:00">Nov 16, 2018</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												less than 1 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2018/09/batch-convert-with-vbs/" rel="permalink">Batch convert PowerPoint slideshow to PDF
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">The TL:DR line: If you want my script, you can get it here.
+										</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2018-09-12T00:00:00+00:00">Sep 12, 2018</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												1 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2018/05/python-reversi/" rel="permalink">Making a Reversi game with Python
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">As a casual attempt to accomplish a Grand Assignment, I created a Reversi game with Python. The project is open-source on GitHub and you can view it with the link above.
+										</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2018-05-10T00:00:00+00:00">May 10, 2018</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												3 minute read
 											</span>
 										</p>
 									</div>
@@ -2653,6 +2680,34 @@
 						</div>
 						<a href="#page-title" class="back-to-top">Back to top &uarr;</a>
 					</section>
+					<section id="nginx" class="taxonomy__section">
+						<h2 class="archive__subtitle">nginx</h2>
+						<div class="entries-list">
+							<div class="list__item">
+								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+									<div class="archive__item-text">
+										<h2 class="archive__item-title no_toc" itemprop="headline">
+											<a href="/blog/2024/01/nginx-limit-req/" rel="permalink">Understanding request limiting in Nginx
+											</a>
+										</h2>
+										<p class="archive__item-excerpt" itemprop="description">Nginx has a built-in module limit_req for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happe...</p>
+										<p class="page__meta">
+											<span class="page__meta-date">
+												<i class="far fa-calendar-alt" aria-hidden="true"></i>
+												<time datetime="2024-01-23T00:00:00+00:00">Jan 23, 2024</time>
+											</span>
+											<span class="page__meta-sep"></span>
+											<span class="page__meta-readtime">
+												<i class="far fa-clock" aria-hidden="true"></i>
+												6 minute read
+											</span>
+										</p>
+									</div>
+								</article>
+							</div>
+						</div>
+						<a href="#page-title" class="back-to-top">Back to top &uarr;</a>
+					</section>
 				</div>
 			</div>
 		</div>
@@ -2679,7 +2734,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-839</a>
+						Site version <a href="/status" class="version-text">G-840</a>
 					</p>
 				</div>
 			</footer>
