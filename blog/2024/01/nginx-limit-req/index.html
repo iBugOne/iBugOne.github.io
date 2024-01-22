@@ -9,14 +9,14 @@
 	<head>
 		<meta charset="utf-8">
 		<!-- begin _includes/seo.html -->
-		<title>Understanding request limiting in Nginx - iBug</title>
+		<title>Request limiting in Nginx - iBug</title>
 		<meta name="description" content="Nginx has a built-in module limit_req for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.">
 		<meta name="author" content="iBug">
 		<meta property="article:author" content="iBug">
 		<meta property="og:type" content="article">
 		<meta property="og:locale" content="en_US">
 		<meta property="og:site_name" content="iBug">
-		<meta property="og:title" content="Understanding request limiting in Nginx">
+		<meta property="og:title" content="Request limiting in Nginx">
 		<meta property="og:url" content="https://ibug.io/blog/2024/01/nginx-limit-req/">
 		<meta property="og:description" content="Nginx has a built-in module limit_req for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=f6783be">
+		<link rel="stylesheet" href="/assets/css/main.css?v=946d388">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -102,7 +102,7 @@
 >
 				<div class="wrapper">
 					<h1 id="page-title" class="page__title" itemprop="headline">
-						Understanding request limiting in Nginx
+						Request limiting in Nginx
 					</h1>
 					<p class="page__meta">
 						<span class="page__meta-date">
@@ -170,7 +170,7 @@
 					</nav>
 				</div>
 				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
-					<meta itemprop="headline" content="Understanding request limiting in Nginx">
+					<meta itemprop="headline" content="Request limiting in Nginx">
 					<meta itemprop="description" content="Nginx has a built-in module limit_req for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.">
 					<meta itemprop="datePublished" content="2024-01-23T00:00:00+00:00">
 					<meta itemprop="dateModified" content="2024-01-23T06:00:45+00:00">
@@ -367,7 +367,7 @@
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
-							<a href="https://twitter.com/intent/tweet?text=Understanding+request+limiting+in+Nginx%20https%3A%2F%2Fibug.io%2Fblog%2F2024%2F01%2Fnginx-limit-req%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://twitter.com/intent/tweet?text=Request+limiting+in+Nginx%20https%3A%2F%2Fibug.io%2Fblog%2F2024%2F01%2Fnginx-limit-req%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
 							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2024%2F01%2Fnginx-limit-req%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
 							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2024%2F01%2Fnginx-limit-req%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
 						</section>
@@ -509,7 +509,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-840</a>
+						Site version <a href="/status" class="version-text">G-841</a>
 					</p>
 				</div>
 			</footer>
