@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-01-22T22:05:08+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Request limiting in Nginx</title><link href="https://ibug.io/blog/2024/01/nginx-limit-req/" rel="alternate" type="text/html" title="Request limiting in Nginx" /><published>2024-01-23T00:00:00+00:00</published><updated>2024-01-23T06:00:45+00:00</updated><id>https://ibug.io/blog/2024/01/nginx-limit-req</id><content type="html" xml:base="https://ibug.io/blog/2024/01/nginx-limit-req/"><![CDATA[<p>Nginx has a built-in module <code class="language-plaintext highlighter-rouge">limit_req</code> for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-01-22T22:16:01+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Request limiting in Nginx</title><link href="https://ibug.io/blog/2024/01/nginx-limit-req/" rel="alternate" type="text/html" title="Request limiting in Nginx" /><published>2024-01-23T00:00:00+00:00</published><updated>2024-01-23T06:15:20+00:00</updated><id>https://ibug.io/blog/2024/01/nginx-limit-req</id><content type="html" xml:base="https://ibug.io/blog/2024/01/nginx-limit-req/"><![CDATA[<p>Nginx has a built-in module <code class="language-plaintext highlighter-rouge">limit_req</code> for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.</p>
 			<p>As always, everything begins with <a href="https://nginx.org/en/docs/http/ngx_http_limit_req_module.html">the documentation</a>. A quick-start example is given:</p>
 			<div class="language-nginx highlighter-rouge">
 				<div class="highlight">
@@ -83,7 +83,8 @@
 			</div>
 			<p>Still only the first 6 requests are served, but the 2nd to the 6th are delayed by an additional second due to the removal of <code class="language-plaintext highlighter-rouge">delay=1</code>.</p>
 			<p>Under this model, the <code class="language-plaintext highlighter-rouge">nodelay</code> option can be understood as <code class="language-plaintext highlighter-rouge">delay=infinity</code>, while still respecting the <code class="language-plaintext highlighter-rouge">burst</code> limit.</p>
-			<p>One last question: Why is the burst limit specified at use time, instead of at zone definition? Only experiments can find out:</p>
+			<h2 id="one-more-question">One more question</h2>
+			<p>Why is the burst limit specified at use time, instead of at zone definition? Only experiments can find out:</p>
 			<div class="language-nginx highlighter-rouge">
 				<div class="highlight">
 					<pre class="highlight"><code><span class="k">location</span> <span class="n">/a</span> <span class="p">{</span>
@@ -165,6 +166,42 @@
 			<p>This time the batch to <code class="language-plaintext highlighter-rouge">/b</code> is served as usual, but the entire batch to <code class="language-plaintext highlighter-rouge">/a</code> is rejected.</p>
 			<p>I am now convinced that the queue itself is shared between <code class="language-plaintext highlighter-rouge">/a</code> and <code class="language-plaintext highlighter-rouge">/b</code>, and each <code class="language-plaintext highlighter-rouge">limit_req</code> directive decides for itself whether and when to serve the requests. So when <code class="language-plaintext highlighter-rouge">/a</code> is served first, the queue holds one burst request, and <code class="language-plaintext highlighter-rouge">/b</code> fills the queue up to 5 requests. When <code class="language-plaintext highlighter-rouge">/b</code> is served first, the queue is already holding 5 requests and leaves no room for <code class="language-plaintext highlighter-rouge">/a</code>. Similarly, with the <code class="language-plaintext highlighter-rouge">delay</code> option, each <code class="language-plaintext highlighter-rouge">limit_req</code> directive can still decide when the request is ready to serve.</p>
 			<p>This is probably not the most straightforward design, and I can’t come up with a use case for this behavior. But at least now I understand how it works.</p>
+			<h2 id="one-last-thing">One last thing</h2>
+			<p>I originally wanted to set up a 403 page for banned clients, and wanted to limit the rate of log writing in case of an influx of requests. The limit_req module does provide a <code class="language-plaintext highlighter-rouge">$limit_req_status</code> variable which appears to be useful. This is how I ended up with:</p>
+			<div class="language-nginx highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="k">limit_req_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=403:64k</span> <span class="s">rate=1r/s</span><span class="p">;</span>
+
+<span class="k">map</span> <span class="nv">$limit_req_status</span> <span class="nv">$loggable_403</span> <span class="p">{</span>
+    <span class="kn">default</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="kn">PASSED</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kn">DELAYED</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="kn">DELAYED_DRY_RUN</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">server</span> <span class="p">{</span>
+    <span class="kn">access_log</span> <span class="n">/var/log/nginx/403/access.log</span> <span class="s">main</span> <span class="s">if=</span><span class="nv">$loggable_403</span><span class="p">;</span>
+    <span class="kn">error_log</span> <span class="n">/var/log/nginx/403/error.log</span> <span class="s">warn</span><span class="p">;</span>
+    <span class="kn">error_page</span> <span class="mi">403</span> <span class="n">/403.html</span><span class="p">;</span>
+    <span class="kn">error_page</span> <span class="mi">404</span> <span class="p">=</span><span class="mi">403</span> <span class="n">/403.html</span><span class="p">;</span>
+    <span class="kn">limit_req</span> <span class="s">zone=403</span><span class="p">;</span>
+    <span class="kn">limit_req_status</span> <span class="mi">403</span><span class="p">;</span>
+    <span class="kn">limit_req_log_level</span> <span class="s">info</span><span class="p">;</span>
+
+    <span class="kn">location</span> <span class="n">/</span> <span class="p">{</span>
+        <span class="kn">return</span> <span class="mi">403</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="kn">location</span> <span class="p">=</span> <span class="n">/403.html</span> <span class="p">{</span>
+        <span class="kn">internal</span><span class="p">;</span>
+        <span class="kn">root</span> <span class="n">/srv/nginx</span><span class="p">;</span>
+        <span class="kn">sub_filter</span> <span class="s">"%remote_addr%"</span> <span class="s">"</span><span class="nv">$remote_addr</span><span class="s">"</span><span class="p">;</span>
+        <span class="kn">sub_filter_once</span> <span class="no">off</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+				</div>
+			</div>
+			<p>With this setup, excessive requests are rejected by <code class="language-plaintext highlighter-rouge">limit_req</code> with a 403 status. Only <code class="language-plaintext highlighter-rouge">1r/s</code> passes through the rate limiting, which will carry the <code class="language-plaintext highlighter-rouge">PASSED</code> status and be logged, albeit still seeing the 403 page from the <code class="language-plaintext highlighter-rouge">return 403</code> rule. This does exactly what I want, so time to call it a day.</p>
 			]]></content><author><name>iBug</name></author><category term="server" /><category term="nginx" /><summary type="html"><![CDATA[Nginx has a built-in module limit_req for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.]]></summary></entry><entry><title type="html">Visualizing Weather Forecast with Grafana</title><link href="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/" rel="alternate" type="text/html" title="Visualizing Weather Forecast with Grafana" /><published>2024-01-08T00:00:00+00:00</published><updated>2024-01-08T04:40:54+00:00</updated><id>https://ibug.io/blog/2024/01/weather-forecast-with-grafana</id><content type="html" xml:base="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/"><![CDATA[<p>Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get it to work as a weather forecast dashboard, instead of any historical time-series data.</p>
 		<p>I choose <a href="https://open.caiyunapp.com/%E5%BD%A9%E4%BA%91%E5%A4%A9%E6%B0%94_API_%E4%B8%80%E8%A7%88%E8%A1%A8">CaiYun Weather (彩云天气) API</a> for having previous experience with it, as well as its unlimited free tier. I must admit that I initially came up with this idea for having seen the presence of <a href="https://grafana.com/grafana/plugins/marcusolsson-json-datasource/">JSON API datasource plugin</a> for Grafana, which reminds me of CaiYun’s JSON API being a perfect fit.</p>
 		<h2 id="json-api-datasource">JSON API Datasource</h2>
