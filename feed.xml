@@ -1,8 +1,71 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-02-24T06:06:31+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Request limiting in Nginx</title><link href="https://ibug.io/blog/2024/01/nginx-limit-req/" rel="alternate" type="text/html" title="Request limiting in Nginx" /><published>2024-01-23T00:00:00+00:00</published><updated>2024-01-23T06:15:20+00:00</updated><id>https://ibug.io/blog/2024/01/nginx-limit-req</id><content type="html" xml:base="https://ibug.io/blog/2024/01/nginx-limit-req/"><![CDATA[<p>Nginx has a built-in module <code class="language-plaintext highlighter-rouge">limit_req</code> for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.</p>
-			<p>As always, everything begins with <a href="https://nginx.org/en/docs/http/ngx_http_limit_req_module.html">the documentation</a>. A quick-start example is given:</p>
-			<div class="language-nginx highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">http</span> <span class="p">{</span>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-02-28T10:33:48+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">My firewall solution for RDP</title><link href="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/" rel="alternate" type="text/html" title="My firewall solution for RDP" /><published>2024-02-28T00:00:00+00:00</published><updated>2024-02-28T18:33:21+00:00</updated><id>https://ibug.io/blog/2024/02/linux-firewall-for-rdp</id><content type="html" xml:base="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/"><![CDATA[<p>Today I stumbled upon <a href="https://www.v2ex.com/t/1019147">this V2EX post</a> (Simplified Chinese) where the OP shared their PowerShell implementation of a “makeshift fail2ban” for RDP. Their script looked very clean and robust, but needless to say, it is unnecessarily difficult on Windows. So on this rare (maybe?) occasion I decide to share my firewall for securing RDP access to my Windows hosts.</p>
+			<p><strong>None</strong> of my Windows hosts (PCs and VMs) has their RDP port exposed to the public internet directly, and they’re all connected to my mesh VPN (which is out of scope for this blog article). My primary public internet entry gateway for the intranet runs Debian with fully manually configured iptables-based firewall, and I frequently work on it through SSH.</p>
+			<p>My goal is to expose the RDP port only to myself. There are a few obvious solutions eliminated for different reasons:</p>
+			<ul>
+				<li><strong>VPN</strong> is inconvenient as I don’t want to connect to VPN just for RDP when I don’t need it otherwise.</li>
+				<li><strong>SSH port forwarding</strong> is not performant for two things: Double-encryption and lack of UDP support.</li>
+			</ul>
+			<p>The question arises that if SSH access is sufficiently convenient, why not use it as an authentication and authorization mechanism? So I came up with this:</p>
+			<ul>
+				<li>
+					<p>A pre-configured iptables rule set to allow RDP access from a specific IP set. For example:</p>
+					<div class="language-shell highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code>  <span class="k">*</span>filter
+  :FORWARD DROP
+  <span class="nt">-A</span> FORWARD <span class="nt">-d</span> 192.0.2.1 <span class="nt">-p</span> tcp <span class="nt">--dport</span> 3389 <span class="nt">-m</span> <span class="nb">set</span> <span class="nt">--set</span> ibug <span class="nt">-j</span> ACCEPT
+
+  <span class="k">*</span>nat
+  <span class="nt">-A</span> RDPForward <span class="nt">-p</span> tcp <span class="nt">--dport</span> 3389 <span class="nt">-j</span> DNAT <span class="nt">--to-destination</span> 192.0.2.1:3389
+  <span class="nt">-A</span> RDPForward <span class="nt">-p</span> udp <span class="nt">--dport</span> 3389 <span class="nt">-j</span> DNAT <span class="nt">--to-destination</span> 192.0.2.1:3389
+</code></pre>
+						</div>
+    </div>
+				</li>
+				<li>
+					<p>A way to keep the client address in the set for the duration of the SSH session. I use SSH user rc file to proactively refresh it:</p>
+					<div class="language-shell highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code>  <span class="c">#!/bin/bash</span>
+  <span class="c"># rwxr-xr-x ~/.ssh/rc</span>
+
+  <span class="k">if</span> <span class="o">[</span> <span class="nt">-z</span> <span class="s2">"</span><span class="nv">$BASH</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span><span class="nb">exec</span> /bin/bash <span class="nt">--</span> <span class="s2">"</span><span class="nv">$0</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span>
+    <span class="nb">exit </span>1
+  <span class="k">fi
+
+  </span><span class="nv">_ssh_client</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">SSH_CONNECTION</span><span class="p">%% *</span><span class="k">}</span><span class="s2">"</span>
+  <span class="nv">_ppid</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>ps <span class="nt">-o</span> <span class="nv">ppid</span><span class="o">=</span> <span class="si">$(</span>ps <span class="nt">-o</span> <span class="nv">ppid</span><span class="o">=</span> <span class="nv">$PPID</span><span class="si">))</span><span class="s2">"</span>
+
+  <span class="nb">nohup</span> ~/.local/bin/_ssh_refresh_client <span class="s2">"</span><span class="nv">$_ssh_client</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$_ppid</span><span class="s2">"</span> &amp;&gt;/dev/null &amp; <span class="nb">exit </span>0
+</code></pre>
+						</div>
+    </div>
+					<div class="language-shell highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code>  <span class="c">#!/bin/sh</span>
+  <span class="c"># rwxr-xr-x ~/.local/bin/_ssh_refresh_client</span>
+  <span class="nv">_ssh_client</span><span class="o">=</span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>
+  <span class="nv">_ppid</span><span class="o">=</span><span class="s2">"</span><span class="nv">$2</span><span class="s2">"</span>
+  <span class="k">while </span><span class="nb">kill</span> <span class="nt">-0</span> <span class="s2">"</span><span class="nv">$_ppid</span><span class="s2">"</span> 2&gt;/dev/null<span class="p">;</span> <span class="k">do
+    </span><span class="nb">sudo </span>ipset <span class="nt">-exist</span> add ibug <span class="s2">"</span><span class="nv">$_ssh_client</span><span class="s2">"</span> <span class="nb">timeout </span>300
+    <span class="nb">sleep </span>60
+  <span class="k">done
+  </span><span class="nb">exit </span>0
+</code></pre>
+						</div>
+    </div>
+				</li>
+			</ul>
+			<p>The idea is to refresh (<code class="language-plaintext highlighter-rouge">ipset add</code> with timeout) the IPset entry as long as the SSH session remains. When SSH disconnects, the script stops refreshing and IPset will clean it up after the specified time.</p>
+			<p>To determine the presence of the associated SSH session, the scripts finds the PID of the “session manager process”. The “parent PID” is read twice because <code class="language-plaintext highlighter-rouge">sshd</code> double-forks. The client address is conveniently provided in the environment variable, so putting all these together yields precisely what I need.</p>
+			<p>The only caveat is the use of <code class="language-plaintext highlighter-rouge">sudo</code>, as <code class="language-plaintext highlighter-rouge">ipset</code> requires <code class="language-plaintext highlighter-rouge">CAP_NET_ADMIN</code> for interacting with the kernel network stack. It’s certainly possible to write an SUID binary as a wrapper, but for me configuring passwordless sudo for the <code class="language-plaintext highlighter-rouge">ipset</code> command satisfies my demands.</p>
+			<p>So now whenever I need to RDP to my computer through this forwarded port on the public internet, I can just SSH into the gateway and it’ll automatically grant me 5 minutes of RDP access from this specific network. All traffic forwarding is done in the kernel with no extra encapsulation or encryption, ensuring the best possible performance for both the endpoints and the gateway router itself.</p>
+			]]></content><author><name>iBug</name></author><category term="linux" /><category term="windows" /><category term="networking" /><summary type="html"><![CDATA[Today I stumbled upon this V2EX post (Simplified Chinese) where the OP shared their PowerShell implementation of a “makeshift fail2ban” for RDP. Their script looked very clean and robust, but needless to say, it is unnecessarily difficult on Windows. So on this rare (maybe?) occasion I decide to share my firewall for securing RDP access to my Windows hosts.]]></summary></entry><entry><title type="html">Request limiting in Nginx</title><link href="https://ibug.io/blog/2024/01/nginx-limit-req/" rel="alternate" type="text/html" title="Request limiting in Nginx" /><published>2024-01-23T00:00:00+00:00</published><updated>2024-01-23T06:15:20+00:00</updated><id>https://ibug.io/blog/2024/01/nginx-limit-req</id><content type="html" xml:base="https://ibug.io/blog/2024/01/nginx-limit-req/"><![CDATA[<p>Nginx has a built-in module <code class="language-plaintext highlighter-rouge">limit_req</code> for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.</p>
+		<p>As always, everything begins with <a href="https://nginx.org/en/docs/http/ngx_http_limit_req_module.html">the documentation</a>. A quick-start example is given:</p>
+		<div class="language-nginx highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">http</span> <span class="p">{</span>
     <span class="kn">limit_req_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=one:10m</span> <span class="s">rate=1r/s</span><span class="p">;</span>
     <span class="kn">...</span>
     <span class="s">server</span> <span class="p">{</span>
@@ -11,44 +74,44 @@
             <span class="kn">limit_req</span> <span class="s">zone=one</span> <span class="s">burst=5</span><span class="p">;</span>
         <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<p>The basis is the <code class="language-plaintext highlighter-rouge">limit_req_zone</code> directive, which defines a shared memory zone for storing the states of the rate-limiting. Its arguments include the key, the size and the name of the zone, followed by the average or sustained rate limit. The rate limit has two possible units: <code class="language-plaintext highlighter-rouge">r/s</code> or <code class="language-plaintext highlighter-rouge">r/m</code>. It also says</p>
-			<blockquote>
-				<p>The limitation is done using the “<a href="https://en.wikipedia.org/wiki/Leaky_bucket">leaky bucket</a>” method.</p>
-			</blockquote>
-			<p>So far so good, except the burst limit is … specified on where it’s used? Moving on for now.</p>
-			<p>The <code class="language-plaintext highlighter-rouge">limit_req</code> directive specifies when the requests should be limited.</p>
-			<blockquote>
-				<p>If the requests rate exceeds the rate configured for a zone, their processing is delayed such that requests are processed at a defined rate.</p>
-			</blockquote>
-			<p>Seems pretty clear but slightly counter-intuitive. By default, burst requests are queued up and delayed until the rate is below the limit, whereas most common rate-limiting implementations would simply serve them.</p>
-			<p>I find it easier to understand this model with a queue. Each key defines a queue where items are popped at the specified rate (e.g. <code class="language-plaintext highlighter-rouge">1r/s</code>). Incoming requests are added to the queue, and are only served <em>upon exiting</em> the queue. The queue size is defined by the burst limit, and excess requests are dropped when the queue is full.</p>
-			<p><img src="/image/server/nginx-limit-req.png" alt="Default queue behavior" /></p>
-			<p>The more common behavior, however, requires an extra option:</p>
-			<blockquote>
-				<p>If delaying of excessive requests while requests are being limited is not desired, the parameter <code class="language-plaintext highlighter-rouge">nodelay</code> should be used:</p>
-				<div class="language-nginx highlighter-rouge">
-					<div class="highlight">
-						<pre class="highlight"><code><span class="k">limit_req</span> <span class="s">zone=one</span> <span class="s">burst=5</span> <span class="s">nodelay</span><span class="p">;</span>
-</code></pre>
-					</div>
-  </div>
-			</blockquote>
-			<p>With <code class="language-plaintext highlighter-rouge">nodelay</code>, requests are served as soon as they <em>enter the queue</em>:</p>
-			<p><img src="/image/server/nginx-limit-req-nodelay.png" alt="nodelay queue behavior" /></p>
-			<p>The next confusing option, conflicting with <code class="language-plaintext highlighter-rouge">nodelay</code>, is <code class="language-plaintext highlighter-rouge">delay</code>:</p>
-			<blockquote>
-				<p>The <code class="language-plaintext highlighter-rouge">delay</code> parameter specifies a limit at which excessive requests become delayed. Default value is zero, i.e. all excessive requests are delayed.</p>
-			</blockquote>
-			<p>After a bit of fiddling, I realized the model is now like this:</p>
-			<p><img src="/image/server/nginx-limit-req-delay.png" alt="delay queue behavior" /></p>
-			<p>So what <code class="language-plaintext highlighter-rouge">delay</code> actually means is to delay requests after this “delay limit” is reached. In other words, requests are served as soon as they arrive at the n-th position in the front of the queue.</p>
-			<p>During all these testing, I wasn’t happy with existing tools for testing, so I wrote my own one, despite its simplicity: <a href="https://gist.github.com/iBug/351b458633ff89fea0fc9f0edd07fc28">GitHub Gist</a>.</p>
-			<p>With this new tool, I can now (textually) visualize the behavior of different options. Under the <code class="language-plaintext highlighter-rouge">burst=5</code> and <code class="language-plaintext highlighter-rouge">delay=1</code> setup, the output is like this:</p>
-			<div class="language-console highlighter-rouge">
+		</div>
+		<p>The basis is the <code class="language-plaintext highlighter-rouge">limit_req_zone</code> directive, which defines a shared memory zone for storing the states of the rate-limiting. Its arguments include the key, the size and the name of the zone, followed by the average or sustained rate limit. The rate limit has two possible units: <code class="language-plaintext highlighter-rouge">r/s</code> or <code class="language-plaintext highlighter-rouge">r/m</code>. It also says</p>
+		<blockquote>
+			<p>The limitation is done using the “<a href="https://en.wikipedia.org/wiki/Leaky_bucket">leaky bucket</a>” method.</p>
+		</blockquote>
+		<p>So far so good, except the burst limit is … specified on where it’s used? Moving on for now.</p>
+		<p>The <code class="language-plaintext highlighter-rouge">limit_req</code> directive specifies when the requests should be limited.</p>
+		<blockquote>
+			<p>If the requests rate exceeds the rate configured for a zone, their processing is delayed such that requests are processed at a defined rate.</p>
+		</blockquote>
+		<p>Seems pretty clear but slightly counter-intuitive. By default, burst requests are queued up and delayed until the rate is below the limit, whereas most common rate-limiting implementations would simply serve them.</p>
+		<p>I find it easier to understand this model with a queue. Each key defines a queue where items are popped at the specified rate (e.g. <code class="language-plaintext highlighter-rouge">1r/s</code>). Incoming requests are added to the queue, and are only served <em>upon exiting</em> the queue. The queue size is defined by the burst limit, and excess requests are dropped when the queue is full.</p>
+		<p><img src="/image/server/nginx-limit-req.png" alt="Default queue behavior" /></p>
+		<p>The more common behavior, however, requires an extra option:</p>
+		<blockquote>
+			<p>If delaying of excessive requests while requests are being limited is not desired, the parameter <code class="language-plaintext highlighter-rouge">nodelay</code> should be used:</p>
+			<div class="language-nginx highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/test
+					<pre class="highlight"><code><span class="k">limit_req</span> <span class="s">zone=one</span> <span class="s">burst=5</span> <span class="s">nodelay</span><span class="p">;</span>
+</code></pre>
+				</div>
+  </div>
+		</blockquote>
+		<p>With <code class="language-plaintext highlighter-rouge">nodelay</code>, requests are served as soon as they <em>enter the queue</em>:</p>
+		<p><img src="/image/server/nginx-limit-req-nodelay.png" alt="nodelay queue behavior" /></p>
+		<p>The next confusing option, conflicting with <code class="language-plaintext highlighter-rouge">nodelay</code>, is <code class="language-plaintext highlighter-rouge">delay</code>:</p>
+		<blockquote>
+			<p>The <code class="language-plaintext highlighter-rouge">delay</code> parameter specifies a limit at which excessive requests become delayed. Default value is zero, i.e. all excessive requests are delayed.</p>
+		</blockquote>
+		<p>After a bit of fiddling, I realized the model is now like this:</p>
+		<p><img src="/image/server/nginx-limit-req-delay.png" alt="delay queue behavior" /></p>
+		<p>So what <code class="language-plaintext highlighter-rouge">delay</code> actually means is to delay requests after this “delay limit” is reached. In other words, requests are served as soon as they arrive at the n-th position in the front of the queue.</p>
+		<p>During all these testing, I wasn’t happy with existing tools for testing, so I wrote my own one, despite its simplicity: <a href="https://gist.github.com/iBug/351b458633ff89fea0fc9f0edd07fc28">GitHub Gist</a>.</p>
+		<p>With this new tool, I can now (textually) visualize the behavior of different options. Under the <code class="language-plaintext highlighter-rouge">burst=5</code> and <code class="language-plaintext highlighter-rouge">delay=1</code> setup, the output is like this:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/test
 <span class="go">[1] Done [0s] [200 in 2ms]
 [2] Done [10ms] [200 in 1ms]
 [3] Done [21ms] [200 in 981ms]
@@ -60,14 +123,14 @@
 [9] Done [85ms] [503 in 0s]
 [10] Done [95ms] [503 in 0s]
 </span></code></pre>
-				</div>
 			</div>
-			<p>If you try the tool yourself, the HTTP status codes are colored for even better prominence.</p>
-			<p>In the above example, the first request is served immediately as it also exits the queue immediately. The second request is queued at the front, and because <code class="language-plaintext highlighter-rouge">delay=1</code>, it’s also served immediately. Subsequent requests are queued up until the sixth when the queue becomes full. The seventh and thereafter are dropped.</p>
-			<p>If we change <code class="language-plaintext highlighter-rouge">delay=0</code>, the output becomes:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/test
+		</div>
+		<p>If you try the tool yourself, the HTTP status codes are colored for even better prominence.</p>
+		<p>In the above example, the first request is served immediately as it also exits the queue immediately. The second request is queued at the front, and because <code class="language-plaintext highlighter-rouge">delay=1</code>, it’s also served immediately. Subsequent requests are queued up until the sixth when the queue becomes full. The seventh and thereafter are dropped.</p>
+		<p>If we change <code class="language-plaintext highlighter-rouge">delay=0</code>, the output becomes:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/test
 <span class="go">[1] Done [0s] [200 in 2ms]
 [2] Done [10ms] [200 in 993ms]
 [3] Done [21ms] [200 in 1.982s]
@@ -79,27 +142,27 @@
 [9] Done [85ms] [503 in 2ms]
 [10] Done [96ms] [503 in 1ms]
 </span></code></pre>
-				</div>
 			</div>
-			<p>Still only the first 6 requests are served, but the 2nd to the 6th are delayed by an additional second due to the removal of <code class="language-plaintext highlighter-rouge">delay=1</code>.</p>
-			<p>Under this model, the <code class="language-plaintext highlighter-rouge">nodelay</code> option can be understood as <code class="language-plaintext highlighter-rouge">delay=infinity</code>, while still respecting the <code class="language-plaintext highlighter-rouge">burst</code> limit.</p>
-			<h2 id="one-more-question">One more question</h2>
-			<p>Why is the burst limit specified at use time, instead of at zone definition? Only experiments can find out:</p>
-			<div class="language-nginx highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">location</span> <span class="n">/a</span> <span class="p">{</span>
+		</div>
+		<p>Still only the first 6 requests are served, but the 2nd to the 6th are delayed by an additional second due to the removal of <code class="language-plaintext highlighter-rouge">delay=1</code>.</p>
+		<p>Under this model, the <code class="language-plaintext highlighter-rouge">nodelay</code> option can be understood as <code class="language-plaintext highlighter-rouge">delay=infinity</code>, while still respecting the <code class="language-plaintext highlighter-rouge">burst</code> limit.</p>
+		<h2 id="one-more-question">One more question</h2>
+		<p>Why is the burst limit specified at use time, instead of at zone definition? Only experiments can find out:</p>
+		<div class="language-nginx highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">location</span> <span class="n">/a</span> <span class="p">{</span>
     <span class="kn">limit_req</span> <span class="s">zone=test</span> <span class="s">burst=1</span><span class="p">;</span>
 <span class="p">}</span>
 <span class="k">location</span> <span class="n">/b</span> <span class="p">{</span>
     <span class="kn">limit_req</span> <span class="s">zone=test</span> <span class="s">burst=5</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Then I fire up two simultaneous batches of 10 requests each to <code class="language-plaintext highlighter-rouge">/a</code> and <code class="language-plaintext highlighter-rouge">/b</code> respectively:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/a
+		</div>
+		<p>Then I fire up two simultaneous batches of 10 requests each to <code class="language-plaintext highlighter-rouge">/a</code> and <code class="language-plaintext highlighter-rouge">/b</code> respectively:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/a
 <span class="go">[1] Done [0s] [200 in 2ms]
 [2] Done [10ms] [200 in 992ms]
 [3] Done [21ms] [503 in 0s]
@@ -111,11 +174,11 @@
 [9] Done [83ms] [503 in 0s]
 [10] Done [94ms] [503 in 0s]
 </span></code></pre>
-				</div>
 			</div>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/b
+		</div>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/b
 <span class="go">[1] Done [0s] [200 in 1.862s]
 [2] Done [11ms] [200 in 2.852s]
 [3] Done [21ms] [200 in 3.842s]
@@ -127,13 +190,13 @@
 [9] Done [85ms] [503 in 0s]
 [10] Done [95ms] [503 in 1ms]
 </span></code></pre>
-				</div>
 			</div>
-			<p>As can be seen from the output, the batch to <code class="language-plaintext highlighter-rouge">/a</code> is served as usual, but the batch to <code class="language-plaintext highlighter-rouge">/b</code> is significantly delayed, and two fewer requests are served.</p>
-			<p>If I reverse the order of sending the batches, the result is different again:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/b
+		</div>
+		<p>As can be seen from the output, the batch to <code class="language-plaintext highlighter-rouge">/a</code> is served as usual, but the batch to <code class="language-plaintext highlighter-rouge">/b</code> is significantly delayed, and two fewer requests are served.</p>
+		<p>If I reverse the order of sending the batches, the result is different again:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/b
 <span class="go">[1] Done [0s] [200 in 2ms]
 [2] Done [10ms] [200 in 993ms]
 [3] Done [20ms] [200 in 1.982s]
@@ -145,11 +208,11 @@
 [9] Done [84ms] [503 in 0s]
 [10] Done [95ms] [503 in 0s]
 </span></code></pre>
-				</div>
 			</div>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/a
+		</div>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/a
 <span class="go">[1] Done [0s] [503 in 1ms]
 [2] Done [10ms] [503 in 1ms]
 [3] Done [20ms] [503 in 0s]
@@ -161,16 +224,16 @@
 [9] Done [83ms] [503 in 0s]
 [10] Done [93ms] [503 in 0s]
 </span></code></pre>
-				</div>
 			</div>
-			<p>This time the batch to <code class="language-plaintext highlighter-rouge">/b</code> is served as usual, but the entire batch to <code class="language-plaintext highlighter-rouge">/a</code> is rejected.</p>
-			<p>I am now convinced that the queue itself is shared between <code class="language-plaintext highlighter-rouge">/a</code> and <code class="language-plaintext highlighter-rouge">/b</code>, and each <code class="language-plaintext highlighter-rouge">limit_req</code> directive decides for itself whether and when to serve the requests. So when <code class="language-plaintext highlighter-rouge">/a</code> is served first, the queue holds one burst request, and <code class="language-plaintext highlighter-rouge">/b</code> fills the queue up to 5 requests. When <code class="language-plaintext highlighter-rouge">/b</code> is served first, the queue is already holding 5 requests and leaves no room for <code class="language-plaintext highlighter-rouge">/a</code>. Similarly, with the <code class="language-plaintext highlighter-rouge">delay</code> option, each <code class="language-plaintext highlighter-rouge">limit_req</code> directive can still decide when the request is ready to serve.</p>
-			<p>This is probably not the most straightforward design, and I can’t come up with a use case for this behavior. But at least now I understand how it works.</p>
-			<h2 id="one-last-thing">One last thing</h2>
-			<p>I originally wanted to set up a 403 page for banned clients, and wanted to limit the rate of log writing in case of an influx of requests. The limit_req module does provide a <code class="language-plaintext highlighter-rouge">$limit_req_status</code> variable which appears to be useful. This is what I ended up with:</p>
-			<div class="language-nginx highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">limit_req_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=403:64k</span> <span class="s">rate=1r/s</span><span class="p">;</span>
+		</div>
+		<p>This time the batch to <code class="language-plaintext highlighter-rouge">/b</code> is served as usual, but the entire batch to <code class="language-plaintext highlighter-rouge">/a</code> is rejected.</p>
+		<p>I am now convinced that the queue itself is shared between <code class="language-plaintext highlighter-rouge">/a</code> and <code class="language-plaintext highlighter-rouge">/b</code>, and each <code class="language-plaintext highlighter-rouge">limit_req</code> directive decides for itself whether and when to serve the requests. So when <code class="language-plaintext highlighter-rouge">/a</code> is served first, the queue holds one burst request, and <code class="language-plaintext highlighter-rouge">/b</code> fills the queue up to 5 requests. When <code class="language-plaintext highlighter-rouge">/b</code> is served first, the queue is already holding 5 requests and leaves no room for <code class="language-plaintext highlighter-rouge">/a</code>. Similarly, with the <code class="language-plaintext highlighter-rouge">delay</code> option, each <code class="language-plaintext highlighter-rouge">limit_req</code> directive can still decide when the request is ready to serve.</p>
+		<p>This is probably not the most straightforward design, and I can’t come up with a use case for this behavior. But at least now I understand how it works.</p>
+		<h2 id="one-last-thing">One last thing</h2>
+		<p>I originally wanted to set up a 403 page for banned clients, and wanted to limit the rate of log writing in case of an influx of requests. The limit_req module does provide a <code class="language-plaintext highlighter-rouge">$limit_req_status</code> variable which appears to be useful. This is what I ended up with:</p>
+		<div class="language-nginx highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">limit_req_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=403:64k</span> <span class="s">rate=1r/s</span><span class="p">;</span>
 
 <span class="k">map</span> <span class="nv">$limit_req_status</span> <span class="nv">$loggable_403</span> <span class="p">{</span>
     <span class="kn">default</span> <span class="mi">0</span><span class="p">;</span>
@@ -199,70 +262,70 @@
     <span class="p">}</span>
 <span class="p">}</span>
 </code></pre>
-				</div>
-			</div>
-			<p>With this setup, excessive requests are rejected by <code class="language-plaintext highlighter-rouge">limit_req</code> with a 403 status. Only <code class="language-plaintext highlighter-rouge">1r/s</code> passes through the rate limiting, which will carry the <code class="language-plaintext highlighter-rouge">PASSED</code> status and be logged, albeit still seeing the 403 page from the <code class="language-plaintext highlighter-rouge">return 403</code> rule. This does exactly what I want, so time to call it a day.</p>
-			]]></content><author><name>iBug</name></author><category term="server" /><category term="nginx" /><summary type="html"><![CDATA[Nginx has a built-in module limit_req for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.]]></summary></entry><entry><title type="html">Visualizing Weather Forecast with Grafana</title><link href="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/" rel="alternate" type="text/html" title="Visualizing Weather Forecast with Grafana" /><published>2024-01-08T00:00:00+00:00</published><updated>2024-01-08T04:40:54+00:00</updated><id>https://ibug.io/blog/2024/01/weather-forecast-with-grafana</id><content type="html" xml:base="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/"><![CDATA[<p>Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get it to work as a weather forecast dashboard, instead of any historical time-series data.</p>
-		<p>I choose <a href="https://open.caiyunapp.com/%E5%BD%A9%E4%BA%91%E5%A4%A9%E6%B0%94_API_%E4%B8%80%E8%A7%88%E8%A1%A8">CaiYun Weather (彩云天气) API</a> for having previous experience with it, as well as its unlimited free tier. I must admit that I initially came up with this idea for having seen the presence of <a href="https://grafana.com/grafana/plugins/marcusolsson-json-datasource/">JSON API datasource plugin</a> for Grafana, which reminds me of CaiYun’s JSON API being a perfect fit.</p>
-		<h2 id="json-api-datasource">JSON API Datasource</h2>
-		<p>Configuring the datasource seems easy at first, like just inserting the URL and configure HTTP headers as needed. Since CY’s API puts the API key in the URL path, there’s no headers to configure. So I can just put a single URL and save it.</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>https://api.caiyunapp.com/v2.5/TAkhjf8d1nlSlspN/121.6544,25.1552/hourly.json
-</code></pre>
 			</div>
 		</div>
-		<p>I choose the hourly API so I can have forecast for the upcoming 48 hours.</p>
-		<p>So far this is a readily available datasource that I can query. But after reviewing the <a href="https://grafana.github.io/grafana-json-datasource/query-editor">JSON query editor</a>, I decided to chop off the last segments of the URL and leave just the part up to the API key:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>https://api.caiyunapp.com/v2.5/TAkhjf8d1nlSlspN/
+		<p>With this setup, excessive requests are rejected by <code class="language-plaintext highlighter-rouge">limit_req</code> with a 403 status. Only <code class="language-plaintext highlighter-rouge">1r/s</code> passes through the rate limiting, which will carry the <code class="language-plaintext highlighter-rouge">PASSED</code> status and be logged, albeit still seeing the 403 page from the <code class="language-plaintext highlighter-rouge">return 403</code> rule. This does exactly what I want, so time to call it a day.</p>
+		]]></content><author><name>iBug</name></author><category term="server" /><category term="nginx" /><summary type="html"><![CDATA[Nginx has a built-in module limit_req for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.]]></summary></entry><entry><title type="html">Visualizing Weather Forecast with Grafana</title><link href="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/" rel="alternate" type="text/html" title="Visualizing Weather Forecast with Grafana" /><published>2024-01-08T00:00:00+00:00</published><updated>2024-01-08T04:40:54+00:00</updated><id>https://ibug.io/blog/2024/01/weather-forecast-with-grafana</id><content type="html" xml:base="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/"><![CDATA[<p>Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get it to work as a weather forecast dashboard, instead of any historical time-series data.</p>
+	<p>I choose <a href="https://open.caiyunapp.com/%E5%BD%A9%E4%BA%91%E5%A4%A9%E6%B0%94_API_%E4%B8%80%E8%A7%88%E8%A1%A8">CaiYun Weather (彩云天气) API</a> for having previous experience with it, as well as its unlimited free tier. I must admit that I initially came up with this idea for having seen the presence of <a href="https://grafana.com/grafana/plugins/marcusolsson-json-datasource/">JSON API datasource plugin</a> for Grafana, which reminds me of CaiYun’s JSON API being a perfect fit.</p>
+	<h2 id="json-api-datasource">JSON API Datasource</h2>
+	<p>Configuring the datasource seems easy at first, like just inserting the URL and configure HTTP headers as needed. Since CY’s API puts the API key in the URL path, there’s no headers to configure. So I can just put a single URL and save it.</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>https://api.caiyunapp.com/v2.5/TAkhjf8d1nlSlspN/121.6544,25.1552/hourly.json
 </code></pre>
-			</div>
 		</div>
-		<p>The point here is, the query editor allows specifying an extra Path, which appears to be concatenated with this URL in the datasource configuration. Notably, I can then put the coordinates in a variable, use it in the query, and build a single dashboard for many cities.</p>
-		<h2 id="dashboard-variables">Dashboard variables</h2>
-		<p>Now that I have the query format planned, I can add a dashboard variable for selecting cities.</p>
-		<p>First things first, since I’m going to use the same datasource for all panels, I first add a variable for the datasource and restrict it to “CaiYun Weather”:</p>
-		<p><img src="/image/grafana/dashboard-variable-datasource.png" alt="Datasource variable" /></p>
-		<p>Then I add a variable <code class="language-plaintext highlighter-rouge">$location</code> for the city name, and provide it with a list of cities I want to show. The variable type would be “Custom” since this is just a human-maintained list. There certainly are better ways like using a relational database or an external API, making it easier to update, but for now I’d like to keep it simple.</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>Beijing : 116.4074\,39.9042,Shanghai : 121.4691\,31.2243,Guangzhou : 113.2644\,23.1291,Shenzhen : 114.0596\,22.5429
+	</div>
+	<p>I choose the hourly API so I can have forecast for the upcoming 48 hours.</p>
+	<p>So far this is a readily available datasource that I can query. But after reviewing the <a href="https://grafana.github.io/grafana-json-datasource/query-editor">JSON query editor</a>, I decided to chop off the last segments of the URL and leave just the part up to the API key:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>https://api.caiyunapp.com/v2.5/TAkhjf8d1nlSlspN/
 </code></pre>
-			</div>
 		</div>
-		<h2 id="panels">Panels</h2>
-		<p>First and foremost, the most intuitive metric to show is temperature. I add a time series panel and configure it to graph the temperature. Start by building the query:</p>
-		<ul>
-			<li>Datasource: Select <code class="language-plaintext highlighter-rouge">${datasource}</code></li>
-			<li>Query A:
-				<ul>
-					<li>Path: <code class="language-plaintext highlighter-rouge">/${location}/hourly.json</code></li>
-					<li>Fields:
-						<ul>
-							<li>JSONPath: <code class="language-plaintext highlighter-rouge">$.result.hourly.temperature[*].value</code>, Type: <code class="language-plaintext highlighter-rouge">Number</code>, Alias: <code class="language-plaintext highlighter-rouge">${location:text}</code></li>
-							<li>JSONPath: <code class="language-plaintext highlighter-rouge">$.result.hourly.temperature[*].datetime</code>, Type: <code class="language-plaintext highlighter-rouge">Time</code></li>
-						</ul>
-					</li>
-				</ul>
-			</li>
-		</ul>
-		<p>I stumbled on getting the <em>time</em> series to display correctly. It wasn’t anywhere obvious in the documentation for the JSON API plugin, but a series with Type = Time is required. Fortunately, CY’s API returns the time in ISO 8601 format in the <code class="language-plaintext highlighter-rouge">datetime</code> field, so I can feed it directly to Grafana.</p>
-		<p>So far so good, except Grafana shows “No data”. I realized Grafana is trying to show past data, but apparently a weather forecast provides <em>future</em> data. I need to change the time range to “now” and “now + 48h”. Ideally, this time range is fixed and not affected by the time range selector, since after all it’s limited by the API.</p>
-		<p>This is another place where I spent half an hour on Google. The answer is “Relative time” in “Query options”. Its format, however, is again unintuitive. While <a href="https://community.grafana.com/t/how-to-give-different-time-ranges-for-grafana-panels-i-am-using-azure-monitor-as-data-source/80300">community posts</a> shows <code class="language-plaintext highlighter-rouge">1d</code> for “last 1 day” and the <a href="https://grafana.com/docs/grafana/latest/panels-visualizations/query-transform-data/">official docs</a> gives several examples on using <code class="language-plaintext highlighter-rouge">now</code>, none of them told me how to indicate “next 48 hours”. The answer is just <code class="language-plaintext highlighter-rouge">+48h</code> or <code class="language-plaintext highlighter-rouge">+2d</code>. Notably, entering <code class="language-plaintext highlighter-rouge">now+48h</code> would result in an error.</p>
-		<p>To make the graph look nicer, I set the unit to “°C”, limit decimals to 1, and set the Y-axis range to 0-40, and add a series of thresholds with colors to indicate the temperature range. Also worth mentioning is to make the graph change its color according to the temperature, so I set “Graph style → Gradient mode” to “Scheme” and “Standard options → Color scheme” to “From thresholds (by value)”.</p>
-		<p>Now this panel looks stunning.</p>
-		<p><img src="/image/grafana/caiyun-temperature-panel.png" alt="Temperature panel" /></p>
-		<h3 id="more-panels">More panels</h3>
-		<p>CY’s API offers a variety of weather data, so with little effort I can add more panels for humidity, precipitation and more, by duplicating the temperature panel and changing the query. I also need to change the unit and thresholds accordingly but that goes without saying.</p>
-		<p>There’s also a small piece worth displaying: A <code class="language-plaintext highlighter-rouge">description</code> text. It’s easy to put it in a “Stat” panel and display as “String” (instead of “Number”). And better yet, CY provides two descriptions: One for the next two hours, and one for the next two days. Two panels for two pieces of text, yeah.</p>
-		<p>One last thing I decided to leave out for now: The <code class="language-plaintext highlighter-rouge">skycon</code> field that describes the weather condition, like “CLEAR_DAY” or “RAIN”. It’d be comparably easy to add a panel for it, using “Value mapping” to change the text to something more human-readable, but I’m not at the high mood for it right now, so maybe I’ll pick it up later.</p>
-		<h2 id="results">Results</h2>
-		<p>Now I have a nice dashboard for viewing weather forecast for multiple cities:</p>
-		<p><img src="/image/grafana/caiyun-forecast-example.png" alt="Dashboard" /></p>
-		<p>If you’d like to try it yourself, I’ve published the dashboard on Grafana.com: <a href="https://grafana.com/grafana/dashboards/20259-weather-forecast/">Weather Forecast</a>. Just add the same datasource with your API key, and you can import my dashboard and start getting weather forecast for yourself.</p>
-		]]></content><author><name>iBug</name></author><category term="software" /><summary type="html"><![CDATA[Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get it to work as a weather forecast dashboard, instead of any historical time-series data.]]></summary></entry><entry><title type="html">Understanding ZFS block sizes</title><link href="https://ibug.io/blog/2023/10/zfs-block-size/" rel="alternate" type="text/html" title="Understanding ZFS block sizes" /><published>2023-10-30T00:00:00+00:00</published><updated>2023-10-30T02:58:51+00:00</updated><id>https://ibug.io/blog/2023/10/zfs-block-size</id><content type="html" xml:base="https://ibug.io/blog/2023/10/zfs-block-size/"><![CDATA[<p>ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.</p>
+	</div>
+	<p>The point here is, the query editor allows specifying an extra Path, which appears to be concatenated with this URL in the datasource configuration. Notably, I can then put the coordinates in a variable, use it in the query, and build a single dashboard for many cities.</p>
+	<h2 id="dashboard-variables">Dashboard variables</h2>
+	<p>Now that I have the query format planned, I can add a dashboard variable for selecting cities.</p>
+	<p>First things first, since I’m going to use the same datasource for all panels, I first add a variable for the datasource and restrict it to “CaiYun Weather”:</p>
+	<p><img src="/image/grafana/dashboard-variable-datasource.png" alt="Datasource variable" /></p>
+	<p>Then I add a variable <code class="language-plaintext highlighter-rouge">$location</code> for the city name, and provide it with a list of cities I want to show. The variable type would be “Custom” since this is just a human-maintained list. There certainly are better ways like using a relational database or an external API, making it easier to update, but for now I’d like to keep it simple.</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>Beijing : 116.4074\,39.9042,Shanghai : 121.4691\,31.2243,Guangzhou : 113.2644\,23.1291,Shenzhen : 114.0596\,22.5429
+</code></pre>
+		</div>
+	</div>
+	<h2 id="panels">Panels</h2>
+	<p>First and foremost, the most intuitive metric to show is temperature. I add a time series panel and configure it to graph the temperature. Start by building the query:</p>
+	<ul>
+		<li>Datasource: Select <code class="language-plaintext highlighter-rouge">${datasource}</code></li>
+		<li>Query A:
+			<ul>
+				<li>Path: <code class="language-plaintext highlighter-rouge">/${location}/hourly.json</code></li>
+				<li>Fields:
+					<ul>
+						<li>JSONPath: <code class="language-plaintext highlighter-rouge">$.result.hourly.temperature[*].value</code>, Type: <code class="language-plaintext highlighter-rouge">Number</code>, Alias: <code class="language-plaintext highlighter-rouge">${location:text}</code></li>
+						<li>JSONPath: <code class="language-plaintext highlighter-rouge">$.result.hourly.temperature[*].datetime</code>, Type: <code class="language-plaintext highlighter-rouge">Time</code></li>
+					</ul>
+				</li>
+			</ul>
+		</li>
+	</ul>
+	<p>I stumbled on getting the <em>time</em> series to display correctly. It wasn’t anywhere obvious in the documentation for the JSON API plugin, but a series with Type = Time is required. Fortunately, CY’s API returns the time in ISO 8601 format in the <code class="language-plaintext highlighter-rouge">datetime</code> field, so I can feed it directly to Grafana.</p>
+	<p>So far so good, except Grafana shows “No data”. I realized Grafana is trying to show past data, but apparently a weather forecast provides <em>future</em> data. I need to change the time range to “now” and “now + 48h”. Ideally, this time range is fixed and not affected by the time range selector, since after all it’s limited by the API.</p>
+	<p>This is another place where I spent half an hour on Google. The answer is “Relative time” in “Query options”. Its format, however, is again unintuitive. While <a href="https://community.grafana.com/t/how-to-give-different-time-ranges-for-grafana-panels-i-am-using-azure-monitor-as-data-source/80300">community posts</a> shows <code class="language-plaintext highlighter-rouge">1d</code> for “last 1 day” and the <a href="https://grafana.com/docs/grafana/latest/panels-visualizations/query-transform-data/">official docs</a> gives several examples on using <code class="language-plaintext highlighter-rouge">now</code>, none of them told me how to indicate “next 48 hours”. The answer is just <code class="language-plaintext highlighter-rouge">+48h</code> or <code class="language-plaintext highlighter-rouge">+2d</code>. Notably, entering <code class="language-plaintext highlighter-rouge">now+48h</code> would result in an error.</p>
+	<p>To make the graph look nicer, I set the unit to “°C”, limit decimals to 1, and set the Y-axis range to 0-40, and add a series of thresholds with colors to indicate the temperature range. Also worth mentioning is to make the graph change its color according to the temperature, so I set “Graph style → Gradient mode” to “Scheme” and “Standard options → Color scheme” to “From thresholds (by value)”.</p>
+	<p>Now this panel looks stunning.</p>
+	<p><img src="/image/grafana/caiyun-temperature-panel.png" alt="Temperature panel" /></p>
+	<h3 id="more-panels">More panels</h3>
+	<p>CY’s API offers a variety of weather data, so with little effort I can add more panels for humidity, precipitation and more, by duplicating the temperature panel and changing the query. I also need to change the unit and thresholds accordingly but that goes without saying.</p>
+	<p>There’s also a small piece worth displaying: A <code class="language-plaintext highlighter-rouge">description</code> text. It’s easy to put it in a “Stat” panel and display as “String” (instead of “Number”). And better yet, CY provides two descriptions: One for the next two hours, and one for the next two days. Two panels for two pieces of text, yeah.</p>
+	<p>One last thing I decided to leave out for now: The <code class="language-plaintext highlighter-rouge">skycon</code> field that describes the weather condition, like “CLEAR_DAY” or “RAIN”. It’d be comparably easy to add a panel for it, using “Value mapping” to change the text to something more human-readable, but I’m not at the high mood for it right now, so maybe I’ll pick it up later.</p>
+	<h2 id="results">Results</h2>
+	<p>Now I have a nice dashboard for viewing weather forecast for multiple cities:</p>
+	<p><img src="/image/grafana/caiyun-forecast-example.png" alt="Dashboard" /></p>
+	<p>If you’d like to try it yourself, I’ve published the dashboard on Grafana.com: <a href="https://grafana.com/grafana/dashboards/20259-weather-forecast/">Weather Forecast</a>. Just add the same datasource with your API key, and you can import my dashboard and start getting weather forecast for yourself.</p>
+	]]></content><author><name>iBug</name></author><category term="software" /><summary type="html"><![CDATA[Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get it to work as a weather forecast dashboard, instead of any historical time-series data.]]></summary></entry><entry><title type="html">Understanding ZFS block sizes</title><link href="https://ibug.io/blog/2023/10/zfs-block-size/" rel="alternate" type="text/html" title="Understanding ZFS block sizes" /><published>2023-10-30T00:00:00+00:00</published><updated>2023-10-30T02:58:51+00:00</updated><id>https://ibug.io/blog/2023/10/zfs-block-size</id><content type="html" xml:base="https://ibug.io/blog/2023/10/zfs-block-size/"><![CDATA[<p>ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.</p>
 	<p>We’ll begin with a slide from a ZFS talk from Lustre<sup id="fnref:dilger" role="doc-noteref"><a href="#fn:dilger" class="footnote" rel="footnote">1</a></sup> (page 5):</p>
 	<figure class="">
 		<img src="/image/zfs/zfs-io-stack.png" alt="ZFS I/O Stack" />
@@ -1485,281 +1548,4 @@ Time: 875µs, Memory: 7.8 MiB
 	<h2 id="epilogue">Epilogue</h2>
 	<p>At this point, the project has successfully deviated from a collection of solutions to small-but-interesting puzzles, and has become more like a general-purpose tool for this kind of events. Nevertheless, it’s a fun journey as a software engineering practice, in addition to solving the puzzles themselves.</p>
 	<p>Looking at these paths I’ve taken, it is manifest that the initial decisions in the right direction are highly contributory in easing the development process, particularly when I’m coming back later to add a new global feature. This experience once again emphasizes the importance and advantages of having a clear idea of the project before starting to write code, as well as keeping the code in an extensible and maintainable fashion.</p>
-	]]></content><author><name>iBug</name></author><category term="development" /><summary type="html"><![CDATA[Advent of Code (Wikipedia, link) is an annual event that releases a programming puzzle every day from December 1 to December 25. It’s a great chance to learn a new language or practice your skills.]]></summary></entry><entry><title type="html">Recovering a Minecraft world from a crash, the technician way</title><link href="https://ibug.io/blog/2022/11/recover-minecraft-world/" rel="alternate" type="text/html" title="Recovering a Minecraft world from a crash, the technician way" /><published>2022-11-27T00:00:00+00:00</published><updated>2022-12-18T23:54:35+00:00</updated><id>https://ibug.io/blog/2022/11/recover-minecraft-world</id><content type="html" xml:base="https://ibug.io/blog/2022/11/recover-minecraft-world/"><![CDATA[<p>While a friend was building an automatic brewing pipeline, our <a href="https://www.curseforge.com/minecraft/modpacks/create-astral">Create: Astral</a> server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.</p>
-	<h2 id="gathering-information">Gathering information</h2>
-	<p>If at all possible, we would like to salvage this broken world, so we start with an investigation of the crash log. It appears to be an infinite recursion with Create.</p>
-	<div class="language-text highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:219)
-at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
-at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
-at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
-at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
-at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
-at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
-at com.simibubi.create.foundation.item.ItemHelper.extract(ItemHelper.java:223)
-</code></pre>
-		</div>
-	</div>
-	<p>None of us has any knowledge in Java, but fortunately with <a href="https://www.curseforge.com/minecraft/mc-mods/not-enough-crashes">Not Enough Crashes (Fabric)</a>, the crash log gives a hint on which block is going wrong, as shown below:</p>
-	<div class="language-text highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>-- Block entity being ticked --
-Details:
-        Name: create:funnel // com.simibubi.create.content.logistics.block.funnel.FunnelTileEntity
-        Block: Block{create:brass_funnel}[extracting=true,facing=north,powered=false]
-        Block location: World: (-15,65,172), Section: (at 1,1,12 in -1,4,10; chunk contains blocks -16,-64,160 to -1,319,175), Region: (-1,0; contains chunks -32,0 to -1,31, blocks -512,-64,0 to -1,319,511)
-        Block: Block{create:brass_funnel}[extracting=true,facing=north,powered=false]
-        Block location: World: (-15,65,172), Section: (at 1,1,12 in -1,4,10; chunk contains blocks -16,-64,160 to -1,319,175), Region: (-1,0; contains chunks -32,0 to -1,31, blocks -512,-64,0 to -1,319,511)
-Stacktrace:
-        at net.minecraft.class_2818$class_5563.method_31703(class_2818.java:670)
-        at net.minecraft.class_2818$class_5564.method_31703(class_2818.java:713)
-        ...
-</code></pre>
-		</div>
-	</div>
-	<p>One idea now surfaces: If we can remove or replace with something else the offending block, we can probably fix the save with minimal progress loss.</p>
-	<p>The following information can be summarized from the above portion of the crash log:</p>
-	<ul>
-		<li>The offending block is a Brass Funnel from Create</li>
-		<li>It’s located at (-15,65,172), in chunk (-1,10), section 4 (a vertical 16×16×16 section)</li>
-		<li>The block coordinates are (1,1,12) <strong>within the section</strong></li>
-		<li>The region is (-1,0), meaning that the file that contains is <code class="language-plaintext highlighter-rouge">r.-1.0.mca</code>.</li>
-	</ul>
-	<p>Recalling that Minecraft worlds are also saved in NBT format, I try opening the region file with <a href="https://github.com/C4K3/nbted">nbted</a>, a tool that I previously used to tamper with player data. However, it complains:</p>
-	<div class="language-text highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>Error: Unable to parse r.-1.0.mca, are you sure it's an NBT file?
-        caused by: Unknown compression format where first byte is 0
-</code></pre>
-		</div>
-	</div>
-	<p>This indicates that the region file is not a single, complete NBT file, so I have to look for another tool to handle this.</p>
-	<h2 id="reading-the-world-file">Reading the world file</h2>
-	<p>Google-ing for <code class="language-plaintext highlighter-rouge">minecraft region site:github.com</code> leads me to Fenixin/Minecraft-Region-Fixer, of which an included <a href="https://github.com/Fenixin/Minecraft-Region-Fixer/tree/master/nbt">NBT library</a> seems promising. I grab this repository and take the <code class="language-plaintext highlighter-rouge">nbt</code> directory out, throwing away everything else.</p>
-	<p>The <code class="language-plaintext highlighter-rouge">region.py</code> file provides a <code class="language-plaintext highlighter-rouge">RegionFile</code> class that can be used to access region files, so I start playing with it:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="n">nbt</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">nbt</span><span class="p">.</span><span class="n">region</span><span class="p">.</span><span class="nc">RegionFile</span><span class="p">(</span><span class="sh">'</span><span class="s">r.-1.0.mca</span><span class="sh">'</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="p">.</span><span class="nf">get_chunk</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
-<span class="c"># Traceback (most recent call last):
-</span><span class="go">KeyError: (-1, 10)
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="p">.</span><span class="nf">get_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
-<span class="go">&lt;NBTFile with TAG_Compound('') at 0x7f8a8d014eb0&gt;
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span> <span class="o">=</span> <span class="n">_</span>
-</code></pre>
-		</div>
-	</div>
-	<p>So this Python library arranges chunks by offset <em>within the region file</em>. That’s fine.</p>
-	<p>Now that I have access to an NBT tag, it’s time to study its structure. The <a href="https://minecraft.fandom.com/wiki/Chunk_format">Chunk format</a> page from Minecraft Wiki is the ultimate reference here.</p>
-	<p>I know that <code class="language-plaintext highlighter-rouge">c</code> holds the “root tag” of the chunk I’m looking for. This is easily verified:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">c</span><span class="p">[</span><span class="sh">'</span><span class="s">xPos</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span><span class="p">,</span> <span class="n">c</span><span class="p">[</span><span class="sh">'</span><span class="s">zPos</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span>
-<span class="go">(-1, 10)
-</span></code></pre>
-		</div>
-	</div>
-	<p>I find the vertical section containing the offending block:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">c</span><span class="p">[</span><span class="sh">'</span><span class="s">sections</span><span class="sh">'</span><span class="p">]</span> <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">Y</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">4</span><span class="p">]</span>
-<span class="go">[&lt;TAG_Compound('') at 0x7f8a8d44c1c0&gt;]
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-</code></pre>
-		</div>
-	</div>
-	<p>The <a href="https://minecraft.fandom.com/wiki/Anvil_file_format">Anvil file format</a> page shows that block data is ordered in YZX order, so I try to find the block data from the <code class="language-plaintext highlighter-rouge">data</code> key:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">data</span><span class="sh">'</span><span class="p">][</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
-<span class="go">72624976668147841
-</span></code></pre>
-		</div>
-	</div>
-	<p>… which is, unfortunately not something I can decipher.</p>
-	<p>I look closely to the description of the <code class="language-plaintext highlighter-rouge">data</code> tag:</p>
-	<blockquote>
-		<p><strong>A packed array</strong> of 4096 indices pointing to the palette, stored in an array of 64-bit integers. […] All indices are the same length: the minimum amount of bytes required to represent the largest index in the palette. […] Since 1.16, the indices are not packed across multiple elements of the array, meaning that if there is no more space in a given 64-bit integer for the next index, it starts instead at the first (lowest) bit of the next 64-bit element.</p>
-	</blockquote>
-	<p>So not only was that number <em>not</em> for a single block, but also was I looking for a wrong index. I need to inspect the block palette first:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="nf">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">palette</span><span class="sh">'</span><span class="p">])</span>
-<span class="go">95
-</span><span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nf">enumerate</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">palette</span><span class="sh">'</span><span class="p">])</span>
-<span class="gp">... </span><span class="w"> </span><span class="k">if</span> <span class="n">b</span><span class="p">[</span><span class="sh">'</span><span class="s">Name</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="sh">"</span><span class="s">create:brass_funnel</span><span class="sh">"</span><span class="p">]</span>
-<span class="go">[(55, &lt;TAG_Compound('') at 0x7f8a8d49d120&gt;), (77, &lt;TAG_Compound('') at 0x7f8a8d49ff40&gt;)]
-</span></code></pre>
-		</div>
-	</div>
-	<p>There are two indices allotted for the funnel block, but at this point it cannot be determined which one is correct. I look inside the packed <code class="language-plaintext highlighter-rouge">data</code> array, recalculating the index from the block coordinates using information above:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">data</span><span class="sh">'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span>
-<span class="go">3963735054717000501
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">i</span> <span class="o">=</span> <span class="n">_</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Because there are 95 blocks in the palette, 7 bits is enough to hold an index, and a 64-bit integer holds 9 indices. The calculation can be verified by the following:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="nf">len</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">data</span><span class="sh">'</span><span class="p">])</span>
-<span class="go">456
-</span><span class="gp">&gt;&gt;&gt; </span><span class="mi">456</span> <span class="o">*</span> <span class="mi">9</span>
-<span class="go">4104
-</span><span class="c"># just slightly over 4096
-</span></code></pre>
-		</div>
-	</div>
-	<p>Now I unpack that large integer into 9 indices, and try to translate them into blocks:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="p">[(</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="n">x</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0x7F</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span>
-<span class="go">[53, 54, 46, 1, 1, 1, 1, 1, 55]
-</span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">palette</span><span class="sh">'</span><span class="p">][((</span><span class="n">i</span> <span class="o">&gt;&gt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="n">x</span><span class="p">))</span> <span class="o">&amp;</span> <span class="mh">0x7F</span><span class="p">)][</span><span class="sh">'</span><span class="s">Name</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span>
-<span class="gp">... </span><span class="w"> </span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">9</span><span class="p">)]</span>
-<span class="go">['create:spout',
- 'create:mechanical_pump',
- 'tconstruct:seared_drain',
- 'minecraft:air',
- 'minecraft:air',
- 'minecraft:air',
- 'minecraft:air',
- 'minecraft:air',
- 'create:brass_funnel']
-</span></code></pre>
-		</div>
-	</div>
-	<p>It starts to make sense now. I can recall a <a href="https://tinkers-construct.fandom.com/wiki/Smeltery">Smeltery</a> structure that we built together near this area.</p>
-	<h2 id="replacing-the-block">Replacing the block</h2>
-	<p>The offending Brass Funnel is the last index within this packed 64-bit integer. I can replace it with air (index = 1) using bit manipulation:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">ii</span> <span class="o">=</span> <span class="n">i</span> <span class="o">^</span> <span class="p">((</span><span class="mi">55</span> <span class="o">^</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="mi">8</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ii</span>
-<span class="go">72624976668891957
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">data</span><span class="sh">'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Now I try to save the file, only to find that <code class="language-plaintext highlighter-rouge">nbt.region.RegionFile</code> offers no <code class="language-plaintext highlighter-rouge">.save()</code> or <code class="language-plaintext highlighter-rouge">.write()</code> methods:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">.</span><span class="o">&lt;</span><span class="n">TAB</span><span class="o">&gt;&lt;</span><span class="n">TAB</span><span class="o">&gt;</span>
-<span class="go">f.STATUS_CHUNK_IN_HEADER           f.get_chunk_coords()
-f.STATUS_CHUNK_MISMATCHED_LENGTHS  f.get_chunks()
-f.STATUS_CHUNK_NOT_CREATED         f.get_metadata()
-f.STATUS_CHUNK_OK                  f.get_nbt(
-f.STATUS_CHUNK_OUT_OF_FILE         f.get_size()
-f.STATUS_CHUNK_OVERLAPPING         f.get_timestamp(
-f.STATUS_CHUNK_ZERO_LENGTH         f.header
-f.chunk_count()                    f.iter_chunks()
-f.chunk_headers                    f.iter_chunks_class()
-f.chunkclass                       f.loc
-f.close()                          f.metadata
-f.closed                           f.size
-f.file                             f.unlink_chunk(
-f.filename                         f.write_blockdata(
-f.get_blockdata(                   f.write_chunk(
-f.get_chunk(
-</span></code></pre>
-		</div>
-	</div>
-	<p class="notice--primary"><i class="fas fa-fw fa-lightbulb"></i> In my original attempt, I took a diversion from the right track, forgetting that each chunk comes in a single-root NBT tag, and that the region file <em>packs</em> multiple chunks into a single file. I only realized that the file format was different from what I expected at first after multiple failed attempts to modify the file using a hex editor.</p>
-	<p>Reading <a href="https://minecraft.fandom.com/wiki/Region_file_format">Region file format</a>, I learn that each chunk is compressed (using Zlib) separately and stored together in the region file, and that <code class="language-plaintext highlighter-rouge">f.write_chunk</code> is the method I am looking for.</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">.</span><span class="nf">write_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
-<span class="go">&gt;&gt;&gt;
-</span></code></pre>
-		</div>
-	</div>
-	<p>The file size is reduced by some 60 KB. Considering that compression algorithm provides no guarantee on the size of the compressed data, this is not an indicator whether the file’s going well or not. The only way to verify is to load the world and check the result in game.</p>
-	<p>With uncertainty, I make a backup of the broken world, and replace <code class="language-plaintext highlighter-rouge">r.-1.0.mca</code> with my modified copy. The server now starts normally, and I can see the brass funnel disappeared.</p>
-	<p><img src="/image/minecraft/createastral-1.jpg" alt="Block removed" /></p>
-	<h2 id="extra-tests">Extra tests</h2>
-	<p>To convince myself that I have successfully changed the correct block, I decide that I need to replace it with something visible, not just air. I look inside the palette of the section, and found a few blocks available for use.</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">palette</span><span class="sh">'</span><span class="p">][</span><span class="mi">25</span><span class="p">][</span><span class="sh">'</span><span class="s">Name</span><span class="sh">'</span><span class="p">]</span>
-<span class="go">minecraft:grass_block
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">ii</span> <span class="o">=</span> <span class="n">i</span> <span class="o">^</span> <span class="p">((</span><span class="mi">55</span> <span class="o">^</span> <span class="mi">25</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">7</span><span class="o">*</span><span class="mi">8</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="p">[</span><span class="sh">'</span><span class="s">block_states</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">data</span><span class="sh">'</span><span class="p">][(</span><span class="mi">256</span> <span class="o">+</span> <span class="mi">12</span><span class="o">*</span><span class="mi">16</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="n">ii</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">f</span><span class="p">.</span><span class="nf">write_chunk</span><span class="p">(</span><span class="mi">31</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
-</code></pre>
-		</div>
-	</div>
-	<p>I then copy the file back to the server, and start it again. As expected, the block at that coordinate is now a grass block.</p>
-	<p><img src="/image/minecraft/createastral-2.jpg" alt="Block replaced with Grass Block" /></p>
-	<h2 id="additional-information">Additional information</h2>
-	<p>According to <a href="https://minecraft.fandom.com/wiki/Chunk_format">Chunk format</a>, block entities are stored in a <code class="language-plaintext highlighter-rouge">block_entity</code> tag under the root tag of the chunk. It’s possible to inspect the block entity data for the offending Brass Funnel, using information provided under the <a href="https://minecraft.fandom.com/wiki/Chunk_format#Block_entity_format">Block entity format</a> section.</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="nf">len</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="sh">'</span><span class="s">block_entities</span><span class="sh">'</span><span class="p">])</span>
-<span class="go">420
-</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">c</span><span class="p">[</span><span class="sh">'</span><span class="s">block_entities</span><span class="sh">'</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="sh">'</span><span class="s">x</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span>
-<span class="go">-14
-</span></code></pre>
-		</div>
-	</div>
-	<p>So the coordinates for block entities are absolute, not relative to the chunk. Now find the Brass Funnel:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">be</span> <span class="k">for</span> <span class="n">be</span> <span class="ow">in</span> <span class="n">c</span><span class="p">[</span><span class="sh">'</span><span class="s">block_entities</span><span class="sh">'</span><span class="p">]</span>
-<span class="gp">... </span><span class="w"> </span><span class="k">if</span> <span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">x</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="o">-</span><span class="mi">15</span> <span class="ow">and</span> <span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">y</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">65</span> <span class="ow">and</span> <span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">z</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span> <span class="o">==</span> <span class="mi">172</span><span class="p">]</span>
-<span class="go">[&lt;TAG_Compound('') at 0x7f8a8d4afd30&gt;]
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span> <span class="o">=</span> <span class="n">_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">.</span><span class="nf">keys</span><span class="p">()</span>
-<span class="go">['z', 'x', 'TransferCooldown', 'id', 'y', 'FilterAmount', 'keepPacked', 'Filter']
-</span></code></pre>
-		</div>
-	</div>
-	<p>More than half of these keys are familiar: They are common to all block entities. Another one <code class="language-plaintext highlighter-rouge">TransferCooldown</code> is also present for Hoppers. The names of the remaining two tags are self-explanatory.</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">FilterAmount</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span>
-<span class="go">2
-</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">]</span>
-<span class="go">&lt;TAG_Compound('Filter') at 0x7f8a8d1000a0&gt;
-</span><span class="gp">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">].</span><span class="nf">keys</span><span class="p">()</span>
-<span class="go">['id', 'tag', 'Count']
-</span></code></pre>
-		</div>
-	</div>
-	<p>So the <code class="language-plaintext highlighter-rouge">Filter</code> key is an item. In my case it’s a <a href="https://create.fandom.com/wiki/Filter">Filter</a> (normal filter, crafted with Iron Nuggets). The contents of the filter can be further inspected:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">tag</span><span class="sh">'</span><span class="p">].</span><span class="nf">keys</span><span class="p">()</span>
-<span class="go">['RespectNBT', 'Blacklist', 'Items']
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">tag</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Blacklist</span><span class="sh">'</span><span class="p">].</span><span class="n">value</span>
-<span class="go">1
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">tag</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">]</span>
-<span class="go">&lt;TAG_Compound('Items') at 0x7f8a8d100070&gt;
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">tag</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">].</span><span class="nf">keys</span><span class="p">()</span>
-<span class="go">['Size', 'Items']
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">tag</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">]</span>
-<span class="go">2 entries of type TAG_Compound
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">tag</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-<span class="go">&lt;TAG_Compound('') at 0x7f8a8d1003d0&gt;
-</span><span class="gp">&gt;&gt;&gt; </span><span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">tag</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="nf">keys</span><span class="p">()</span>
-<span class="go">['Slot', 'id', 'Count']
-</span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">it</span><span class="p">[</span><span class="sh">'</span><span class="s">id</span><span class="sh">'</span><span class="p">]</span> <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="n">be</span><span class="p">[</span><span class="sh">'</span><span class="s">Filter</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">tag</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">][</span><span class="sh">'</span><span class="s">Items</span><span class="sh">'</span><span class="p">]]</span>
-<span class="go">[create:cinder_flour, minecraft:glass_bottle]
-</span></code></pre>
-		</div>
-	</div>
-	<p>Now the mystery has been completely uncovered. The Brass Funnel is configured to take everything but Cinder Flour and Glass Bottles, 2 at a time. Considering that the Depot behind is part of a brewing system, there will be brewed Potions, which are unstackable. A friend helped us find the GitHub issue <a href="https://github.com/Fabricators-of-Create/Create/issues/570"><i class="fab fa-github"></i> Create#570</a>, confirming that we ran into the same bug as reported in that thread.</p>
-	<h2 id="epilogue">Epilogue</h2>
-	<p>The use of block/item names since Java Edition 1.7.2 (<a href="https://minecraft.fandom.com/wiki/Java_Edition_13w37a">13w37a</a>) hinted that block/item IDs would eventually become dynamic, which actually took place in <a href="https://minecraft.fandom.com/wiki/Java_Edition_1.13/Flattening">the Flattening</a> in Java Edition 1.13. The smart use of the “palette + array of indices” paves the way for mods and future expansions to add new blocks without having to worry about the block ID limit, which is also reminiscent of the <a href="https://en.wikipedia.org/wiki/BMP_file_format#Color_table">color table</a> in 8-bit (256 colors) BMP bitmap images.</p>
-	<p>Contrary to player data (<code class="language-plaintext highlighter-rouge">playerdata/*.dat</code>), the region file is a lot more complicated. Thanks to the large fan base of Minecraft, libraries for handling the file format are readily available. I am inclined to believe that a few steps taken and decisions made here are critical to the success of salvaging our save.</p>
-	<ul>
-		<li>First and foremost, checking the logs: We know which block is going wrong, and <em>have faith in ourselves that we can fix it</em>.</li>
-		<li>Looking in the correct direction: Instead of using a complete “world edit” tool, we decide to find some library on GitHub and improvise from there.</li>
-		<li>Reading the documentation carefully and in detail.</li>
-		<li>Doing math correctly (LOL…)</li>
-	</ul>
-	<p>Finally, I want to credit my friend <a href="https://sirius1242.github.io/">sirius</a> for his unsurpassed knowledge of Minecraft, without whose help I would not have been able to take on this wonderful adventure.</p>
-	]]></content><author><name>iBug</name></author><category term="games" /><category term="minecraft" /><summary type="html"><![CDATA[While a friend was building an automatic brewing pipeline, our Create: Astral server crashed and wouldn’t start again. At first we thought it’d be easy to restore our world from a backup, only to find that the automatic backup mechanism wasn’t working at all due to misconfiguration. The last manual backup was taken a few days ago, so reverting to that backup means a lot of progress loss, which is undesirable for us.]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="development" /><summary type="html"><![CDATA[Advent of Code (Wikipedia, link) is an annual event that releases a programming puzzle every day from December 1 to December 25. It’s a great chance to learn a new language or practice your skills.]]></summary></entry></feed>

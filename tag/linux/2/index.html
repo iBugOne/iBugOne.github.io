@@ -40,7 +40,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=8a657cc">
+		<link rel="stylesheet" href="/assets/css/main.css?v=1c6bc63">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -159,6 +159,31 @@
 				</div>
 				<div class="archive">
 					<div class="entries-list">
+						<div class="list__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/linux-windows.webp" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/11/linux-windows-amalgam-monster-ntfs/" rel="permalink">New Pandora’s box: Install Linux and Windows onto the same NTFS partition
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Linux 5.15 is shipped with a brand new driver for Microsoft’s classic NTFS filesystem, NTFS3. Unlike the decades-old open-source NTFS-3G project, which is based on FUSE and have always received cri...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-11-28T00:00:00+00:00">Nov 28, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-clock" aria-hidden="true"></i>
+											5 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
 						<div class="list__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<div class="archive__item-teaser">
@@ -327,29 +352,6 @@
 								</div>
 							</article>
 						</div>
-						<div class="list__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2019/07/systemd-service-template/" rel="permalink">Creating templated Systemd services
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">Last time I wrote an article about NAT traversal using FRP, which has been my personal solution for exposing SSH access of machines behind NAT to the internet for a long time.
-									</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2019-07-16T00:00:00+00:00">Jul 16, 2019</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-clock" aria-hidden="true"></i>
-											2 minute read
-										</span>
-									</p>
-								</div>
-							</article>
-						</div>
 					</div>
 					<nav class="pagination">
 						<ul>
@@ -386,7 +388,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-845</a>
+						Site version <a href="/status" class="version-text">G-847</a>
 					</p>
 				</div>
 			</footer>

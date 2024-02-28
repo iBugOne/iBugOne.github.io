@@ -333,6 +333,10 @@
 			<lastmod>2024-01-23T06:15:20+00:00</lastmod>
 		</url>
 		<url>
+			<loc>https://ibug.io/blog/2024/02/linux-firewall-for-rdp/</loc>
+			<lastmod>2024-02-28T18:33:21+00:00</lastmod>
+		</url>
+		<url>
 			<loc>https://ibug.io/project/OJSandbox/</loc>
 			<lastmod>2021-12-21T04:11:24+00:00</lastmod>
 		</url>
@@ -613,6 +617,9 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/collection/posts/7/</loc>
+		</url>
+		<url>
+			<loc>https://ibug.io/collection/posts/8/</loc>
 		</url>
 		<url>
 			<loc>https://ibug.io/collection/home/</loc>
