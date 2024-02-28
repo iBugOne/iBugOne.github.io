@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=049adc9">
+		<link rel="stylesheet" href="/assets/css/main.css?v=f22700c">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -189,13 +189,13 @@
 									<p>A pre-configured iptables rule set to allow RDP access from a specific IP set. For example:</p>
 									<div class="language-shell highlighter-rouge">
 										<div class="highlight">
-											<pre class="highlight"><code>  <span class="k">*</span>filter
-  :FORWARD DROP
-  <span class="nt">-A</span> FORWARD <span class="nt">-d</span> 192.0.2.1 <span class="nt">-p</span> tcp <span class="nt">--dport</span> 3389 <span class="nt">-m</span> <span class="nb">set</span> <span class="nt">--set</span> ibug <span class="nt">-j</span> ACCEPT
+											<pre class="highlight"><code><span class="k">*</span>filter
+:FORWARD DROP
+<span class="nt">-A</span> FORWARD <span class="nt">-d</span> 192.0.2.1 <span class="nt">-p</span> tcp <span class="nt">--dport</span> 3389 <span class="nt">-m</span> <span class="nb">set</span> <span class="nt">--set</span> ibug <span class="nt">-j</span> ACCEPT
 
-  <span class="k">*</span>nat
-  <span class="nt">-A</span> RDPForward <span class="nt">-p</span> tcp <span class="nt">--dport</span> 3389 <span class="nt">-j</span> DNAT <span class="nt">--to-destination</span> 192.0.2.1:3389
-  <span class="nt">-A</span> RDPForward <span class="nt">-p</span> udp <span class="nt">--dport</span> 3389 <span class="nt">-j</span> DNAT <span class="nt">--to-destination</span> 192.0.2.1:3389
+<span class="k">*</span>nat
+<span class="nt">-A</span> RDPForward <span class="nt">-p</span> tcp <span class="nt">--dport</span> 3389 <span class="nt">-j</span> DNAT <span class="nt">--to-destination</span> 192.0.2.1:3389
+<span class="nt">-A</span> RDPForward <span class="nt">-p</span> udp <span class="nt">--dport</span> 3389 <span class="nt">-j</span> DNAT <span class="nt">--to-destination</span> 192.0.2.1:3389
 </code></pre>
 										</div>
     </div>
@@ -204,32 +204,32 @@
 									<p>A way to keep the client address in the set for the duration of the SSH session. I use SSH user rc file to proactively refresh it:</p>
 									<div class="language-shell highlighter-rouge">
 										<div class="highlight">
-											<pre class="highlight"><code>  <span class="c">#!/bin/bash</span>
-  <span class="c"># rwxr-xr-x ~/.ssh/rc</span>
+											<pre class="highlight"><code><span class="c">#!/bin/bash</span>
+<span class="c"># rwxr-xr-x ~/.ssh/rc</span>
 
-  <span class="k">if</span> <span class="o">[</span> <span class="nt">-z</span> <span class="s2">"</span><span class="nv">$BASH</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
-    </span><span class="nb">exec</span> /bin/bash <span class="nt">--</span> <span class="s2">"</span><span class="nv">$0</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span>
-    <span class="nb">exit </span>1
-  <span class="k">fi
+<span class="k">if</span> <span class="o">[</span> <span class="nt">-z</span> <span class="s2">"</span><span class="nv">$BASH</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+  </span><span class="nb">exec</span> /bin/bash <span class="nt">--</span> <span class="s2">"</span><span class="nv">$0</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span>
+  <span class="nb">exit </span>1
+<span class="k">fi
 
-  </span><span class="nv">_ssh_client</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">SSH_CONNECTION</span><span class="p">%% *</span><span class="k">}</span><span class="s2">"</span>
-  <span class="nv">_ppid</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>ps <span class="nt">-o</span> <span class="nv">ppid</span><span class="o">=</span> <span class="si">$(</span>ps <span class="nt">-o</span> <span class="nv">ppid</span><span class="o">=</span> <span class="nv">$PPID</span><span class="si">))</span><span class="s2">"</span>
+</span><span class="nv">_ssh_client</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">SSH_CONNECTION</span><span class="p">%% *</span><span class="k">}</span><span class="s2">"</span>
+<span class="nv">_ppid</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>ps <span class="nt">-o</span> <span class="nv">ppid</span><span class="o">=</span> <span class="si">$(</span>ps <span class="nt">-o</span> <span class="nv">ppid</span><span class="o">=</span> <span class="nv">$PPID</span><span class="si">))</span><span class="s2">"</span>
 
-  <span class="nb">nohup</span> ~/.local/bin/_ssh_refresh_client <span class="s2">"</span><span class="nv">$_ssh_client</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$_ppid</span><span class="s2">"</span> &amp;&gt;/dev/null &amp; <span class="nb">exit </span>0
+<span class="nb">nohup</span> ~/.local/bin/_ssh_refresh_client <span class="s2">"</span><span class="nv">$_ssh_client</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$_ppid</span><span class="s2">"</span> &amp;&gt;/dev/null &amp; <span class="nb">exit </span>0
 </code></pre>
 										</div>
     </div>
 									<div class="language-shell highlighter-rouge">
 										<div class="highlight">
-											<pre class="highlight"><code>  <span class="c">#!/bin/sh</span>
-  <span class="c"># rwxr-xr-x ~/.local/bin/_ssh_refresh_client</span>
-  <span class="nv">_ssh_client</span><span class="o">=</span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>
-  <span class="nv">_ppid</span><span class="o">=</span><span class="s2">"</span><span class="nv">$2</span><span class="s2">"</span>
-  <span class="k">while </span><span class="nb">kill</span> <span class="nt">-0</span> <span class="s2">"</span><span class="nv">$_ppid</span><span class="s2">"</span> 2&gt;/dev/null<span class="p">;</span> <span class="k">do
-    </span><span class="nb">sudo </span>ipset <span class="nt">-exist</span> add ibug <span class="s2">"</span><span class="nv">$_ssh_client</span><span class="s2">"</span> <span class="nb">timeout </span>300
-    <span class="nb">sleep </span>60
-  <span class="k">done
-  </span><span class="nb">exit </span>0
+											<pre class="highlight"><code><span class="c">#!/bin/sh</span>
+<span class="c"># rwxr-xr-x ~/.local/bin/_ssh_refresh_client</span>
+<span class="nv">_ssh_client</span><span class="o">=</span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>
+<span class="nv">_ppid</span><span class="o">=</span><span class="s2">"</span><span class="nv">$2</span><span class="s2">"</span>
+<span class="k">while </span><span class="nb">kill</span> <span class="nt">-0</span> <span class="s2">"</span><span class="nv">$_ppid</span><span class="s2">"</span> 2&gt;/dev/null<span class="p">;</span> <span class="k">do
+  </span><span class="nb">sudo </span>ipset <span class="nt">-exist</span> add ibug <span class="s2">"</span><span class="nv">$_ssh_client</span><span class="s2">"</span> <span class="nb">timeout </span>300
+  <span class="nb">sleep </span>60
+<span class="k">done
+</span><span class="nb">exit </span>0
 </code></pre>
 										</div>
     </div>
@@ -395,7 +395,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-848</a>
+						Site version <a href="/status" class="version-text">G-849</a>
 					</p>
 				</div>
 			</footer>

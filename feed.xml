@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-02-28T10:34:20+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">My firewall solution for RDP</title><link href="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/" rel="alternate" type="text/html" title="My firewall solution for RDP" /><published>2024-02-28T00:00:00+00:00</published><updated>2024-02-28T18:33:21+00:00</updated><id>https://ibug.io/blog/2024/02/linux-firewall-for-rdp</id><content type="html" xml:base="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/"><![CDATA[<p>Today I stumbled upon <a href="https://www.v2ex.com/t/1019147">this V2EX post</a> (Simplified Chinese) where the OP shared their PowerShell implementation of a “makeshift fail2ban” for RDP (<a href="https://github.com/Qetesh/rdpFail2Ban">their GitHub repository</a>). Their script looked very clean and robust, but needless to say, it is unnecessarily difficult on Windows. So on this rare (maybe?) occasion I decide to share my firewall for securing RDP access to my Windows hosts.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-02-28T16:07:33+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">My firewall solution for RDP</title><link href="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/" rel="alternate" type="text/html" title="My firewall solution for RDP" /><published>2024-02-28T00:00:00+00:00</published><updated>2024-02-28T18:33:21+00:00</updated><id>https://ibug.io/blog/2024/02/linux-firewall-for-rdp</id><content type="html" xml:base="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/"><![CDATA[<p>Today I stumbled upon <a href="https://www.v2ex.com/t/1019147">this V2EX post</a> (Simplified Chinese) where the OP shared their PowerShell implementation of a “makeshift fail2ban” for RDP (<a href="https://github.com/Qetesh/rdpFail2Ban">their GitHub repository</a>). Their script looked very clean and robust, but needless to say, it is unnecessarily difficult on Windows. So on this rare (maybe?) occasion I decide to share my firewall for securing RDP access to my Windows hosts.</p>
 			<p><strong>None</strong> of my Windows hosts (PCs and VMs) has their RDP port exposed to the public internet directly, and they’re all connected to my mesh VPN (which is out of scope for this blog article). My primary public internet entry gateway for the intranet runs Debian with fully manually configured iptables-based firewall, and I frequently work on it through SSH.</p>
 			<p>My goal is to expose the RDP port only to myself. There are a few obvious solutions eliminated for different reasons:</p>
 			<ul>
@@ -11,13 +11,13 @@
 					<p>A pre-configured iptables rule set to allow RDP access from a specific IP set. For example:</p>
 					<div class="language-shell highlighter-rouge">
 						<div class="highlight">
-							<pre class="highlight"><code>  <span class="k">*</span>filter
-  :FORWARD DROP
-  <span class="nt">-A</span> FORWARD <span class="nt">-d</span> 192.0.2.1 <span class="nt">-p</span> tcp <span class="nt">--dport</span> 3389 <span class="nt">-m</span> <span class="nb">set</span> <span class="nt">--set</span> ibug <span class="nt">-j</span> ACCEPT
+							<pre class="highlight"><code><span class="k">*</span>filter
+:FORWARD DROP
+<span class="nt">-A</span> FORWARD <span class="nt">-d</span> 192.0.2.1 <span class="nt">-p</span> tcp <span class="nt">--dport</span> 3389 <span class="nt">-m</span> <span class="nb">set</span> <span class="nt">--set</span> ibug <span class="nt">-j</span> ACCEPT
 
-  <span class="k">*</span>nat
-  <span class="nt">-A</span> RDPForward <span class="nt">-p</span> tcp <span class="nt">--dport</span> 3389 <span class="nt">-j</span> DNAT <span class="nt">--to-destination</span> 192.0.2.1:3389
-  <span class="nt">-A</span> RDPForward <span class="nt">-p</span> udp <span class="nt">--dport</span> 3389 <span class="nt">-j</span> DNAT <span class="nt">--to-destination</span> 192.0.2.1:3389
+<span class="k">*</span>nat
+<span class="nt">-A</span> RDPForward <span class="nt">-p</span> tcp <span class="nt">--dport</span> 3389 <span class="nt">-j</span> DNAT <span class="nt">--to-destination</span> 192.0.2.1:3389
+<span class="nt">-A</span> RDPForward <span class="nt">-p</span> udp <span class="nt">--dport</span> 3389 <span class="nt">-j</span> DNAT <span class="nt">--to-destination</span> 192.0.2.1:3389
 </code></pre>
 						</div>
     </div>
@@ -26,32 +26,32 @@
 					<p>A way to keep the client address in the set for the duration of the SSH session. I use SSH user rc file to proactively refresh it:</p>
 					<div class="language-shell highlighter-rouge">
 						<div class="highlight">
-							<pre class="highlight"><code>  <span class="c">#!/bin/bash</span>
-  <span class="c"># rwxr-xr-x ~/.ssh/rc</span>
+							<pre class="highlight"><code><span class="c">#!/bin/bash</span>
+<span class="c"># rwxr-xr-x ~/.ssh/rc</span>
 
-  <span class="k">if</span> <span class="o">[</span> <span class="nt">-z</span> <span class="s2">"</span><span class="nv">$BASH</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
-    </span><span class="nb">exec</span> /bin/bash <span class="nt">--</span> <span class="s2">"</span><span class="nv">$0</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span>
-    <span class="nb">exit </span>1
-  <span class="k">fi
+<span class="k">if</span> <span class="o">[</span> <span class="nt">-z</span> <span class="s2">"</span><span class="nv">$BASH</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+  </span><span class="nb">exec</span> /bin/bash <span class="nt">--</span> <span class="s2">"</span><span class="nv">$0</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$@</span><span class="s2">"</span>
+  <span class="nb">exit </span>1
+<span class="k">fi
 
-  </span><span class="nv">_ssh_client</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">SSH_CONNECTION</span><span class="p">%% *</span><span class="k">}</span><span class="s2">"</span>
-  <span class="nv">_ppid</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>ps <span class="nt">-o</span> <span class="nv">ppid</span><span class="o">=</span> <span class="si">$(</span>ps <span class="nt">-o</span> <span class="nv">ppid</span><span class="o">=</span> <span class="nv">$PPID</span><span class="si">))</span><span class="s2">"</span>
+</span><span class="nv">_ssh_client</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">SSH_CONNECTION</span><span class="p">%% *</span><span class="k">}</span><span class="s2">"</span>
+<span class="nv">_ppid</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span>ps <span class="nt">-o</span> <span class="nv">ppid</span><span class="o">=</span> <span class="si">$(</span>ps <span class="nt">-o</span> <span class="nv">ppid</span><span class="o">=</span> <span class="nv">$PPID</span><span class="si">))</span><span class="s2">"</span>
 
-  <span class="nb">nohup</span> ~/.local/bin/_ssh_refresh_client <span class="s2">"</span><span class="nv">$_ssh_client</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$_ppid</span><span class="s2">"</span> &amp;&gt;/dev/null &amp; <span class="nb">exit </span>0
+<span class="nb">nohup</span> ~/.local/bin/_ssh_refresh_client <span class="s2">"</span><span class="nv">$_ssh_client</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$_ppid</span><span class="s2">"</span> &amp;&gt;/dev/null &amp; <span class="nb">exit </span>0
 </code></pre>
 						</div>
     </div>
 					<div class="language-shell highlighter-rouge">
 						<div class="highlight">
-							<pre class="highlight"><code>  <span class="c">#!/bin/sh</span>
-  <span class="c"># rwxr-xr-x ~/.local/bin/_ssh_refresh_client</span>
-  <span class="nv">_ssh_client</span><span class="o">=</span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>
-  <span class="nv">_ppid</span><span class="o">=</span><span class="s2">"</span><span class="nv">$2</span><span class="s2">"</span>
-  <span class="k">while </span><span class="nb">kill</span> <span class="nt">-0</span> <span class="s2">"</span><span class="nv">$_ppid</span><span class="s2">"</span> 2&gt;/dev/null<span class="p">;</span> <span class="k">do
-    </span><span class="nb">sudo </span>ipset <span class="nt">-exist</span> add ibug <span class="s2">"</span><span class="nv">$_ssh_client</span><span class="s2">"</span> <span class="nb">timeout </span>300
-    <span class="nb">sleep </span>60
-  <span class="k">done
-  </span><span class="nb">exit </span>0
+							<pre class="highlight"><code><span class="c">#!/bin/sh</span>
+<span class="c"># rwxr-xr-x ~/.local/bin/_ssh_refresh_client</span>
+<span class="nv">_ssh_client</span><span class="o">=</span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>
+<span class="nv">_ppid</span><span class="o">=</span><span class="s2">"</span><span class="nv">$2</span><span class="s2">"</span>
+<span class="k">while </span><span class="nb">kill</span> <span class="nt">-0</span> <span class="s2">"</span><span class="nv">$_ppid</span><span class="s2">"</span> 2&gt;/dev/null<span class="p">;</span> <span class="k">do
+  </span><span class="nb">sudo </span>ipset <span class="nt">-exist</span> add ibug <span class="s2">"</span><span class="nv">$_ssh_client</span><span class="s2">"</span> <span class="nb">timeout </span>300
+  <span class="nb">sleep </span>60
+<span class="k">done
+</span><span class="nb">exit </span>0
 </code></pre>
 						</div>
     </div>
