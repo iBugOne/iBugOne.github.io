@@ -1,17 +1,96 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-02-28T16:07:33+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">My firewall solution for RDP</title><link href="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/" rel="alternate" type="text/html" title="My firewall solution for RDP" /><published>2024-02-28T00:00:00+00:00</published><updated>2024-02-28T18:33:21+00:00</updated><id>https://ibug.io/blog/2024/02/linux-firewall-for-rdp</id><content type="html" xml:base="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/"><![CDATA[<p>Today I stumbled upon <a href="https://www.v2ex.com/t/1019147">this V2EX post</a> (Simplified Chinese) where the OP shared their PowerShell implementation of a “makeshift fail2ban” for RDP (<a href="https://github.com/Qetesh/rdpFail2Ban">their GitHub repository</a>). Their script looked very clean and robust, but needless to say, it is unnecessarily difficult on Windows. So on this rare (maybe?) occasion I decide to share my firewall for securing RDP access to my Windows hosts.</p>
-			<p><strong>None</strong> of my Windows hosts (PCs and VMs) has their RDP port exposed to the public internet directly, and they’re all connected to my mesh VPN (which is out of scope for this blog article). My primary public internet entry gateway for the intranet runs Debian with fully manually configured iptables-based firewall, and I frequently work on it through SSH.</p>
-			<p>My goal is to expose the RDP port only to myself. There are a few obvious solutions eliminated for different reasons:</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-03-12T20:20:07+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">I almost broke our lab’s storage server…</title><link href="https://ibug.io/blog/2024/03/stupid-dell-recovery/" rel="alternate" type="text/html" title="I almost broke our lab’s storage server…" /><published>2024-03-13T00:00:00+00:00</published><updated>2024-03-13T04:19:01+00:00</updated><id>https://ibug.io/blog/2024/03/stupid-dell-recovery</id><content type="html" xml:base="https://ibug.io/blog/2024/03/stupid-dell-recovery/"><![CDATA[<p>Recently we discovered that both SSDs on our storage server were giving worrisome SMART values, so we started replacing them.
+				One of them was used only for ZFS L2ARC, so pulling it out was easy.
+				The other runs the rootfs and we couldn’t touch it for the time being, so we inserted a backup drive thinking we can migrate the OS later on.</p>
+			<p>After returning from the datacenter, I start working on the migration.
+				The initial steps are nothing but ordinary:</p>
 			<ul>
-				<li><strong>VPN</strong> is inconvenient as I don’t want to connect to VPN just for RDP when I don’t need it otherwise.</li>
-				<li><strong>SSH port forwarding</strong> is not performant for two things: Double-encryption and lack of UDP support.</li>
+				<li>Examine the spare drive to ensure there’s no important data on it, then wipe it (<code class="language-plaintext highlighter-rouge">blkdiscard -f /dev/sdb</code>).</li>
+				<li>Create the partition table that closely resembles the current system drive’s layout: 100 MB for the EFI partition (down from 512 MB), 32 GB for rootfs, and the rest for an LVM PV.</li>
+				<li>Format the partitions: <code class="language-plaintext highlighter-rouge">mkfs.vfat /dev/sdb1</code>, <code class="language-plaintext highlighter-rouge">mkfs.ext4 /dev/sdb2</code>, <code class="language-plaintext highlighter-rouge">pvcreate /dev/sdb3</code>.</li>
+				<li>Copy the rootfs over: <code class="language-plaintext highlighter-rouge">mount /dev/sdb2 /t</code>, <code class="language-plaintext highlighter-rouge">rsync -aHAXx / /t</code>.</li>
+				<li>Reinstall the bootloader: <code class="language-plaintext highlighter-rouge">mount /dev/sdb1 /t/boot/efi</code>, <code class="language-plaintext highlighter-rouge">arch-chroot /t</code>, <code class="language-plaintext highlighter-rouge">grub-install</code> (target is <code class="language-plaintext highlighter-rouge">x86_64-efi</code>), <code class="language-plaintext highlighter-rouge">update-grub</code>.</li>
+				<li>Start migrating LVs: <code class="language-plaintext highlighter-rouge">vgextend pve /dev/sdb3</code>, <code class="language-plaintext highlighter-rouge">pvmove /dev/sda3 /dev/sdb3</code>.</li>
 			</ul>
-			<p>The question arises that if SSH access is sufficiently convenient, why not use it as an authentication and authorization mechanism? So I came up with this:</p>
+			<p>At this point, a quick thought emerges: This is not the final drive to run the system on and is only here for the transitional period.
+				A second migration is planned when the new SSD arrives. So why not take this chance and move the rootfs onto LVM as well?</p>
+			<p>With that in mind, I hit Ctrl-C to <code class="language-plaintext highlighter-rouge">pvmove</code>, unbeknownst that it’s interruptible and terminating the <code class="language-plaintext highlighter-rouge">pvmove</code> process only pauses the operation.
+				For a moment, I thought I successfully canceled it and tried to re-partition the new drive.
+				Since the new PV is still in use by the suspended <code class="language-plaintext highlighter-rouge">pvmove</code> operation, the kernel would not accept any changes to <code class="language-plaintext highlighter-rouge">/dev/sdb3</code>.
+				During this process, I deleted and recreated the new rootfs (<code class="language-plaintext highlighter-rouge">/dev/sdb2</code>) and the new PV (<code class="language-plaintext highlighter-rouge">/dev/sdb3</code>) many times, and even tried manually editing LVM metadata (via <code class="language-plaintext highlighter-rouge">vgcfgbackup pve</code>, edit <code class="language-plaintext highlighter-rouge">/etc/lvm/backup/pve</code> and <code class="language-plaintext highlighter-rouge">vgcfgrestore pve</code>), before finally giving up and rebooting the system.</p>
+			<p>As a daily dose for a SysAdmin, the server didn’t boot up as expected.
+				I fired up a browser to connect to the machine’s IPMI, only to find that the remote console feature for iDRAC 9 was locked behind a paywall for goodness’ sake.
+				Thanks to God almighty Dell, things have been unnecessarily more complicated than ever before.
+				I carefully recalled every step taken and quickly identified the problem - one important thing forgotten - GRUB was successfully reinstalled on the new EFI partition (which was somehow left intact during the whole fiddling process), pointing to the now-deleted new root partition, and so it’s now stuck with GRUB.</p>
+			<p>Fortunately, out of precaution, I had previously configured the IPMI with serial-over-LAN, so I at least still have serial access to the server with <code class="language-plaintext highlighter-rouge">ipmitool</code>:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>ipmitool <span class="nt">-I</span> lanplus <span class="nt">-H</span> &lt;ip&gt; <span class="nt">-U</span> &lt;user&gt; <span class="nt">-P</span> &lt;password&gt; sol activate
+</code></pre>
+				</div>
+			</div>
+			<p>And better yet, this iDRAC 9 can change BIOS settings, most notably the boot order and one-time boot override. This definitely helped the most in the absence of that goddamn remote console.</p>
+			<p><img src="/image/serve/idrac-boot-override.png" alt="image" /></p>
+			<p>After some trial and error, I got myself into the GRUB command line, and it didn’t look quite well:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>grub rescue&gt; 
+</code></pre>
+				</div>
+			</div>
+			<p>There’s pretty much just the <code class="language-plaintext highlighter-rouge">ls</code> command, and it doesn’t even recognize the EFI partition (FAT32 filesystem). With some more twiddling, I found this “rescue mode” capable of reading ext4, which shed some light to the situation.</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>grub rescue&gt; <span class="nb">set </span><span class="nv">root</span><span class="o">=(</span>hd0,gpt2<span class="o">)</span>
+grub rescue&gt; <span class="nb">ls</span> /boot/grub
+fonts  grub.cfg  grubenv  locale  unicode.pf2  x86_64-efi
+</code></pre>
+				</div>
+			</div>
+			<p>Now things began to turn to the upswing.</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>grub rescue&gt; <span class="nb">set </span><span class="nv">prefix</span><span class="o">=</span>/boot/grub
+grub rescue&gt; insmod normal
+grub rescue&gt; normal
+</code></pre>
+				</div>
+			</div>
+			<p>In a few seconds, I discovered that the system was up and running, and continued migrating the rootfs.</p>
+			<p>After everything’s done, out of every precaution, I installed <code class="language-plaintext highlighter-rouge">grub-efi-amd64-signed</code>, which provides a large, monolithic <code class="language-plaintext highlighter-rouge">grubx64.efi</code> that has all the “optional” modules built-in, so it no longer relies on the filesystem for, e.g., LVM support, in case a similar disaster happens again.</p>
+			<h2 id="anecdote">Anecdote</h2>
+			<p>When trying to remove the faulty drive from the server, I at first made a wrong recall for its position, and we instead pulled out a running large-capacity HDD. Luckily it was not damaged, so we quickly inserted it back. Thanks to ZFS’s design, it automatically triggered a resilver, which completed in just a blink.</p>
+			<div class="language-text highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code># zpool status
+  pool: rpool
+ state: ONLINE
+  scan: resilvered 63.4M in 00:00:03 with 0 errors on Tue Mar 12 17:03:23 2024
+</code></pre>
+				</div>
+			</div>
+			<p>If this were a hardware RAID, a tedious and time-consuming rebuild would have been inevitable. It’s only with ZFS that this rapid recovery is possible.</p>
+			<h2 id="conclusion">Conclusion</h2>
+			<p>This incident was a good lesson for me, and some big takeaways I’d draw:</p>
 			<ul>
-				<li>
-					<p>A pre-configured iptables rule set to allow RDP access from a specific IP set. For example:</p>
-					<div class="language-shell highlighter-rouge">
-						<div class="highlight">
-							<pre class="highlight"><code><span class="k">*</span>filter
+				<li>Don’t panic under pressure.</li>
+				<li>Use ZFS so you can sleep well at night.</li>
+				<li>Fuck Dell, next time buy from another vendor that doesn’t lock basic features behind a paywall.</li>
+			</ul>
+			<p>Plus, the correct way to cancel a <code class="language-plaintext highlighter-rouge">pvmove</code> operation is in <a href="https://linux.die.net/man/8/pvmove"><code class="language-plaintext highlighter-rouge">man 8 pvmove</code></a>, and it’s right at the 2nd paragraph of the Description section.</p>
+			]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><summary type="html"><![CDATA[Recently we discovered that both SSDs on our storage server were giving worrisome SMART values, so we started replacing them. One of them was used only for ZFS L2ARC, so pulling it out was easy. The other runs the rootfs and we couldn’t touch it for the time being, so we inserted a backup drive thinking we can migrate the OS later on.]]></summary></entry><entry><title type="html">My firewall solution for RDP</title><link href="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/" rel="alternate" type="text/html" title="My firewall solution for RDP" /><published>2024-02-28T00:00:00+00:00</published><updated>2024-02-28T18:33:21+00:00</updated><id>https://ibug.io/blog/2024/02/linux-firewall-for-rdp</id><content type="html" xml:base="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/"><![CDATA[<p>Today I stumbled upon <a href="https://www.v2ex.com/t/1019147">this V2EX post</a> (Simplified Chinese) where the OP shared their PowerShell implementation of a “makeshift fail2ban” for RDP (<a href="https://github.com/Qetesh/rdpFail2Ban">their GitHub repository</a>). Their script looked very clean and robust, but needless to say, it is unnecessarily difficult on Windows. So on this rare (maybe?) occasion I decide to share my firewall for securing RDP access to my Windows hosts.</p>
+		<p><strong>None</strong> of my Windows hosts (PCs and VMs) has their RDP port exposed to the public internet directly, and they’re all connected to my mesh VPN (which is out of scope for this blog article). My primary public internet entry gateway for the intranet runs Debian with fully manually configured iptables-based firewall, and I frequently work on it through SSH.</p>
+		<p>My goal is to expose the RDP port only to myself. There are a few obvious solutions eliminated for different reasons:</p>
+		<ul>
+			<li><strong>VPN</strong> is inconvenient as I don’t want to connect to VPN just for RDP when I don’t need it otherwise.</li>
+			<li><strong>SSH port forwarding</strong> is not performant for two things: Double-encryption and lack of UDP support.</li>
+		</ul>
+		<p>The question arises that if SSH access is sufficiently convenient, why not use it as an authentication and authorization mechanism? So I came up with this:</p>
+		<ul>
+			<li>
+				<p>A pre-configured iptables rule set to allow RDP access from a specific IP set. For example:</p>
+				<div class="language-shell highlighter-rouge">
+					<div class="highlight">
+						<pre class="highlight"><code><span class="k">*</span>filter
 :FORWARD DROP
 <span class="nt">-A</span> FORWARD <span class="nt">-d</span> 192.0.2.1 <span class="nt">-p</span> tcp <span class="nt">--dport</span> 3389 <span class="nt">-m</span> <span class="nb">set</span> <span class="nt">--set</span> ibug <span class="nt">-j</span> ACCEPT
 
@@ -19,14 +98,14 @@
 <span class="nt">-A</span> RDPForward <span class="nt">-p</span> tcp <span class="nt">--dport</span> 3389 <span class="nt">-j</span> DNAT <span class="nt">--to-destination</span> 192.0.2.1:3389
 <span class="nt">-A</span> RDPForward <span class="nt">-p</span> udp <span class="nt">--dport</span> 3389 <span class="nt">-j</span> DNAT <span class="nt">--to-destination</span> 192.0.2.1:3389
 </code></pre>
-						</div>
+					</div>
     </div>
-				</li>
-				<li>
-					<p>A way to keep the client address in the set for the duration of the SSH session. I use SSH user rc file to proactively refresh it:</p>
-					<div class="language-shell highlighter-rouge">
-						<div class="highlight">
-							<pre class="highlight"><code><span class="c">#!/bin/bash</span>
+			</li>
+			<li>
+				<p>A way to keep the client address in the set for the duration of the SSH session. I use SSH user rc file to proactively refresh it:</p>
+				<div class="language-shell highlighter-rouge">
+					<div class="highlight">
+						<pre class="highlight"><code><span class="c">#!/bin/bash</span>
 <span class="c"># rwxr-xr-x ~/.ssh/rc</span>
 
 <span class="k">if</span> <span class="o">[</span> <span class="nt">-z</span> <span class="s2">"</span><span class="nv">$BASH</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
@@ -39,11 +118,11 @@
 
 <span class="nb">nohup</span> ~/.local/bin/_ssh_refresh_client <span class="s2">"</span><span class="nv">$_ssh_client</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$_ppid</span><span class="s2">"</span> &amp;&gt;/dev/null &amp; <span class="nb">exit </span>0
 </code></pre>
-						</div>
+					</div>
     </div>
-					<div class="language-shell highlighter-rouge">
-						<div class="highlight">
-							<pre class="highlight"><code><span class="c">#!/bin/sh</span>
+				<div class="language-shell highlighter-rouge">
+					<div class="highlight">
+						<pre class="highlight"><code><span class="c">#!/bin/sh</span>
 <span class="c"># rwxr-xr-x ~/.local/bin/_ssh_refresh_client</span>
 <span class="nv">_ssh_client</span><span class="o">=</span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>
 <span class="nv">_ppid</span><span class="o">=</span><span class="s2">"</span><span class="nv">$2</span><span class="s2">"</span>
@@ -53,19 +132,19 @@
 <span class="k">done
 </span><span class="nb">exit </span>0
 </code></pre>
-						</div>
+					</div>
     </div>
-				</li>
-			</ul>
-			<p>The idea is to refresh (<code class="language-plaintext highlighter-rouge">ipset add</code> with timeout) the IPset entry as long as the SSH session remains. When SSH disconnects, the script stops refreshing and IPset will clean it up after the specified time.</p>
-			<p>To determine the presence of the associated SSH session, the scripts finds the PID of the “session manager process”. The “parent PID” is read twice because <code class="language-plaintext highlighter-rouge">sshd</code> double-forks. The client address is conveniently provided in the environment variable, so putting all these together yields precisely what I need.</p>
-			<p>The only caveat is the use of <code class="language-plaintext highlighter-rouge">sudo</code>, as <code class="language-plaintext highlighter-rouge">ipset</code> requires <code class="language-plaintext highlighter-rouge">CAP_NET_ADMIN</code> for interacting with the kernel network stack. It’s certainly possible to write an SUID binary as a wrapper, but for me configuring passwordless sudo for the <code class="language-plaintext highlighter-rouge">ipset</code> command satisfies my demands.</p>
-			<p>So now whenever I need to RDP to my computer through this forwarded port on the public internet, I can just SSH into the gateway and it’ll automatically grant me 5 minutes of RDP access from this specific network. All traffic forwarding is done in the kernel with no extra encapsulation or encryption, ensuring the best possible performance for both the endpoints and the gateway router itself.</p>
-			]]></content><author><name>iBug</name></author><category term="linux" /><category term="windows" /><category term="networking" /><summary type="html"><![CDATA[Today I stumbled upon this V2EX post (Simplified Chinese) where the OP shared their PowerShell implementation of a “makeshift fail2ban” for RDP (their GitHub repository). Their script looked very clean and robust, but needless to say, it is unnecessarily difficult on Windows. So on this rare (maybe?) occasion I decide to share my firewall for securing RDP access to my Windows hosts.]]></summary></entry><entry><title type="html">Request limiting in Nginx</title><link href="https://ibug.io/blog/2024/01/nginx-limit-req/" rel="alternate" type="text/html" title="Request limiting in Nginx" /><published>2024-01-23T00:00:00+00:00</published><updated>2024-01-23T06:15:20+00:00</updated><id>https://ibug.io/blog/2024/01/nginx-limit-req</id><content type="html" xml:base="https://ibug.io/blog/2024/01/nginx-limit-req/"><![CDATA[<p>Nginx has a built-in module <code class="language-plaintext highlighter-rouge">limit_req</code> for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.</p>
-		<p>As always, everything begins with <a href="https://nginx.org/en/docs/http/ngx_http_limit_req_module.html">the documentation</a>. A quick-start example is given:</p>
-		<div class="language-nginx highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">http</span> <span class="p">{</span>
+			</li>
+		</ul>
+		<p>The idea is to refresh (<code class="language-plaintext highlighter-rouge">ipset add</code> with timeout) the IPset entry as long as the SSH session remains. When SSH disconnects, the script stops refreshing and IPset will clean it up after the specified time.</p>
+		<p>To determine the presence of the associated SSH session, the scripts finds the PID of the “session manager process”. The “parent PID” is read twice because <code class="language-plaintext highlighter-rouge">sshd</code> double-forks. The client address is conveniently provided in the environment variable, so putting all these together yields precisely what I need.</p>
+		<p>The only caveat is the use of <code class="language-plaintext highlighter-rouge">sudo</code>, as <code class="language-plaintext highlighter-rouge">ipset</code> requires <code class="language-plaintext highlighter-rouge">CAP_NET_ADMIN</code> for interacting with the kernel network stack. It’s certainly possible to write an SUID binary as a wrapper, but for me configuring passwordless sudo for the <code class="language-plaintext highlighter-rouge">ipset</code> command satisfies my demands.</p>
+		<p>So now whenever I need to RDP to my computer through this forwarded port on the public internet, I can just SSH into the gateway and it’ll automatically grant me 5 minutes of RDP access from this specific network. All traffic forwarding is done in the kernel with no extra encapsulation or encryption, ensuring the best possible performance for both the endpoints and the gateway router itself.</p>
+		]]></content><author><name>iBug</name></author><category term="linux" /><category term="windows" /><category term="networking" /><summary type="html"><![CDATA[Today I stumbled upon this V2EX post (Simplified Chinese) where the OP shared their PowerShell implementation of a “makeshift fail2ban” for RDP (their GitHub repository). Their script looked very clean and robust, but needless to say, it is unnecessarily difficult on Windows. So on this rare (maybe?) occasion I decide to share my firewall for securing RDP access to my Windows hosts.]]></summary></entry><entry><title type="html">Request limiting in Nginx</title><link href="https://ibug.io/blog/2024/01/nginx-limit-req/" rel="alternate" type="text/html" title="Request limiting in Nginx" /><published>2024-01-23T00:00:00+00:00</published><updated>2024-01-23T06:15:20+00:00</updated><id>https://ibug.io/blog/2024/01/nginx-limit-req</id><content type="html" xml:base="https://ibug.io/blog/2024/01/nginx-limit-req/"><![CDATA[<p>Nginx has a built-in module <code class="language-plaintext highlighter-rouge">limit_req</code> for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.</p>
+	<p>As always, everything begins with <a href="https://nginx.org/en/docs/http/ngx_http_limit_req_module.html">the documentation</a>. A quick-start example is given:</p>
+	<div class="language-nginx highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">http</span> <span class="p">{</span>
     <span class="kn">limit_req_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=one:10m</span> <span class="s">rate=1r/s</span><span class="p">;</span>
     <span class="kn">...</span>
     <span class="s">server</span> <span class="p">{</span>
@@ -74,44 +153,44 @@
             <span class="kn">limit_req</span> <span class="s">zone=one</span> <span class="s">burst=5</span><span class="p">;</span>
         <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>The basis is the <code class="language-plaintext highlighter-rouge">limit_req_zone</code> directive, which defines a shared memory zone for storing the states of the rate-limiting. Its arguments include the key, the size and the name of the zone, followed by the average or sustained rate limit. The rate limit has two possible units: <code class="language-plaintext highlighter-rouge">r/s</code> or <code class="language-plaintext highlighter-rouge">r/m</code>. It also says</p>
-		<blockquote>
-			<p>The limitation is done using the “<a href="https://en.wikipedia.org/wiki/Leaky_bucket">leaky bucket</a>” method.</p>
-		</blockquote>
-		<p>So far so good, except the burst limit is … specified on where it’s used? Moving on for now.</p>
-		<p>The <code class="language-plaintext highlighter-rouge">limit_req</code> directive specifies when the requests should be limited.</p>
-		<blockquote>
-			<p>If the requests rate exceeds the rate configured for a zone, their processing is delayed such that requests are processed at a defined rate.</p>
-		</blockquote>
-		<p>Seems pretty clear but slightly counter-intuitive. By default, burst requests are queued up and delayed until the rate is below the limit, whereas most common rate-limiting implementations would simply serve them.</p>
-		<p>I find it easier to understand this model with a queue. Each key defines a queue where items are popped at the specified rate (e.g. <code class="language-plaintext highlighter-rouge">1r/s</code>). Incoming requests are added to the queue, and are only served <em>upon exiting</em> the queue. The queue size is defined by the burst limit, and excess requests are dropped when the queue is full.</p>
-		<p><img src="/image/server/nginx-limit-req.png" alt="Default queue behavior" /></p>
-		<p>The more common behavior, however, requires an extra option:</p>
-		<blockquote>
-			<p>If delaying of excessive requests while requests are being limited is not desired, the parameter <code class="language-plaintext highlighter-rouge">nodelay</code> should be used:</p>
-			<div class="language-nginx highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">limit_req</span> <span class="s">zone=one</span> <span class="s">burst=5</span> <span class="s">nodelay</span><span class="p">;</span>
-</code></pre>
-				</div>
-  </div>
-		</blockquote>
-		<p>With <code class="language-plaintext highlighter-rouge">nodelay</code>, requests are served as soon as they <em>enter the queue</em>:</p>
-		<p><img src="/image/server/nginx-limit-req-nodelay.png" alt="nodelay queue behavior" /></p>
-		<p>The next confusing option, conflicting with <code class="language-plaintext highlighter-rouge">nodelay</code>, is <code class="language-plaintext highlighter-rouge">delay</code>:</p>
-		<blockquote>
-			<p>The <code class="language-plaintext highlighter-rouge">delay</code> parameter specifies a limit at which excessive requests become delayed. Default value is zero, i.e. all excessive requests are delayed.</p>
-		</blockquote>
-		<p>After a bit of fiddling, I realized the model is now like this:</p>
-		<p><img src="/image/server/nginx-limit-req-delay.png" alt="delay queue behavior" /></p>
-		<p>So what <code class="language-plaintext highlighter-rouge">delay</code> actually means is to delay requests after this “delay limit” is reached. In other words, requests are served as soon as they arrive at the n-th position in the front of the queue.</p>
-		<p>During all these testing, I wasn’t happy with existing tools for testing, so I wrote my own one, despite its simplicity: <a href="https://gist.github.com/iBug/351b458633ff89fea0fc9f0edd07fc28">GitHub Gist</a>.</p>
-		<p>With this new tool, I can now (textually) visualize the behavior of different options. Under the <code class="language-plaintext highlighter-rouge">burst=5</code> and <code class="language-plaintext highlighter-rouge">delay=1</code> setup, the output is like this:</p>
-		<div class="language-console highlighter-rouge">
+	</div>
+	<p>The basis is the <code class="language-plaintext highlighter-rouge">limit_req_zone</code> directive, which defines a shared memory zone for storing the states of the rate-limiting. Its arguments include the key, the size and the name of the zone, followed by the average or sustained rate limit. The rate limit has two possible units: <code class="language-plaintext highlighter-rouge">r/s</code> or <code class="language-plaintext highlighter-rouge">r/m</code>. It also says</p>
+	<blockquote>
+		<p>The limitation is done using the “<a href="https://en.wikipedia.org/wiki/Leaky_bucket">leaky bucket</a>” method.</p>
+	</blockquote>
+	<p>So far so good, except the burst limit is … specified on where it’s used? Moving on for now.</p>
+	<p>The <code class="language-plaintext highlighter-rouge">limit_req</code> directive specifies when the requests should be limited.</p>
+	<blockquote>
+		<p>If the requests rate exceeds the rate configured for a zone, their processing is delayed such that requests are processed at a defined rate.</p>
+	</blockquote>
+	<p>Seems pretty clear but slightly counter-intuitive. By default, burst requests are queued up and delayed until the rate is below the limit, whereas most common rate-limiting implementations would simply serve them.</p>
+	<p>I find it easier to understand this model with a queue. Each key defines a queue where items are popped at the specified rate (e.g. <code class="language-plaintext highlighter-rouge">1r/s</code>). Incoming requests are added to the queue, and are only served <em>upon exiting</em> the queue. The queue size is defined by the burst limit, and excess requests are dropped when the queue is full.</p>
+	<p><img src="/image/server/nginx-limit-req.png" alt="Default queue behavior" /></p>
+	<p>The more common behavior, however, requires an extra option:</p>
+	<blockquote>
+		<p>If delaying of excessive requests while requests are being limited is not desired, the parameter <code class="language-plaintext highlighter-rouge">nodelay</code> should be used:</p>
+		<div class="language-nginx highlighter-rouge">
 			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/test
+				<pre class="highlight"><code><span class="k">limit_req</span> <span class="s">zone=one</span> <span class="s">burst=5</span> <span class="s">nodelay</span><span class="p">;</span>
+</code></pre>
+			</div>
+  </div>
+	</blockquote>
+	<p>With <code class="language-plaintext highlighter-rouge">nodelay</code>, requests are served as soon as they <em>enter the queue</em>:</p>
+	<p><img src="/image/server/nginx-limit-req-nodelay.png" alt="nodelay queue behavior" /></p>
+	<p>The next confusing option, conflicting with <code class="language-plaintext highlighter-rouge">nodelay</code>, is <code class="language-plaintext highlighter-rouge">delay</code>:</p>
+	<blockquote>
+		<p>The <code class="language-plaintext highlighter-rouge">delay</code> parameter specifies a limit at which excessive requests become delayed. Default value is zero, i.e. all excessive requests are delayed.</p>
+	</blockquote>
+	<p>After a bit of fiddling, I realized the model is now like this:</p>
+	<p><img src="/image/server/nginx-limit-req-delay.png" alt="delay queue behavior" /></p>
+	<p>So what <code class="language-plaintext highlighter-rouge">delay</code> actually means is to delay requests after this “delay limit” is reached. In other words, requests are served as soon as they arrive at the n-th position in the front of the queue.</p>
+	<p>During all these testing, I wasn’t happy with existing tools for testing, so I wrote my own one, despite its simplicity: <a href="https://gist.github.com/iBug/351b458633ff89fea0fc9f0edd07fc28">GitHub Gist</a>.</p>
+	<p>With this new tool, I can now (textually) visualize the behavior of different options. Under the <code class="language-plaintext highlighter-rouge">burst=5</code> and <code class="language-plaintext highlighter-rouge">delay=1</code> setup, the output is like this:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/test
 <span class="go">[1] Done [0s] [200 in 2ms]
 [2] Done [10ms] [200 in 1ms]
 [3] Done [21ms] [200 in 981ms]
@@ -123,14 +202,14 @@
 [9] Done [85ms] [503 in 0s]
 [10] Done [95ms] [503 in 0s]
 </span></code></pre>
-			</div>
 		</div>
-		<p>If you try the tool yourself, the HTTP status codes are colored for even better prominence.</p>
-		<p>In the above example, the first request is served immediately as it also exits the queue immediately. The second request is queued at the front, and because <code class="language-plaintext highlighter-rouge">delay=1</code>, it’s also served immediately. Subsequent requests are queued up until the sixth when the queue becomes full. The seventh and thereafter are dropped.</p>
-		<p>If we change <code class="language-plaintext highlighter-rouge">delay=0</code>, the output becomes:</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/test
+	</div>
+	<p>If you try the tool yourself, the HTTP status codes are colored for even better prominence.</p>
+	<p>In the above example, the first request is served immediately as it also exits the queue immediately. The second request is queued at the front, and because <code class="language-plaintext highlighter-rouge">delay=1</code>, it’s also served immediately. Subsequent requests are queued up until the sixth when the queue becomes full. The seventh and thereafter are dropped.</p>
+	<p>If we change <code class="language-plaintext highlighter-rouge">delay=0</code>, the output becomes:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/test
 <span class="go">[1] Done [0s] [200 in 2ms]
 [2] Done [10ms] [200 in 993ms]
 [3] Done [21ms] [200 in 1.982s]
@@ -142,27 +221,27 @@
 [9] Done [85ms] [503 in 2ms]
 [10] Done [96ms] [503 in 1ms]
 </span></code></pre>
-			</div>
 		</div>
-		<p>Still only the first 6 requests are served, but the 2nd to the 6th are delayed by an additional second due to the removal of <code class="language-plaintext highlighter-rouge">delay=1</code>.</p>
-		<p>Under this model, the <code class="language-plaintext highlighter-rouge">nodelay</code> option can be understood as <code class="language-plaintext highlighter-rouge">delay=infinity</code>, while still respecting the <code class="language-plaintext highlighter-rouge">burst</code> limit.</p>
-		<h2 id="one-more-question">One more question</h2>
-		<p>Why is the burst limit specified at use time, instead of at zone definition? Only experiments can find out:</p>
-		<div class="language-nginx highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">location</span> <span class="n">/a</span> <span class="p">{</span>
+	</div>
+	<p>Still only the first 6 requests are served, but the 2nd to the 6th are delayed by an additional second due to the removal of <code class="language-plaintext highlighter-rouge">delay=1</code>.</p>
+	<p>Under this model, the <code class="language-plaintext highlighter-rouge">nodelay</code> option can be understood as <code class="language-plaintext highlighter-rouge">delay=infinity</code>, while still respecting the <code class="language-plaintext highlighter-rouge">burst</code> limit.</p>
+	<h2 id="one-more-question">One more question</h2>
+	<p>Why is the burst limit specified at use time, instead of at zone definition? Only experiments can find out:</p>
+	<div class="language-nginx highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">location</span> <span class="n">/a</span> <span class="p">{</span>
     <span class="kn">limit_req</span> <span class="s">zone=test</span> <span class="s">burst=1</span><span class="p">;</span>
 <span class="p">}</span>
 <span class="k">location</span> <span class="n">/b</span> <span class="p">{</span>
     <span class="kn">limit_req</span> <span class="s">zone=test</span> <span class="s">burst=5</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Then I fire up two simultaneous batches of 10 requests each to <code class="language-plaintext highlighter-rouge">/a</code> and <code class="language-plaintext highlighter-rouge">/b</code> respectively:</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/a
+	</div>
+	<p>Then I fire up two simultaneous batches of 10 requests each to <code class="language-plaintext highlighter-rouge">/a</code> and <code class="language-plaintext highlighter-rouge">/b</code> respectively:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/a
 <span class="go">[1] Done [0s] [200 in 2ms]
 [2] Done [10ms] [200 in 992ms]
 [3] Done [21ms] [503 in 0s]
@@ -174,11 +253,11 @@
 [9] Done [83ms] [503 in 0s]
 [10] Done [94ms] [503 in 0s]
 </span></code></pre>
-			</div>
 		</div>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/b
+	</div>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/b
 <span class="go">[1] Done [0s] [200 in 1.862s]
 [2] Done [11ms] [200 in 2.852s]
 [3] Done [21ms] [200 in 3.842s]
@@ -190,13 +269,13 @@
 [9] Done [85ms] [503 in 0s]
 [10] Done [95ms] [503 in 1ms]
 </span></code></pre>
-			</div>
 		</div>
-		<p>As can be seen from the output, the batch to <code class="language-plaintext highlighter-rouge">/a</code> is served as usual, but the batch to <code class="language-plaintext highlighter-rouge">/b</code> is significantly delayed, and two fewer requests are served.</p>
-		<p>If I reverse the order of sending the batches, the result is different again:</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/b
+	</div>
+	<p>As can be seen from the output, the batch to <code class="language-plaintext highlighter-rouge">/a</code> is served as usual, but the batch to <code class="language-plaintext highlighter-rouge">/b</code> is significantly delayed, and two fewer requests are served.</p>
+	<p>If I reverse the order of sending the batches, the result is different again:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/b
 <span class="go">[1] Done [0s] [200 in 2ms]
 [2] Done [10ms] [200 in 993ms]
 [3] Done [20ms] [200 in 1.982s]
@@ -208,11 +287,11 @@
 [9] Done [84ms] [503 in 0s]
 [10] Done [95ms] [503 in 0s]
 </span></code></pre>
-			</div>
 		</div>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/a
+	</div>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/a
 <span class="go">[1] Done [0s] [503 in 1ms]
 [2] Done [10ms] [503 in 1ms]
 [3] Done [20ms] [503 in 0s]
@@ -224,16 +303,16 @@
 [9] Done [83ms] [503 in 0s]
 [10] Done [93ms] [503 in 0s]
 </span></code></pre>
-			</div>
 		</div>
-		<p>This time the batch to <code class="language-plaintext highlighter-rouge">/b</code> is served as usual, but the entire batch to <code class="language-plaintext highlighter-rouge">/a</code> is rejected.</p>
-		<p>I am now convinced that the queue itself is shared between <code class="language-plaintext highlighter-rouge">/a</code> and <code class="language-plaintext highlighter-rouge">/b</code>, and each <code class="language-plaintext highlighter-rouge">limit_req</code> directive decides for itself whether and when to serve the requests. So when <code class="language-plaintext highlighter-rouge">/a</code> is served first, the queue holds one burst request, and <code class="language-plaintext highlighter-rouge">/b</code> fills the queue up to 5 requests. When <code class="language-plaintext highlighter-rouge">/b</code> is served first, the queue is already holding 5 requests and leaves no room for <code class="language-plaintext highlighter-rouge">/a</code>. Similarly, with the <code class="language-plaintext highlighter-rouge">delay</code> option, each <code class="language-plaintext highlighter-rouge">limit_req</code> directive can still decide when the request is ready to serve.</p>
-		<p>This is probably not the most straightforward design, and I can’t come up with a use case for this behavior. But at least now I understand how it works.</p>
-		<h2 id="one-last-thing">One last thing</h2>
-		<p>I originally wanted to set up a 403 page for banned clients, and wanted to limit the rate of log writing in case of an influx of requests. The limit_req module does provide a <code class="language-plaintext highlighter-rouge">$limit_req_status</code> variable which appears to be useful. This is what I ended up with:</p>
-		<div class="language-nginx highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">limit_req_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=403:64k</span> <span class="s">rate=1r/s</span><span class="p">;</span>
+	</div>
+	<p>This time the batch to <code class="language-plaintext highlighter-rouge">/b</code> is served as usual, but the entire batch to <code class="language-plaintext highlighter-rouge">/a</code> is rejected.</p>
+	<p>I am now convinced that the queue itself is shared between <code class="language-plaintext highlighter-rouge">/a</code> and <code class="language-plaintext highlighter-rouge">/b</code>, and each <code class="language-plaintext highlighter-rouge">limit_req</code> directive decides for itself whether and when to serve the requests. So when <code class="language-plaintext highlighter-rouge">/a</code> is served first, the queue holds one burst request, and <code class="language-plaintext highlighter-rouge">/b</code> fills the queue up to 5 requests. When <code class="language-plaintext highlighter-rouge">/b</code> is served first, the queue is already holding 5 requests and leaves no room for <code class="language-plaintext highlighter-rouge">/a</code>. Similarly, with the <code class="language-plaintext highlighter-rouge">delay</code> option, each <code class="language-plaintext highlighter-rouge">limit_req</code> directive can still decide when the request is ready to serve.</p>
+	<p>This is probably not the most straightforward design, and I can’t come up with a use case for this behavior. But at least now I understand how it works.</p>
+	<h2 id="one-last-thing">One last thing</h2>
+	<p>I originally wanted to set up a 403 page for banned clients, and wanted to limit the rate of log writing in case of an influx of requests. The limit_req module does provide a <code class="language-plaintext highlighter-rouge">$limit_req_status</code> variable which appears to be useful. This is what I ended up with:</p>
+	<div class="language-nginx highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">limit_req_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=403:64k</span> <span class="s">rate=1r/s</span><span class="p">;</span>
 
 <span class="k">map</span> <span class="nv">$limit_req_status</span> <span class="nv">$loggable_403</span> <span class="p">{</span>
     <span class="kn">default</span> <span class="mi">0</span><span class="p">;</span>
@@ -262,10 +341,10 @@
     <span class="p">}</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>With this setup, excessive requests are rejected by <code class="language-plaintext highlighter-rouge">limit_req</code> with a 403 status. Only <code class="language-plaintext highlighter-rouge">1r/s</code> passes through the rate limiting, which will carry the <code class="language-plaintext highlighter-rouge">PASSED</code> status and be logged, albeit still seeing the 403 page from the <code class="language-plaintext highlighter-rouge">return 403</code> rule. This does exactly what I want, so time to call it a day.</p>
-		]]></content><author><name>iBug</name></author><category term="server" /><category term="nginx" /><summary type="html"><![CDATA[Nginx has a built-in module limit_req for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.]]></summary></entry><entry><title type="html">Visualizing Weather Forecast with Grafana</title><link href="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/" rel="alternate" type="text/html" title="Visualizing Weather Forecast with Grafana" /><published>2024-01-08T00:00:00+00:00</published><updated>2024-01-08T04:40:54+00:00</updated><id>https://ibug.io/blog/2024/01/weather-forecast-with-grafana</id><content type="html" xml:base="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/"><![CDATA[<p>Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get it to work as a weather forecast dashboard, instead of any historical time-series data.</p>
+	</div>
+	<p>With this setup, excessive requests are rejected by <code class="language-plaintext highlighter-rouge">limit_req</code> with a 403 status. Only <code class="language-plaintext highlighter-rouge">1r/s</code> passes through the rate limiting, which will carry the <code class="language-plaintext highlighter-rouge">PASSED</code> status and be logged, albeit still seeing the 403 page from the <code class="language-plaintext highlighter-rouge">return 403</code> rule. This does exactly what I want, so time to call it a day.</p>
+	]]></content><author><name>iBug</name></author><category term="server" /><category term="nginx" /><summary type="html"><![CDATA[Nginx has a built-in module limit_req for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.]]></summary></entry><entry><title type="html">Visualizing Weather Forecast with Grafana</title><link href="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/" rel="alternate" type="text/html" title="Visualizing Weather Forecast with Grafana" /><published>2024-01-08T00:00:00+00:00</published><updated>2024-01-08T04:40:54+00:00</updated><id>https://ibug.io/blog/2024/01/weather-forecast-with-grafana</id><content type="html" xml:base="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/"><![CDATA[<p>Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get it to work as a weather forecast dashboard, instead of any historical time-series data.</p>
 	<p>I choose <a href="https://open.caiyunapp.com/%E5%BD%A9%E4%BA%91%E5%A4%A9%E6%B0%94_API_%E4%B8%80%E8%A7%88%E8%A1%A8">CaiYun Weather (彩云天气) API</a> for having previous experience with it, as well as its unlimited free tier. I must admit that I initially came up with this idea for having seen the presence of <a href="https://grafana.com/grafana/plugins/marcusolsson-json-datasource/">JSON API datasource plugin</a> for Grafana, which reminds me of CaiYun’s JSON API being a perfect fit.</p>
 	<h2 id="json-api-datasource">JSON API Datasource</h2>
 	<p>Configuring the datasource seems easy at first, like just inserting the URL and configure HTTP headers as needed. Since CY’s API puts the API key in the URL path, there’s no headers to configure. So I can just put a single URL and save it.</p>
@@ -1406,146 +1485,4 @@ systemctl start rsyslog
 			</li>
 		</ol>
 	</div>
-	]]></content><author><name>iBug</name></author><category term="tech" /><category term="server" /><category term="networking" /><category term="development" /><summary type="html"><![CDATA[Back in the days when the Zero COVID policy was prevailing, our university introduced a Daily Health Report system. Students and faculty were mandated to submit a daily online form detailing their health status. Noncompliance resulted in denied campus access, and in more stringent times, forced quarantine. Thanks to the comprehensive lockdown of campuses, our activity were strictly confined. Consequently, our daily data submission were pratically invariant. It’s a colossal waste of effort to do it manually (with some anecdotes later on), so I opted to automate the process.]]></summary></entry><entry><title type="html">Overengineering Advent of Code 2022</title><link href="https://ibug.io/blog/2023/01/overengineering-adventofcode/" rel="alternate" type="text/html" title="Overengineering Advent of Code 2022" /><published>2023-01-08T00:00:00+00:00</published><updated>2023-01-09T02:17:24+00:00</updated><id>https://ibug.io/blog/2023/01/overengineering-adventofcode</id><content type="html" xml:base="https://ibug.io/blog/2023/01/overengineering-adventofcode/"><![CDATA[<p><em>Advent of Code</em> (<a href="https://en.wikipedia.org/wiki/Advent_of_Code">Wikipedia</a>, <a href="https://adventofcode.com/">link</a>) is an annual event that releases a programming puzzle every day from December 1 to December 25. It’s a great chance to learn a new language or practice your skills.</p>
-	<p><img src="/image/adventofcode-2022.png" alt="Image" /></p>
-	<p>Considering that all the puzzles are designed to be lightweight, meaning that if implemented correctly, they’re solvable in no more than a few seconds with a reasonably small memory footprint, I picked Go as my language of choice. Go has been my preference over Python for a while, for being compiled into machine code and thus more performant, and a decent set of standard libraries.</p>
-	<h2 id="puzzles">Notes on puzzles</h2>
-	<p>The first 10 puzzles are very easy and doesn’t even require special knowledge. They’re practically just text processing and simulation, so there aren’t many comments to be made.</p>
-	<ul>
-		<li>
-			<p>Day 2: While it’s straightforward to implement a rock-paper-scissors game using <code class="language-plaintext highlighter-rouge">switch</code>es or lookup tables, noticing that shape <code class="language-plaintext highlighter-rouge">i+1</code> beats shape <code class="language-plaintext highlighter-rouge">i</code> allows us to simplify the code in an obscure way.</p>
-			<p>For example, I implemented the “shape score” as <code class="language-plaintext highlighter-rouge">int(s[2] - 'W')</code>, and the “outcome score” as <code class="language-plaintext highlighter-rouge">(4 + int(s[2]-'X') - int(s[0]-'A')) % 3 * 3</code> for the first part. For the second part, the “shape score” is now <code class="language-plaintext highlighter-rouge">1 + (int(s[0]-'A')+int(s[2]-'X')+2)%3</code>, and the “outcome score” is <code class="language-plaintext highlighter-rouge">int(s[2]-'X') * 3</code>.</p>
-			<p>This is certainly not the most readable code, but it’s a good example of how to use math to simplify code. Less code = less bugs, and if you’re really crazy about that, you can always add unit tests to ensure that the code doesn’t break unexpectedly. That’s not my style, though.</p>
-		</li>
-	</ul>
-	<p>Starting from Day 11, the puzzles become more interesting. Some math or data structures are required to solve them.</p>
-	<ul>
-		<li>Day 11: The first part is plain simulation, but the second part can easily run the numbers out of range if you don’t manage them properly. Actually, modulo by the <a href="https://en.wikipedia.org/wiki/Least_common_multiple">least common multiple</a> of the divisors is a good way to keep them down.</li>
-		<li>Day 14, 15 and 23: With a large coordinate space but limited elements, it’s a better idea to use a map or set instead of contiguous memory.</li>
-		<li>Day 17 part 2: Running a simulation for 1000000000000 rounds is certainly not feasible, but it’s possible to find a pattern from the first 10000 or so rounds, and calculate the result from there.</li>
-		<li>Day 18 part 2: Finding internal holes would be difficult, but <a href="https://en.wikipedia.org/wiki/Flood_fill">flood filling</a> from the outside is an alternative approach.</li>
-		<li>Day 19 part 2: Even if searching for the “next robot to make” can’t keep the search space small, pruning near the leaves (i.e. stop searching in the last few minutes) can still cut it down by a large factor. This is the only way that I managed to bring the run time below 1 second.</li>
-		<li>Day 20 part 2: Again simulating for so many 811589153 steps is not feasible, so like Day 11 part 2, it’s important to find a correct modulo.</li>
-		<li>Day 21 part 2: At first this seems like tremendous work, but I made a bold assumption that the equation is linear (degree = 1), which turned out to be true. This enabled me to use very simple math to solve it.</li>
-		<li>Day 22 is my favorite puzzle. Finding an algorithm to fold a flat layout into a cube is far from easy, so I hard-coded it for my input. (It seems like everyone is getting the same layout.) Such a two-layer <code class="language-plaintext highlighter-rouge">switch</code> statement is prone to bugs and took me the longest time to debug.</li>
-		<li>Day 25: To my surprise, the puzzle is missing a part 2. Maybe the author is getting on a vacation?</li>
-	</ul>
-	<p>Finally, a magic trick that I discovered from Reddit for Day 15 part 2: Observing that the only uncovered space must be adjacent to multiple covered areas, examining the intersections of the edges of the beacons’ coverage areas produces a tiny search space. While it’s intuitive to build upon part 1’s solution, this discovery leads to a lightspeed solution.</p>
-	<h2 id="engineering">Engineering the project</h2>
-	<p>In fact, rushing to the puzzles was not even the first thing. I did not come across the event until my friend <a href="https://www.taoky.moe/">taoky</a> recommended it to me. He was already halfway through the puzzles (<a href="https://github.com/taoky/adventofcode">his <i class="fab fa-fw fa-github"></i> repository</a>) and had set himself a set of rules, including one where “<em>all solutions should take reasonable time and memory usage</em>”. We discussed various methods to measure the time and memory usage, when he set it forth that it was not easy to add measurements to every single program.</p>
-	<p>Based on our discussion, I decided I would leave room for measurements when designing the project. So the first decision was to reuse code as much as possible within the project. For example, I’d like all solutions to share the same “peripherals” like the <code class="language-plaintext highlighter-rouge">main</code> function. This way if I want to add an extra feasure like performance measurement, I only need to do it once.</p>
-	<p>The next decision was to compile solutions for all puzzles into a single binary. Go is not known for producing small binaries due to static linking, so having separate binaries for each solutions implies a non-trivial amount of unnecessary disk space. Another reason is that due to Go’s package design, it’s more complex to selectively compile individual files than to compile all files together (the “package”). With a <code class="language-plaintext highlighter-rouge">go.mod</code> file present, <code class="language-plaintext highlighter-rouge">go build</code> conveniently compiles all files in the same directory.</p>
-	<p>With that in mind, <a href="https://github.com/iBug/AdventOfCode/commit/73715a64f7e860dffa63382ed3dff14b8d4ae60d">here</a>’s the first commit of the project. In addition to the code itself, two more design ideas can be seen:</p>
-	<ul>
-		<li>Individual solutions are in their own files, calling <code class="language-plaintext highlighter-rouge">RegisterSolution</code> in their <code class="language-plaintext highlighter-rouge">init</code> functions to register themselves. Also, the solution function takes a single <code class="language-plaintext highlighter-rouge">io.Reader</code> interface as input, so that providing input can be more flexible if needed.</li>
-		<li>If multiple input files are provided, the solution function sees a concatenation of all of them, similar to a number of common Unix tools. However, this little care was later decided to be unnecessary, and only a single input file would be processed.</li>
-	</ul>
-	<p>Now with the project structure in place, I started working on the solutions. <a href="https://github.com/iBug/AdventOfCode/commit/4b695648807b47818e60ab19d246ff61183c7ce2">The second commit</a> added my solution for Day 1 part 1, and it followed the designed structure like this:</p>
-	<div class="language-go highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
-
-<span class="k">import</span> <span class="p">(</span> <span class="o">...</span> <span class="p">)</span>
-
-<span class="k">func</span> <span class="n">Solution1_1</span><span class="p">(</span><span class="n">r</span> <span class="n">io</span><span class="o">.</span><span class="n">reader</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
-
-<span class="k">func</span> <span class="n">init</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">RegisterSolution</span><span class="p">(</span><span class="s">"1-1"</span><span class="p">,</span> <span class="n">Solution1_1</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>While the first few days’ solutions were pretty ordinary, my design began to prosper when I started working on Day 5 part 2. The only difference between part 1 and part 2 is whether moving a stack of crates maintains or reverses their order. Compared to the common one-source-file-per-solution design, I can now reuse almost the whole function from part 1, and abstract the difference into a function parameter. This is how <code class="language-plaintext highlighter-rouge">day5.go</code> looks like after <a href="https://github.com/iBug/AdventOfCode/commit/fe63dc98e36b70c0f9ffb779eadffc34d2a7b80b">adding part 2</a>:</p>
-	<div class="language-go highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
-
-<span class="k">import</span> <span class="p">(</span> <span class="o">...</span> <span class="p">)</span>
-
-<span class="k">func</span> <span class="n">init</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">RegisterSolution</span><span class="p">(</span><span class="s">"5-1"</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">r</span> <span class="n">io</span><span class="o">.</span><span class="n">Reader</span><span class="p">)</span> <span class="p">{</span> <span class="n">Solution5</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">Move5_1</span><span class="p">)</span> <span class="p">})</span>
-    <span class="n">RegisterSolution</span><span class="p">(</span><span class="s">"5-2"</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">r</span> <span class="n">io</span><span class="o">.</span><span class="n">Reader</span><span class="p">)</span> <span class="p">{</span> <span class="n">Solution5</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">Move5_2</span><span class="p">)</span> <span class="p">})</span>
-<span class="p">}</span>
-
-<span class="k">func</span> <span class="n">Move5_1</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
-<span class="k">func</span> <span class="n">Move5_2</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
-
-<span class="k">func</span> <span class="n">Solution5</span><span class="p">(</span><span class="n">r</span> <span class="n">io</span><span class="o">.</span><span class="n">Reader</span><span class="p">,</span> <span class="n">moveFunc</span> <span class="k">func</span><span class="p">(</span><span class="o">...</span><span class="p">))</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>For Day 6, <a href="https://github.com/iBug/AdventOfCode/commit/cf19fad5b05e992dfdab9f6abcf2a87c4b808d7a">the benefit</a> is even more prominent:</p>
-	<div class="language-go highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">func</span> <span class="n">init</span><span class="p">()</span> <span class="p">{</span>
-    <span class="n">RegisterSolution</span><span class="p">(</span><span class="s">"6-1"</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">r</span> <span class="n">io</span><span class="o">.</span><span class="n">Reader</span><span class="p">)</span> <span class="p">{</span> <span class="n">Solution6</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="m">4</span><span class="p">)</span> <span class="p">})</span>
-    <span class="n">RegisterSolution</span><span class="p">(</span><span class="s">"6-2"</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">r</span> <span class="n">io</span><span class="o">.</span><span class="n">Reader</span><span class="p">)</span> <span class="p">{</span> <span class="n">Solution6</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="m">14</span><span class="p">)</span> <span class="p">})</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Had I not designed the project this way, I would have to duplicate the whole function for part 2 only to change a single parameter, making things much more error-prone.</p>
-	<h3 id="measurements">Adding measurements</h3>
-	<p>Given the project design above, adding measurements is much simpler than it would have been if I had adopted the one-source-file-per-solution layout. It boils down to just two things:</p>
-	<ul>
-		<li>
-			<p>A command-line flag to enable measurements:</p>
-			<div class="language-go highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="n">flag</span><span class="o">.</span><span class="n">BoolVar</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fShowPerformance</span><span class="p">,</span> <span class="s">"p"</span><span class="p">,</span> <span class="no">false</span><span class="p">,</span> <span class="s">"show performance information"</span><span class="p">)</span>
-</code></pre>
-				</div>
-    </div>
-		</li>
-		<li>
-			<p>Adding <code class="language-plaintext highlighter-rouge">time.Now()</code> and <code class="language-plaintext highlighter-rouge">time.Since()</code> around the call to the solution function:</p>
-			<div class="language-go highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="n">start</span> <span class="o">:=</span> <span class="n">time</span><span class="o">.</span><span class="n">Now</span><span class="p">()</span>
-<span class="n">fn</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
-<span class="n">duration</span> <span class="o">:=</span> <span class="n">time</span><span class="o">.</span><span class="n">Since</span><span class="p">(</span><span class="n">startTime</span><span class="p">)</span>
-</code></pre>
-				</div>
-    </div>
-			<p>… as well as displaying the result:</p>
-			<div class="language-go highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">if</span> <span class="n">fShowPerformance</span> <span class="p">{</span>
-    <span class="n">fmt</span><span class="o">.</span><span class="n">Fprintf</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">Stderr</span><span class="p">,</span> <span class="s">"</span><span class="se">\n</span><span class="s">Duration: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre>
-				</div>
-    </div>
-		</li>
-	</ul>
-	<p>Measuring memory usage is a bit more complicated. Go’s memory profiling doesn’t provide a simple “max usage in this session” metric, so I have to resort to OS-specific methods. On Linux, for the time being, I use <code class="language-plaintext highlighter-rouge">getrusage(2)</code> with <code class="language-plaintext highlighter-rouge">RUSAGE_SELF</code>, as two other known methods (using Cgroup and polling <code class="language-plaintext highlighter-rouge">/proc/self/status</code>) either require forking an extra process or add significant overhead and engineering complexity.</p>
-	<p>Now the program can produce a short summary of the performance when running a solution:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>./adventofcode <span class="nt">-p</span> 1-1 2022/inputs/1.txt
-<span class="go">71780
-
-Time: 875µs, Memory: 7.8 MiB
-</span></code></pre>
-		</div>
-	</div>
-	<p>There’s one caveat here: The “Max RSS” value returned by <code class="language-plaintext highlighter-rouge">getrsage(2)</code> is the peak memory usage during the whole program’s lifetime, starting from when it’s forked from the parent process, when it inherits all mapped pages (resident set). Using an interactive Bash gives a minimum value of around 7.7 MiB, while using <code class="language-plaintext highlighter-rouge">sh -c './adventofcode -p'</code>, adding a level indirection, reduces the starting size to 1.2 MiB.</p>
-	<h3 id="multi-year">Adding multi-year support</h3>
-	<p>Up until now, the project has a flat layout with no subdirectories, and all Go source files start with <code class="language-plaintext highlighter-rouge">package main</code>. This is because I did not plan to support multiple years at the beginning. However, as I started working on puzzles from 2021, I realized that I need a better structure to support multiple years without worrying about namespace issues, like both years having a <code class="language-plaintext highlighter-rouge">Solution1_1</code> function.</p>
-	<p>Moving each year’s solutions into a subdirectory is a natural choice. However, <code class="language-plaintext highlighter-rouge">go build</code> doesn’t pick up subdirectories by default, so I have to find a way to make it work. There are also some minor name searching issues, like <code class="language-plaintext highlighter-rouge">RegisterSolution</code> being defined in <code class="language-plaintext highlighter-rouge">main.go</code> but used in every solution file.</p>
-	<p>After a bit of trial-and-error, I <a href="https://github.com/iBug/AdventOfCode/commit/36b256c41897633bae53a1ca4c39476e0af9d858">carried out</a> the following changes:</p>
-	<ul>
-		<li>Split out the “solution registry” into a <code class="language-plaintext highlighter-rouge">common</code> subdirectory, making it a separate package that can be imported by each year’s package.
-			<ul>
-				<li>Each year’s package should import just <code class="language-plaintext highlighter-rouge">common.RegisterSolution</code>, possibly wrapping it up to add a custom “year identifier” (this was <a href="https://github.com/iBug/AdventOfCode/commit/7f7080aae1df181ec2b16eafc3bbd214610914c4">implemented</a> right after).</li>
-			</ul>
-		</li>
-		<li>Move all solution files into a <code class="language-plaintext highlighter-rouge">2022</code> subdirectory, and change the package name to just <code class="language-plaintext highlighter-rouge">year</code> (because I don’t expect this directory to be imported and used with the package name).</li>
-		<li>Add <code class="language-plaintext highlighter-rouge">import _ "adventofcode/2022"</code> in <code class="language-plaintext highlighter-rouge">main.go</code> for each year’s subdirectory.</li>
-	</ul>
-	<p>In subsequent commits, I implemented “year selection” (e.g. choosing between the solutions <code class="language-plaintext highlighter-rouge">2021/1-1</code> and <code class="language-plaintext highlighter-rouge">2022/1-1</code>) as well as more listings (e.g. <code class="language-plaintext highlighter-rouge">./adventofcode 2021/</code> to list all solutions for 2021).</p>
-	<p>With this in place, I can now add solutions for 2021 without worrying about name conflicts. For convenience, I also added auto-searching for input files in the current directory, so I can just run <code class="language-plaintext highlighter-rouge">./adventofcode 2021/1-1</code> to run the solution for Day 1 part 1 of 2021.</p>
-	<h2 id="epilogue">Epilogue</h2>
-	<p>At this point, the project has successfully deviated from a collection of solutions to small-but-interesting puzzles, and has become more like a general-purpose tool for this kind of events. Nevertheless, it’s a fun journey as a software engineering practice, in addition to solving the puzzles themselves.</p>
-	<p>Looking at these paths I’ve taken, it is manifest that the initial decisions in the right direction are highly contributory in easing the development process, particularly when I’m coming back later to add a new global feature. This experience once again emphasizes the importance and advantages of having a clear idea of the project before starting to write code, as well as keeping the code in an extensible and maintainable fashion.</p>
-	]]></content><author><name>iBug</name></author><category term="development" /><summary type="html"><![CDATA[Advent of Code (Wikipedia, link) is an annual event that releases a programming puzzle every day from December 1 to December 25. It’s a great chance to learn a new language or practice your skills.]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="tech" /><category term="server" /><category term="networking" /><category term="development" /><summary type="html"><![CDATA[Back in the days when the Zero COVID policy was prevailing, our university introduced a Daily Health Report system. Students and faculty were mandated to submit a daily online form detailing their health status. Noncompliance resulted in denied campus access, and in more stringent times, forced quarantine. Thanks to the comprehensive lockdown of campuses, our activity were strictly confined. Consequently, our daily data submission were pratically invariant. It’s a colossal waste of effort to do it manually (with some anecdotes later on), so I opted to automate the process.]]></summary></entry></feed>
