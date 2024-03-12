@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=bddf50f">
+		<link rel="stylesheet" href="/assets/css/main.css?v=5f940c5">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -199,7 +199,7 @@
 								I fired up a browser to connect to the machine’s IPMI, only to find that the remote console feature for iDRAC 9 was locked behind a paywall for goodness’ sake.
 								Thanks to God almighty Dell, things have been unnecessarily more complicated than ever before.
 								I carefully recalled every step taken and quickly identified the problem - one important thing forgotten - GRUB was successfully reinstalled on the new EFI partition (which was somehow left intact during the whole fiddling process), pointing to the now-deleted new root partition, and so it’s now stuck with GRUB.</p>
-							<p>Fortunately, out of precaution, I had previously configured the IPMI with serial-over-LAN, so I at least still have serial access to the server with <code class="language-plaintext highlighter-rouge">ipmitool</code>:</p>
+							<p>Fortunately, out of precaution, I had previously configured the IPMI with serial-over-LAN, so I at least still have serial access to the server with <code class="language-plaintext highlighter-rouge">ipmitool</code>. This saved me from a trip back to the datacenter.</p>
 							<div class="language-shell highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code>ipmitool <span class="nt">-I</span> lanplus <span class="nt">-H</span> &lt;ip&gt; <span class="nt">-U</span> &lt;user&gt; <span class="nt">-P</span> &lt;password&gt; sol activate
@@ -411,7 +411,7 @@ grub rescue&gt; normal
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-850</a>
+						Site version <a href="/status" class="version-text">G-851</a>
 					</p>
 				</div>
 			</footer>
