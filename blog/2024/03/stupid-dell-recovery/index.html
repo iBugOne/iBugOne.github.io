@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=5f940c5">
+		<link rel="stylesheet" href="/assets/css/main.css?v=138b845">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -233,7 +233,7 @@ grub rescue&gt; normal
 </code></pre>
 								</div>
 							</div>
-							<p>In a few seconds, I discovered that the system was up and running, and continued migrating the rootfs.</p>
+							<p>In a few seconds, I was delighted to discover that the system was up and running, and continued migrating the rootfs.</p>
 							<p>After everything’s done, out of every precaution, I installed <code class="language-plaintext highlighter-rouge">grub-efi-amd64-signed</code>, which provides a large, monolithic <code class="language-plaintext highlighter-rouge">grubx64.efi</code> that has all the “optional” modules built-in, so it no longer relies on the filesystem for, e.g., LVM support, in case a similar disaster happens again.</p>
 							<h2 id="anecdote">Anecdote</h2>
 							<p>When trying to remove the faulty drive from the server, I at first made a wrong recall for its position, and we instead pulled out a running large-capacity HDD. Luckily it was not damaged, so we quickly inserted it back. Thanks to ZFS’s design, it automatically triggered a resilver, which completed in just a blink.</p>
@@ -411,7 +411,7 @@ grub rescue&gt; normal
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-851</a>
+						Site version <a href="/status" class="version-text">G-852</a>
 					</p>
 				</div>
 			</footer>
