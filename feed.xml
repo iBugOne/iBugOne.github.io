@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-03-13T19:10:27+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">I almost broke our lab’s storage server…</title><link href="https://ibug.io/blog/2024/03/stupid-dell-recovery/" rel="alternate" type="text/html" title="I almost broke our lab’s storage server…" /><published>2024-03-13T00:00:00+00:00</published><updated>2024-03-13T04:19:01+00:00</updated><id>https://ibug.io/blog/2024/03/stupid-dell-recovery</id><content type="html" xml:base="https://ibug.io/blog/2024/03/stupid-dell-recovery/"><![CDATA[<p>Recently we discovered that both SSDs on our storage server were giving worrisome SMART values, so we started replacing them.
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-03-27T10:35:24+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">I almost broke our lab’s storage server…</title><link href="https://ibug.io/blog/2024/03/stupid-dell-recovery/" rel="alternate" type="text/html" title="I almost broke our lab’s storage server…" /><published>2024-03-13T00:00:00+00:00</published><updated>2024-03-27T18:34:21+00:00</updated><id>https://ibug.io/blog/2024/03/stupid-dell-recovery</id><content type="html" xml:base="https://ibug.io/blog/2024/03/stupid-dell-recovery/"><![CDATA[<p>Recently we discovered that both SSDs on our storage server were giving worrisome SMART values, so we started replacing them.
 				One of them was used only for ZFS L2ARC, so pulling it out was easy.
 				The other runs the rootfs and we couldn’t touch it for the time being, so we inserted a backup drive thinking we can migrate the OS later on.</p>
 			<p>After returning from the datacenter, I start working on the migration.
@@ -31,27 +31,27 @@
 			<p>And better yet, this iDRAC 9 can change BIOS settings, most notably the boot order and one-time boot override. This definitely helped the most in the absence of that goddamn remote console.</p>
 			<p><img src="/image/server/idrac-boot-override.png" alt="image" /></p>
 			<p>After some trial and error, I got myself into the GRUB command line, and it didn’t look quite well:</p>
-			<div class="language-shell highlighter-rouge">
+			<div class="language-console highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code>grub rescue&gt; 
-</code></pre>
+					<pre class="highlight"><code><span class="gp">grub rescue&gt;</span><span class="w"> 
+</span></code></pre>
 				</div>
 			</div>
 			<p>There’s pretty much just the <code class="language-plaintext highlighter-rouge">ls</code> command, and it doesn’t even recognize the EFI partition (FAT32 filesystem). With some more twiddling, I found this “rescue mode” capable of reading ext4, which shed some light to the situation.</p>
-			<div class="language-shell highlighter-rouge">
+			<div class="language-console highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code>grub rescue&gt; <span class="nb">set </span><span class="nv">root</span><span class="o">=(</span>hd0,gpt2<span class="o">)</span>
-grub rescue&gt; <span class="nb">ls</span> /boot/grub
-fonts  grub.cfg  grubenv  locale  unicode.pf2  x86_64-efi
-</code></pre>
+					<pre class="highlight"><code><span class="gp">grub rescue&gt;</span><span class="w"> </span><span class="nb">set </span><span class="nv">root</span><span class="o">=(</span>hd0,gpt2<span class="o">)</span>
+<span class="gp">grub rescue&gt;</span><span class="w"> </span><span class="nb">ls</span> /boot/grub
+<span class="go">fonts  grub.cfg  grubenv  locale  unicode.pf2  x86_64-efi
+</span></code></pre>
 				</div>
 			</div>
 			<p>Now things began to turn to the upswing.</p>
-			<div class="language-shell highlighter-rouge">
+			<div class="language-console highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code>grub rescue&gt; <span class="nb">set </span><span class="nv">prefix</span><span class="o">=</span>/boot/grub
-grub rescue&gt; insmod normal
-grub rescue&gt; normal
+					<pre class="highlight"><code><span class="gp">grub rescue&gt;</span><span class="w"> </span><span class="nb">set </span><span class="nv">prefix</span><span class="o">=</span>/boot/grub
+<span class="gp">grub rescue&gt;</span><span class="w"> </span>insmod normal
+<span class="gp">grub rescue&gt;</span><span class="w"> </span>normal
 </code></pre>
 				</div>
 			</div>
