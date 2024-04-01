@@ -9,20 +9,20 @@
 	<head>
 		<meta charset="utf-8">
 		<!-- begin _includes/seo.html -->
-		<title>Using SSH deploy keys on CircleCI - iBug</title>
-		<meta name="description" content="A year ago back I wrote an article on automating build &amp; deployment of GitHub Pages website with Travis CI. It’s a great CI service at first, but since Travis CI has completely moved away from containers, speed is a real issue to whoever is concerned. On the other side, CircleCI is continuing their builds with Docker-based containers, whose rapid response is a great advantage against VMs with slow boot time.">
+		<title>Reload SSL certificates with systemd - iBug</title>
+		<meta name="description" content="Recently I relinquished an old domain on my server and had to re-issue a certificate to drop that domain off. Previously it ran Let’s Encrypt’s official client Certbot, set up back in 2019. All my recent setups have been using acme.sh, so I figured that this was a perfect chance to switch this one over as well.">
 		<meta name="author" content="iBug">
 		<meta property="article:author" content="iBug">
 		<meta property="og:type" content="article">
 		<meta property="og:locale" content="en_US">
 		<meta property="og:site_name" content="iBug">
-		<meta property="og:title" content="Using SSH deploy keys on CircleCI">
-		<meta property="og:url" content="https://ibug.io/blog/2019/07/circleci-ssh-deploy-keys/">
-		<meta property="og:description" content="A year ago back I wrote an article on automating build &amp; deployment of GitHub Pages website with Travis CI. It’s a great CI service at first, but since Travis CI has completely moved away from containers, speed is a real issue to whoever is concerned. On the other side, CircleCI is continuing their builds with Docker-based containers, whose rapid response is a great advantage against VMs with slow boot time.">
+		<meta property="og:title" content="Reload SSL certificates with systemd">
+		<meta property="og:url" content="https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd/">
+		<meta property="og:description" content="Recently I relinquished an old domain on my server and had to re-issue a certificate to drop that domain off. Previously it ran Let’s Encrypt’s official client Certbot, set up back in 2019. All my recent setups have been using acme.sh, so I figured that this was a perfect chance to switch this one over as well.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
-		<meta property="article:published_time" content="2019-07-08T00:00:00+00:00">
-		<meta property="article:modified_time" content="2022-04-30T19:59:16+00:00">
-		<link rel="canonical" href="https://ibug.io/blog/2019/07/circleci-ssh-deploy-keys/">
+		<meta property="article:published_time" content="2024-03-31T00:00:00+00:00">
+		<meta property="article:modified_time" content="2024-04-01T18:23:24+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd/">
 		<script type="application/ld+json">
 			{
 			  "@context": "https://schema.org",
@@ -98,16 +98,16 @@
 		</div>
 		<div class="initial-content">
 			<div class="page__hero--overlay"
-  style=" background-image: url('/image/header/mountain-1.jpg');"
+  style=" background-image: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)), url('/image/header/sunshine-1.jpg');"
 >
 				<div class="wrapper">
 					<h1 id="page-title" class="page__title" itemprop="headline">
-						Using SSH deploy keys on CircleCI
+						Reload SSL certificates with systemd
 					</h1>
 					<p class="page__meta">
 						<span class="page__meta-date">
 							<i class="far fa-calendar-alt" aria-hidden="true"></i>
-							<time datetime="2019-07-08T00:00:00+00:00">Jul 8, 2019</time>
+							<time datetime="2024-03-31T00:00:00+00:00">Mar 31, 2024</time>
 						</span>
 						<span class="page__meta-sep"></span>
 						<span class="page__meta-readtime">
@@ -170,10 +170,10 @@
 					</nav>
 				</div>
 				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
-					<meta itemprop="headline" content="Using SSH deploy keys on CircleCI">
-					<meta itemprop="description" content="A year ago back I wrote an article on automating build &amp; deployment of GitHub Pages website with Travis CI. It’s a great CI service at first, but since Travis CI has completely moved away from containers, speed is a real issue to whoever is concerned. On the other side, CircleCI is continuing their builds with Docker-based containers, whose rapid response is a great advantage against VMs with slow boot time.">
-					<meta itemprop="datePublished" content="2019-07-08T00:00:00+00:00">
-					<meta itemprop="dateModified" content="2022-04-30T19:59:16+00:00">
+					<meta itemprop="headline" content="Reload SSL certificates with systemd">
+					<meta itemprop="description" content="Recently I relinquished an old domain on my server and had to re-issue a certificate to drop that domain off.Previously it ran Let’s Encrypt’s official client Certbot, set up back in 2019.All my recent setups have been using acme.sh, so I figured that this was a perfect chance to switch this one over as well.">
+					<meta itemprop="datePublished" content="2024-03-31T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2024-04-01T18:23:24+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content" itemprop="text">
 							<aside class="sidebar__right sticky">
@@ -181,80 +181,110 @@
 									<header>
 										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
 									</header>
-									<ul class="toc__menu">
-										<li><a href="#solution">Solution</a></li>
-									</ul>
 								</nav>
 							</aside>
-							<p>A year ago back I <a href="/p/4">wrote an article</a> on automating build &amp; deployment of GitHub Pages website with Travis CI. It’s a great CI service at first, but since <a href="https://blog.travis-ci.com/2018-10-04-combining-linux-infrastructures">Travis CI has completely moved away from containers</a>, speed is a real issue to whoever is concerned. On the other side, CircleCI is continuing their builds with Docker-based containers, whose rapid response is a <em>great</em> advantage against VMs with slow boot time.</p>
-							<p>Migrating the build script from Travis CI was an intuitive and easy step, but I immediately got disappointed by CircleCI’s logging: Secret environment variables get exposed in the log as soon as any command or program prints them.</p>
-							<p><img src="/image/circleci/token-leak.png" alt="image" /></p>
-							<p>That’s particularly annoying because I used Personal Access Tokens to push built content back to GitHub, and this kind of straightforward leaks is a huge security issue, so I looked around for alternatives, and came up with the idea of using a deploy key with write access.</p>
-							<p>Setting up the basics wasn’t any difficult on its own for anyone with a bit experience in Linux:</p>
-							<ul>
-								<li>Generate an SSH key pair with <code class="language-plaintext highlighter-rouge">ssh-keygen</code></li>
-								<li>Encode (or compress + encode) the private key and put it into the CI environment</li>
-								<li>Create a build script to grab key from environment and utilize it</li>
-							</ul>
-							<p>Once you’ve figured out the build script, everything appears straightforward:</p>
-							<div class="language-shell highlighter-rouge">
+							<p>Recently I relinquished an old domain on my server and had to re-issue a certificate to drop that domain off.
+								Previously it ran Let’s Encrypt’s official client Certbot, set up back in 2019.
+								All my recent setups have been using acme.sh, so I figured that this was a perfect chance to switch this one over as well.</p>
+							<p>Getting acme.sh to issue a new certificate for my updated domain list is easy enough and out of scope for this article.
+								But when it comes to reloading the certificate for services using it, I have to think twice.
+								Back in the days when Nginx was the sole consumer of the certificate, I directly referenced the certificate files in <code class="language-plaintext highlighter-rouge">/etc/letsencrypt/live/</code> from Nginx config, and somehow slappped a <code class="language-plaintext highlighter-rouge">systemctl reload nginx</code> into crontab to handle the reload.
+								Now that there are multiple services using the certificate, I no longer consider it a good idea to reload all the services in a crontab.
+								There has to be a better way.</p>
+							<p>Since all my services are managed by systemd, using an extra “service” or whatever unit to group them together seems like a better idea.
+								Systemd’s <code class="language-plaintext highlighter-rouge">ReloadPropagatedFrom=</code> option and its inverse <code class="language-plaintext highlighter-rouge">PropagatesReloadTo=</code> immediately come to mind. With the right direction, it’s easy to Google out this answer: <a href="https://unix.stackexchange.com/q/334471/211239">How do I reload a group of systemd services?</a></p>
+							<p>Realizing that “target” is the simplest unit type in systemd’s abstraction, this is the minimum that suits my needs.</p>
+							<div class="language-ini highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="k">if</span> <span class="o">[</span> <span class="nt">-z</span> <span class="s2">"</span><span class="nv">$SSH_KEY_E</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
-  </span>e_error <span class="s2">"No SSH key found in environment."</span>
-  <span class="nb">exit </span>1
-<span class="k">fi
+									<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.target
+</span><span class="nn">[Unit]</span>
+<span class="py">Description</span><span class="p">=</span><span class="s">SSL certificates reload helper</span>
+<span class="py">PropagatesReloadTo</span><span class="p">=</span><span class="s">nginx.service</span>
+<span class="py">PropagatesReloadTo</span><span class="p">=</span><span class="s">postfix.service</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Then, following the above Unix &amp; Linux answer, here’s a “path” unit that lets systemd monitor the certificate files for changes.</p>
+							<div class="language-ini highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.path
+</span><span class="nn">[Unit]</span>
+<span class="py">Description</span><span class="p">=</span><span class="s">SSL certificate reload helper</span>
+<span class="py">Wants</span><span class="p">=</span><span class="s">%N.target</span>
 
-</span><span class="nb">base64</span> <span class="nt">-d</span> <span class="o">&lt;&lt;&lt;</span> <span class="s2">"</span><span class="nv">$SSH_KEY_E</span><span class="s2">"</span> | <span class="nb">gunzip</span> <span class="nt">-c</span> <span class="o">&gt;</span> ~/.ssh/id_rsa
-<span class="nb">chmod </span>600 ~/.ssh/id_rsa
-git clone <span class="nt">--depth</span><span class="o">=</span>3 <span class="nt">--branch</span><span class="o">=</span><span class="nv">$BRANCH</span> <span class="s2">"git@github.com:</span><span class="nv">$GH_REPO</span><span class="s2">.git"</span> _site
+<span class="nn">[Path]</span>
+<span class="py">PathChanged</span><span class="p">=</span><span class="s">/etc/ssl/private/%H/cert.pem</span>
+
+<span class="nn">[Install]</span>
+<span class="py">WantedBy</span><span class="p">=</span><span class="s">multi-user.target</span>
 </code></pre>
 								</div>
 							</div>
-							<p>At first glance, it <em>should</em> work without any problem. But that’s apparently only an <em>assumption</em>, no? And if you follow the build log, you’ll immediately know when it runs into <em>the problem</em>:</p>
-							<div class="language-text highlighter-rouge">
+							<p>The <code class="language-plaintext highlighter-rouge">Wants=</code> setting here ensure that the corresponding target unit is activated, otherwise it cannot be <code class="language-plaintext highlighter-rouge">reload</code>ed.</p>
+							<p>There’s one deficiency in the answer above: A “path” unit can only <em>activate</em> another unit, not <em>reload</em> it. So I still have to create a oneshot service that calls <code class="language-plaintext highlighter-rouge">systemctl reload</code> on the target, which itself can then be activated by the “path” unit.</p>
+							<div class="language-ini highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code>ERROR: The key you are authenticating with has been marked as read only.
+									<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.service
+</span><span class="nn">[Unit]</span>
+<span class="py">Description</span><span class="p">=</span><span class="s">SSL certificate reload helper</span>
+<span class="py">StartLimitIntervalSec</span><span class="p">=</span><span class="s">5s</span>
+<span class="py">StartLimitBurst</span><span class="p">=</span><span class="s">2</span>
+
+<span class="nn">[Service]</span>
+<span class="py">Type</span><span class="p">=</span><span class="s">oneshot</span>
+<span class="py">ExecStart</span><span class="p">=</span><span class="s">/bin/systemctl reload %N.target</span>
 </code></pre>
 								</div>
 							</div>
-							<p>It’s particularly confusing when you’ve written your SSH private key to the correct path, set the correct permission and expecting SSH to respect your key, only to find it’s actually offering another key to GitHub and fails.</p>
-							<p><img src="/image/circleci/ssh-fail.png" alt="image" /></p>
-							<p>Digging around with debug information (set <code class="language-plaintext highlighter-rouge">GIT_SSH_COMMAND='ssh -vv'</code>), I noticed this absurd thing:</p>
-							<p><img src="/image/circleci/key-not-found.png" alt="image" /></p>
-							<p>Clearly, the aptly placed key wasn’t even found by SSH, rendering it completely unusable in status quo. I’ve even tried crafting <code class="language-plaintext highlighter-rouge">~/.ssh/config</code>, but unfortunately it’s ignored as well.</p>
-							<h3 id="solution">Solution</h3>
-							<p>Just like most other CLI utilities, SSH respects command-line arguments loyally. So you would just specify the identity file there:</p>
+							<p>It’s important that this service comes with <code class="language-plaintext highlighter-rouge">Type=oneshot</code> and <em>without</em> <code class="language-plaintext highlighter-rouge">RemainAfterExit=yes</code>, so that it can be repeatedly activated by the “path” unit.</p>
+							<p>Now I can test if things work:</p>
 							<div class="language-shell highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="nb">export </span><span class="nv">GIT_SSH_COMMAND</span><span class="o">=</span><span class="s1">'ssh -i ~/.ssh/id_rsa'</span>
+									<pre class="highlight"><code>systemctl daemon-reload
+systemctl <span class="nb">enable</span> <span class="nt">--now</span> ssl-certificate.path
+acme.sh <span class="nt">--install-cert</span> <span class="nt">-d</span> <span class="s2">"</span><span class="nv">$HOSTNAME</span><span class="s2">"</span> <span class="se">\</span>
+  <span class="nt">--cert-file</span> <span class="s2">"/etc/ssl/private/</span><span class="nv">$HOSTNAME</span><span class="s2">/cert.pem"</span> <span class="se">\</span>
+  <span class="nt">--key-file</span> <span class="s2">"/etc/ssl/private/</span><span class="nv">$HOSTNAME</span><span class="s2">/privkey.pem"</span> <span class="se">\</span>
+  <span class="nt">--fullchain-file</span> <span class="s2">"/etc/ssl/private/</span><span class="nv">$HOSTNAME</span><span class="s2">/fullchain.pem"</span>
 </code></pre>
 								</div>
 							</div>
-							<p><img src="/image/circleci/solution.png" alt="image" /></p>
-							<p>And I don’t even know what’s going on behind the scenes, but it just works.</p>
-							<p>Reference: <a href="https://stackoverflow.com/q/55177042/5958455">Stack Overflow</a></p>
+							<p>And then inspect the services:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>systemctl status nginx.service
+<span class="go">[...]
+Mar 31 19:20:11 hostname systemd[1]: Reloading A high performance web server and a reverse proxy server...
+Mar 31 19:20:12 hostname systemd[1]: Reloaded A high performance web server and a reverse proxy server.
+
+</span><span class="gp">$</span><span class="w"> </span>systemctl status postfix.service
+<span class="go">[...]
+Mar 31 19:20:11 hostname systemd[1]: Reloading Postfix Mail Transport Agent...
+Mar 31 19:20:12 hostname systemd[1]: Reloaded Postfix Mail Transport Agent.
+</span></code></pre>
+								</div>
+							</div>
+							<p>So now, job done. As acme.sh stores install information, the next time these certificates are renewed, acme.sh will automatically copy them over to <code class="language-plaintext highlighter-rouge">/etc/ssl/private/$HOSTNAME/</code>, and systemd will pick up the changes and reload the services.</p>
 						</section>
 						<footer class="page__meta">
 							<p class="page__taxonomy">
 								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
 								<span itemprop="keywords">
-									<a href="/tag/github-pages" class="page__taxonomy-item" rel="tag">github-pages</a><span class="sep">, </span>
-									<a href="/tag/ssh" class="page__taxonomy-item" rel="tag">ssh</a>
+									<a href="/tag/linux" class="page__taxonomy-item" rel="tag">linux</a>
 								</span>
 							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2022-04-30">Apr 30, 2022</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time datetime="2024-04-01">Apr 1, 2024</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
-							<a href="https://twitter.com/intent/tweet?text=Using+SSH+deploy+keys+on+CircleCI%20https%3A%2F%2Fibug.io%2Fblog%2F2019%2F07%2Fcircleci-ssh-deploy-keys%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
-							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2019%2F07%2Fcircleci-ssh-deploy-keys%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
-							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2019%2F07%2Fcircleci-ssh-deploy-keys%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+							<a href="https://twitter.com/intent/tweet?text=Reload+SSL+certificates+with+systemd%20https%3A%2F%2Fibug.io%2Fblog%2F2024%2F03%2Freload-ssl-cert-with-systemd%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2024%2F03%2Freload-ssl-cert-with-systemd%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fibug.io%2Fblog%2F2024%2F03%2Freload-ssl-cert-with-systemd%2F" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
 						</section>
 						<nav class="pagination">
-							<a href="/blog/2019/06/save-commit-from-github/" class="pagination--pager" title="How I saved a lost commit from GitHub
+							<a href="/blog/2024/03/stupid-dell-recovery/" class="pagination--pager" title="I almost broke our lab’s storage server…
 ">Previous</a>
-							<a href="/blog/2019/07/systemd-service-template/" class="pagination--pager" title="Creating templated Systemd services
-">Next</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
 						</nav>
 					</div>
 					<div class="page__comments">
@@ -265,54 +295,6 @@ git clone <span class="nt">--depth</span><span class="o">=</span>3 <span class="
 				<div class="page__related">
 					<h2 class="page__related-title">You may also enjoy</h2>
 					<div class="grid__wrapper">
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-teaser">
-									<img src="/image/teaser/linux-container.jpg" alt="">
-								</div>
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are w...</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											20 minute read
-										</span>
-									</p>
-								</div>
-							</article>
-						</div>
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2020/09/build-github-pages-with-github-actions/" rel="permalink">Build GitHub Pages with GitHub Actions
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">Why use an external service when there’s an in-house GitHub service?
-									</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2020-09-19T00:00:00+00:00">Sep 19, 2020</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											7 minute read
-										</span>
-									</p>
-								</div>
-							</article>
-						</div>
 						<div class="grid__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<div class="archive__item-text">
@@ -337,23 +319,74 @@ git clone <span class="nt">--depth</span><span class="o">=</span>3 <span class="
 						</div>
 						<div class="grid__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/ldap.jpg" alt="">
+								</div>
 								<div class="archive__item-text">
 									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2018/04/build-github-pages-with-travis-ci/" rel="permalink">Build GitHub Pages with Travis CI
+										<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
 										</a>
 									</h2>
-									<p class="archive__item-excerpt" itemprop="description">
-										Update December 2020
-									</p>
+									<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
 									<p class="page__meta">
 										<span class="page__meta-date">
 											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2018-04-14T00:00:00+00:00">Apr 14, 2018</time>
+											<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
 										</span>
 										<span class="page__meta-sep"></span>
 										<span class="page__meta-readtime">
 											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											6 minute read
+											14 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/linux-container.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are w...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											24 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/vpn-imagine.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											15 minute read
 										</span>
 									</p>
 								</div>
@@ -484,8 +517,8 @@ git clone <span class="nt">--depth</span><span class="o">=</span>3 <span class="
 		</script>
 		<script>
 			var disqus_config = function () {
-			  this.page.url = "https://ibug.io/blog/2019/07/circleci-ssh-deploy-keys/";  /* Replace PAGE_URL with your page's canonical URL variable */
-			  this.page.identifier = "/blog/2019/07/circleci-ssh-deploy-keys"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			  this.page.url = "https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2024/03/reload-ssl-cert-with-systemd"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
 			};
 			(function() { /* DON'T EDIT BELOW THIS LINE */
 			  var d = document, s = d.createElement('script');

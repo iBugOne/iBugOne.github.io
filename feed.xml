@@ -1,96 +1,178 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-03-27T10:35:24+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">I almost broke our lab’s storage server…</title><link href="https://ibug.io/blog/2024/03/stupid-dell-recovery/" rel="alternate" type="text/html" title="I almost broke our lab’s storage server…" /><published>2024-03-13T00:00:00+00:00</published><updated>2024-03-27T18:34:21+00:00</updated><id>https://ibug.io/blog/2024/03/stupid-dell-recovery</id><content type="html" xml:base="https://ibug.io/blog/2024/03/stupid-dell-recovery/"><![CDATA[<p>Recently we discovered that both SSDs on our storage server were giving worrisome SMART values, so we started replacing them.
-				One of them was used only for ZFS L2ARC, so pulling it out was easy.
-				The other runs the rootfs and we couldn’t touch it for the time being, so we inserted a backup drive thinking we can migrate the OS later on.</p>
-			<p>After returning from the datacenter, I start working on the migration.
-				The initial steps are nothing but ordinary:</p>
-			<ul>
-				<li>Examine the spare drive to ensure there’s no important data on it, then wipe it (<code class="language-plaintext highlighter-rouge">blkdiscard -f /dev/sdb</code>).</li>
-				<li>Create the partition table that closely resembles the current system drive’s layout: 100 MB for the EFI partition (down from 512 MB), 32 GB for rootfs, and the rest for an LVM PV.</li>
-				<li>Format the partitions: <code class="language-plaintext highlighter-rouge">mkfs.vfat /dev/sdb1</code>, <code class="language-plaintext highlighter-rouge">mkfs.ext4 /dev/sdb2</code>, <code class="language-plaintext highlighter-rouge">pvcreate /dev/sdb3</code>.</li>
-				<li>Copy the rootfs over: <code class="language-plaintext highlighter-rouge">mount /dev/sdb2 /t</code>, <code class="language-plaintext highlighter-rouge">rsync -aHAXx / /t</code>.</li>
-				<li>Reinstall the bootloader: <code class="language-plaintext highlighter-rouge">mount /dev/sdb1 /t/boot/efi</code>, <code class="language-plaintext highlighter-rouge">arch-chroot /t</code>, <code class="language-plaintext highlighter-rouge">grub-install</code> (target is <code class="language-plaintext highlighter-rouge">x86_64-efi</code>), <code class="language-plaintext highlighter-rouge">update-grub</code>.</li>
-				<li>Start migrating LVs: <code class="language-plaintext highlighter-rouge">vgextend pve /dev/sdb3</code>, <code class="language-plaintext highlighter-rouge">pvmove /dev/sda3 /dev/sdb3</code>.</li>
-			</ul>
-			<p>At this point, a quick thought emerges: This is not the final drive to run the system on and is only here for the transitional period.
-				A second migration is planned when the new SSD arrives. So why not take this chance and move the rootfs onto LVM as well?</p>
-			<p>With that in mind, I hit Ctrl-C to <code class="language-plaintext highlighter-rouge">pvmove</code>, unbeknownst that it’s interruptible and terminating the <code class="language-plaintext highlighter-rouge">pvmove</code> process only pauses the operation.
-				For a moment, I thought I successfully canceled it and tried to re-partition the new drive.
-				Since the new PV is still in use by the suspended <code class="language-plaintext highlighter-rouge">pvmove</code> operation, the kernel would not accept any changes to <code class="language-plaintext highlighter-rouge">/dev/sdb3</code>.
-				During this process, I deleted and recreated the new rootfs (<code class="language-plaintext highlighter-rouge">/dev/sdb2</code>) and the new PV (<code class="language-plaintext highlighter-rouge">/dev/sdb3</code>) many times, and even tried manually editing LVM metadata (via <code class="language-plaintext highlighter-rouge">vgcfgbackup pve</code>, edit <code class="language-plaintext highlighter-rouge">/etc/lvm/backup/pve</code> and <code class="language-plaintext highlighter-rouge">vgcfgrestore pve</code>), before finally giving up and rebooting the system.</p>
-			<p>As a daily dose for a SysAdmin, the server didn’t boot up as expected.
-				I fired up a browser to connect to the machine’s IPMI, only to find that the remote console feature for iDRAC 9 was locked behind a paywall for goodness’ sake.
-				Thanks to God almighty Dell, things have been unnecessarily more complicated than ever before.
-				I carefully recalled every step taken and quickly identified the problem - one important thing forgotten - GRUB was successfully reinstalled on the new EFI partition (which was somehow left intact during the whole fiddling process), pointing to the now-deleted new root partition, and so it’s now stuck with GRUB.</p>
-			<p>Fortunately, out of precaution, I had previously configured the IPMI with serial-over-LAN, so I at least still have serial access to the server with <code class="language-plaintext highlighter-rouge">ipmitool</code>. This saved me from a trip back to the datacenter.</p>
-			<div class="language-shell highlighter-rouge">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-04-01T10:23:58+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Reload SSL certificates with systemd</title><link href="https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd/" rel="alternate" type="text/html" title="Reload SSL certificates with systemd" /><published>2024-03-31T00:00:00+00:00</published><updated>2024-04-01T18:23:24+00:00</updated><id>https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd</id><content type="html" xml:base="https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd/"><![CDATA[<p>Recently I relinquished an old domain on my server and had to re-issue a certificate to drop that domain off.
+				Previously it ran Let’s Encrypt’s official client Certbot, set up back in 2019.
+				All my recent setups have been using acme.sh, so I figured that this was a perfect chance to switch this one over as well.</p>
+			<p>Getting acme.sh to issue a new certificate for my updated domain list is easy enough and out of scope for this article.
+				But when it comes to reloading the certificate for services using it, I have to think twice.
+				Back in the days when Nginx was the sole consumer of the certificate, I directly referenced the certificate files in <code class="language-plaintext highlighter-rouge">/etc/letsencrypt/live/</code> from Nginx config, and somehow slappped a <code class="language-plaintext highlighter-rouge">systemctl reload nginx</code> into crontab to handle the reload.
+				Now that there are multiple services using the certificate, I no longer consider it a good idea to reload all the services in a crontab.
+				There has to be a better way.</p>
+			<p>Since all my services are managed by systemd, using an extra “service” or whatever unit to group them together seems like a better idea.
+				Systemd’s <code class="language-plaintext highlighter-rouge">ReloadPropagatedFrom=</code> option and its inverse <code class="language-plaintext highlighter-rouge">PropagatesReloadTo=</code> immediately come to mind. With the right direction, it’s easy to Google out this answer: <a href="https://unix.stackexchange.com/q/334471/211239">How do I reload a group of systemd services?</a></p>
+			<p>Realizing that “target” is the simplest unit type in systemd’s abstraction, this is the minimum that suits my needs.</p>
+			<div class="language-ini highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code>ipmitool <span class="nt">-I</span> lanplus <span class="nt">-H</span> &lt;ip&gt; <span class="nt">-U</span> &lt;user&gt; <span class="nt">-P</span> &lt;password&gt; sol activate
+					<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.target
+</span><span class="nn">[Unit]</span>
+<span class="py">Description</span><span class="p">=</span><span class="s">SSL certificates reload helper</span>
+<span class="py">PropagatesReloadTo</span><span class="p">=</span><span class="s">nginx.service</span>
+<span class="py">PropagatesReloadTo</span><span class="p">=</span><span class="s">postfix.service</span>
 </code></pre>
 				</div>
 			</div>
-			<p>And better yet, this iDRAC 9 can change BIOS settings, most notably the boot order and one-time boot override. This definitely helped the most in the absence of that goddamn remote console.</p>
-			<p><img src="/image/server/idrac-boot-override.png" alt="image" /></p>
-			<p>After some trial and error, I got myself into the GRUB command line, and it didn’t look quite well:</p>
+			<p>Then, following the above Unix &amp; Linux answer, here’s a “path” unit that lets systemd monitor the certificate files for changes.</p>
+			<div class="language-ini highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.path
+</span><span class="nn">[Unit]</span>
+<span class="py">Description</span><span class="p">=</span><span class="s">SSL certificate reload helper</span>
+<span class="py">Wants</span><span class="p">=</span><span class="s">%N.target</span>
+
+<span class="nn">[Path]</span>
+<span class="py">PathChanged</span><span class="p">=</span><span class="s">/etc/ssl/private/%H/cert.pem</span>
+
+<span class="nn">[Install]</span>
+<span class="py">WantedBy</span><span class="p">=</span><span class="s">multi-user.target</span>
+</code></pre>
+				</div>
+			</div>
+			<p>The <code class="language-plaintext highlighter-rouge">Wants=</code> setting here ensure that the corresponding target unit is activated, otherwise it cannot be <code class="language-plaintext highlighter-rouge">reload</code>ed.</p>
+			<p>There’s one deficiency in the answer above: A “path” unit can only <em>activate</em> another unit, not <em>reload</em> it. So I still have to create a oneshot service that calls <code class="language-plaintext highlighter-rouge">systemctl reload</code> on the target, which itself can then be activated by the “path” unit.</p>
+			<div class="language-ini highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.service
+</span><span class="nn">[Unit]</span>
+<span class="py">Description</span><span class="p">=</span><span class="s">SSL certificate reload helper</span>
+<span class="py">StartLimitIntervalSec</span><span class="p">=</span><span class="s">5s</span>
+<span class="py">StartLimitBurst</span><span class="p">=</span><span class="s">2</span>
+
+<span class="nn">[Service]</span>
+<span class="py">Type</span><span class="p">=</span><span class="s">oneshot</span>
+<span class="py">ExecStart</span><span class="p">=</span><span class="s">/bin/systemctl reload %N.target</span>
+</code></pre>
+				</div>
+			</div>
+			<p>It’s important that this service comes with <code class="language-plaintext highlighter-rouge">Type=oneshot</code> and <em>without</em> <code class="language-plaintext highlighter-rouge">RemainAfterExit=yes</code>, so that it can be repeatedly activated by the “path” unit.</p>
+			<p>Now I can test if things work:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>systemctl daemon-reload
+systemctl <span class="nb">enable</span> <span class="nt">--now</span> ssl-certificate.path
+acme.sh <span class="nt">--install-cert</span> <span class="nt">-d</span> <span class="s2">"</span><span class="nv">$HOSTNAME</span><span class="s2">"</span> <span class="se">\</span>
+  <span class="nt">--cert-file</span> <span class="s2">"/etc/ssl/private/</span><span class="nv">$HOSTNAME</span><span class="s2">/cert.pem"</span> <span class="se">\</span>
+  <span class="nt">--key-file</span> <span class="s2">"/etc/ssl/private/</span><span class="nv">$HOSTNAME</span><span class="s2">/privkey.pem"</span> <span class="se">\</span>
+  <span class="nt">--fullchain-file</span> <span class="s2">"/etc/ssl/private/</span><span class="nv">$HOSTNAME</span><span class="s2">/fullchain.pem"</span>
+</code></pre>
+				</div>
+			</div>
+			<p>And then inspect the services:</p>
 			<div class="language-console highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">grub rescue&gt;</span><span class="w"> 
+					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>systemctl status nginx.service
+<span class="go">[...]
+Mar 31 19:20:11 hostname systemd[1]: Reloading A high performance web server and a reverse proxy server...
+Mar 31 19:20:12 hostname systemd[1]: Reloaded A high performance web server and a reverse proxy server.
+
+</span><span class="gp">$</span><span class="w"> </span>systemctl status postfix.service
+<span class="go">[...]
+Mar 31 19:20:11 hostname systemd[1]: Reloading Postfix Mail Transport Agent...
+Mar 31 19:20:12 hostname systemd[1]: Reloaded Postfix Mail Transport Agent.
 </span></code></pre>
 				</div>
 			</div>
-			<p>There’s pretty much just the <code class="language-plaintext highlighter-rouge">ls</code> command, and it doesn’t even recognize the EFI partition (FAT32 filesystem). With some more twiddling, I found this “rescue mode” capable of reading ext4, which shed some light to the situation.</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">grub rescue&gt;</span><span class="w"> </span><span class="nb">set </span><span class="nv">root</span><span class="o">=(</span>hd0,gpt2<span class="o">)</span>
+			<p>So now, job done. As acme.sh stores install information, the next time these certificates are renewed, acme.sh will automatically copy them over to <code class="language-plaintext highlighter-rouge">/etc/ssl/private/$HOSTNAME/</code>, and systemd will pick up the changes and reload the services.</p>
+			]]></content><author><name>iBug</name></author><category term="linux" /><summary type="html"><![CDATA[Recently I relinquished an old domain on my server and had to re-issue a certificate to drop that domain off. Previously it ran Let’s Encrypt’s official client Certbot, set up back in 2019. All my recent setups have been using acme.sh, so I figured that this was a perfect chance to switch this one over as well.]]></summary></entry><entry><title type="html">I almost broke our lab’s storage server…</title><link href="https://ibug.io/blog/2024/03/stupid-dell-recovery/" rel="alternate" type="text/html" title="I almost broke our lab’s storage server…" /><published>2024-03-13T00:00:00+00:00</published><updated>2024-03-27T18:34:21+00:00</updated><id>https://ibug.io/blog/2024/03/stupid-dell-recovery</id><content type="html" xml:base="https://ibug.io/blog/2024/03/stupid-dell-recovery/"><![CDATA[<p>Recently we discovered that both SSDs on our storage server were giving worrisome SMART values, so we started replacing them.
+			One of them was used only for ZFS L2ARC, so pulling it out was easy.
+			The other runs the rootfs and we couldn’t touch it for the time being, so we inserted a backup drive thinking we can migrate the OS later on.</p>
+		<p>After returning from the datacenter, I start working on the migration.
+			The initial steps are nothing but ordinary:</p>
+		<ul>
+			<li>Examine the spare drive to ensure there’s no important data on it, then wipe it (<code class="language-plaintext highlighter-rouge">blkdiscard -f /dev/sdb</code>).</li>
+			<li>Create the partition table that closely resembles the current system drive’s layout: 100 MB for the EFI partition (down from 512 MB), 32 GB for rootfs, and the rest for an LVM PV.</li>
+			<li>Format the partitions: <code class="language-plaintext highlighter-rouge">mkfs.vfat /dev/sdb1</code>, <code class="language-plaintext highlighter-rouge">mkfs.ext4 /dev/sdb2</code>, <code class="language-plaintext highlighter-rouge">pvcreate /dev/sdb3</code>.</li>
+			<li>Copy the rootfs over: <code class="language-plaintext highlighter-rouge">mount /dev/sdb2 /t</code>, <code class="language-plaintext highlighter-rouge">rsync -aHAXx / /t</code>.</li>
+			<li>Reinstall the bootloader: <code class="language-plaintext highlighter-rouge">mount /dev/sdb1 /t/boot/efi</code>, <code class="language-plaintext highlighter-rouge">arch-chroot /t</code>, <code class="language-plaintext highlighter-rouge">grub-install</code> (target is <code class="language-plaintext highlighter-rouge">x86_64-efi</code>), <code class="language-plaintext highlighter-rouge">update-grub</code>.</li>
+			<li>Start migrating LVs: <code class="language-plaintext highlighter-rouge">vgextend pve /dev/sdb3</code>, <code class="language-plaintext highlighter-rouge">pvmove /dev/sda3 /dev/sdb3</code>.</li>
+		</ul>
+		<p>At this point, a quick thought emerges: This is not the final drive to run the system on and is only here for the transitional period.
+			A second migration is planned when the new SSD arrives. So why not take this chance and move the rootfs onto LVM as well?</p>
+		<p>With that in mind, I hit Ctrl-C to <code class="language-plaintext highlighter-rouge">pvmove</code>, unbeknownst that it’s interruptible and terminating the <code class="language-plaintext highlighter-rouge">pvmove</code> process only pauses the operation.
+			For a moment, I thought I successfully canceled it and tried to re-partition the new drive.
+			Since the new PV is still in use by the suspended <code class="language-plaintext highlighter-rouge">pvmove</code> operation, the kernel would not accept any changes to <code class="language-plaintext highlighter-rouge">/dev/sdb3</code>.
+			During this process, I deleted and recreated the new rootfs (<code class="language-plaintext highlighter-rouge">/dev/sdb2</code>) and the new PV (<code class="language-plaintext highlighter-rouge">/dev/sdb3</code>) many times, and even tried manually editing LVM metadata (via <code class="language-plaintext highlighter-rouge">vgcfgbackup pve</code>, edit <code class="language-plaintext highlighter-rouge">/etc/lvm/backup/pve</code> and <code class="language-plaintext highlighter-rouge">vgcfgrestore pve</code>), before finally giving up and rebooting the system.</p>
+		<p>As a daily dose for a SysAdmin, the server didn’t boot up as expected.
+			I fired up a browser to connect to the machine’s IPMI, only to find that the remote console feature for iDRAC 9 was locked behind a paywall for goodness’ sake.
+			Thanks to God almighty Dell, things have been unnecessarily more complicated than ever before.
+			I carefully recalled every step taken and quickly identified the problem - one important thing forgotten - GRUB was successfully reinstalled on the new EFI partition (which was somehow left intact during the whole fiddling process), pointing to the now-deleted new root partition, and so it’s now stuck with GRUB.</p>
+		<p>Fortunately, out of precaution, I had previously configured the IPMI with serial-over-LAN, so I at least still have serial access to the server with <code class="language-plaintext highlighter-rouge">ipmitool</code>. This saved me from a trip back to the datacenter.</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>ipmitool <span class="nt">-I</span> lanplus <span class="nt">-H</span> &lt;ip&gt; <span class="nt">-U</span> &lt;user&gt; <span class="nt">-P</span> &lt;password&gt; sol activate
+</code></pre>
+			</div>
+		</div>
+		<p>And better yet, this iDRAC 9 can change BIOS settings, most notably the boot order and one-time boot override. This definitely helped the most in the absence of that goddamn remote console.</p>
+		<p><img src="/image/server/idrac-boot-override.png" alt="image" /></p>
+		<p>After some trial and error, I got myself into the GRUB command line, and it didn’t look quite well:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">grub rescue&gt;</span><span class="w"> 
+</span></code></pre>
+			</div>
+		</div>
+		<p>There’s pretty much just the <code class="language-plaintext highlighter-rouge">ls</code> command, and it doesn’t even recognize the EFI partition (FAT32 filesystem). With some more twiddling, I found this “rescue mode” capable of reading ext4, which shed some light to the situation.</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">grub rescue&gt;</span><span class="w"> </span><span class="nb">set </span><span class="nv">root</span><span class="o">=(</span>hd0,gpt2<span class="o">)</span>
 <span class="gp">grub rescue&gt;</span><span class="w"> </span><span class="nb">ls</span> /boot/grub
 <span class="go">fonts  grub.cfg  grubenv  locale  unicode.pf2  x86_64-efi
 </span></code></pre>
-				</div>
 			</div>
-			<p>Now things began to turn to the upswing.</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">grub rescue&gt;</span><span class="w"> </span><span class="nb">set </span><span class="nv">prefix</span><span class="o">=</span>/boot/grub
+		</div>
+		<p>Now things began to turn to the upswing.</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">grub rescue&gt;</span><span class="w"> </span><span class="nb">set </span><span class="nv">prefix</span><span class="o">=</span>/boot/grub
 <span class="gp">grub rescue&gt;</span><span class="w"> </span>insmod normal
 <span class="gp">grub rescue&gt;</span><span class="w"> </span>normal
 </code></pre>
-				</div>
 			</div>
-			<p>In a few seconds, I was delighted to discover that the system was up and running, and continued migrating the rootfs.</p>
-			<p>After everything’s done, out of every precaution, I installed <code class="language-plaintext highlighter-rouge">grub-efi-amd64-signed</code>, which provides a large, monolithic <code class="language-plaintext highlighter-rouge">grubx64.efi</code> that has all the “optional” modules built-in, so it no longer relies on the filesystem for, e.g., LVM support, in case a similar disaster happens again.</p>
-			<h2 id="anecdote">Anecdote</h2>
-			<p>When trying to remove the faulty drive from the server, I at first made a wrong recall for its position, and we instead pulled out a running large-capacity HDD. Luckily it was not damaged, so we quickly inserted it back. Thanks to ZFS’s design, it automatically triggered a resilver, which completed in just a blink.</p>
-			<div class="language-text highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code># zpool status
+		</div>
+		<p>In a few seconds, I was delighted to discover that the system was up and running, and continued migrating the rootfs.</p>
+		<p>After everything’s done, out of every precaution, I installed <code class="language-plaintext highlighter-rouge">grub-efi-amd64-signed</code>, which provides a large, monolithic <code class="language-plaintext highlighter-rouge">grubx64.efi</code> that has all the “optional” modules built-in, so it no longer relies on the filesystem for, e.g., LVM support, in case a similar disaster happens again.</p>
+		<h2 id="anecdote">Anecdote</h2>
+		<p>When trying to remove the faulty drive from the server, I at first made a wrong recall for its position, and we instead pulled out a running large-capacity HDD. Luckily it was not damaged, so we quickly inserted it back. Thanks to ZFS’s design, it automatically triggered a resilver, which completed in just a blink.</p>
+		<div class="language-text highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code># zpool status
   pool: rpool
  state: ONLINE
   scan: resilvered 63.4M in 00:00:03 with 0 errors on Tue Mar 12 17:03:23 2024
 </code></pre>
-				</div>
 			</div>
-			<p>If this were a hardware RAID, a tedious and time-consuming rebuild would have been inevitable. It’s only with ZFS that this rapid recovery is possible.</p>
-			<h2 id="conclusion">Conclusion</h2>
-			<p>This incident was a good lesson for me, and some big takeaways I’d draw:</p>
-			<ul>
-				<li>Don’t panic under pressure.</li>
-				<li>Use ZFS so you can sleep well at night.</li>
-				<li>Fuck Dell, next time buy from another vendor that doesn’t lock basic features behind a paywall.</li>
-			</ul>
-			<p>Plus, the correct way to cancel a <code class="language-plaintext highlighter-rouge">pvmove</code> operation is in <a href="https://linux.die.net/man/8/pvmove"><code class="language-plaintext highlighter-rouge">man 8 pvmove</code></a>, and it’s right at the 2nd paragraph of the Description section.</p>
-			]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><summary type="html"><![CDATA[Recently we discovered that both SSDs on our storage server were giving worrisome SMART values, so we started replacing them. One of them was used only for ZFS L2ARC, so pulling it out was easy. The other runs the rootfs and we couldn’t touch it for the time being, so we inserted a backup drive thinking we can migrate the OS later on.]]></summary></entry><entry><title type="html">My firewall solution for RDP</title><link href="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/" rel="alternate" type="text/html" title="My firewall solution for RDP" /><published>2024-02-28T00:00:00+00:00</published><updated>2024-02-28T18:33:21+00:00</updated><id>https://ibug.io/blog/2024/02/linux-firewall-for-rdp</id><content type="html" xml:base="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/"><![CDATA[<p>Today I stumbled upon <a href="https://www.v2ex.com/t/1019147">this V2EX post</a> (Simplified Chinese) where the OP shared their PowerShell implementation of a “makeshift fail2ban” for RDP (<a href="https://github.com/Qetesh/rdpFail2Ban">their GitHub repository</a>). Their script looked very clean and robust, but needless to say, it is unnecessarily difficult on Windows. So on this rare (maybe?) occasion I decide to share my firewall for securing RDP access to my Windows hosts.</p>
-		<p><strong>None</strong> of my Windows hosts (PCs and VMs) has their RDP port exposed to the public internet directly, and they’re all connected to my mesh VPN (which is out of scope for this blog article). My primary public internet entry gateway for the intranet runs Debian with fully manually configured iptables-based firewall, and I frequently work on it through SSH.</p>
-		<p>My goal is to expose the RDP port only to myself. There are a few obvious solutions eliminated for different reasons:</p>
+		</div>
+		<p>If this were a hardware RAID, a tedious and time-consuming rebuild would have been inevitable. It’s only with ZFS that this rapid recovery is possible.</p>
+		<h2 id="conclusion">Conclusion</h2>
+		<p>This incident was a good lesson for me, and some big takeaways I’d draw:</p>
 		<ul>
-			<li><strong>VPN</strong> is inconvenient as I don’t want to connect to VPN just for RDP when I don’t need it otherwise.</li>
-			<li><strong>SSH port forwarding</strong> is not performant for two things: Double-encryption and lack of UDP support.</li>
+			<li>Don’t panic under pressure.</li>
+			<li>Use ZFS so you can sleep well at night.</li>
+			<li>Fuck Dell, next time buy from another vendor that doesn’t lock basic features behind a paywall.</li>
 		</ul>
-		<p>The question arises that if SSH access is sufficiently convenient, why not use it as an authentication and authorization mechanism? So I came up with this:</p>
-		<ul>
-			<li>
-				<p>A pre-configured iptables rule set to allow RDP access from a specific IP set. For example:</p>
-				<div class="language-shell highlighter-rouge">
-					<div class="highlight">
-						<pre class="highlight"><code><span class="k">*</span>filter
+		<p>Plus, the correct way to cancel a <code class="language-plaintext highlighter-rouge">pvmove</code> operation is in <a href="https://linux.die.net/man/8/pvmove"><code class="language-plaintext highlighter-rouge">man 8 pvmove</code></a>, and it’s right at the 2nd paragraph of the Description section.</p>
+		]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><summary type="html"><![CDATA[Recently we discovered that both SSDs on our storage server were giving worrisome SMART values, so we started replacing them. One of them was used only for ZFS L2ARC, so pulling it out was easy. The other runs the rootfs and we couldn’t touch it for the time being, so we inserted a backup drive thinking we can migrate the OS later on.]]></summary></entry><entry><title type="html">My firewall solution for RDP</title><link href="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/" rel="alternate" type="text/html" title="My firewall solution for RDP" /><published>2024-02-28T00:00:00+00:00</published><updated>2024-02-28T18:33:21+00:00</updated><id>https://ibug.io/blog/2024/02/linux-firewall-for-rdp</id><content type="html" xml:base="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/"><![CDATA[<p>Today I stumbled upon <a href="https://www.v2ex.com/t/1019147">this V2EX post</a> (Simplified Chinese) where the OP shared their PowerShell implementation of a “makeshift fail2ban” for RDP (<a href="https://github.com/Qetesh/rdpFail2Ban">their GitHub repository</a>). Their script looked very clean and robust, but needless to say, it is unnecessarily difficult on Windows. So on this rare (maybe?) occasion I decide to share my firewall for securing RDP access to my Windows hosts.</p>
+	<p><strong>None</strong> of my Windows hosts (PCs and VMs) has their RDP port exposed to the public internet directly, and they’re all connected to my mesh VPN (which is out of scope for this blog article). My primary public internet entry gateway for the intranet runs Debian with fully manually configured iptables-based firewall, and I frequently work on it through SSH.</p>
+	<p>My goal is to expose the RDP port only to myself. There are a few obvious solutions eliminated for different reasons:</p>
+	<ul>
+		<li><strong>VPN</strong> is inconvenient as I don’t want to connect to VPN just for RDP when I don’t need it otherwise.</li>
+		<li><strong>SSH port forwarding</strong> is not performant for two things: Double-encryption and lack of UDP support.</li>
+	</ul>
+	<p>The question arises that if SSH access is sufficiently convenient, why not use it as an authentication and authorization mechanism? So I came up with this:</p>
+	<ul>
+		<li>
+			<p>A pre-configured iptables rule set to allow RDP access from a specific IP set. For example:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="k">*</span>filter
 :FORWARD DROP
 <span class="nt">-A</span> FORWARD <span class="nt">-d</span> 192.0.2.1 <span class="nt">-p</span> tcp <span class="nt">--dport</span> 3389 <span class="nt">-m</span> <span class="nb">set</span> <span class="nt">--set</span> ibug <span class="nt">-j</span> ACCEPT
 
@@ -98,14 +180,14 @@
 <span class="nt">-A</span> RDPForward <span class="nt">-p</span> tcp <span class="nt">--dport</span> 3389 <span class="nt">-j</span> DNAT <span class="nt">--to-destination</span> 192.0.2.1:3389
 <span class="nt">-A</span> RDPForward <span class="nt">-p</span> udp <span class="nt">--dport</span> 3389 <span class="nt">-j</span> DNAT <span class="nt">--to-destination</span> 192.0.2.1:3389
 </code></pre>
-					</div>
+				</div>
     </div>
-			</li>
-			<li>
-				<p>A way to keep the client address in the set for the duration of the SSH session. I use SSH user rc file to proactively refresh it:</p>
-				<div class="language-shell highlighter-rouge">
-					<div class="highlight">
-						<pre class="highlight"><code><span class="c">#!/bin/bash</span>
+		</li>
+		<li>
+			<p>A way to keep the client address in the set for the duration of the SSH session. I use SSH user rc file to proactively refresh it:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="c">#!/bin/bash</span>
 <span class="c"># rwxr-xr-x ~/.ssh/rc</span>
 
 <span class="k">if</span> <span class="o">[</span> <span class="nt">-z</span> <span class="s2">"</span><span class="nv">$BASH</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
@@ -118,11 +200,11 @@
 
 <span class="nb">nohup</span> ~/.local/bin/_ssh_refresh_client <span class="s2">"</span><span class="nv">$_ssh_client</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$_ppid</span><span class="s2">"</span> &amp;&gt;/dev/null &amp; <span class="nb">exit </span>0
 </code></pre>
-					</div>
+				</div>
     </div>
-				<div class="language-shell highlighter-rouge">
-					<div class="highlight">
-						<pre class="highlight"><code><span class="c">#!/bin/sh</span>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="c">#!/bin/sh</span>
 <span class="c"># rwxr-xr-x ~/.local/bin/_ssh_refresh_client</span>
 <span class="nv">_ssh_client</span><span class="o">=</span><span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span>
 <span class="nv">_ppid</span><span class="o">=</span><span class="s2">"</span><span class="nv">$2</span><span class="s2">"</span>
@@ -132,15 +214,15 @@
 <span class="k">done
 </span><span class="nb">exit </span>0
 </code></pre>
-					</div>
+				</div>
     </div>
-			</li>
-		</ul>
-		<p>The idea is to refresh (<code class="language-plaintext highlighter-rouge">ipset add</code> with timeout) the IPset entry as long as the SSH session remains. When SSH disconnects, the script stops refreshing and IPset will clean it up after the specified time.</p>
-		<p>To determine the presence of the associated SSH session, the scripts finds the PID of the “session manager process”. The “parent PID” is read twice because <code class="language-plaintext highlighter-rouge">sshd</code> double-forks. The client address is conveniently provided in the environment variable, so putting all these together yields precisely what I need.</p>
-		<p>The only caveat is the use of <code class="language-plaintext highlighter-rouge">sudo</code>, as <code class="language-plaintext highlighter-rouge">ipset</code> requires <code class="language-plaintext highlighter-rouge">CAP_NET_ADMIN</code> for interacting with the kernel network stack. It’s certainly possible to write an SUID binary as a wrapper, but for me configuring passwordless sudo for the <code class="language-plaintext highlighter-rouge">ipset</code> command satisfies my demands.</p>
-		<p>So now whenever I need to RDP to my computer through this forwarded port on the public internet, I can just SSH into the gateway and it’ll automatically grant me 5 minutes of RDP access from this specific network. All traffic forwarding is done in the kernel with no extra encapsulation or encryption, ensuring the best possible performance for both the endpoints and the gateway router itself.</p>
-		]]></content><author><name>iBug</name></author><category term="linux" /><category term="windows" /><category term="networking" /><summary type="html"><![CDATA[Today I stumbled upon this V2EX post (Simplified Chinese) where the OP shared their PowerShell implementation of a “makeshift fail2ban” for RDP (their GitHub repository). Their script looked very clean and robust, but needless to say, it is unnecessarily difficult on Windows. So on this rare (maybe?) occasion I decide to share my firewall for securing RDP access to my Windows hosts.]]></summary></entry><entry><title type="html">Request limiting in Nginx</title><link href="https://ibug.io/blog/2024/01/nginx-limit-req/" rel="alternate" type="text/html" title="Request limiting in Nginx" /><published>2024-01-23T00:00:00+00:00</published><updated>2024-01-23T06:15:20+00:00</updated><id>https://ibug.io/blog/2024/01/nginx-limit-req</id><content type="html" xml:base="https://ibug.io/blog/2024/01/nginx-limit-req/"><![CDATA[<p>Nginx has a built-in module <code class="language-plaintext highlighter-rouge">limit_req</code> for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.</p>
+		</li>
+	</ul>
+	<p>The idea is to refresh (<code class="language-plaintext highlighter-rouge">ipset add</code> with timeout) the IPset entry as long as the SSH session remains. When SSH disconnects, the script stops refreshing and IPset will clean it up after the specified time.</p>
+	<p>To determine the presence of the associated SSH session, the scripts finds the PID of the “session manager process”. The “parent PID” is read twice because <code class="language-plaintext highlighter-rouge">sshd</code> double-forks. The client address is conveniently provided in the environment variable, so putting all these together yields precisely what I need.</p>
+	<p>The only caveat is the use of <code class="language-plaintext highlighter-rouge">sudo</code>, as <code class="language-plaintext highlighter-rouge">ipset</code> requires <code class="language-plaintext highlighter-rouge">CAP_NET_ADMIN</code> for interacting with the kernel network stack. It’s certainly possible to write an SUID binary as a wrapper, but for me configuring passwordless sudo for the <code class="language-plaintext highlighter-rouge">ipset</code> command satisfies my demands.</p>
+	<p>So now whenever I need to RDP to my computer through this forwarded port on the public internet, I can just SSH into the gateway and it’ll automatically grant me 5 minutes of RDP access from this specific network. All traffic forwarding is done in the kernel with no extra encapsulation or encryption, ensuring the best possible performance for both the endpoints and the gateway router itself.</p>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="windows" /><category term="networking" /><summary type="html"><![CDATA[Today I stumbled upon this V2EX post (Simplified Chinese) where the OP shared their PowerShell implementation of a “makeshift fail2ban” for RDP (their GitHub repository). Their script looked very clean and robust, but needless to say, it is unnecessarily difficult on Windows. So on this rare (maybe?) occasion I decide to share my firewall for securing RDP access to my Windows hosts.]]></summary></entry><entry><title type="html">Request limiting in Nginx</title><link href="https://ibug.io/blog/2024/01/nginx-limit-req/" rel="alternate" type="text/html" title="Request limiting in Nginx" /><published>2024-01-23T00:00:00+00:00</published><updated>2024-01-23T06:15:20+00:00</updated><id>https://ibug.io/blog/2024/01/nginx-limit-req</id><content type="html" xml:base="https://ibug.io/blog/2024/01/nginx-limit-req/"><![CDATA[<p>Nginx has a built-in module <code class="language-plaintext highlighter-rouge">limit_req</code> for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.</p>
 	<p>As always, everything begins with <a href="https://nginx.org/en/docs/http/ngx_http_limit_req_module.html">the documentation</a>. A quick-start example is given:</p>
 	<div class="language-nginx highlighter-rouge">
 		<div class="highlight">
@@ -1423,66 +1505,4 @@ systemctl start rsyslog
 		<li>Original blog (Traditional Chinese): <a href="https://fat-nerds.com/dot-nerd/cut-down-proxmox-ve-emmc-sd-read-write/">單板小主機上的Proxmox VE實務：暴力減少eMMC或SD卡的讀寫耗損</a></li>
 		<li><a href="https://forums.raspberrypi.com/viewtopic.php?t=291808">CM4 eMMC durability - Terabytes written value (TBW)?</a></li>
 	</ul>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><category term="proxmox-ve" /><summary type="html"><![CDATA[Since my blog on installing Proxmox VE on eMMC, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, as eMMCs typically do not offer the level of endurance as anything better than USB flash drives. Among many concerns, the most important one is the limited number of write cycles that an eMMC can sustain, while Proxmox VE, being an enterprise-grade product, has to constantly write stuff like logs to the storage. I came across this blog (fat-nerds.com) on reducing eMMC writes on a Proxmox VE installation on a single-board computer from a Hong Kong guy, so I figure I’d share my ideas here.]]></summary></entry><entry><title type="html">My automated Daily Health Report infrastructure</title><link href="https://ibug.io/blog/2023/04/checkin-infrastructure/" rel="alternate" type="text/html" title="My automated Daily Health Report infrastructure" /><published>2023-04-23T00:00:00+00:00</published><updated>2023-04-24T00:48:56+00:00</updated><id>https://ibug.io/blog/2023/04/checkin-infrastructure</id><content type="html" xml:base="https://ibug.io/blog/2023/04/checkin-infrastructure/"><![CDATA[<p>Back in the days when the <a href="https://en.wikipedia.org/wiki/Chinese_government_response_to_COVID-19">Zero COVID policy</a> was prevailing, our university introduced a <em>Daily Health Report</em> system. Students and faculty were mandated to submit a daily online form detailing their health status. Noncompliance resulted in denied campus access, and in more stringent times, forced quarantine. Thanks to the comprehensive lockdown of campuses, our activity were strictly confined. Consequently, our daily data submission were pratically invariant. It’s a colossal waste of effort to do it manually (with some anecdotes later on), so I opted to automate the process.</p>
-	<p>As the policies evolved, our school’s reporting platform also underwent changes. I had to update the reporting script multiple times with new features to align those of the reporting platform.</p>
-	<p>Much like my <a href="/blog/2023/01/overengineering-adventofcode/">previous article</a>, there’s a significant distinction between making something work and making it work with elegance. So in this article, I’ll share my infrastructure for the automated daily report system, and delve into some design options and decisions I made in the way.</p>
-	<h2 id="script">The reporting script</h2>
-	<p>Writing a script is about the easiest thing in the whole system with the least technical complexity. Anyone with basic scripting abilities can do it well, so I <a href="https://github.com/iBug/thu-checkin">open-sourced mine</a>. It only takes a few minutes to open the Developer Tools on your browser, identify the request originating from the [Submit] button, copy its payload out and put that into a script, and it’s ready to service. If anything marginally fancy were to be added, it’d be saving certain data to a separate file so that others can adopt the script more easily.</p>
-	<p>The next thing is to run the script every day at a desired time. A common solution is to use Cron that is simple and easy. <a href="https://wiki.archlinux.org/title/systemd/Timers">Systemd timers</a> is a modern alternative offering more features at the expense of a more complex configuration. I chose the latter for its <code class="language-plaintext highlighter-rouge">RandomizedDelaySec</code> option, so that the script won’t be run at the exact same time every day.</p>
-	<p>At the beginning I also had a sample GitHub Actions workflow file so that others can fork my repository and start automating their reports with minimal effort. However, I scrapped it later on realizing it’s against GitHub’s ToS.</p>
-	<p><img src="/image/server/checkin-1.png" alt="First step" /></p>
-	<h2 id="status">Status report</h2>
-	<p>The next thing is to stay informed of whether the script is working properly. Logging in to the server and reading logs every day is not fun. Assuming that it worked and ending up being denied entry to the school is even worse. So it’d be nice to be notified of everything it does.</p>
-	<p>A common choice is via email, but it’s lacking a bit of timeliness. I chose Telegram because I’m actively using it and it provides a bot API. Adding <code class="language-plaintext highlighter-rouge">python-telegram-bot</code> to the script and a few lines of code, I can get a notification on my Telegram every time the script runs.</p>
-	<p>My actual setup differs slightly, with an extra component between the script and the bot: an AWS Lambda serverless function. I did this for two reasons:</p>
-	<ul>
-		<li>Minor reason: Telegram servers (<code class="language-plaintext highlighter-rouge">api.telegram.org</code>) is not directly accessible from mainland China for well-known reasons.</li>
-		<li><strong>Major reason</strong>: I already have a <a href="/blog/2021/02/github-webhook-on-aws-lambda/">GitHub webhook</a> running on AWS Lambda. It is much less involved to add another URL handler to that function and reuse the existing codebase, like credentials and message formatting. This allows me to simplify the notification to a single <code class="language-plaintext highlighter-rouge">requests.post</code>.</li>
-	</ul>
-	<p><img src="/image/server/checkin-2.png" alt="Second step" /></p>
-	<p>As a bonus feature, I also send the error message and the line number in case of an exception, so that I can quickly identify the problem before investigating the logs.</p>
-	<blockquote>
-		<p><strong>[THU Checkin]</strong> Success: 2023-02-24 20:42:23<br />
-			Checkin: Success<br />
-			Apply: Success</p>
-	</blockquote>
-	<blockquote>
-		<p><strong>[THU Checkin]</strong> ❌ <strong>Error</strong>: 2023-02-25 20:05:46<br />
-			AttributeError: ‘NoneType’ object has no attribute ‘group’<br />
-			On <code class="language-plaintext highlighter-rouge">checkin.py</code> line 67</p>
-	</blockquote>
-	<h2 id="image">Uploading images</h2>
-	<p>Sometime later, our school began to demand regular uploads of our <a href="https://en.wikipedia.org/wiki/Health_Code">health QR code</a>. The QR code is generated by a govermental mobile app whose retrieval is, unfortunately, difficult to automate. Before stepping over the line of producing fake QR codes, I decided to take the screenshots manually and have my script upload them to the reporting platform. The good news is, there’s no measures on the platform to validate the uploaded images, so uploading an outdated screenshot yields no consequences most of the time, and I don’t have to constantly update the screenshots for the script.</p>
-	<p>Image uploading is nothing new to the <code class="language-plaintext highlighter-rouge">requests</code> Python library, but I have to deliver the files from my phone somehow. Options to transfer files from an Android phone to a Linux server are abundant, and for me I found SMB the most convenient. <a href="https://play.google.com/store/apps/details?id=com.speedsoftware.rootexplorer">Root Explorer</a> is the file manager that I’ve been using for a decade, so I could just set up Samba on my server to receive the files from it.</p>
-	<blockquote>
-		<p><strong>[THU Checkin]</strong> Success: 2023-02-25 08:33:36<br />
-			Checkin: Success<br />
-			Apply: Success<br />
-			Image 1: Skipped<br />
-			Image 2: Success<br />
-			Image 3: Success</p>
-	</blockquote>
-	<p><img src="/image/server/checkin-3.png" alt="Third step" /></p>
-	<p>Alternatively, I could have my Telegram bot accept the images and forward them to the server. This would be more convenient in terms of using, but much less in coding as I didn’t have any existing code in my Telegram bot that handles images. Meanwhile, I already had Samba running on my server so I in fact did not set it up anew.</p>
-	<h2 id="security">Securing the server</h2>
-	<p>At this point everything is operational, with one detail missing: The SMB protocol is not known for being secure. Exposing the SMB port to the Internet is prone to troubles and connecting to a VPN every time is not convenient. Luckily I have Clash for Android running on my phone 24/7 that I can use to proxy Root Explorer. I set up a shadowsocks-libev server and configured Clash to route traffic targeting my server through it, and then closed the SMB port in my server firewall.</p>
-	<p>There’s a noteworthy thing about Clash: It’s a rule-based proxy software that reads configurations. My airport<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> service provides their configuration through a subscription URL, but Clash for Android doesn’t support editing subscribed config. Another background story comes up here: I have another Lambda function serving as my own Clash config subscription. It fetches the airport config and modifies it to my preferences, and then serves it to Clash. It also makes updating the config easier, as I can just update the Lambda function code and the changes will be reflected in Clash.</p>
-	<p>Fun fact: My custom subscription is also used with Clash for Windows on my computer, which helped me completely bypass two RCE vulnerabilities (<a href="https://github.com/Fndroid/clash_for_windows_pkg/issues/2710">1</a>, <a href="https://github.com/advisories/GHSA-rq24-vhfq-6v9x">2</a>).</p>
-	<h2 id="conclusion">Conclusion</h2>
-	<p>After all this complexity, here’s what I’ve got:</p>
-	<p><img src="/image/server/checkin-infra.png" alt="Final state" /></p>
-	<p>The script runs every day at a random time in a configured time span, and I get a notification on Telegram regardless of whether it succeeds or fails. If the script fails I also have the required information to look into it. The script also uploads the health QR code screenshots to the reporting platform, and I can update the images from my phone through a secured connection.</p>
-	<p>Of all these tasks, only taking the screenshots and uploading them to the server is manual, denoted in the image by blue arrows. All black arrows are automated and require no attention to function.</p>
-	<p>As the zero-COVID policy <a href="https://en.wikipedia.org/wiki/Chinese_government_response_to_COVID-19#2022_outbreaks_and_end_of_zero-COVID_policy">came crumbling down</a> in December 2022, our school also put an end to the daily health reporting system. As a result, I can safely share my setup here without fearing repercussions. I hope this article brings you some inspiration for your next automation project.</p>
-	<div class="notice--primary">
-		<h4 class="no_toc" id="anecdote">Anecdote</h4>
-		<p>During the days around the strictest lockdown of campuses, all students’ requests for outgoing were manually reviewed by two levels of authority, with the second level being the dean. Our department consists of over 2,000 students that kept submitting requests every day. Needless to say, many staff weren’t happy about this, and the dean in particular. We were once asked to stop phoning her as she was already processing the requests from 7 AM to 11 PM every day. To everyone’s relief, the reviewing process was cancelled in a few days and requests were automatically approved thereafter.</p>
-	</div>
-	<div class="footnotes" role="doc-endnotes">
-		<ol>
-			<li id="fn:1" role="doc-endnote">
-				<p>Shadowsocks service providers are commonly called “airports” because the icon of Shadowsocks is a paper plane, and every provider has multiple “plane servers” that you can use. <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-			</li>
-		</ol>
-	</div>
-	]]></content><author><name>iBug</name></author><category term="tech" /><category term="server" /><category term="networking" /><category term="development" /><summary type="html"><![CDATA[Back in the days when the Zero COVID policy was prevailing, our university introduced a Daily Health Report system. Students and faculty were mandated to submit a daily online form detailing their health status. Noncompliance resulted in denied campus access, and in more stringent times, forced quarantine. Thanks to the comprehensive lockdown of campuses, our activity were strictly confined. Consequently, our daily data submission were pratically invariant. It’s a colossal waste of effort to do it manually (with some anecdotes later on), so I opted to automate the process.]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><category term="proxmox-ve" /><summary type="html"><![CDATA[Since my blog on installing Proxmox VE on eMMC, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, as eMMCs typically do not offer the level of endurance as anything better than USB flash drives. Among many concerns, the most important one is the limited number of write cycles that an eMMC can sustain, while Proxmox VE, being an enterprise-grade product, has to constantly write stuff like logs to the storage. I came across this blog (fat-nerds.com) on reducing eMMC writes on a Proxmox VE installation on a single-board computer from a Hong Kong guy, so I figure I’d share my ideas here.]]></summary></entry></feed>

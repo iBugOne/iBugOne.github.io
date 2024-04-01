@@ -40,7 +40,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=3d7896d">
+		<link rel="stylesheet" href="/assets/css/main.css?v=efaaa27">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -162,6 +162,31 @@
 				<div class="archive">
 					<h3 class="archive__subtitle">Recent posts</h3>
 					<div class="entries-list">
+						<div class="list__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/ldap.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-clock" aria-hidden="true"></i>
+											14 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
 						<div class="list__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<div class="archive__item-teaser">
@@ -336,28 +361,6 @@
 								</div>
 							</article>
 						</div>
-						<div class="list__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2021/02/github-webhook-on-aws-lambda/" rel="permalink">Setting up a GitHub webhook on AWS Lambda
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">Last month I set up my own Telegram bot for GitHub event notification. To receive GitHub events via webhook, a receiver is needed. True, it isn’t hard to write a Flask or Sinatra server and throw t...</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2021-02-19T00:00:00+00:00">Feb 19, 2021</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-clock" aria-hidden="true"></i>
-											7 minute read
-										</span>
-									</p>
-								</div>
-							</article>
-						</div>
 					</div>
 					<nav class="pagination">
 						<ul>
@@ -398,7 +401,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-854</a>
+						Site version <a href="/status" class="version-text">G-855</a>
 					</p>
 				</div>
 			</footer>
