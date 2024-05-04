@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=35d3065">
+		<link rel="stylesheet" href="/assets/css/main.css?v=aa6b8cb">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -173,13 +173,13 @@
 						</ul>
 					</nav>
 				</div>
-				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+				<article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
 					<meta itemprop="headline" content="Raspberry Pi 4 B Review and Benchmark - What’s improved over Pi 3 B+">
 					<meta itemprop="description" content="Lately I’ve finally received my Raspberry Pi 4 (4 GB model), and I couldn’t resist the temptation to give it a try and see all the improvements that’s been reported for months.">
 					<meta itemprop="datePublished" content="2019-09-10T00:00:00+00:00">
 					<meta itemprop="dateModified" content="2022-05-01T00:28:33+00:00">
 					<div class="page__inner-wrap">
-						<section class="page__content" itemprop="text">
+						<section class="page__content e-content" itemprop="text">
 							<aside class="sidebar__right sticky">
 								<nav class="toc">
 									<header>
@@ -210,7 +210,7 @@
 									</ul>
 								</nav>
 							</aside>
-							<p>Lately I’ve finally received my Raspberry Pi 4 (4&nbsp;GB model), and I couldn’t resist the temptation to give it a try and see all the improvements that’s been reported for months.</p>
+							<p>Lately I’ve finally received my Raspberry Pi 4 (4 GB model), and I couldn’t resist the temptation to give it a try and see all the improvements that’s been reported for months.</p>
 							<p>As I’ve got one with my Pi 3 B+, I also ordered an aluminum “case” that can ease the ache of heating. One major difference is that the new cooling case is armed with two little fans, which is a rather huge boost in speed of heat dissipation.</p>
 							<p>So let’s take a look at the new Pi 4.</p>
 							<h2 id="overview">Overview</h2>
@@ -244,7 +244,7 @@
 							<p>It’s an exciting news that the new Pi 4 brings a wire range of solid and concrete upgrades, namely</p>
 							<ul>
 								<li>Broadcom BCM2711 SoC, quad-core Cortex-A72 CPU @ 1.5 GHz</li>
-								<li>Comes in variations of 1&nbsp;GB, 2&nbsp;GB and <strong>4&nbsp;GB RAM</strong> (reviewed)</li>
+								<li>Comes in variations of 1 GB, 2 GB and <strong>4 GB RAM</strong> (reviewed)</li>
 								<li>Broadcom VideoCore VI GPU</li>
 								<li>True Gigabit ethernet port</li>
 								<li>Bluetooth 5.0</li>
@@ -274,8 +274,8 @@
 									</tr>
 									<tr>
 										<td>RAM</td>
-										<td style="text-align: center">1&nbsp;GB DDR2</td>
-										<td style="text-align: center">1&nbsp;GB DDR2</td>
+										<td style="text-align: center">1 GB DDR2</td>
+										<td style="text-align: center">1 GB DDR2</td>
 										<td style="text-align: center">1 / 2 / <strong>4</strong> GB DDR4</td>
 									</tr>
 									<tr>
@@ -355,10 +355,10 @@ sysbench <span class="nt">--test</span><span class="o">=</span>memory <span clas
 								</div>
 							</div>
 							<p><img src="/image/rpi4/chart/sysbench-memory.png" alt="SysBench memory test result chart" /></p>
-							<p>It’s very surprising to see the new DDR4 performs worse than the decades-old DDR2 memory, and even astonishing to see that multithreading makes the gap bigger. The only thing reasonable to me is that when a single block goes to 1&nbsp;MiB, the Pi 4 outperforms the Pi 3 B+ slightly.</p>
-							<p>There’s one interesting thing, though, that why I didn’t include a “1&nbsp;MiB Read MT” column. SysBench reported a read speed of over 200&nbsp;GB/s on both boards, and the results can sometimes go up to 500&nbsp;GB/s, which is ridiculous to be taken seriously, so I just dropped that result.</p>
+							<p>It’s very surprising to see the new DDR4 performs worse than the decades-old DDR2 memory, and even astonishing to see that multithreading makes the gap bigger. The only thing reasonable to me is that when a single block goes to 1 MiB, the Pi 4 outperforms the Pi 3 B+ slightly.</p>
+							<p>There’s one interesting thing, though, that why I didn’t include a “1 MiB Read MT” column. SysBench reported a read speed of over 200 GB/s on both boards, and the results can sometimes go up to 500 GB/s, which is ridiculous to be taken seriously, so I just dropped that result.</p>
 							<h3 id="3-fio-microsd-card-speed-test">3. FIO microSD card speed test</h3>
-							<p>This test may depend on the microSD card, so I took out my (known) fastest cards for the Pis, the Lexar 667x 128&nbsp;GB microSD card, which looks like below:</p>
+							<p>This test may depend on the microSD card, so I took out my (known) fastest cards for the Pis, the Lexar 667x 128 GB microSD card, which looks like below:</p>
 							<center>
 								<img src="/image/rpi4/microsd-card.jpg" alt="The microSD card" width="30%" />
 							</center>
@@ -391,7 +391,7 @@ sysbench <span class="nt">--test</span><span class="o">=</span>memory <span clas
 							<p><img src="/image/rpi4/chart/p7zip.png" alt="p7zip benchmark result chart" /></p>
 							<p>As <a href="https://sevenzip.osdn.jp/chm/cmdline/commands/bench.htm">the help article</a> says, compression depends more on the throughput and latency of memory, which is likely the reason that the gap between the two Pis is bigger in compression test. After all, there’s a boost of 1/3 in the p7zip test.</p>
 							<h3 id="5-openssl-speed-test">5. OpenSSL speed test</h3>
-							<p>OpenSSL is the most prevalent crypto library, and it also has built-in speed test as well. The result is the fastest speed among all block sizes, which is always 16,384&nbsp;bytes in all 4 tests.</p>
+							<p>OpenSSL is the most prevalent crypto library, and it also has built-in speed test as well. The result is the fastest speed among all block sizes, which is always 16,384 bytes in all 4 tests.</p>
 							<div class="language-shell highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code>openssl speed <span class="nt">-evp</span> aes-256-cbc
@@ -439,9 +439,9 @@ siege <span class="nt">-c</span> 25 <span class="nt">-r</span> 400 <span class="
 							<p>The Ruby test is simpler: Using Jekyll to build this site and see the time taken.</p>
 							<p><img src="/image/rpi4/chart/python-ruby.png" alt="Application test result chart" /></p>
 							<p>The Ruby test is more balanced than the Python test, which is pure computational performance. As a result, the performance gap is smaller in the Ruby test.</p>
-							<p>Wait, that doesn’t mean the Pi 4 would be a good platform for your bigger Python or Ruby project. The same tests run <strong>10x faster</strong> on my x86 Linux box (i7-8850H, 32&nbsp;GB DDR4, NVMe SSD), running the Python script in 5 seconds and building my Jekyll site in 4 seconds. Well, you can’t expect a beefy computer from only a board costing $55, n’est-ce pas?</p>
+							<p>Wait, that doesn’t mean the Pi 4 would be a good platform for your bigger Python or Ruby project. The same tests run <strong>10x faster</strong> on my x86 Linux box (i7-8850H, 32 GB DDR4, NVMe SSD), running the Python script in 5 seconds and building my Jekyll site in 4 seconds. Well, you can’t expect a beefy computer from only a board costing $55, n’est-ce pas?</p>
 							<h3 id="8-usb-io-performance">8. USB I/O performance</h3>
-							<p>I took out my USB 3.1 SSD (assembled with a LiteOn L9M 512&nbsp;GB and an enclosure case with VL716 SATA-to-USB adapter chip). However, as soon as I plug the SSD into either Pi, it powers down immediately. This later turns out to be the issue with power supply (GPIO pins can’t pass enough power), so I came back the day after and started the Pis with power supply from the Micro USB / Type-C port. This time the Pi 3 B+ works correctly and ran through the <code class="language-plaintext highlighter-rouge">fio</code> test. The Pi 4, however, drops the SSD during the test due to power supply, <em>again</em>. I ended up powering the Pi through <strong>both</strong> Type-C and GPIO only to allow it to run the test on the SSD without power failure.</p>
+							<p>I took out my USB 3.1 SSD (assembled with a LiteOn L9M 512 GB and an enclosure case with VL716 SATA-to-USB adapter chip). However, as soon as I plug the SSD into either Pi, it powers down immediately. This later turns out to be the issue with power supply (GPIO pins can’t pass enough power), so I came back the day after and started the Pis with power supply from the Micro USB / Type-C port. This time the Pi 3 B+ works correctly and ran through the <code class="language-plaintext highlighter-rouge">fio</code> test. The Pi 4, however, drops the SSD during the test due to power supply, <em>again</em>. I ended up powering the Pi through <strong>both</strong> Type-C and GPIO only to allow it to run the test on the SSD without power failure.</p>
 							<p>The power is a real issue this time, but putting it aside, let’s look at the results:</p>
 							<div class="language-shell highlighter-rouge">
 								<div class="highlight">
@@ -614,7 +614,7 @@ siege <span class="nt">-c</span> 25 <span class="nt">-r</span> 400 <span class="
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-861</a>
+						Site version <a href="/status" class="version-text">G-862</a>
 					</p>
 				</div>
 			</footer>

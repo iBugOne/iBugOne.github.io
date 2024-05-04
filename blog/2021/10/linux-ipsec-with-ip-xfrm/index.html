@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=35d3065">
+		<link rel="stylesheet" href="/assets/css/main.css?v=aa6b8cb">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -171,13 +171,13 @@
 						</ul>
 					</nav>
 				</div>
-				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+				<article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
 					<meta itemprop="headline" content="Secure site-to-site connection with Linux IPsec VPN">
 					<meta itemprop="description" content="Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections. As an innovative attempt to a lab in this semester’s Network Security course, which was designed to work over multiple Windows Server 2003 virtual machines (VM), I decided to go on my own and proceed with Linux VMs.">
 					<meta itemprop="datePublished" content="2021-10-23T00:00:00+00:00">
 					<meta itemprop="dateModified" content="2022-06-22T02:38:04+00:00">
 					<div class="page__inner-wrap">
-						<section class="page__content" itemprop="text">
+						<section class="page__content e-content" itemprop="text">
 							<aside class="sidebar__right sticky">
 								<nav class="toc">
 									<header>
@@ -323,7 +323,7 @@ iface vmbr96 inet manual
 							</table>
 							<p>Also I’m more comfortable with newer software, so I go with the Debian 11 template provided by Proxmox.</p>
 							<p><img src="/image/linux/ipsec/create-ct-template.png" alt="Select template"></p>
-							<p>The rest of the settings aren’t of much interest, and the default settings should suffice. On a side note, 2 GB is more than abundant for Root Disk because I need virtually no extra software to work on this lab.</p>
+							<p>The rest of the settings aren’t of much interest, and the default settings should suffice. On a side note, 2 GB is more than abundant for Root Disk because I need virtually no extra software to work on this lab.</p>
 							<p><img src="/image/linux/ipsec/create-ct-confirm.png" alt="CT configuration"></p>
 							<p>Don’t start the container right now, because there’s another network interface to be added. I head to the page to add <code class="language-plaintext highlighter-rouge">eth6</code> for the router, connecting to <code class="language-plaintext highlighter-rouge">vmbr96</code> as illustrated in the graph.</p>
 							<p><img src="/image/linux/ipsec/router-add-network.png" alt="Add network interface to Router"></p>
@@ -726,7 +726,7 @@ ip xfrm policy add <span class="se">\</span>
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-861</a>
+						Site version <a href="/status" class="version-text">G-862</a>
 					</p>
 				</div>
 			</footer>

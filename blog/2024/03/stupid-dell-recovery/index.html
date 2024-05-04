@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=35d3065">
+		<link rel="stylesheet" href="/assets/css/main.css?v=aa6b8cb">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -173,13 +173,13 @@
 						</ul>
 					</nav>
 				</div>
-				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+				<article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
 					<meta itemprop="headline" content="I almost broke our lab’s storage server…">
 					<meta itemprop="description" content="Recently we discovered that both SSDs on our storage server were giving worrisome SMART values, so we started replacing them.One of them was used only for ZFS L2ARC, so pulling it out was easy.The other runs the rootfs and we couldn’t touch it for the time being, so we inserted a backup drive thinking we can migrate the OS later on.">
 					<meta itemprop="datePublished" content="2024-03-13T00:00:00+00:00">
 					<meta itemprop="dateModified" content="2024-03-27T18:34:21+00:00">
 					<div class="page__inner-wrap">
-						<section class="page__content" itemprop="text">
+						<section class="page__content e-content" itemprop="text">
 							<p>Recently we discovered that both SSDs on our storage server were giving worrisome SMART values, so we started replacing them.
 								One of them was used only for ZFS L2ARC, so pulling it out was easy.
 								The other runs the rootfs and we couldn’t touch it for the time being, so we inserted a backup drive thinking we can migrate the OS later on.</p>
@@ -187,7 +187,7 @@
 								The initial steps are nothing but ordinary:</p>
 							<ul>
 								<li>Examine the spare drive to ensure there’s no important data on it, then wipe it (<code class="language-plaintext highlighter-rouge">blkdiscard -f /dev/sdb</code>).</li>
-								<li>Create the partition table that closely resembles the current system drive’s layout: 100&nbsp;MB for the EFI partition (down from 512&nbsp;MB), 32&nbsp;GB for rootfs, and the rest for an LVM PV.</li>
+								<li>Create the partition table that closely resembles the current system drive’s layout: 100 MB for the EFI partition (down from 512 MB), 32 GB for rootfs, and the rest for an LVM PV.</li>
 								<li>Format the partitions: <code class="language-plaintext highlighter-rouge">mkfs.vfat /dev/sdb1</code>, <code class="language-plaintext highlighter-rouge">mkfs.ext4 /dev/sdb2</code>, <code class="language-plaintext highlighter-rouge">pvcreate /dev/sdb3</code>.</li>
 								<li>Copy the rootfs over: <code class="language-plaintext highlighter-rouge">mount /dev/sdb2 /t</code>, <code class="language-plaintext highlighter-rouge">rsync -aHAXx / /t</code>.</li>
 								<li>Reinstall the bootloader: <code class="language-plaintext highlighter-rouge">mount /dev/sdb1 /t/boot/efi</code>, <code class="language-plaintext highlighter-rouge">arch-chroot /t</code>, <code class="language-plaintext highlighter-rouge">grub-install</code> (target is <code class="language-plaintext highlighter-rouge">x86_64-efi</code>), <code class="language-plaintext highlighter-rouge">update-grub</code>.</li>
@@ -416,7 +416,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-861</a>
+						Site version <a href="/status" class="version-text">G-862</a>
 					</p>
 				</div>
 			</footer>

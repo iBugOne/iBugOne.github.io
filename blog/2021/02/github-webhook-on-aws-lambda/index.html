@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=35d3065">
+		<link rel="stylesheet" href="/assets/css/main.css?v=aa6b8cb">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -173,13 +173,13 @@
 						</ul>
 					</nav>
 				</div>
-				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+				<article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
 					<meta itemprop="headline" content="Setting up a GitHub webhook on AWS Lambda">
 					<meta itemprop="description" content="Last month I set up my own Telegram bot for GitHub event notification. To receive GitHub events via webhook, a receiver is needed. True, it isn’t hard to write a Flask or Sinatra server and throw the whole thing onto a VPS, but thinking about the complexity and maintenance efforts, serverless platforms like AWS Lambda smells like a better fit. So I decided to take this opportunity to begin my exploration to “the serverless industry”.">
 					<meta itemprop="datePublished" content="2021-02-19T00:00:00+00:00">
 					<meta itemprop="dateModified" content="2023-03-18T14:12:53+00:00">
 					<div class="page__inner-wrap">
-						<section class="page__content" itemprop="text">
+						<section class="page__content e-content" itemprop="text">
 							<aside class="sidebar__right sticky">
 								<nav class="toc">
 									<header>
@@ -407,8 +407,8 @@
 							<p>Now our GitHub webhook receiver will start with <code class="language-plaintext highlighter-rouge">https://api.example.com/github</code>, and our “API test” endpoint will be <code class="language-plaintext highlighter-rouge">https://api.example.com/github/api-test</code>.</p>
 							<p>You may need to configure AWS Certificate Manager to obtain a valid SSL certificate for use on AWS, so that your API is accessible through HTTPS, depending on your domain settings. With Cloudflare this is unnecessary and you can safely ignore it.</p>
 							<h2 id="others">Other notes</h2>
-							<p>AWS Lambda provides 400,000&nbsp;GB-seconds of execution for free each month, and this Free Tier does not expire. However, AWS API Gateway doesn’t have a perpetual Free Tier offer, and their standard pricing is US$1 per 1M API calls. The cost on this part is generally low unless you’re making a public service (that becomes popular).</p>
-							<p>Besides, AWS provides 1&nbsp;GB of free outbound traffic each month, and bills you at US$0.09 per GB thereafter. This means you’ll need to be careful when generating a lot of traffic, like frequently uploading large images.</p>
+							<p>AWS Lambda provides 400,000 GB-seconds of execution for free each month, and this Free Tier does not expire. However, AWS API Gateway doesn’t have a perpetual Free Tier offer, and their standard pricing is US$1 per 1M API calls. The cost on this part is generally low unless you’re making a public service (that becomes popular).</p>
+							<p>Besides, AWS provides 1 GB of free outbound traffic each month, and bills you at US$0.09 per GB thereafter. This means you’ll need to be careful when generating a lot of traffic, like frequently uploading large images.</p>
 							<p>All pricing examples are based on US East 1 (N. Virginia) region. Other regions are generally more expensive than this, so watch your bills if you make something big.</p>
 						</section>
 						<footer class="page__meta">
@@ -572,7 +572,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-861</a>
+						Site version <a href="/status" class="version-text">G-862</a>
 					</p>
 				</div>
 			</footer>

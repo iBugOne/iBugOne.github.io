@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=35d3065">
+		<link rel="stylesheet" href="/assets/css/main.css?v=aa6b8cb">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -175,13 +175,13 @@
 						</ul>
 					</nav>
 				</div>
-				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+				<article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
 					<meta itemprop="headline" content="Build a minimal Linux system and run it in QEMU">
 					<meta itemprop="description" content="Linux is the #1 open-source operating system nowadays, and many people are running a Linux distro, such as Ubuntu or Arch. Linux is also the most popular choice for a server OS.">
 					<meta itemprop="datePublished" content="2019-04-07T00:00:00+00:00">
 					<meta itemprop="dateModified" content="2022-04-30T20:00:10+00:00">
 					<div class="page__inner-wrap">
-						<section class="page__content" itemprop="text">
+						<section class="page__content e-content" itemprop="text">
 							<aside class="sidebar__right sticky">
 								<nav class="toc">
 									<header>
@@ -302,7 +302,7 @@ undefined reference to `__mutex_unlock_slowpath'
 </code></pre>
 								</div>
 							</div>
-							<p>Now you have the init program. You need to prepare the filesystem. The following commands will create an empty 4&nbsp;MB image and mount it at <code class="language-plaintext highlighter-rouge">rootfs</code>.</p>
+							<p>Now you have the init program. You need to prepare the filesystem. The following commands will create an empty 4 MB image and mount it at <code class="language-plaintext highlighter-rouge">rootfs</code>.</p>
 							<div class="language-shell highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code><span class="nb">dd </span><span class="k">if</span><span class="o">=</span>/dev/zero <span class="nv">of</span><span class="o">=</span>myinitrd.img <span class="nv">bs</span><span class="o">=</span>4M <span class="nv">count</span><span class="o">=</span>1
@@ -568,7 +568,7 @@ mount <span class="nt">-t</span> tmpfs none /tmp
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-861</a>
+						Site version <a href="/status" class="version-text">G-862</a>
 					</p>
 				</div>
 			</footer>
