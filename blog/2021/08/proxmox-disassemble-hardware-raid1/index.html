@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=aa6b8cb">
+		<link rel="stylesheet" href="/assets/css/main.css?v=755badb">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -200,10 +200,10 @@
 							<p>Yesterday in a server maintenance period, we decided to tune the storage layout of our Proxmox VE server, which included disassembling a RAID 1 array and adjusting the size of the root filesystem.</p>
 							<h2 id="backup-data">Backup data</h2>
 							<p class="notice--danger">As is always, potentially destructive disk operations should be preceded with a backup of anything necessary for recovery.</p>
-							<p>Proxmox VE uses a kind of “standard” partition layout, with the first 512 MB of the primary disk allocated for the EFI System Partition (ESP), and the rest forming an LVM physical volume (PV), which then becomes a volume group (VG) named <code class="language-plaintext highlighter-rouge">pve</code>. In the <code class="language-plaintext highlighter-rouge">pve</code> VG, a fifth of total available space is allocated to the root filesystem for the Proxmox VE system, and the rest goes to a thin pool named <code class="language-plaintext highlighter-rouge">data</code>.</p>
+							<p>Proxmox VE uses a kind of “standard” partition layout, with the first 512&nbsp;MB of the primary disk allocated for the EFI System Partition (ESP), and the rest forming an LVM physical volume (PV), which then becomes a volume group (VG) named <code class="language-plaintext highlighter-rouge">pve</code>. In the <code class="language-plaintext highlighter-rouge">pve</code> VG, a fifth of total available space is allocated to the root filesystem for the Proxmox VE system, and the rest goes to a thin pool named <code class="language-plaintext highlighter-rouge">data</code>.</p>
 							<p>The initial disk layout on our server is like this:</p>
 							<p><img src="/image/proxmox-raid1/initial-fdisk.png" alt="Initial disk layout" /></p>
-							<p>The system is booted with UEFI, so the first partition can be safely ignored. The second partition is the ESP and contains no critical data, as it can be rebuilt when needed. The only thing left for backup is the rootfs since we haven’t made use of the <code class="language-plaintext highlighter-rouge">data</code> volume. A good news is that the rootfs only has less then 3.5 GB of content (we have separate storages for the system and our virtual machines), so backing up is as easy as allocating a 4 GB volume on our data storage and copying the whole rootfs over with <a href="https://www.samba.org/rsync/">Rsync</a>:</p>
+							<p>The system is booted with UEFI, so the first partition can be safely ignored. The second partition is the ESP and contains no critical data, as it can be rebuilt when needed. The only thing left for backup is the rootfs since we haven’t made use of the <code class="language-plaintext highlighter-rouge">data</code> volume. A good news is that the rootfs only has less then 3.5&nbsp;GB of content (we have separate storages for the system and our virtual machines), so backing up is as easy as allocating a 4&nbsp;GB volume on our data storage and copying the whole rootfs over with <a href="https://www.samba.org/rsync/">Rsync</a>:</p>
 							<div class="language-shell highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code>rsync <span class="nt">-aHAXx</span> / /mnt/backup/
@@ -244,7 +244,7 @@
 							<p><img src="/image/proxmox-raid1/restored-fdisk.png" alt="Restored disk layout" /></p>
 							<p class="notice--info"><code class="language-plaintext highlighter-rouge">partprobe</code> doesn’t come with Debian Bullseye live CD (it did with Debian Buster). To get the command I installed <code class="language-plaintext highlighter-rouge">parted</code> package.</p>
 							<h2 id="shrink-rootfs">Shrinking the root filesystem</h2>
-							<p>It’s a complete waste to give the rootfs a whopping 96 GB when we only use some 3.5 GB, so I go to shrink it down to 16 GB.</p>
+							<p>It’s a complete waste to give the rootfs a whopping 96&nbsp;GB when we only use some 3.5&nbsp;GB, so I go to shrink it down to 16&nbsp;GB.</p>
 							<p>Before shrinking the volume, it’s necessary to shrink the <em>filesystem</em> first. Yes, a “partition” and a “filesystem” are two different concepts.</p>
 							<p>The rootfs of Proxmox VE resides in LVM, so the first thing is to get LVM tools up and running. I tried <code class="language-plaintext highlighter-rouge">apt install lvm2</code>, and was (a bit) surprised to found that it came with Debian Bullseye Live CD.</p>
 							<p>I get back the VG <code class="language-plaintext highlighter-rouge">pve</code> by <code class="language-plaintext highlighter-rouge">vgscan</code>, and make all LVs available for operation by <code class="language-plaintext highlighter-rouge">vgchange -ay pve</code>. I can then mount <code class="language-plaintext highlighter-rouge">/dev/pve/root</code> somewhere and check the volume usage with <code class="language-plaintext highlighter-rouge">df -h</code>. Just around 4 gigs, we’re good.</p>
@@ -472,7 +472,7 @@ mount <span class="nt">-t</span> sysfs _ /sys
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-862</a>
+						Site version <a href="/status" class="version-text">G-863</a>
 					</p>
 				</div>
 			</footer>

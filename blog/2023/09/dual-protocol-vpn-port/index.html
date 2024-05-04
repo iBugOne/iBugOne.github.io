@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=aa6b8cb">
+		<link rel="stylesheet" href="/assets/css/main.css?v=755badb">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -242,11 +242,11 @@ COMMIT
 							<p>With both OpenVPN and WireGuard running on their standard ports, this will redirect each protocol to its respective service port. While these rules only operate on the initial packet, Linux conntrack will handle the rest of the connection.</p>
 							<p>The <code class="language-plaintext highlighter-rouge">u32</code> match is explained:</p>
 							<ul>
-								<li>Basic syntax: <code class="language-plaintext highlighter-rouge">&lt;offset&gt; [operators...] = &lt;range&gt;</code>, where <code class="language-plaintext highlighter-rouge">&lt;offset&gt;</code> is relative to the IP header. For UDP over IPv4, the application payload starts from 28 (20 bytes of IPv4 and 8 bytes of UDP)</li>
+								<li>Basic syntax: <code class="language-plaintext highlighter-rouge">&lt;offset&gt; [operators...] = &lt;range&gt;</code>, where <code class="language-plaintext highlighter-rouge">&lt;offset&gt;</code> is relative to the IP header. For UDP over IPv4, the application payload starts from 28 (20&nbsp;bytes of IPv4 and 8&nbsp;bytes of UDP)</li>
 								<li><code class="language-plaintext highlighter-rouge">25 &amp; 0xFF = 1:4</code>: The 28th byte is in range <code class="language-plaintext highlighter-rouge">1:4</code>.</li>
 								<li><code class="language-plaintext highlighter-rouge">28 &amp; 0xFFFFFF = 0</code>: The 29th to 31th bytes are all zero.</li>
 							</ul>
-							<p>For IPv6, you just need to increase the offset by 20 (IPv6 header is 40 bytes), so the rule becomes <code class="language-plaintext highlighter-rouge">45 &amp; 0xFF = 1:4 &amp;&amp; 48 &amp; 0xFFFFFF = 0</code>.</p>
+							<p>For IPv6, you just need to increase the offset by 20 (IPv6 header is 40&nbsp;bytes), so the rule becomes <code class="language-plaintext highlighter-rouge">45 &amp; 0xFF = 1:4 &amp;&amp; 48 &amp; 0xFFFFFF = 0</code>.</p>
 							<p>This VPN server is running like a hearse so proofs are left out for brevity.</p>
 						</section>
 						<footer class="page__meta">
@@ -407,7 +407,7 @@ COMMIT
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-862</a>
+						Site version <a href="/status" class="version-text">G-863</a>
 					</p>
 				</div>
 			</footer>

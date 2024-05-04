@@ -41,7 +41,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=aa6b8cb">
+		<link rel="stylesheet" href="/assets/css/main.css?v=755badb">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -211,7 +211,7 @@
 								<p>WARNING: The following settings should not be applied to valuable production servers! This is just a method for the author to force Proxmox VE onto cheap hardware and to prolong its life span.</p>
 							</blockquote>
 							<h2 id="swap">Disable swap</h2>
-							<p>Swap is the mechanism of offloading some memory from physical RAM to disk in order to improve RAM management efficiency. If you have a lot of physical RAM, chances are swap isn’t going to be much helpful while producing a lot of writes to the disk. On a default Proxmox VE installation, the swap size is set from 4 GB to 8 GB, depending on your RAM capacity and disk size.</p>
+							<p>Swap is the mechanism of offloading some memory from physical RAM to disk in order to improve RAM management efficiency. If you have a lot of physical RAM, chances are swap isn’t going to be much helpful while producing a lot of writes to the disk. On a default Proxmox VE installation, the swap size is set from 4&nbsp;GB to 8&nbsp;GB, depending on your RAM capacity and disk size.</p>
 							<p>You can temporarily disable swap by setting sysctl <code class="language-plaintext highlighter-rouge">vm.swappiness</code> to 0:</p>
 							<div class="language-shell highlighter-rouge">
 								<div class="highlight">
@@ -260,7 +260,7 @@ systemctl start rsyslog
 							</ul>
 							<h3 id="disable-logs">Or disable logs altogether</h3>
 							<p>On a hobbyist setup, you may be fine with disabling logs altogether.</p>
-							<p>The original blog suggests replacing a few file with symlinks to <code class="language-plaintext highlighter-rouge">/dev/null</code>, which I find rather incomplete and ineffective. On my 5-GB-used rootfs, <code class="language-plaintext highlighter-rouge">/var/log</code> takes 1.8 GB, of which <code class="language-plaintext highlighter-rouge">/var/log/journal</code> eats 1.6 GB alone, so systemd journal is the first thing to go. Editing <code class="language-plaintext highlighter-rouge">/etc/systemd/journald.conf</code> and setting <code class="language-plaintext highlighter-rouge">Storage=none</code> will stop its disk hogging, but better yet, you can keep a minimal amount of logs by combining <code class="language-plaintext highlighter-rouge">Storage=volatile</code> and <code class="language-plaintext highlighter-rouge">RuntimeMaxUse=16M</code> (<a href="https://unix.stackexchange.com/a/705057/211239">ref</a>).</p>
+							<p>The original blog suggests replacing a few file with symlinks to <code class="language-plaintext highlighter-rouge">/dev/null</code>, which I find rather incomplete and ineffective. On my 5-GB-used rootfs, <code class="language-plaintext highlighter-rouge">/var/log</code> takes 1.8&nbsp;GB, of which <code class="language-plaintext highlighter-rouge">/var/log/journal</code> eats 1.6&nbsp;GB alone, so systemd journal is the first thing to go. Editing <code class="language-plaintext highlighter-rouge">/etc/systemd/journald.conf</code> and setting <code class="language-plaintext highlighter-rouge">Storage=none</code> will stop its disk hogging, but better yet, you can keep a minimal amount of logs by combining <code class="language-plaintext highlighter-rouge">Storage=volatile</code> and <code class="language-plaintext highlighter-rouge">RuntimeMaxUse=16M</code> (<a href="https://unix.stackexchange.com/a/705057/211239">ref</a>).</p>
 							<p>If you’re on Proxmox VE 8+, you can create an “override” file for systemd-journald by adding your customizations to <code class="language-plaintext highlighter-rouge">/etc/systemd/journald.conf.d/override.conf</code>. This will save some trouble when the stock configuration file gets updated and you’re asked to merge the changes.</p>
 							<p>For other logs, you can simply replace them with symlinks to <code class="language-plaintext highlighter-rouge">/dev/null</code>. For example:</p>
 							<div class="language-shell highlighter-rouge">
@@ -347,7 +347,7 @@ systemctl start rsyslog
 </code></pre>
 								</div>
 							</div>
-							<p>Result: 4.5 TB annually.</p>
+							<p>Result: 4.5&nbsp;TB annually.</p>
 							<h3 class="no_toc" id="server-2">Server 2</h3>
 							<p>Specs:</p>
 							<ul>
@@ -364,7 +364,7 @@ systemctl start rsyslog
 </code></pre>
 								</div>
 							</div>
-							<p>Result: 1.5 TB annually.</p>
+							<p>Result: 1.5&nbsp;TB annually.</p>
 							<h3 class="no_toc" id="server-3">Server 3</h3>
 							<p>Specs:</p>
 							<ul>
@@ -381,10 +381,10 @@ systemctl start rsyslog
 </code></pre>
 								</div>
 							</div>
-							<p><code class="language-plaintext highlighter-rouge">humanize.naturalsize(2849895751 * 512, format="%.2f")</code>: 1.46 TB (≈ 2 TB annually)</p>
+							<p><code class="language-plaintext highlighter-rouge">humanize.naturalsize(2849895751 * 512, format="%.2f")</code>: 1.46&nbsp;TB (≈ 2&nbsp;TB annually)</p>
 							<h3 class="no_toc" id="emmc-write-life">eMMC Write Life</h3>
-							<p>This one really depends on the hardware you get. In 2023 virtually every reasonable TLC flash chip should withstand at least 1,000 P/E cycles, so even a pathetic 8 GB eMMC should last around 10 TB of writes, <a href="https://forums.raspberrypi.com/viewtopic.php?t=291808">as that on a Raspberry Pi Compute Module 4</a>.</p>
-							<p>If you get anything larger than that, you should be fine expecting it to survive at least 20 TB of writes.</p>
+							<p>This one really depends on the hardware you get. In 2023 virtually every reasonable TLC flash chip should withstand at least 1,000 P/E cycles, so even a pathetic 8&nbsp;GB eMMC should last around 10&nbsp;TB of writes, <a href="https://forums.raspberrypi.com/viewtopic.php?t=291808">as that on a Raspberry Pi Compute Module 4</a>.</p>
+							<p>If you get anything larger than that, you should be fine expecting it to survive at least 20&nbsp;TB of writes.</p>
 							<h2 class="no_toc" id="real-conclusion">REAL Conclusion</h2>
 							<p>Congratulations on reading this far.</p>
 							<p>If you managed to hold your paranoia and refrain from putting anything into action, you can now sit back and relax. Unless you’re squeezing hundreds of VMs and containers into a single eMMC-driven board (poor board) without separate storage for VMs, your eMMC is not going to die anytime soon.</p>
@@ -550,7 +550,7 @@ systemctl start rsyslog
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-862</a>
+						Site version <a href="/status" class="version-text">G-863</a>
 					</p>
 				</div>
 			</footer>
