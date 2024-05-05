@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Minimal Mistakes Jekyll Theme 4.25.1 by Michael Rose
+  Minimal Mistakes Jekyll Theme 4.26.0 by Michael Rose
   Copyright 2013-2024 Michael Rose - mademistakes.com | @mmistakes
   Free for personal and commercial use under the MIT license
   https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
@@ -23,25 +23,16 @@
 		<meta property="article:published_time" content="2021-01-31T00:00:00+00:00">
 		<meta property="article:modified_time" content="2022-05-01T15:21:23+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2021/01/linux-container-explained/">
-		<script type="application/ld+json">
-			{
-			  "@context": "https://schema.org",
-
-			    "@type": "Person",
-			    "name": "iBug",
-			    "url": "https://ibug.io/"
-
-			}
-		</script>
 		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
 		<!-- end _includes/seo.html -->
 		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<script>
+		<script type="text/javascript">
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+			window.enable_copy_code_button = true;
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=fe82767">
+		<link rel="stylesheet" href="/assets/css/main.css?v=0dc47db">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -68,19 +59,39 @@
 						</a>
 						<ul class="visible-links">
 							<li class="masthead__menu-item">
-								<a href="/about/">About</a>
+								<a
+                href="/about/"
+                
+                
+              >About</a>
 							</li>
 							<li class="masthead__menu-item">
-								<a href="/blog/">Blog</a>
+								<a
+                href="/blog/"
+                
+                
+              >Blog</a>
 							</li>
 							<li class="masthead__menu-item">
-								<a href="/projects/">Projects</a>
+								<a
+                href="/projects/"
+                
+                
+              >Projects</a>
 							</li>
 							<li class="masthead__menu-item">
-								<a href="/friends/">Friends</a>
+								<a
+                href="/friends/"
+                
+                
+              >Friends</a>
 							</li>
 							<li class="masthead__menu-item">
-								<a href="/cn/">中文内容</a>
+								<a
+                href="/cn/"
+                
+                
+              >中文内容</a>
 							</li>
 						</ul>
 						<button class="search__toggle" type="button">
@@ -120,183 +131,184 @@
 					<p>
 						<a href="https://github.com/iBug/iSpawn" class="btn btn--light-outline btn--large"><i class='fab fa-github'></i> GitHub</a>
 						<a href="https://osh-2020.github.io/lab-4/" class="btn btn--light-outline btn--large"><i class='fas fa-file-alt'></i> 实验文档</a>
-					</div>
+					</p>
 				</div>
-				<div id="main" role="main">
-					<div class="sidebar sticky">
-						<div itemscope itemtype="https://schema.org/Person" class="h-card">
-							<div class="author__avatar">
-								<a href="https://ibug.io/">
-									<img src="/image/avatar.png" alt="iBug" itemprop="image" class="u-photo">
-								</a>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person" class="h-card">
+						<div class="author__avatar">
+							<a href="https://ibug.io/">
+								<img src="/image/avatar.png" alt="iBug" itemprop="image" class="u-photo">
+							</a>
+						</div>
+						<div class="author__content">
+							<h3 class="author__name p-name" itemprop="name">
+								<a class="u-url" rel="me" href="https://ibug.io/" itemprop="url">iBug</a>
+							</h3>
+							<div class="author__bio p-note" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
 							</div>
-							<div class="author__content">
-								<h3 class="author__name p-name" itemprop="name">
-									<a class="u-url" rel="me" href="https://ibug.io/" itemprop="url">iBug</a>
-								</h3>
-								<div class="author__bio p-note" itemprop="description">
-									<p>Developer, System Administrator, Geek</p>
-								</div>
-							</div>
-							<div class="author__urls-wrapper">
-								<button class="btn btn--inverse">Follow</button>
-								<ul class="author__urls social-icons">
-									<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer me"><i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span></a></li>
-									<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
-									<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
-									<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
-									<li><a href="https://t.me/iBugThought" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-telegram" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
-									<!--
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer me"><i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/iBugThought" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-telegram" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
   <li>
     <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer me">
       <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
     </a>
   </li>
 -->
-								</ul>
-							</div>
-						</div>
-						<nav class="nav__list">
-							<input id="ac-toc" name="accordion-toc" type="checkbox" />
-							<label for="ac-toc">Toggle menu</label>
-							<ul class="nav__items">
-								<li>
-									<span class="nav__sub-title">iBug on the Web</span>
-									<ul>
-										<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
-										<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
-										<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
-										<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
-										<li><a href="/open-source/"><i class="fas fa-fw fa-box-open"></i> Open Source</a></li>
-										<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
-										<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
-										<li><a href="/bookmarks/"><i class="fas fa-fw fa-bookmark"></i> Bookmarks</a></li>
-										<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
-										<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
-									</ul>
-								</li>
 							</ul>
-						</nav>
+						</div>
 					</div>
-					<article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
-						<meta itemprop="headline" content="A Deep Dive into Containers">
-						<meta itemprop="description" content="Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are without diving into all the gory details of them, so I decided to go on this exploration myself.">
-						<meta itemprop="datePublished" content="2021-01-31T00:00:00+00:00">
-						<meta itemprop="dateModified" content="2022-05-01T15:21:23+00:00">
-						<div class="page__inner-wrap">
-							<section class="page__content e-content" itemprop="text">
-								<aside class="sidebar__right sticky">
-									<nav class="toc">
-										<header>
-											<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
-										</header>
-										<ul class="toc__menu">
-											<li><a href="#experimenting">Experimenting with isolation</a>
-												<ul>
-													<li><a href="#rootfs">Preparing the root filesystem</a></li>
-													<li><a href="#chroot">Playing with chroot</a></li>
-													<li><a href="#systemd-nspawn">Playing with systemd-nspawn</a></li>
-												</ul>
-											</li>
-											<li><a href="#base-program">The base program</a></li>
-											<li><a href="#namespaces">Namespaces</a></li>
-											<li><a href="#mounts">Mounts</a>
-												<ul>
-													<li><a href="#device-nodes">Creating device nodes</a></li>
-												</ul>
-											</li>
-											<li><a href="#pivot-root">pivot_root</a></li>
-											<li><a href="#capabilities">Capabilities</a></li>
-											<li><a href="#seccomp">SecComp</a></li>
-											<li><a href="#syscall-filter">System call filtering</a>
-												<ul>
-													<li><a href="#syscall-whitelist">System call whitelist</a></li>
-													<li><a href="#loading-seccomp">Loading SecComp filter</a></li>
-													<li><a href="#seccomp-caveats">Caveats</a>
-														<ul>
-															<li><a href="#seccomp-incompatible-syscalls">Incompatible system calls</a></li>
-															<li><a href="#seccomp-checking">Precautionary checking</a></li>
-														</ul>
-													</li>
-												</ul>
-											</li>
-											<li><a href="#cgroups">Resource restriction</a>
-												<ul>
-													<li><a href="#mount-cgroup-controllers">Mounting cgroup controllers inside the container</a></li>
-													<li><a href="#cgroup-namespace-caveat">A small problem with cgroup namespace</a></li>
-												</ul>
-											</li>
-											<li><a href="#conclusion">Conclusion</a>
-												<ul>
-													<li><a href="#further-reading">Further reading</a></li>
-												</ul>
-											</li>
-										</ul>
-									</nav>
-								</aside>
-								<p>Since years ago, containers have been a hot topic everywhere. There are many container softwares like <a href="https://www.docker.com/">Docker</a>, <a href="https://linuxcontainers.org/">Linux Containers</a> and <a href="https://sylabs.io/singularity/">Singularity</a>. It’s hard to say one <em>understand</em> what containers are without diving into all the gory details of them, so I decided to go on this exploration myself.</p>
-								<p>The actual motivation was (quite) a bit different, though, as I was a TA of <em>Operating Systems (H)</em> in Spring 2020, and I wanted to bring a wave of innovation into the course labs, so I worked this out very early.</p>
-								<p>The contents in this article are listed in the Table of Contents <span class="wide-only">on the right</span><span class="nonwide-only">at the top of this page</span>. My implementation in my GitHub repository and the original lab documents (which is also written primarily by me, in Chinese) are linked right above.</p>
-								<p>My test environment is Ubuntu 18.04 LTS (Kernel 5.3, HWE 18.04). In case of any difference, you can consult Google for details.</p>
-								<p>If you want to find out the exact system calls involved in a command-line tool, <a href="https://strace.io/"><code class="language-plaintext highlighter-rouge">strace</code></a> is your friend.</p>
-								<div class="notice--warning">
-									<h4 class="no_toc" id="code-samples-have-a-different-license-than-this-article"><i class="fas fa-exclamation-triangle"></i> Code samples have a different license than this article</h4>
-									<p>While this article is licensed under the CC BY-SA 4.0 license, code samples and snippets are taken from the GitHub repository, which is licensed under <a href="https://github.com/iBug/iSpawn/blob/master/LICENSE">the GPL-3.0 license</a>.</p>
-								</div>
-								<h2 id="experimenting">Experimenting with isolation</h2>
-								<p>Before we jump straight to writing code, let’s warm ourselves up by playing with an existing, minimal container implementation, to get a better idea of our target.</p>
-								<h3 id="rootfs">Preparing the root filesystem</h3>
-								<p>To keep things simple, we’re going to use the system images from the LXC project. Grab the latest Ubuntu image from <a href="https://images.linuxcontainers.org/images/ubuntu/">https://images.linuxcontainers.org/images/ubuntu/</a>, unzip it to somewhere convenient for you, and this part is <em>almost</em> done.</p>
-								<p>If you’re on a “modern” distro like latest Ubuntu, Debian or Fedora, you need to populate the <code class="language-plaintext highlighter-rouge">/etc/machine-id</code> file in the container image with a valid “machine ID”, because systemd needs it. A simple way to do this is</p>
-								<div class="language-shell highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code>systemd-machine-id-setup <span class="nt">--root</span><span class="o">=</span>/path/to/your/rootfs
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox" />
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/open-source/"><i class="fas fa-fw fa-box-open"></i> Open Source</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/bookmarks/"><i class="fas fa-fw fa-bookmark"></i> Bookmarks</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="A Deep Dive into Containers">
+					<meta itemprop="description" content="Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are without diving into all the gory details of them, so I decided to go on this exploration myself.">
+					<meta itemprop="datePublished" content="2021-01-31T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2022-05-01T15:21:23+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#experimenting">Experimenting with isolation</a>
+											<ul>
+												<li><a href="#rootfs">Preparing the root filesystem</a></li>
+												<li><a href="#chroot">Playing with chroot</a></li>
+												<li><a href="#systemd-nspawn">Playing with systemd-nspawn</a></li>
+											</ul>
+										</li>
+										<li><a href="#base-program">The base program</a></li>
+										<li><a href="#namespaces">Namespaces</a></li>
+										<li><a href="#mounts">Mounts</a>
+											<ul>
+												<li><a href="#device-nodes">Creating device nodes</a></li>
+											</ul>
+										</li>
+										<li><a href="#pivot-root">pivot_root</a></li>
+										<li><a href="#capabilities">Capabilities</a></li>
+										<li><a href="#seccomp">SecComp</a></li>
+										<li><a href="#syscall-filter">System call filtering</a>
+											<ul>
+												<li><a href="#syscall-whitelist">System call whitelist</a></li>
+												<li><a href="#loading-seccomp">Loading SecComp filter</a></li>
+												<li><a href="#seccomp-caveats">Caveats</a>
+													<ul>
+														<li><a href="#seccomp-incompatible-syscalls">Incompatible system calls</a></li>
+														<li><a href="#seccomp-checking">Precautionary checking</a></li>
+													</ul>
+												</li>
+											</ul>
+										</li>
+										<li><a href="#cgroups">Resource restriction</a>
+											<ul>
+												<li><a href="#mount-cgroup-controllers">Mounting cgroup controllers inside the container</a></li>
+												<li><a href="#cgroup-namespace-caveat">A small problem with cgroup namespace</a></li>
+											</ul>
+										</li>
+										<li><a href="#conclusion">Conclusion</a>
+											<ul>
+												<li><a href="#further-reading">Further reading</a></li>
+											</ul>
+										</li>
+									</ul>
+								</nav>
+							</aside>
+							<p>Since years ago, containers have been a hot topic everywhere. There are many container softwares like <a href="https://www.docker.com/">Docker</a>, <a href="https://linuxcontainers.org/">Linux Containers</a> and <a href="https://sylabs.io/singularity/">Singularity</a>. It’s hard to say one <em>understand</em> what containers are without diving into all the gory details of them, so I decided to go on this exploration myself.</p>
+							<p>The actual motivation was (quite) a bit different, though, as I was a TA of <em>Operating Systems (H)</em> in Spring 2020, and I wanted to bring a wave of innovation into the course labs, so I worked this out very early.</p>
+							<p>The contents in this article are listed in the Table of Contents <span class="wide-only">on the right</span><span class="nonwide-only">at the top of this page</span>. My implementation in my GitHub repository and the original lab documents (which is also written primarily by me, in Chinese) are linked right above.</p>
+							<p>My test environment is Ubuntu 18.04 LTS (Kernel 5.3, HWE 18.04). In case of any difference, you can consult Google for details.</p>
+							<p>If you want to find out the exact system calls involved in a command-line tool, <a href="https://strace.io/"><code class="language-plaintext highlighter-rouge">strace</code></a> is your friend.</p>
+							<div class="notice--warning">
+								<h4 class="no_toc" id="code-samples-have-a-different-license-than-this-article"><i class="fas fa-exclamation-triangle"></i> Code samples have a different license than this article</h4>
+								<p>While this article is licensed under the CC BY-SA 4.0 license, code samples and snippets are taken from the GitHub repository, which is licensed under <a href="https://github.com/iBug/iSpawn/blob/master/LICENSE">the GPL-3.0 license</a>.</p>
+							</div>
+							<h2 id="experimenting">Experimenting with isolation</h2>
+							<p>Before we jump straight to writing code, let’s warm ourselves up by playing with an existing, minimal container implementation, to get a better idea of our target.</p>
+							<h3 id="rootfs">Preparing the root filesystem</h3>
+							<p>To keep things simple, we’re going to use the system images from the LXC project. Grab the latest Ubuntu image from <a href="https://images.linuxcontainers.org/images/ubuntu/">https://images.linuxcontainers.org/images/ubuntu/</a>, unzip it to somewhere convenient for you, and this part is <em>almost</em> done.</p>
+							<p>If you’re on a “modern” distro like latest Ubuntu, Debian or Fedora, you need to populate the <code class="language-plaintext highlighter-rouge">/etc/machine-id</code> file in the container image with a valid “machine ID”, because systemd needs it. A simple way to do this is</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>systemd-machine-id-setup <span class="nt">--root</span><span class="o">=</span>/path/to/your/rootfs
 </code></pre>
-									</div>
 								</div>
-								<p>If you’re running systemd 240 or later, there’s a better neat tool for this job:</p>
-								<div class="language-shell highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code>systemd-id128 new <span class="o">&gt;</span> /path/to/your/rootfs/etc/machine-id
+							</div>
+							<p>If you’re running systemd 240 or later, there’s a better neat tool for this job:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>systemd-id128 new <span class="o">&gt;</span> /path/to/your/rootfs/etc/machine-id
 </code></pre>
-									</div>
 								</div>
-								<h3 id="chroot">Playing with chroot</h3>
-								<p><a href="https://wiki.debian.org/chroot">chroot</a> is an old way to limit the directory tree a process (and its subprocesses) can see to a specific subtree. Under normal circumstances, processes cannot see anything outsite the chroot’d directory. This is called a <em>chroot jail</em>. Understanding the concepts of chroot is an important first step to understanding containers, though a typical container does <em>not</em> use chroot (more on this below).</p>
-								<p>Using chroot is very easy:</p>
-								<div class="language-shell highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="nb">chroot</span> /path/to/your/rootfs
+							</div>
+							<h3 id="chroot">Playing with chroot</h3>
+							<p><a href="https://wiki.debian.org/chroot">chroot</a> is an old way to limit the directory tree a process (and its subprocesses) can see to a specific subtree. Under normal circumstances, processes cannot see anything outsite the chroot’d directory. This is called a <em>chroot jail</em>. Understanding the concepts of chroot is an important first step to understanding containers, though a typical container does <em>not</em> use chroot (more on this below).</p>
+							<p>Using chroot is very easy:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nb">chroot</span> /path/to/your/rootfs
 </code></pre>
-									</div>
 								</div>
-								<p>You now get a shell inside the <em>chroot jail</em>. You can perform file-based operation like running “regular” commands and editing system files. All changes are saved in this “container rootfs”. You can even try <code class="language-plaintext highlighter-rouge">apt update</code> and <code class="language-plaintext highlighter-rouge">apt install vim</code> and see if it works.</p>
-								<p>As you’re probably aware, chroot is just too simple and sometimes naive to be secure. You can try the following commands, but be sure to save your work. <strong>Proceed with caution!</strong></p>
-								<div class="language-shell highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code>reboot
+							</div>
+							<p>You now get a shell inside the <em>chroot jail</em>. You can perform file-based operation like running “regular” commands and editing system files. All changes are saved in this “container rootfs”. You can even try <code class="language-plaintext highlighter-rouge">apt update</code> and <code class="language-plaintext highlighter-rouge">apt install vim</code> and see if it works.</p>
+							<p>As you’re probably aware, chroot is just too simple and sometimes naive to be secure. You can try the following commands, but be sure to save your work. <strong>Proceed with caution!</strong></p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>reboot
 mount
 <span class="nb">dd </span><span class="k">if</span><span class="o">=</span>/dev/sda <span class="nv">of</span><span class="o">=</span><span class="nb">test </span><span class="nv">bs</span><span class="o">=</span>4k <span class="nv">count</span><span class="o">=</span>1
 <span class="nb">echo</span> <span class="nv">$$</span>
 </code></pre>
-									</div>
 								</div>
-								<h3 id="systemd-nspawn">Playing with systemd-nspawn</h3>
-								<p>As you can see, chroot lacks too many security constaints. <a href="https://wiki.debian.org/nspawn">Systemd-nspawn</a>, on the other hand, is a <em>complete</em> container implementation and is thus secure against random programs.</p>
-								<p>Using systemd-nspawn is equally easy:</p>
-								<div class="language-shell highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="nb">cd</span> /path/to/your/rootfs
+							</div>
+							<h3 id="systemd-nspawn">Playing with systemd-nspawn</h3>
+							<p>As you can see, chroot lacks too many security constaints. <a href="https://wiki.debian.org/nspawn">Systemd-nspawn</a>, on the other hand, is a <em>complete</em> container implementation and is thus secure against random programs.</p>
+							<p>Using systemd-nspawn is equally easy:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nb">cd</span> /path/to/your/rootfs
 systemd-nspawn
 </code></pre>
-									</div>
 								</div>
-								<p>Now repeat your experiments in the chroot section and carefully observe the differences.</p>
-								<h2 id="base-program">The base program</h2>
-								<p>After getting your rootfs up for rocking, we’ll start with a fairly simple chroot-based program, modify it step-by-step, until it becomes the container we want.</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+							</div>
+							<p>Now repeat your experiments in the chroot section and carefully observe the differences.</p>
+							<h2 id="base-program">The base program</h2>
+							<p>After getting your rootfs up for rocking, we’ll start with a fairly simple chroot-based program, modify it step-by-step, until it becomes the container we want.</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
 #include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp">
 #include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="c1"> // For wait(2)</span><span class="cp">
 #include</span> <span class="cpf">&lt;sys/wait.h&gt;</span><span class="c1">  // For wait(2)</span><span class="cp">
@@ -341,26 +353,26 @@ systemd-nspawn
     <span class="k">return</span> <span class="n">ecode</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre>
-									</div>
 								</div>
-								<h2 id="namespaces">Namespaces</h2>
-								<p><a href="https://en.wikipedia.org/wiki/Linux_namespaces">Namespaces</a> are a fundamental aspect of Linux containers. They provide isolation for a variety of mission-critical system resources like process IDs, hostnames, network stacks and inter-process communication. They are the key to making containers “look independent” from the host system.</p>
-								<p>As of Linux kernel 5.6 released in April 2020, there are 8 kinds of namespaces present:</p>
-								<ul>
-									<li><strong>Mount namespace</strong> isolates mount points (visibility) from the parent. New mount activities in the parent namespace won’t be visible in child namespaces. However, to achieve the reverse, a separate thing called “mount propagation” is involved. First appeared in 2002, Linux 2.4.19.</li>
-									<li><strong>UTS namespace</strong> provides isolated hostnames. UTS stands for <a href="https://en.wikipedia.org/wiki/History_of_Unix">“<strong>U</strong>NIX <strong>T</strong>ime-<strong>S</strong>haring system”</a>. First appeared in 2006, Linux 2.6.19.</li>
-									<li><strong>IPC namespace</strong> isolates traditional System V-style IPC methods. First appeared in 2006, Linux 2.6.19.</li>
-									<li><strong>PID namespace</strong> provides a separate set of process IDs so that a process may look different inside. This is important for certain programs to function properly, most notably the init process, which must be PID 1. First appeared in 2008, Linux 2.6.24.</li>
-									<li><strong>Networking namespace</strong> provides a full set of network stack. Suitable for creating isolated network environments for containers. First appeared in 2009, Linux 2.6.29.</li>
-									<li><strong>User namespace</strong> allows mapping UIDs / GIDs from containers to hosts, so that unpriviledged users can perform certain tasks that normally require the superuser privilege, without actually elevating themselves or posing risks to the host. First appeared in 2013, Linux 3.8.</li>
-									<li><strong>Cgroup namespace</strong> provides isolated cgroup hierarchies so containers can safely utilize cgroup functionalities without affecting the host. First appeared in 2016, Linux 4.6.</li>
-									<li><strong>Time namespace</strong> allows different processes to “see” different system times. First appeared in 2020, Linux 5.6.</li>
-								</ul>
-								<p>There are two ways to get namespaces isolated, <a href="https://man7.org/linux/man-pages/man2/unshare.2.html"><code class="language-plaintext highlighter-rouge">unshare()</code></a> and <a href="https://man7.org/linux/man-pages/man2/clone.2.html"><code class="language-plaintext highlighter-rouge">clone()</code></a>. A brief difference is that <code class="language-plaintext highlighter-rouge">unshare</code> isolates for the calling process (except PID namespace, check the manual for more details), while <code class="language-plaintext highlighter-rouge">clone</code> creates a new process with isolated namespaces. We’ll go for <code class="language-plaintext highlighter-rouge">clone</code> because it’s the system call underneath Go’s <code class="language-go highlighter-rouge"><span class="n">exec</span><span class="o">.</span><span class="n">Command</span></code>, and that Go is used for popular container software like Docker and Singularity.</p>
-								<p>To utilize the <code class="language-plaintext highlighter-rouge">clone</code> system call, we need some adaptions, among which the most notable ones are the entry function and the child stack (using <code class="language-plaintext highlighter-rouge">mmap()</code>, I had problems later with <code class="language-plaintext highlighter-rouge">malloc()</code> in my early testing). The rest are covered pretty well in the manual so there’s no need to repeat them here (e.g. <code class="language-plaintext highlighter-rouge">SIGCHLD</code> appearing in <code class="language-plaintext highlighter-rouge">flags</code> parameter).</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="kt">int</span> <span class="nf">child</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">)</span> <span class="p">{</span>
+							</div>
+							<h2 id="namespaces">Namespaces</h2>
+							<p><a href="https://en.wikipedia.org/wiki/Linux_namespaces">Namespaces</a> are a fundamental aspect of Linux containers. They provide isolation for a variety of mission-critical system resources like process IDs, hostnames, network stacks and inter-process communication. They are the key to making containers “look independent” from the host system.</p>
+							<p>As of Linux kernel 5.6 released in April 2020, there are 8 kinds of namespaces present:</p>
+							<ul>
+								<li><strong>Mount namespace</strong> isolates mount points (visibility) from the parent. New mount activities in the parent namespace won’t be visible in child namespaces. However, to achieve the reverse, a separate thing called “mount propagation” is involved. First appeared in 2002, Linux 2.4.19.</li>
+								<li><strong>UTS namespace</strong> provides isolated hostnames. UTS stands for <a href="https://en.wikipedia.org/wiki/History_of_Unix">“<strong>U</strong>NIX <strong>T</strong>ime-<strong>S</strong>haring system”</a>. First appeared in 2006, Linux 2.6.19.</li>
+								<li><strong>IPC namespace</strong> isolates traditional System V-style IPC methods. First appeared in 2006, Linux 2.6.19.</li>
+								<li><strong>PID namespace</strong> provides a separate set of process IDs so that a process may look different inside. This is important for certain programs to function properly, most notably the init process, which must be PID 1. First appeared in 2008, Linux 2.6.24.</li>
+								<li><strong>Networking namespace</strong> provides a full set of network stack. Suitable for creating isolated network environments for containers. First appeared in 2009, Linux 2.6.29.</li>
+								<li><strong>User namespace</strong> allows mapping UIDs / GIDs from containers to hosts, so that unpriviledged users can perform certain tasks that normally require the superuser privilege, without actually elevating themselves or posing risks to the host. First appeared in 2013, Linux 3.8.</li>
+								<li><strong>Cgroup namespace</strong> provides isolated cgroup hierarchies so containers can safely utilize cgroup functionalities without affecting the host. First appeared in 2016, Linux 4.6.</li>
+								<li><strong>Time namespace</strong> allows different processes to “see” different system times. First appeared in 2020, Linux 5.6.</li>
+							</ul>
+							<p>There are two ways to get namespaces isolated, <a href="https://man7.org/linux/man-pages/man2/unshare.2.html"><code class="language-plaintext highlighter-rouge">unshare()</code></a> and <a href="https://man7.org/linux/man-pages/man2/clone.2.html"><code class="language-plaintext highlighter-rouge">clone()</code></a>. A brief difference is that <code class="language-plaintext highlighter-rouge">unshare</code> isolates for the calling process (except PID namespace, check the manual for more details), while <code class="language-plaintext highlighter-rouge">clone</code> creates a new process with isolated namespaces. We’ll go for <code class="language-plaintext highlighter-rouge">clone</code> because it’s the system call underneath Go’s <code class="language-go highlighter-rouge"><span class="n">exec</span><span class="o">.</span><span class="n">Command</span></code>, and that Go is used for popular container software like Docker and Singularity.</p>
+							<p>To utilize the <code class="language-plaintext highlighter-rouge">clone</code> system call, we need some adaptions, among which the most notable ones are the entry function and the child stack (using <code class="language-plaintext highlighter-rouge">mmap()</code>, I had problems later with <code class="language-plaintext highlighter-rouge">malloc()</code> in my early testing). The rest are covered pretty well in the manual so there’s no need to repeat them here (e.g. <code class="language-plaintext highlighter-rouge">SIGCHLD</code> appearing in <code class="language-plaintext highlighter-rouge">flags</code> parameter).</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kt">int</span> <span class="nf">child</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">printf</span><span class="p">(</span><span class="s">"My name is %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="p">)</span><span class="n">arg</span><span class="p">);</span>
     <span class="k">return</span> <span class="mi">3</span><span class="p">;</span>
 <span class="p">}</span>
@@ -383,12 +395,12 @@ systemd-nspawn
     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre>
-									</div>
 								</div>
-								<p>And for the include headers as well.</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="cp">#define _GNU_SOURCE    // Required for enabling clone(2)
+							</div>
+							<p>And for the include headers as well.</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="cp">#define _GNU_SOURCE    // Required for enabling clone(2)
 #include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
 #include</span> <span class="cpf">&lt;sched.h&gt;</span><span class="c1">     // For clone(2)</span><span class="cp">
 #include</span> <span class="cpf">&lt;signal.h&gt;</span><span class="c1">    // For SIGCHLD constant</span><span class="cp">
@@ -396,170 +408,170 @@ systemd-nspawn
 #include</span> <span class="cpf">&lt;sys/types.h&gt;</span><span class="c1"> // For wait(2)</span><span class="cp">
 #include</span> <span class="cpf">&lt;sys/wait.h&gt;</span><span class="c1">  // For wait(2)</span><span class="cp">
 </span></code></pre>
-									</div>
 								</div>
-								<p>Now that we have <code class="language-plaintext highlighter-rouge">clone</code> ready, adding support for namespace isolation is as simple as adding flags to the parameters.</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="kt">int</span> <span class="n">ch</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">child_stack_start</span><span class="p">,</span> <span class="n">CLONE_NEWNS</span> <span class="o">|</span> <span class="n">CLONE_NEWUTS</span> <span class="o">|</span> <span class="n">CLONE_NEWIPC</span> <span class="o">|</span> <span class="n">CLONE_NEWPID</span> <span class="o">|</span> <span class="n">CLONE_NEWCGROUP</span> <span class="o">|</span> <span class="n">SIGCHLD</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
+							</div>
+							<p>Now that we have <code class="language-plaintext highlighter-rouge">clone</code> ready, adding support for namespace isolation is as simple as adding flags to the parameters.</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kt">int</span> <span class="n">ch</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">child_stack_start</span><span class="p">,</span> <span class="n">CLONE_NEWNS</span> <span class="o">|</span> <span class="n">CLONE_NEWUTS</span> <span class="o">|</span> <span class="n">CLONE_NEWIPC</span> <span class="o">|</span> <span class="n">CLONE_NEWPID</span> <span class="o">|</span> <span class="n">CLONE_NEWCGROUP</span> <span class="o">|</span> <span class="n">SIGCHLD</span><span class="p">,</span> <span class="n">name</span><span class="p">);</span>
 </code></pre>
-									</div>
 								</div>
-								<h2 id="mounts">Mounts</h2>
-								<p>Traditionally, mounting is a way to map raw disks to accessible filesystems. Since then, its usage has evolved and supports much more than disk mapping. We’re particularly interested in using special filesystems like <code class="language-plaintext highlighter-rouge">/proc</code> (the FS that provides runtime information like processes and kernel parameters), <code class="language-plaintext highlighter-rouge">/sys</code> (system settings, device information etc.), <code class="language-plaintext highlighter-rouge">/tmp</code> (a temporary filesystem backed by RAM) etc., without which a container won’t function properly.</p>
-								<p>For a minimal example, we’ll mount 4 essential filesystems with correct mount options for our container. They are the three mentioned above plus <code class="language-plaintext highlighter-rouge">/dev</code> as a tmpfs. We’ll also create a few device nodes under <code class="language-plaintext highlighter-rouge">/dev</code> so things can go smoothly when they’re needed (e.g. <code class="language-plaintext highlighter-rouge">some_command &gt; /dev/null</code>).</p>
-								<div class="notice--primary">
-									<h4 class="no_toc" id="were-not-using-devtmpfs-here"><i class="fas fa-times-circle"></i> We’re not using <code class="language-plaintext highlighter-rouge">devtmpfs</code> here</h4>
-									<p>If you examine current mounts in your host system, you’ll probably see that <code class="language-plaintext highlighter-rouge">/dev</code> is mounted as <code class="language-plaintext highlighter-rouge">devtmpfs</code>. While it may appear straightforward to employ that, it’s unacceptable for <strong>a container</strong>, as it exposes <em>all</em> device nodes to the container, which violates the purpose of isolation of containers. See <a href="https://unix.stackexchange.com/q/77933/211239">this answer</a> on Unix &amp; Linux Stack Exchange.</p>
-								</div>
-								<p>To do this manually, you’ll issue the following commands in a shell.</p>
-								<div class="language-shell highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code>mount <span class="nt">-t</span> tmpfs tmpfs /dev
+							</div>
+							<h2 id="mounts">Mounts</h2>
+							<p>Traditionally, mounting is a way to map raw disks to accessible filesystems. Since then, its usage has evolved and supports much more than disk mapping. We’re particularly interested in using special filesystems like <code class="language-plaintext highlighter-rouge">/proc</code> (the FS that provides runtime information like processes and kernel parameters), <code class="language-plaintext highlighter-rouge">/sys</code> (system settings, device information etc.), <code class="language-plaintext highlighter-rouge">/tmp</code> (a temporary filesystem backed by RAM) etc., without which a container won’t function properly.</p>
+							<p>For a minimal example, we’ll mount 4 essential filesystems with correct mount options for our container. They are the three mentioned above plus <code class="language-plaintext highlighter-rouge">/dev</code> as a tmpfs. We’ll also create a few device nodes under <code class="language-plaintext highlighter-rouge">/dev</code> so things can go smoothly when they’re needed (e.g. <code class="language-plaintext highlighter-rouge">some_command &gt; /dev/null</code>).</p>
+							<div class="notice--primary">
+								<h4 class="no_toc" id="were-not-using-devtmpfs-here"><i class="fas fa-times-circle"></i> We’re not using <code class="language-plaintext highlighter-rouge">devtmpfs</code> here</h4>
+								<p>If you examine current mounts in your host system, you’ll probably see that <code class="language-plaintext highlighter-rouge">/dev</code> is mounted as <code class="language-plaintext highlighter-rouge">devtmpfs</code>. While it may appear straightforward to employ that, it’s unacceptable for <strong>a container</strong>, as it exposes <em>all</em> device nodes to the container, which violates the purpose of isolation of containers. See <a href="https://unix.stackexchange.com/q/77933/211239">this answer</a> on Unix &amp; Linux Stack Exchange.</p>
+							</div>
+							<p>To do this manually, you’ll issue the following commands in a shell.</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>mount <span class="nt">-t</span> tmpfs tmpfs /dev
 mount <span class="nt">-t</span> proc proc /proc
 mount <span class="nt">-t</span> sysfs sysfs /sys
 mount <span class="nt">-t</span> tmpfs tmpfs /tmp
 </code></pre>
-									</div>
 								</div>
-								<p>You can then run <code class="language-plaintext highlighter-rouge">mount</code> without arguments to see the mount results.</p>
-								<div class="language-text highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code>sysfs on /sys type sysfs (rw,relatime)
+							</div>
+							<p>You can then run <code class="language-plaintext highlighter-rouge">mount</code> without arguments to see the mount results.</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>sysfs on /sys type sysfs (rw,relatime)
 proc on /proc type proc (rw,relatime)
 tmpfs on /dev type devtmpfs (rw,relatime)
 tmpfs on /tmp type tmpfs (rw,relatime)
 </code></pre>
-									</div>
 								</div>
-								<p>If you compare this with the mount points in your host system, you may notice something different.</p>
-								<div class="language-text highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code>sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime)
+							</div>
+							<p>If you compare this with the mount points in your host system, you may notice something different.</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime)
 proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
 udev on /dev type devtmpfs (rw,nosuid,noexec,relatime,size=65895752k,nr_inodes=16473938,mode=755)
 tmpfs on /run type tmpfs (rw,nosuid,nodev,noexec,relatime,size=13191916k,mode=755)
 </code></pre>
-									</div>
 								</div>
-								<p>The extra flags (<code class="language-plaintext highlighter-rouge">nosuid,nodev,noexec</code>) control the behavior of the mount point. For example, <code class="language-plaintext highlighter-rouge">nosuid</code> means the set-uid bit will be ignored for entries under the mount point, while <code class="language-plaintext highlighter-rouge">noexec</code> prevents any execution of programs from inside.</p>
-								<p>Now we’re going to do it in C. The system call is also named <code class="language-plaintext highlighter-rouge">mount</code>, and has the following signature:</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="kt">int</span> <span class="nf">mount</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">source</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">target</span><span class="p">,</span>
+							</div>
+							<p>The extra flags (<code class="language-plaintext highlighter-rouge">nosuid,nodev,noexec</code>) control the behavior of the mount point. For example, <code class="language-plaintext highlighter-rouge">nosuid</code> means the set-uid bit will be ignored for entries under the mount point, while <code class="language-plaintext highlighter-rouge">noexec</code> prevents any execution of programs from inside.</p>
+							<p>Now we’re going to do it in C. The system call is also named <code class="language-plaintext highlighter-rouge">mount</code>, and has the following signature:</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kt">int</span> <span class="nf">mount</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">source</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">target</span><span class="p">,</span>
           <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">filesystemtype</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">mountflags</span><span class="p">,</span>
           <span class="k">const</span> <span class="kt">void</span> <span class="o">*</span><span class="n">data</span><span class="p">);</span>
 </code></pre>
-									</div>
 								</div>
-								<p>It should be intuitive enough what the first three parameters are for, so for now we can just write</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="n">mount</span><span class="p">(</span><span class="s">"tmpfs"</span><span class="p">,</span> <span class="s">"/dev"</span><span class="p">,</span> <span class="s">"tmpfs"</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+							</div>
+							<p>It should be intuitive enough what the first three parameters are for, so for now we can just write</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">mount</span><span class="p">(</span><span class="s">"tmpfs"</span><span class="p">,</span> <span class="s">"/dev"</span><span class="p">,</span> <span class="s">"tmpfs"</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
 <span class="n">mount</span><span class="p">(</span><span class="s">"proc"</span><span class="p">,</span> <span class="s">"/proc"</span><span class="p">,</span> <span class="s">"proc"</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
 <span class="n">mount</span><span class="p">(</span><span class="s">"sysfs"</span><span class="p">,</span> <span class="s">"/sys"</span><span class="p">,</span> <span class="s">"sysfs"</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
 <span class="n">mount</span><span class="p">(</span><span class="s">"tmpfs"</span><span class="p">,</span> <span class="s">"/tmp"</span><span class="p">,</span> <span class="s">"tmpfs"</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
 </code></pre>
-									</div>
 								</div>
-								<p>The fourth parameter corresponds to the flags we discussed above. All applicable flags can be found in the man page for <a href="https://man7.org/linux/man-pages/man2/mount.2.html"><code class="language-plaintext highlighter-rouge">mount(2)</code></a>.</p>
-								<p id="mount-data-parameter">Keep in mind that, however, the last parameter isn’t entirely useless. It’s simply not used for now, but it’ll play a role later. (Actually, you may have noticed already. Good job for that.)</p>
-								<h3 id="device-nodes">Creating device nodes</h3>
-								<p>Now that we have an empty <code class="language-plaintext highlighter-rouge">/dev</code> directory, we should populate it with some device nodes so that software expecting their presence could work. At a minimum, we need <code class="language-plaintext highlighter-rouge">null</code>, <code class="language-plaintext highlighter-rouge">zero</code>, <code class="language-plaintext highlighter-rouge">random</code> and <code class="language-plaintext highlighter-rouge">urandom</code>, but you can add <code class="language-plaintext highlighter-rouge">tty</code> and <code class="language-plaintext highlighter-rouge">console</code> if you want (these two are a bit different - you have been warned).</p>
-								<p>Device nodes are created with <a href="https://man7.org/linux/man-pages/man2/mknod.2.html"><code class="language-plaintext highlighter-rouge">mknod(2)</code></a>, whose prototype is:</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="kt">int</span> <span class="nf">mknod</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="n">mode_t</span> <span class="n">mode</span><span class="p">,</span> <span class="n">dev_t</span> <span class="n">dev</span><span class="p">);</span>
+							</div>
+							<p>The fourth parameter corresponds to the flags we discussed above. All applicable flags can be found in the man page for <a href="https://man7.org/linux/man-pages/man2/mount.2.html"><code class="language-plaintext highlighter-rouge">mount(2)</code></a>.</p>
+							<p id="mount-data-parameter">Keep in mind that, however, the last parameter isn’t entirely useless. It’s simply not used for now, but it’ll play a role later. (Actually, you may have noticed already. Good job for that.)</p>
+							<h3 id="device-nodes">Creating device nodes</h3>
+							<p>Now that we have an empty <code class="language-plaintext highlighter-rouge">/dev</code> directory, we should populate it with some device nodes so that software expecting their presence could work. At a minimum, we need <code class="language-plaintext highlighter-rouge">null</code>, <code class="language-plaintext highlighter-rouge">zero</code>, <code class="language-plaintext highlighter-rouge">random</code> and <code class="language-plaintext highlighter-rouge">urandom</code>, but you can add <code class="language-plaintext highlighter-rouge">tty</code> and <code class="language-plaintext highlighter-rouge">console</code> if you want (these two are a bit different - you have been warned).</p>
+							<p>Device nodes are created with <a href="https://man7.org/linux/man-pages/man2/mknod.2.html"><code class="language-plaintext highlighter-rouge">mknod(2)</code></a>, whose prototype is:</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kt">int</span> <span class="nf">mknod</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">path</span><span class="p">,</span> <span class="n">mode_t</span> <span class="n">mode</span><span class="p">,</span> <span class="n">dev_t</span> <span class="n">dev</span><span class="p">);</span>
 </code></pre>
-									</div>
 								</div>
-								<p>With a little research effort, we know we’ll call it like this:</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="n">mknod</span><span class="p">(</span><span class="s">"/dev/something"</span><span class="p">,</span> <span class="n">S_IFCHR</span> <span class="o">|</span> <span class="mo">0666</span><span class="p">,</span> <span class="n">makedev</span><span class="p">(</span><span class="n">MAJOR</span><span class="p">,</span> <span class="n">MINOR</span><span class="p">));</span>
+							</div>
+							<p>With a little research effort, we know we’ll call it like this:</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">mknod</span><span class="p">(</span><span class="s">"/dev/something"</span><span class="p">,</span> <span class="n">S_IFCHR</span> <span class="o">|</span> <span class="mo">0666</span><span class="p">,</span> <span class="n">makedev</span><span class="p">(</span><span class="n">MAJOR</span><span class="p">,</span> <span class="n">MINOR</span><span class="p">));</span>
 </code></pre>
-									</div>
 								</div>
-								<p>To determine the device node numbers, you can take a look at the same nodes in the host system, using <code class="language-plaintext highlighter-rouge">ls -l</code> or <code class="language-plaintext highlighter-rouge">stat</code>. Don’t worry, the numbers for special devices remain the same across Linux distros, <a href="https://unix.stackexchange.com/a/354985/211239">unlike BSD systems</a>. It shouldn’t take long before you come to this:</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="n">mknod</span><span class="p">(</span><span class="s">"dev/null"</span><span class="p">,</span> <span class="n">S_IFCHR</span> <span class="o">|</span> <span class="mo">0666</span><span class="p">,</span> <span class="n">makedev</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">));</span>
+							</div>
+							<p>To determine the device node numbers, you can take a look at the same nodes in the host system, using <code class="language-plaintext highlighter-rouge">ls -l</code> or <code class="language-plaintext highlighter-rouge">stat</code>. Don’t worry, the numbers for special devices remain the same across Linux distros, <a href="https://unix.stackexchange.com/a/354985/211239">unlike BSD systems</a>. It shouldn’t take long before you come to this:</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">mknod</span><span class="p">(</span><span class="s">"dev/null"</span><span class="p">,</span> <span class="n">S_IFCHR</span> <span class="o">|</span> <span class="mo">0666</span><span class="p">,</span> <span class="n">makedev</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">));</span>
 <span class="n">mknod</span><span class="p">(</span><span class="s">"dev/zero"</span><span class="p">,</span> <span class="n">S_IFCHR</span> <span class="o">|</span> <span class="mo">0666</span><span class="p">,</span> <span class="n">makedev</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">));</span>
 <span class="n">mknod</span><span class="p">(</span><span class="s">"dev/random"</span><span class="p">,</span> <span class="n">S_IFCHR</span> <span class="o">|</span> <span class="mo">0666</span><span class="p">,</span> <span class="n">makedev</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">));</span>
 <span class="n">mknod</span><span class="p">(</span><span class="s">"dev/urandom"</span><span class="p">,</span> <span class="n">S_IFCHR</span> <span class="o">|</span> <span class="mo">0666</span><span class="p">,</span> <span class="n">makedev</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">9</span><span class="p">));</span>
 </code></pre>
-									</div>
 								</div>
-								<h2 id="pivot-root">pivot_root</h2>
-								<p>We’re ready with mounts, so now we can take a look at switching the root filesystem for our container.</p>
-								<p>The <a href="#base-program">base program</a> used <code class="language-plaintext highlighter-rouge">chroot()</code> for the time being, but talking about a (baseline) secure container, <a href="https://github.com/earthquake/chw00t">it’s terrible</a>. We have to resort to another Linux feature, <code class="language-plaintext highlighter-rouge">pivot_root</code>, for this purpose.</p>
-								<p>Let’s first take a look at <a href="https://man7.org/linux/man-pages/man2/pivot_root.2.html">its man page</a> to determine its prototype.</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="kt">int</span> <span class="nf">pivot_root</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">new_root</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">put_old</span><span class="p">);</span>
+							</div>
+							<h2 id="pivot-root">pivot_root</h2>
+							<p>We’re ready with mounts, so now we can take a look at switching the root filesystem for our container.</p>
+							<p>The <a href="#base-program">base program</a> used <code class="language-plaintext highlighter-rouge">chroot()</code> for the time being, but talking about a (baseline) secure container, <a href="https://github.com/earthquake/chw00t">it’s terrible</a>. We have to resort to another Linux feature, <code class="language-plaintext highlighter-rouge">pivot_root</code>, for this purpose.</p>
+							<p>Let’s first take a look at <a href="https://man7.org/linux/man-pages/man2/pivot_root.2.html">its man page</a> to determine its prototype.</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kt">int</span> <span class="nf">pivot_root</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">new_root</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">put_old</span><span class="p">);</span>
 </code></pre>
-									</div>
 								</div>
-								<p>This system call is special enough that we must also take care of its notes and requirements. For example, <code class="language-plaintext highlighter-rouge">new_root</code> must be a mount point. While the man page does provide a solution to this problem by mounting the directory on top of itself, it’s too prone to errors for us to adopt. Instead we’ll be creating a temporary directory to use as the mount point.</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">newroot</span> <span class="o">=</span> <span class="s">"/tmp/ispawn"</span><span class="p">;</span>
+							</div>
+							<p>This system call is special enough that we must also take care of its notes and requirements. For example, <code class="language-plaintext highlighter-rouge">new_root</code> must be a mount point. While the man page does provide a solution to this problem by mounting the directory on top of itself, it’s too prone to errors for us to adopt. Instead we’ll be creating a temporary directory to use as the mount point.</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">newroot</span> <span class="o">=</span> <span class="s">"/tmp/ispawn"</span><span class="p">;</span>
 <span class="n">mkdir</span><span class="p">(</span><span class="n">newroot</span><span class="p">,</span> <span class="mo">0755</span><span class="p">);</span>
 </code></pre>
-									</div>
 								</div>
-								<p>We also need a value for the second parameter to <code class="language-plaintext highlighter-rouge">pivot_root</code>, the <code class="language-plaintext highlighter-rouge">put_old</code> directory. The manual says the following:</p>
-								<blockquote>
-									<p><code class="language-plaintext highlighter-rouge">put_old</code> must be at or underneath <code class="language-plaintext highlighter-rouge">new_root</code></p>
-								</blockquote>
-								<p>A direct interpretation is that <code class="language-plaintext highlighter-rouge">put_old</code> must be at a subpath under <code class="language-plaintext highlighter-rouge">new_root</code>, which means we can simply create (or reuse an existing) a directory under <code class="language-plaintext highlighter-rouge">new_root</code> to use.</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">put_old</span> <span class="o">=</span> <span class="s">"/tmp/ispawn/oldroot"</span><span class="p">;</span>
+							</div>
+							<p>We also need a value for the second parameter to <code class="language-plaintext highlighter-rouge">pivot_root</code>, the <code class="language-plaintext highlighter-rouge">put_old</code> directory. The manual says the following:</p>
+							<blockquote>
+								<p><code class="language-plaintext highlighter-rouge">put_old</code> must be at or underneath <code class="language-plaintext highlighter-rouge">new_root</code></p>
+							</blockquote>
+							<p>A direct interpretation is that <code class="language-plaintext highlighter-rouge">put_old</code> must be at a subpath under <code class="language-plaintext highlighter-rouge">new_root</code>, which means we can simply create (or reuse an existing) a directory under <code class="language-plaintext highlighter-rouge">new_root</code> to use.</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">put_old</span> <span class="o">=</span> <span class="s">"/tmp/ispawn/oldroot"</span><span class="p">;</span>
 <span class="n">mkdir</span><span class="p">(</span><span class="n">put_old</span><span class="p">);</span>
 </code></pre>
-									</div>
 								</div>
-								<p>And now we can do <code class="language-plaintext highlighter-rouge">pivot_root</code> with the directories we just set up:</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="n">pivot_root</span><span class="p">(</span><span class="n">newroot</span><span class="p">,</span> <span class="n">put_old</span><span class="p">);</span>
+							</div>
+							<p>And now we can do <code class="language-plaintext highlighter-rouge">pivot_root</code> with the directories we just set up:</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">pivot_root</span><span class="p">(</span><span class="n">newroot</span><span class="p">,</span> <span class="n">put_old</span><span class="p">);</span>
 </code></pre>
-									</div>
 								</div>
-								<p>If everything so far is correct, we should now be running inside the new root tree. The “old root”, or the root filesystem of the host system, is now available at <code class="language-plaintext highlighter-rouge">/oldroot</code>.</p>
-								<p>Apparently, a container shouldn’t be able to access the host filesystem without explicit grants, so we’re going to “hide” the old root. It is, from the view from within the container, an ordinary mount point that we can just unmount. However, as there (definitely) are other processes in the host system still using the filesystem, it can’t be unmounted directly.</p>
-								<p>There’s a technique called “lazy unmounting”, where existing processes continue to use the filesystem as usual, while other processes see it disappeared. It <a href="https://unix.stackexchange.com/q/390056/211239">could be dangerous</a>, but as we’re the one-and-only process inside the container, we know it’s safe for us.</p>
-								<p>With that many information told, the actual code is really simple:</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="n">umount2</span><span class="p">(</span><span class="s">"/oldroot"</span><span class="p">,</span> <span class="n">MNT_DETACH</span><span class="p">);</span>
+							</div>
+							<p>If everything so far is correct, we should now be running inside the new root tree. The “old root”, or the root filesystem of the host system, is now available at <code class="language-plaintext highlighter-rouge">/oldroot</code>.</p>
+							<p>Apparently, a container shouldn’t be able to access the host filesystem without explicit grants, so we’re going to “hide” the old root. It is, from the view from within the container, an ordinary mount point that we can just unmount. However, as there (definitely) are other processes in the host system still using the filesystem, it can’t be unmounted directly.</p>
+							<p>There’s a technique called “lazy unmounting”, where existing processes continue to use the filesystem as usual, while other processes see it disappeared. It <a href="https://unix.stackexchange.com/q/390056/211239">could be dangerous</a>, but as we’re the one-and-only process inside the container, we know it’s safe for us.</p>
+							<p>With that many information told, the actual code is really simple:</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">umount2</span><span class="p">(</span><span class="s">"/oldroot"</span><span class="p">,</span> <span class="n">MNT_DETACH</span><span class="p">);</span>
 </code></pre>
-									</div>
 								</div>
-								<p>We’re using the <code class="language-plaintext highlighter-rouge">umount2</code> system call because we need to pass the extra flags to it. Now that the host filesystem is gone, we can remove the now-empty directory (remember we’re doing clean-up jobs):</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="n">rmdir</span><span class="p">(</span><span class="s">"/oldroot"</span><span class="p">);</span>
+							</div>
+							<p>We’re using the <code class="language-plaintext highlighter-rouge">umount2</code> system call because we need to pass the extra flags to it. Now that the host filesystem is gone, we can remove the now-empty directory (remember we’re doing clean-up jobs):</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">rmdir</span><span class="p">(</span><span class="s">"/oldroot"</span><span class="p">);</span>
 </code></pre>
-									</div>
 								</div>
-								<p>We’ve isolated our container filesystem from the host system, and then we can proceed to securing and fortifying our container.</p>
-								<h2 id="capabilities">Capabilities</h2>
-								<p>In the traditional UNIX era, there were only two privilege levels - <em>privileged</em> (root) and <em>unprivileged</em> (non-root), where a <em>privileged</em> process has every privilege to alter the system, while an <em>unprivileged</em> process has none. Since Linux 2.2 in 1999, <em>capabilities</em> have been added to the kernel so that unprivileged processes may acquire certain abilities needed for some task, while privileged processes may drop capabilities unneeded, allowing for privilege control at a finer granularity. A <code class="language-plaintext highlighter-rouge">ping</code> process doesn’t need any extra privileges than sending ICMP packets, and a web server (probably) doesn’t need any extra privileges than binding to a low port (1 to 1023), do they?</p>
-								<p>With capabilities, unprivileged processes can be granted access to selected system functionalities, while privileged processes can be deprived of selected ones. For example, <code class="language-plaintext highlighter-rouge">CAP_NET_BIND_SERVICE</code> is the capability to bind to TCP or UDP ports between 1 and 1023, and <code class="language-plaintext highlighter-rouge">CAP_CHOWN</code> enables the use of <code class="language-plaintext highlighter-rouge">chown(2)</code>.</p>
-								<p>Now turning our focus back to containers. Without privilege separation, a “root” process inside a container can still do dangerous things, like scanning your hard drive where the host filesystem resides, and manipulate it. This is definitely not anything expected, so we’re going to limit the capabilities the container can have as a whole.</p>
-								<p>The system calls behind capabilities manipulation are very complicated, so unlike in previous sections, we’re going to use wrapped-up libraries to aid with this. There are two options available, <code class="language-plaintext highlighter-rouge">libcap</code> and <code class="language-plaintext highlighter-rouge">libcap-ng</code>, of which the latter is easier to understand and use. The documentations for <a href="https://linux.die.net/man/3/libcap">libcap</a> and <a href="https://people.redhat.com/sgrubb/libcap-ng/">libcap-ng</a> are given. Note that since they’re “external” libraries, extra flags need to be supplied when compiling. For libcap you’ll add <code class="language-plaintext highlighter-rouge">-lcap</code> to the compilation command, and similarly for libcap-ng you’ll add <code class="language-plaintext highlighter-rouge">-lcap-ng</code> to the command.</p>
-								<p>As an easier starting point, we’ll use <a href="https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities">Docker’s capabilities set</a> to avoid having to sort everything out by ourselves. Before we start, there’s another thing to learn - the different “sets” of capabilities of a process. In a few short words,</p>
-								<ul>
-									<li>The <em>bounding</em> set restricts the maximum possible set of capabilities a process (and all its descendants) can have</li>
-									<li>The <em>effective</em> set is what a process currently has and is effective</li>
-									<li>The <em>permitted</em> set may be granted when “asked” (using the appropriate system calls)</li>
-								</ul>
-								<p>It’s noticeable that we want to limit all three sets for the container. Using libcap-ng, the code is very simple:</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="n">capng_clear</span><span class="p">(</span><span class="n">CAPNG_SELECT_BOTH</span><span class="p">);</span>
+							</div>
+							<p>We’ve isolated our container filesystem from the host system, and then we can proceed to securing and fortifying our container.</p>
+							<h2 id="capabilities">Capabilities</h2>
+							<p>In the traditional UNIX era, there were only two privilege levels - <em>privileged</em> (root) and <em>unprivileged</em> (non-root), where a <em>privileged</em> process has every privilege to alter the system, while an <em>unprivileged</em> process has none. Since Linux 2.2 in 1999, <em>capabilities</em> have been added to the kernel so that unprivileged processes may acquire certain abilities needed for some task, while privileged processes may drop capabilities unneeded, allowing for privilege control at a finer granularity. A <code class="language-plaintext highlighter-rouge">ping</code> process doesn’t need any extra privileges than sending ICMP packets, and a web server (probably) doesn’t need any extra privileges than binding to a low port (1 to 1023), do they?</p>
+							<p>With capabilities, unprivileged processes can be granted access to selected system functionalities, while privileged processes can be deprived of selected ones. For example, <code class="language-plaintext highlighter-rouge">CAP_NET_BIND_SERVICE</code> is the capability to bind to TCP or UDP ports between 1 and 1023, and <code class="language-plaintext highlighter-rouge">CAP_CHOWN</code> enables the use of <code class="language-plaintext highlighter-rouge">chown(2)</code>.</p>
+							<p>Now turning our focus back to containers. Without privilege separation, a “root” process inside a container can still do dangerous things, like scanning your hard drive where the host filesystem resides, and manipulate it. This is definitely not anything expected, so we’re going to limit the capabilities the container can have as a whole.</p>
+							<p>The system calls behind capabilities manipulation are very complicated, so unlike in previous sections, we’re going to use wrapped-up libraries to aid with this. There are two options available, <code class="language-plaintext highlighter-rouge">libcap</code> and <code class="language-plaintext highlighter-rouge">libcap-ng</code>, of which the latter is easier to understand and use. The documentations for <a href="https://linux.die.net/man/3/libcap">libcap</a> and <a href="https://people.redhat.com/sgrubb/libcap-ng/">libcap-ng</a> are given. Note that since they’re “external” libraries, extra flags need to be supplied when compiling. For libcap you’ll add <code class="language-plaintext highlighter-rouge">-lcap</code> to the compilation command, and similarly for libcap-ng you’ll add <code class="language-plaintext highlighter-rouge">-lcap-ng</code> to the command.</p>
+							<p>As an easier starting point, we’ll use <a href="https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities">Docker’s capabilities set</a> to avoid having to sort everything out by ourselves. Before we start, there’s another thing to learn - the different “sets” of capabilities of a process. In a few short words,</p>
+							<ul>
+								<li>The <em>bounding</em> set restricts the maximum possible set of capabilities a process (and all its descendants) can have</li>
+								<li>The <em>effective</em> set is what a process currently has and is effective</li>
+								<li>The <em>permitted</em> set may be granted when “asked” (using the appropriate system calls)</li>
+							</ul>
+							<p>It’s noticeable that we want to limit all three sets for the container. Using libcap-ng, the code is very simple:</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">capng_clear</span><span class="p">(</span><span class="n">CAPNG_SELECT_BOTH</span><span class="p">);</span>
 <span class="n">capng_updatev</span><span class="p">(</span><span class="n">CAPNG_ADD</span><span class="p">,</span> <span class="p">(</span><span class="n">capng_type_t</span><span class="p">)(</span><span class="n">CAPNG_EFFECTIVE</span> <span class="o">|</span> <span class="n">CAPNG_PERMITTED</span> <span class="o">|</span> <span class="n">CAPNG_BOUNDING_SET</span><span class="p">),</span>
     <span class="n">CAP_SETPCAP</span><span class="p">,</span>
     <span class="c1">// ...</span>
@@ -567,29 +579,29 @@ tmpfs on /run type tmpfs (rw,nosuid,nodev,noexec,relatime,size=13191916k,mode=75
     <span class="o">-</span><span class="mi">1</span><span class="p">);</span>
 <span class="n">capng_apply</span><span class="p">(</span><span class="n">CAPNG_SELECT_BOTH</span><span class="p">);</span>
 </code></pre>
-									</div>
 								</div>
-								<p>With <code class="language-plaintext highlighter-rouge">capng_clear</code>, we clear all capabilities from our pending changes, and add whitelisted capabilities, before finally applying the changes.</p>
-								<p>Using libcap, however, is slightly more complicated to achieve the same, as there’s no direct “clear all” function, but instead you’ll have to list them by yourself. <a href="https://github.com/iBug/iSpawn/commit/bcf27bf42771e7fd8c7f24abbec5907f6f727fd7">Here</a>’s an older version of my attempted code if you want to learn. Nevertheless, it’s never bad to learn more.</p>
-								<h2 id="seccomp">SecComp</h2>
-								<p>SecComp (Secure Computing) is a security module in Linux that lets a process to transition one-way into a “secure state” where no system call other than <code class="language-plaintext highlighter-rouge">read()</code>, <code class="language-plaintext highlighter-rouge">write()</code>, <code class="language-plaintext highlighter-rouge">sigreturn()</code> and <code class="language-plaintext highlighter-rouge">exit()</code> is allowed. It’s easily noticeable that this feature is too strict for making something useful, and <strong>seccomp-bpf</strong> is an extension to the rescue.</p>
-								<p>Seccomp BPF extends the seccomp module with Berkeley Packer Filter (BPF), an embedded instruction set that allows highly customized seccomp rules to be deployed. With BPF, you can create custom logic for system call filtering, including matching and testing individual system call arguments.</p>
-								<h2 id="syscall-filter">System call filtering</h2>
-								<p>To ensure full control, we’re using a whitelist for system calls. This means any unknown one will be rejected. So we’ll start by creating a new “SecComp filter context”, and set the default action to “reject”. By “reject”, we’ll return “permission denied” when a process tries to call it.</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="n">scmp_filter_ctx</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">seccomp_init</span><span class="p">(</span><span class="n">SCMP_ACT_ERRNO</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
+							</div>
+							<p>With <code class="language-plaintext highlighter-rouge">capng_clear</code>, we clear all capabilities from our pending changes, and add whitelisted capabilities, before finally applying the changes.</p>
+							<p>Using libcap, however, is slightly more complicated to achieve the same, as there’s no direct “clear all” function, but instead you’ll have to list them by yourself. <a href="https://github.com/iBug/iSpawn/commit/bcf27bf42771e7fd8c7f24abbec5907f6f727fd7">Here</a>’s an older version of my attempted code if you want to learn. Nevertheless, it’s never bad to learn more.</p>
+							<h2 id="seccomp">SecComp</h2>
+							<p>SecComp (Secure Computing) is a security module in Linux that lets a process to transition one-way into a “secure state” where no system call other than <code class="language-plaintext highlighter-rouge">read()</code>, <code class="language-plaintext highlighter-rouge">write()</code>, <code class="language-plaintext highlighter-rouge">sigreturn()</code> and <code class="language-plaintext highlighter-rouge">exit()</code> is allowed. It’s easily noticeable that this feature is too strict for making something useful, and <strong>seccomp-bpf</strong> is an extension to the rescue.</p>
+							<p>Seccomp BPF extends the seccomp module with Berkeley Packer Filter (BPF), an embedded instruction set that allows highly customized seccomp rules to be deployed. With BPF, you can create custom logic for system call filtering, including matching and testing individual system call arguments.</p>
+							<h2 id="syscall-filter">System call filtering</h2>
+							<p>To ensure full control, we’re using a whitelist for system calls. This means any unknown one will be rejected. So we’ll start by creating a new “SecComp filter context”, and set the default action to “reject”. By “reject”, we’ll return “permission denied” when a process tries to call it.</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">scmp_filter_ctx</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">seccomp_init</span><span class="p">(</span><span class="n">SCMP_ACT_ERRNO</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
 </code></pre>
-									</div>
 								</div>
-								<p>The <code class="language-plaintext highlighter-rouge">SCMP_ACT_ERRNO(1)</code> refers exactly to “respond with EPERM”, which will be hit if no other filters apply.</p>
-								<h3 id="syscall-whitelist">System call whitelist</h3>
-								<p>We’ll now add each “safe” system call to our filter and set it to “allowed”. To save some time scratching your head examining each system call, we’ll adopt <a href="https://github.com/moby/moby/blob/master/profiles/seccomp/default.json">Docker’s syscall whitelist</a>. Each system call will be wrapped in <code class="language-plaintext highlighter-rouge">SCMP_SYS</code> so it’s turned into a suitable number used inside SecComp.</p>
-								<p>We need to add the whole big list of “general” system calls, plus some platform- or scenario-specific ones, namely, two special system calls for <code class="language-plaintext highlighter-rouge">amd64</code> platform, and a few others for system administration, since we’ve allowed <code class="language-plaintext highlighter-rouge">CAP_SYS_ADMIN</code> inside the container.</p>
-								<p>Use your favorite text processing toolstack to get the big list into a C-array so we can loop over, like <a href="https://github.com/iBug/iSpawn/blob/master/syscall_allow.c">this</a>:</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="kt">int</span> <span class="n">allowed_syscalls</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+							</div>
+							<p>The <code class="language-plaintext highlighter-rouge">SCMP_ACT_ERRNO(1)</code> refers exactly to “respond with EPERM”, which will be hit if no other filters apply.</p>
+							<h3 id="syscall-whitelist">System call whitelist</h3>
+							<p>We’ll now add each “safe” system call to our filter and set it to “allowed”. To save some time scratching your head examining each system call, we’ll adopt <a href="https://github.com/moby/moby/blob/master/profiles/seccomp/default.json">Docker’s syscall whitelist</a>. Each system call will be wrapped in <code class="language-plaintext highlighter-rouge">SCMP_SYS</code> so it’s turned into a suitable number used inside SecComp.</p>
+							<p>We need to add the whole big list of “general” system calls, plus some platform- or scenario-specific ones, namely, two special system calls for <code class="language-plaintext highlighter-rouge">amd64</code> platform, and a few others for system administration, since we’ve allowed <code class="language-plaintext highlighter-rouge">CAP_SYS_ADMIN</code> inside the container.</p>
+							<p>Use your favorite text processing toolstack to get the big list into a C-array so we can loop over, like <a href="https://github.com/iBug/iSpawn/blob/master/syscall_allow.c">this</a>:</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kt">int</span> <span class="n">allowed_syscalls</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
     <span class="n">SCMP_SYS</span><span class="p">(</span><span class="n">accept</span><span class="p">),</span>
     <span class="n">SCMP_SYS</span><span class="p">(</span><span class="n">accept4</span><span class="p">),</span>
     <span class="n">SCMP_SYS</span><span class="p">(</span><span class="n">access</span><span class="p">),</span>
@@ -598,12 +610,12 @@ tmpfs on /run type tmpfs (rw,nosuid,nodev,noexec,relatime,size=13191916k,mode=75
     <span class="n">SCMP_SYS</span><span class="p">(</span><span class="n">write</span><span class="p">),</span>
     <span class="n">SCMP_SYS</span><span class="p">(</span><span class="n">writev</span><span class="p">),</span>
 </code></pre>
-									</div>
 								</div>
-								<p>And then append these special ones we want to include as well:</p>
-								<div class="language-plaintext highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code>    // amd64-specific required syscalls
+							</div>
+							<p>And then append these special ones we want to include as well:</p>
+							<div class="language-plaintext highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>    // amd64-specific required syscalls
     SCMP_SYS(arch_prctl),
     SCMP_SYS(modify_ldt),
 
@@ -625,47 +637,47 @@ tmpfs on /run type tmpfs (rw,nosuid,nodev,noexec,relatime,size=13191916k,mode=75
     SCMP_SYS(unshare)
 };
 </code></pre>
-									</div>
 								</div>
-								<p>Find the number of items included, and save it for easier later use.</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="kt">size_t</span> <span class="n">allowed_syscalls_len</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">allowed_syscalls</span><span class="p">)</span> <span class="o">/</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">allowed_syscalls</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+							</div>
+							<p>Find the number of items included, and save it for easier later use.</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kt">size_t</span> <span class="n">allowed_syscalls_len</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">allowed_syscalls</span><span class="p">)</span> <span class="o">/</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">allowed_syscalls</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
 </code></pre>
-									</div>
 								</div>
-								<p>We can then add each system call to our new SecComp filter as “allowed” with a simple loop:</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">allowed_syscalls_len</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+							</div>
+							<p>We can then add each system call to our new SecComp filter as “allowed” with a simple loop:</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">allowed_syscalls_len</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">seccomp_rule_add</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">SCMP_ACT_ALLOW</span><span class="p">,</span> <span class="n">allowed_syscalls</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">0</span><span class="p">);</span>
 <span class="p">}</span>
 </code></pre>
-									</div>
 								</div>
-								<h3 id="loading-seccomp">Loading SecComp filter</h3>
-								<p>After our filter has been constructed, we can load it onto our process for it to take effect.</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="n">seccomp_load</span><span class="p">(</span><span class="n">ctx</span><span class="p">);</span>
+							</div>
+							<h3 id="loading-seccomp">Loading SecComp filter</h3>
+							<p>After our filter has been constructed, we can load it onto our process for it to take effect.</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">seccomp_load</span><span class="p">(</span><span class="n">ctx</span><span class="p">);</span>
 </code></pre>
-									</div>
 								</div>
-								<p>And finally, release the workspace to avoid memory leaks.</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="n">seccomp_release</span><span class="p">(</span><span class="n">ctx</span><span class="p">);</span>
+							</div>
+							<p>And finally, release the workspace to avoid memory leaks.</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">seccomp_release</span><span class="p">(</span><span class="n">ctx</span><span class="p">);</span>
 </code></pre>
-									</div>
 								</div>
-								<h3 id="seccomp-caveats">Caveats</h3>
-								<h4 id="seccomp-incompatible-syscalls">Incompatible system calls</h4>
-								<p>As I worked this out on an Ubuntu 18.04 environment, some newer system calls weren’t available in my system headers, like the <code class="language-plaintext highlighter-rouge">io_uring</code>-related ones that are introduced in Linux 5.1. You can safely comment out any of them that your compiler complains about not recognizing. There shouldn’t be too many of them if your environment is up-to-date, though.</p>
-								<h4 id="seccomp-checking">Precautionary checking</h4>
-								<p>As it’s too common for one of the function calls to fail, I’ve added sanity checks for them. Here’s the complete code of this part.</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="kt">int</span> <span class="nf">filter_syscall</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+							</div>
+							<h3 id="seccomp-caveats">Caveats</h3>
+							<h4 id="seccomp-incompatible-syscalls">Incompatible system calls</h4>
+							<p>As I worked this out on an Ubuntu 18.04 environment, some newer system calls weren’t available in my system headers, like the <code class="language-plaintext highlighter-rouge">io_uring</code>-related ones that are introduced in Linux 5.1. You can safely comment out any of them that your compiler complains about not recognizing. There shouldn’t be too many of them if your environment is up-to-date, though.</p>
+							<h4 id="seccomp-checking">Precautionary checking</h4>
+							<p>As it’s too common for one of the function calls to fail, I’ve added sanity checks for them. Here’s the complete code of this part.</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kt">int</span> <span class="nf">filter_syscall</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">scmp_filter_ctx</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">seccomp_init</span><span class="p">(</span><span class="n">SCMP_ACT_ERRNO</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">ctx</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
         <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
@@ -682,52 +694,52 @@ tmpfs on /run type tmpfs (rw,nosuid,nodev,noexec,relatime,size=13191916k,mode=75
     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre>
-									</div>
 								</div>
-								<h2 id="cgroups">Resource restriction</h2>
-								<p>The last part we’ll visit is restricting container resources. Surely we don’t want a container to overuse system resources like CPU or RAM and make the host system less stable. Linux Control Groups (Cgroups) is designed for efficient resource constraint that we’re going to make use of. There are many “cgroup systems” for different aspects of system resources, including CPU, RAM and even disk I/O. Looks pretty neat, right?</p>
-								<p>Unlike other parts we’ve built so far, cgroup doesn’t use system calls for setup and configuration, but a filesystem-based interface instead, like those in <code class="language-plaintext highlighter-rouge">/proc</code> or <code class="language-plaintext highlighter-rouge">/sys</code>. In fact, the cgroup control interface resides exactly under <code class="language-plaintext highlighter-rouge">/sys</code>, at <code class="language-plaintext highlighter-rouge">/sys/fs/cgroup</code>. With this interface, we read and write “files” to change configuration values, and create and delete directories to add or remove structures.</p>
-								<p>There are multiple cgroup “controllers” working on different aspects of system resources, each having a distinct tree structure under <code class="language-plaintext highlighter-rouge">/sys/fs/cgroup</code>. So first we’ll examine what cgroup controllers are available:</p>
-								<div class="language-console highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="gp">root@ubuntu:~#</span><span class="w"> </span><span class="nb">ls</span> /sys/fs/cgroup
+							</div>
+							<h2 id="cgroups">Resource restriction</h2>
+							<p>The last part we’ll visit is restricting container resources. Surely we don’t want a container to overuse system resources like CPU or RAM and make the host system less stable. Linux Control Groups (Cgroups) is designed for efficient resource constraint that we’re going to make use of. There are many “cgroup systems” for different aspects of system resources, including CPU, RAM and even disk I/O. Looks pretty neat, right?</p>
+							<p>Unlike other parts we’ve built so far, cgroup doesn’t use system calls for setup and configuration, but a filesystem-based interface instead, like those in <code class="language-plaintext highlighter-rouge">/proc</code> or <code class="language-plaintext highlighter-rouge">/sys</code>. In fact, the cgroup control interface resides exactly under <code class="language-plaintext highlighter-rouge">/sys</code>, at <code class="language-plaintext highlighter-rouge">/sys/fs/cgroup</code>. With this interface, we read and write “files” to change configuration values, and create and delete directories to add or remove structures.</p>
+							<p>There are multiple cgroup “controllers” working on different aspects of system resources, each having a distinct tree structure under <code class="language-plaintext highlighter-rouge">/sys/fs/cgroup</code>. So first we’ll examine what cgroup controllers are available:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">root@ubuntu:~#</span><span class="w"> </span><span class="nb">ls</span> /sys/fs/cgroup
 <span class="go">blkio        cpuacct  freezer  net_cls           perf_event  systemd
 cpu          cpuset   hugetlb  net_cls,net_prio  pids        unified
 cpu,cpuacct  devices  memory   net_prio          rdma
 </span></code></pre>
-									</div>
 								</div>
-								<p>Here we’re interested in some of them, namely, <code class="language-plaintext highlighter-rouge">blkio</code>, <code class="language-plaintext highlighter-rouge">cpu</code>, <code class="language-plaintext highlighter-rouge">memory</code> and <code class="language-plaintext highlighter-rouge">pids</code>.</p>
-								<p>Let’s first take a look at <code class="language-plaintext highlighter-rouge">pids</code>. We’ll create our own subtree to start with:</p>
-								<div class="language-console highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="gp">root@ubuntu:~#</span><span class="w"> </span><span class="nb">mkdir</span> /sys/fs/cgroup/pids/ispawn
+							</div>
+							<p>Here we’re interested in some of them, namely, <code class="language-plaintext highlighter-rouge">blkio</code>, <code class="language-plaintext highlighter-rouge">cpu</code>, <code class="language-plaintext highlighter-rouge">memory</code> and <code class="language-plaintext highlighter-rouge">pids</code>.</p>
+							<p>Let’s first take a look at <code class="language-plaintext highlighter-rouge">pids</code>. We’ll create our own subtree to start with:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">root@ubuntu:~#</span><span class="w"> </span><span class="nb">mkdir</span> /sys/fs/cgroup/pids/ispawn
 <span class="gp">root@ubuntu:~#</span><span class="w"> </span><span class="nb">ls</span> /sys/fs/cgroup/pids/ispawn
 <span class="go">cgroup.clone_children  notify_on_release  pid.events  tasks
 cgroup.procs           pid.current        pid.max
 </span></code></pre>
-									</div>
 								</div>
-								<p>It’s easily imagined that <code class="language-plaintext highlighter-rouge">pid.max</code> controls the maximum number of PIDs in this subsystem, so let’s write something to it:</p>
-								<div class="language-console highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="gp">root@ubuntu:~#</span><span class="w"> </span><span class="nb">echo </span>16 <span class="o">&gt;</span> /sys/fs/cgroup/pids/ispawn/pid.max
+							</div>
+							<p>It’s easily imagined that <code class="language-plaintext highlighter-rouge">pid.max</code> controls the maximum number of PIDs in this subsystem, so let’s write something to it:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">root@ubuntu:~#</span><span class="w"> </span><span class="nb">echo </span>16 <span class="o">&gt;</span> /sys/fs/cgroup/pids/ispawn/pid.max
 </code></pre>
-									</div>
 								</div>
-								<p>To verify that it’s working, make an attempt to exceed the limit. Open another shell and find its pid with <code class="language-plaintext highlighter-rouge">echo $$</code>. Write the number that you see (it’s the PID of the new shell) to <code class="language-plaintext highlighter-rouge">/sys/fs/cgroup/pids/ispawn/cgroup.procs</code>. You can verify that the new process has been added to the subsystem by reading that <code class="language-plaintext highlighter-rouge">cgroup.procs</code> files out, and you’ll see the PID you just written.</p>
-								<p>Now switch to the new shell and try spawning a lot of subprocesses, for example:</p>
-								<div class="language-shell highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="k">for </span>i <span class="k">in</span> <span class="o">{</span>1..20<span class="o">}</span><span class="p">;</span> <span class="k">do</span> /bin/sleep 10<span class="p">;</span> <span class="k">done</span>
+							</div>
+							<p>To verify that it’s working, make an attempt to exceed the limit. Open another shell and find its pid with <code class="language-plaintext highlighter-rouge">echo $$</code>. Write the number that you see (it’s the PID of the new shell) to <code class="language-plaintext highlighter-rouge">/sys/fs/cgroup/pids/ispawn/cgroup.procs</code>. You can verify that the new process has been added to the subsystem by reading that <code class="language-plaintext highlighter-rouge">cgroup.procs</code> files out, and you’ll see the PID you just written.</p>
+							<p>Now switch to the new shell and try spawning a lot of subprocesses, for example:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">for </span>i <span class="k">in</span> <span class="o">{</span>1..20<span class="o">}</span><span class="p">;</span> <span class="k">do</span> /bin/sleep 10<span class="p">;</span> <span class="k">done</span>
 </code></pre>
-									</div>
 								</div>
-								<p>You can see the shell output as <em>Operation not permitted</em> for 5 to 6 times. This means it has hit the PID cap and fails to spawn more processes.</p>
-								<p>In our C-based container program, we’ll do this in the parent process. The code is intuitively simple.</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="n">mkdir</span><span class="p">(</span><span class="s">"/sys/fs/cgroup/pids/ispawn"</span><span class="p">,</span> <span class="mo">0777</span><span class="p">);</span>
+							</div>
+							<p>You can see the shell output as <em>Operation not permitted</em> for 5 to 6 times. This means it has hit the PID cap and fails to spawn more processes.</p>
+							<p>In our C-based container program, we’ll do this in the parent process. The code is intuitively simple.</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="n">mkdir</span><span class="p">(</span><span class="s">"/sys/fs/cgroup/pids/ispawn"</span><span class="p">,</span> <span class="mo">0777</span><span class="p">);</span>
 <span class="kt">FILE</span> <span class="o">*</span><span class="n">fp</span> <span class="o">=</span> <span class="n">fopen</span><span class="p">(</span><span class="s">"/sys/fs/cgroup/pids/ispawn/pid.max"</span><span class="p">,</span> <span class="s">"w"</span><span class="p">);</span>
 <span class="n">fprintf</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="s">"%d"</span><span class="p">,</span> <span class="mi">16</span><span class="p">);</span>
 <span class="n">fclose</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
@@ -735,37 +747,37 @@ cgroup.procs           pid.current        pid.max
 <span class="n">fprintf</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="s">"%d"</span><span class="p">,</span> <span class="n">pid</span><span class="p">);</span> <span class="c1">// pid of the child process</span>
 <span class="n">fclose</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
 </code></pre>
-									</div>
 								</div>
-								<p>We can now proceed to setting other limits:</p>
-								<ul>
-									<li>To reduce CPU shares, we write to <code class="language-plaintext highlighter-rouge">cpu/cpu.shares</code>. Because CPU shares are relative to each other and the system default is usually 1024, setting the value to 256 for our container gives it 1/4 as much CPU as other processes when the system load goes up. (It still gets more CPU when needed and when the system is more idle.)</li>
-									<li>To limit memory usage, we write to <code class="language-plaintext highlighter-rouge">memory/memory.limit_in_bytes</code> (for userspace memory) and <code class="language-plaintext highlighter-rouge">memory/memory.kmem.limit_in_bytes</code> (for kernel memory).
-										<ul>
-											<li>However, this limits only physical memory usage, so when swap is present, memory gets swapped out onto disk when it hits the limit. To completely disable swap for our container, set <code class="language-plaintext highlighter-rouge">memory/memory.swappiness</code> to zero.</li>
-										</ul>
-									</li>
-									<li>To reduce disk I/O priority, we write to <code class="language-plaintext highlighter-rouge">blkio/weight</code>. This is relative to 100 so writing 50 will reduce its disk I/O priority to half.</li>
-									<li>The last thing to note is that the tree hierarchies are independent among different cgroup controllers, so you have to create the same <code class="language-plaintext highlighter-rouge">ispawn</code> directory in <em>each</em> of them, and write <code class="language-plaintext highlighter-rouge">cgroup.procs</code> inside <em>each</em> of them.</li>
-								</ul>
-								<div class="notice--primary">
-									<h4 class="no_toc" id="heads-up"><i class="fas fa-fw fa-lightbulb"></i> Heads up</h4>
-									<p>The course lab at the time was based on Ubuntu 18.04 with Linux kernel 5.3 (18.04 HWE). The cgroup controllers in newer kernels may be very different from what’s presented in this article. For example, with Linux 5.4 on Ubuntu 20.04, the keys in PID cgroup begins with <code class="language-plaintext highlighter-rouge">pids.</code> instead of <code class="language-plaintext highlighter-rouge">pid.</code>, and <code class="language-plaintext highlighter-rouge">blkio</code> has a completely different set of available keys. Make sure you examine the cgroup directories before copying and pasting code.</p>
-								</div>
-								<h3 id="mount-cgroup-controllers">Mounting cgroup controllers inside the container</h3>
-								<p>To enable applications in our container to use cgroup controllers, we must mount them inside. Like how we mounted <code class="language-plaintext highlighter-rouge">/sys</code>, <code class="language-plaintext highlighter-rouge">/tmp</code> and other filesystems, we check the output of <code class="language-plaintext highlighter-rouge">mount</code> to determine how we’re going to call <code class="language-plaintext highlighter-rouge">mount(2)</code>.</p>
-								<div class="language-text highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code>cgroup on /sys/fs/cgroup/pids type cgroup (rw,nosuid,nodev,noexec,relatime,pids)
+							</div>
+							<p>We can now proceed to setting other limits:</p>
+							<ul>
+								<li>To reduce CPU shares, we write to <code class="language-plaintext highlighter-rouge">cpu/cpu.shares</code>. Because CPU shares are relative to each other and the system default is usually 1024, setting the value to 256 for our container gives it 1/4 as much CPU as other processes when the system load goes up. (It still gets more CPU when needed and when the system is more idle.)</li>
+								<li>To limit memory usage, we write to <code class="language-plaintext highlighter-rouge">memory/memory.limit_in_bytes</code> (for userspace memory) and <code class="language-plaintext highlighter-rouge">memory/memory.kmem.limit_in_bytes</code> (for kernel memory).
+									<ul>
+										<li>However, this limits only physical memory usage, so when swap is present, memory gets swapped out onto disk when it hits the limit. To completely disable swap for our container, set <code class="language-plaintext highlighter-rouge">memory/memory.swappiness</code> to zero.</li>
+									</ul>
+								</li>
+								<li>To reduce disk I/O priority, we write to <code class="language-plaintext highlighter-rouge">blkio/weight</code>. This is relative to 100 so writing 50 will reduce its disk I/O priority to half.</li>
+								<li>The last thing to note is that the tree hierarchies are independent among different cgroup controllers, so you have to create the same <code class="language-plaintext highlighter-rouge">ispawn</code> directory in <em>each</em> of them, and write <code class="language-plaintext highlighter-rouge">cgroup.procs</code> inside <em>each</em> of them.</li>
+							</ul>
+							<div class="notice--primary">
+								<h4 class="no_toc" id="heads-up"><i class="fas fa-fw fa-lightbulb"></i> Heads up</h4>
+								<p>The course lab at the time was based on Ubuntu 18.04 with Linux kernel 5.3 (18.04 HWE). The cgroup controllers in newer kernels may be very different from what’s presented in this article. For example, with Linux 5.4 on Ubuntu 20.04, the keys in PID cgroup begins with <code class="language-plaintext highlighter-rouge">pids.</code> instead of <code class="language-plaintext highlighter-rouge">pid.</code>, and <code class="language-plaintext highlighter-rouge">blkio</code> has a completely different set of available keys. Make sure you examine the cgroup directories before copying and pasting code.</p>
+							</div>
+							<h3 id="mount-cgroup-controllers">Mounting cgroup controllers inside the container</h3>
+							<p>To enable applications in our container to use cgroup controllers, we must mount them inside. Like how we mounted <code class="language-plaintext highlighter-rouge">/sys</code>, <code class="language-plaintext highlighter-rouge">/tmp</code> and other filesystems, we check the output of <code class="language-plaintext highlighter-rouge">mount</code> to determine how we’re going to call <code class="language-plaintext highlighter-rouge">mount(2)</code>.</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>cgroup on /sys/fs/cgroup/pids type cgroup (rw,nosuid,nodev,noexec,relatime,pids)
 </code></pre>
-									</div>
 								</div>
-								<p>Everything looks similar to what we’ve just done, but there’s one different thing: There’s no mount flag for <code class="language-plaintext highlighter-rouge">pids</code>.</p>
-								<p>Recalling <a href="#mount-data-parameter">we skipped the last parameter of <code class="language-plaintext highlighter-rouge">mount</code></a>, now it’s time to pick it back up. Fortunately, it isn’t too complicated. For our use case, we can just pass the string <code class="language-plaintext highlighter-rouge">"pids"</code> to that parameter, and we swap the string for another to mount another cgroup controller. You can read the man page for <a href="https://man7.org/linux/man-pages/man7/cgroups.7.html"><code class="language-plaintext highlighter-rouge">cgroups(7)</code></a> about this, look for <em>Mounting v1 controllers</em>.</p>
-								<p>To mimic the monut points on our host system, we additionally mount a tmpfs at <code class="language-plaintext highlighter-rouge">/sys/fs/cgroup</code>, and remount this mountpoint as read-only after adding the controllers. The final result looks like this:</p>
-								<div class="language-c highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="kt">void</span> <span class="nf">mount_cgroup</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+							</div>
+							<p>Everything looks similar to what we’ve just done, but there’s one different thing: There’s no mount flag for <code class="language-plaintext highlighter-rouge">pids</code>.</p>
+							<p>Recalling <a href="#mount-data-parameter">we skipped the last parameter of <code class="language-plaintext highlighter-rouge">mount</code></a>, now it’s time to pick it back up. Fortunately, it isn’t too complicated. For our use case, we can just pass the string <code class="language-plaintext highlighter-rouge">"pids"</code> to that parameter, and we swap the string for another to mount another cgroup controller. You can read the man page for <a href="https://man7.org/linux/man-pages/man7/cgroups.7.html"><code class="language-plaintext highlighter-rouge">cgroups(7)</code></a> about this, look for <em>Mounting v1 controllers</em>.</p>
+							<p>To mimic the monut points on our host system, we additionally mount a tmpfs at <code class="language-plaintext highlighter-rouge">/sys/fs/cgroup</code>, and remount this mountpoint as read-only after adding the controllers. The final result looks like this:</p>
+							<div class="language-c highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kt">void</span> <span class="nf">mount_cgroup</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
     <span class="kt">int</span> <span class="n">cgmountflags</span> <span class="o">=</span> <span class="n">MS_NOSUID</span> <span class="o">|</span> <span class="n">MS_NODEV</span> <span class="o">|</span> <span class="n">MS_NOEXEC</span> <span class="o">|</span> <span class="n">MS_RELATIME</span><span class="p">;</span>
     <span class="c1">// Mount a tmpfs first</span>
     <span class="n">mount</span><span class="p">(</span><span class="s">"none"</span><span class="p">,</span> <span class="s">"sys/fs/cgroup"</span><span class="p">,</span> <span class="s">"tmpfs"</span><span class="p">,</span> <span class="n">cgmountflags</span><span class="p">,</span> <span class="s">"mode=755"</span><span class="p">);</span>
@@ -791,21 +803,21 @@ cgroup.procs           pid.current        pid.max
     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre>
-									</div>
 								</div>
-								<h3 id="cgroup-namespace-caveat">A small problem with cgroup namespace</h3>
-								<p>During my experiments, I noticed a strange issue where I could see the host cgroup hierarchies in my container implementation. It turns out that the cgroup “root” inside a cgroup namespace is the subtree the process belongs in when this cgroup namespace is created / isolated. Once the namespaces is created, its root is determined and fixed, even if the “root” process is moved into another subtree later.</p>
-								<p>This means the child process must be “moved” to the desired cgroup subtree before the cgroup namespace is isolated. This leaves us with two options:</p>
-								<ol>
-									<li>The parent process moves itself to the target cgroup subtree before calling <code class="language-plaintext highlighter-rouge">clone()</code> with <code class="language-plaintext highlighter-rouge">CLONE_NEWCGROUP</code></li>
-									<li>The parent process calls <code class="language-plaintext highlighter-rouge">clone()</code> without <code class="language-plaintext highlighter-rouge">CLONE_NEWCGROUP</code>, moves the child process to the target cgroup subtree, and then tells the child process to isolate the cgroup namespace.</li>
-								</ol>
-								<p>It should be noted that with the second option, some kind of “syncing” is needed to avoid the child process going too quickly to perform the cgroup namespace isolation before the parent process finishes its job. It’s easy to come up with a solution that just works: We can create a pipe between the processes, where the parent process can send something to tell the child process that it’s ready.</p>
-								<p>With this in mind, the second option is actually <a href="https://github.com/iBug/iSpawn/commit/cc4dcb1032e2a4d4fc57491cc904f126b719ba88">easier to implement</a>, since there’s another system call for isolating namespaces in-place (i.e. without creating a new process), that we put away earlier. It’s <code class="language-plaintext highlighter-rouge">unshare(2)</code>. It’s simple to use, too, just call <code class="language-plaintext highlighter-rouge">unshare(CLONE_NEWCGROUP)</code> when ready.</p>
-								<p>To verify that this issue is handled correctly, check the content in <code class="language-plaintext highlighter-rouge">/proc/1/cgroup</code>. The correct result should look like this, where every line ends with a single <code class="language-plaintext highlighter-rouge">/</code>:</p>
-								<div class="language-text highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code>12:cpuset:/
+							</div>
+							<h3 id="cgroup-namespace-caveat">A small problem with cgroup namespace</h3>
+							<p>During my experiments, I noticed a strange issue where I could see the host cgroup hierarchies in my container implementation. It turns out that the cgroup “root” inside a cgroup namespace is the subtree the process belongs in when this cgroup namespace is created / isolated. Once the namespaces is created, its root is determined and fixed, even if the “root” process is moved into another subtree later.</p>
+							<p>This means the child process must be “moved” to the desired cgroup subtree before the cgroup namespace is isolated. This leaves us with two options:</p>
+							<ol>
+								<li>The parent process moves itself to the target cgroup subtree before calling <code class="language-plaintext highlighter-rouge">clone()</code> with <code class="language-plaintext highlighter-rouge">CLONE_NEWCGROUP</code></li>
+								<li>The parent process calls <code class="language-plaintext highlighter-rouge">clone()</code> without <code class="language-plaintext highlighter-rouge">CLONE_NEWCGROUP</code>, moves the child process to the target cgroup subtree, and then tells the child process to isolate the cgroup namespace.</li>
+							</ol>
+							<p>It should be noted that with the second option, some kind of “syncing” is needed to avoid the child process going too quickly to perform the cgroup namespace isolation before the parent process finishes its job. It’s easy to come up with a solution that just works: We can create a pipe between the processes, where the parent process can send something to tell the child process that it’s ready.</p>
+							<p>With this in mind, the second option is actually <a href="https://github.com/iBug/iSpawn/commit/cc4dcb1032e2a4d4fc57491cc904f126b719ba88">easier to implement</a>, since there’s another system call for isolating namespaces in-place (i.e. without creating a new process), that we put away earlier. It’s <code class="language-plaintext highlighter-rouge">unshare(2)</code>. It’s simple to use, too, just call <code class="language-plaintext highlighter-rouge">unshare(CLONE_NEWCGROUP)</code> when ready.</p>
+							<p>To verify that this issue is handled correctly, check the content in <code class="language-plaintext highlighter-rouge">/proc/1/cgroup</code>. The correct result should look like this, where every line ends with a single <code class="language-plaintext highlighter-rouge">/</code>:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>12:cpuset:/
 11:rdma:/
 10:blkio:/
 9:pids:/
@@ -819,12 +831,12 @@ cgroup.procs           pid.current        pid.max
 1:name=systemd:/
 0::/
 </code></pre>
-									</div>
 								</div>
-								<p>With an incorrectly written container, certain lines may have an unexpected value, generally starting with <code class="language-plaintext highlighter-rouge">/../</code>, for example:</p>
-								<div class="language-text highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code>12:cpuset:/
+							</div>
+							<p>With an incorrectly written container, certain lines may have an unexpected value, generally starting with <code class="language-plaintext highlighter-rouge">/../</code>, for example:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>12:cpuset:/
 11:rdma:/
 10:blkio:/../user.slice
 9:pids:/../user.slice/user-0.slice/
@@ -838,299 +850,299 @@ cgroup.procs           pid.current        pid.max
 1:name=systemd:/
 0::/
 </code></pre>
-									</div>
 								</div>
-								<p>As explained above, these paths are “paths to the cgroup location of PID 1 relative to the ‘root’ of the cgroup namespace”. When properly done, the PID 1 should have all of its cgroup hierarchies belonging at “root”.</p>
-								<p>Don’t be surprised to see the inconsistent lines from <code class="language-plaintext highlighter-rouge">/proc/1/cgroup</code>, as a process can be at different locations in different cgroup controllers.</p>
-								<h2 id="conclusion">Conclusion</h2>
-								<p>Now here, at this point, we’ve gone through all technologies required for a functional and secure Linux container, although our “container” isn’t necessarily functional and secure. It’s going to be hard work examining and patching all the loopholes for the best security, if you’d like, but the fundamentals have been covered already so there won’t be anything new.</p>
-								<p>There are two namespaces we’ve skipped in the beginning (three if you count <code class="language-plaintext highlighter-rouge">CLONE_NEWTIME</code>). They are slightly more complicated to set up and isn’t necessary for a container, as Docker doesn’t use User Namespaces and systemd-nspawn doesn’t use Network Namespaces by default.</p>
-								<p>There are also more to consider if you want multiple containers to run simultaneously. One notable thing is that each should have a separete cgroup subtree. Avoiding mount point conflict in race conditions is another thing to take into account.</p>
-								<p>Should you want a ready-to-use example to play with, here’s the complete code that I wrote, with some bells and whistles added: <a href="https://github.com/iBug/iSpawn"><i class="fab fa-github"></i> iBug/iSpawn</a>. Keep in mind that it’s wrote for Ubuntu 18.04 and things could have been changed drastically, so it may not work in your system.</p>
-								<h3 id="further-reading">Further reading</h3>
-								<ul>
-									<li><strong>Linux containers in 500 lines of code</strong> by <em>Lizzie Dixon</em> - <a href="https://blog.lizzie.io/linux-containers-in-500-loc.html">https://blog.lizzie.io/linux-containers-in-500-loc.html</a></li>
-									<li>Wikipedia articles on …
-										<ul>
-											<li><a href="https://en.wikipedia.org/wiki/Linux_namespaces">Linux Namespaces</a></li>
-											<li><a href="https://en.wikipedia.org/wiki/Capability-based_security">Capability-based security</a></li>
-											<li><a href="https://en.wikipedia.org/wiki/Seccomp">SecComp</a></li>
-											<li><a href="https://en.wikipedia.org/wiki/Cgroups">Cgroups</a></li>
-											<li><a href="https://en.wikipedia.org/wiki/Security-Enhanced_Linux">SELinux</a>, which we didn’t touch here</li>
-										</ul>
-									</li>
-								</ul>
-							</section>
-							<footer class="page__meta">
-								<p class="page__taxonomy">
-									<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
-									<span itemprop="keywords">
-										<a href="/tag/container" class="page__taxonomy-item p-category" rel="tag">container</a><span class="sep">, </span>
-										<a href="/tag/linux" class="page__taxonomy-item p-category" rel="tag">linux</a>
-									</span>
-								</p>
-								<p class="page__taxonomy">
-									<strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
-									<span itemprop="keywords">
-										<a href="/category/tech" class="page__taxonomy-item p-category" rel="tag">tech</a>
-									</span>
-								</p>
-								<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2022-05-01">May 1, 2022</time></p>
-							</footer>
-							<section class="page__share">
-								<h4 class="page__share-title">Share on</h4>
-								<a href="https://twitter.com/intent/tweet?text=A+Deep+Dive+into+Containers%20https%3A%2F%2Fibug.io%2Fblog%2F2021%2F01%2Flinux-container-explained%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
-								<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F01%2Flinux-container-explained%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
-								<a href="https://www.linkedin.com/shareArticle?mini=true&url=https://ibug.io/blog/2021/01/linux-container-explained/" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
-							</section>
-							<nav class="pagination">
-								<a href="/blog/2021/01/keep-flash-player-browser/" class="pagination--pager" title="Keep using Flash Player in browsers in 2021
+							</div>
+							<p>As explained above, these paths are “paths to the cgroup location of PID 1 relative to the ‘root’ of the cgroup namespace”. When properly done, the PID 1 should have all of its cgroup hierarchies belonging at “root”.</p>
+							<p>Don’t be surprised to see the inconsistent lines from <code class="language-plaintext highlighter-rouge">/proc/1/cgroup</code>, as a process can be at different locations in different cgroup controllers.</p>
+							<h2 id="conclusion">Conclusion</h2>
+							<p>Now here, at this point, we’ve gone through all technologies required for a functional and secure Linux container, although our “container” isn’t necessarily functional and secure. It’s going to be hard work examining and patching all the loopholes for the best security, if you’d like, but the fundamentals have been covered already so there won’t be anything new.</p>
+							<p>There are two namespaces we’ve skipped in the beginning (three if you count <code class="language-plaintext highlighter-rouge">CLONE_NEWTIME</code>). They are slightly more complicated to set up and isn’t necessary for a container, as Docker doesn’t use User Namespaces and systemd-nspawn doesn’t use Network Namespaces by default.</p>
+							<p>There are also more to consider if you want multiple containers to run simultaneously. One notable thing is that each should have a separete cgroup subtree. Avoiding mount point conflict in race conditions is another thing to take into account.</p>
+							<p>Should you want a ready-to-use example to play with, here’s the complete code that I wrote, with some bells and whistles added: <a href="https://github.com/iBug/iSpawn"><i class="fab fa-github"></i> iBug/iSpawn</a>. Keep in mind that it’s wrote for Ubuntu 18.04 and things could have been changed drastically, so it may not work in your system.</p>
+							<h3 id="further-reading">Further reading</h3>
+							<ul>
+								<li><strong>Linux containers in 500 lines of code</strong> by <em>Lizzie Dixon</em> - <a href="https://blog.lizzie.io/linux-containers-in-500-loc.html">https://blog.lizzie.io/linux-containers-in-500-loc.html</a></li>
+								<li>Wikipedia articles on …
+									<ul>
+										<li><a href="https://en.wikipedia.org/wiki/Linux_namespaces">Linux Namespaces</a></li>
+										<li><a href="https://en.wikipedia.org/wiki/Capability-based_security">Capability-based security</a></li>
+										<li><a href="https://en.wikipedia.org/wiki/Seccomp">SecComp</a></li>
+										<li><a href="https://en.wikipedia.org/wiki/Cgroups">Cgroups</a></li>
+										<li><a href="https://en.wikipedia.org/wiki/Security-Enhanced_Linux">SELinux</a>, which we didn’t touch here</li>
+									</ul>
+								</li>
+							</ul>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/container" class="page__taxonomy-item p-category" rel="tag">container</a><span class="sep">, </span>
+									<a href="/tag/linux" class="page__taxonomy-item p-category" rel="tag">linux</a>
+								</span>
+							</p>
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+								<span itemprop="keywords">
+									<a href="/category/tech" class="page__taxonomy-item p-category" rel="tag">tech</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2022-05-01">May 1, 2022</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=A+Deep+Dive+into+Containers%20https%3A%2F%2Fibug.io%2Fblog%2F2021%2F01%2Flinux-container-explained%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2021%2F01%2Flinux-container-explained%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https://ibug.io/blog/2021/01/linux-container-explained/" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/blog/2021/01/keep-flash-player-browser/" class="pagination--pager" title="Keep using Flash Player in browsers in 2021
 ">Previous</a>
-								<a href="/blog/2021/02/traceroute-from-vmware/" class="pagination--pager" title="Fix traceroute not showing intermediate results in a virtual machine on Windows
+							<a href="/blog/2021/02/traceroute-from-vmware/" class="pagination--pager" title="Fix traceroute not showing intermediate results in a virtual machine on Windows
 ">Next</a>
-							</nav>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+				<div class="page__related">
+					<h2 class="page__related-title">You may also enjoy</h2>
+					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/24.png" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2022/05/programming-24-game/" rel="permalink">Taking the 24 puzzle game to the next level
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now a...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2022-05-25T00:00:00+00:00">May 25, 2022</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											12 minute read
+										</span>
+									</p>
+								</div>
+							</article>
 						</div>
-						<div class="page__comments">
-							<h4 class="page__comments-title">Leave a comment</h4>
-							<section id="disqus_thread"></section>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/vpn-imagine.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											16 minute read
+										</span>
+									</p>
+								</div>
+							</article>
 						</div>
-					</article>
-					<div class="page__related">
-						<h2 class="page__related-title">You may also enjoy</h2>
-						<div class="grid__wrapper">
-							<div class="grid__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-teaser">
-										<img src="/image/teaser/24.png" alt="">
-									</div>
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2022/05/programming-24-game/" rel="permalink">Taking the 24 puzzle game to the next level
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now a...</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2022-05-25T00:00:00+00:00">May 25, 2022</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-												12 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="grid__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-teaser">
-										<img src="/image/teaser/vpn-imagine.jpg" alt="">
-									</div>
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-												16 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="grid__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-teaser">
-										<img src="/image/teaser/ldap.jpg" alt="">
-									</div>
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-												14 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="grid__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-												16 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/ldap.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											14 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											16 minute read
+										</span>
+									</p>
+								</div>
+							</article>
 						</div>
 					</div>
 				</div>
 			</div>
-			<div class="search-content">
-				<div class="search-content__inner-wrap">
-					<div class="search-searchbar"></div>
-					<div class="search-hits"></div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
 				</div>
-			</div>
-			<div id="footer" class="page__footer">
-				<footer>
-					<!-- start custom footer snippets -->
-					<!-- end custom footer snippets -->
-					<div class="page__footer-follow">
-						<ul class="social-icons">
-							<li><strong>Follow:</strong></li>
-							<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
-							<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
-							<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
-						</ul>
-					</div>
-					<div class="page__footer-copyright">
-						<p>&copy; 2024 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
-						<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
-						<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
-						<p>
-							Site version <a href="/status" class="version-text">G-866</a>
-						</p>
-					</div>
-				</footer>
-			</div>
-			<script src="/assets/js/main.min.js"></script>
-			<script>
-				// Including InstantSearch.js library and styling
-				const loadSearch = function() {
-				  const loadCSS = function(src) {
-				    var link = document.createElement('link');
-				    link.rel = 'stylesheet';
-				    link.type = 'text/css';
-				    link.href = src;
-				    link.media = 'all';
-				    document.head.appendChild(link);
-				  };
+				<div class="page__footer-copyright">
+					<p>&copy; 2024 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
+					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
+					<p>
+						Site version <a href="/status" class="version-text">G-867</a>
+					</p>
+				</div>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<script>
+			// Including InstantSearch.js library and styling
+			const loadSearch = function() {
+			  const loadCSS = function(src) {
+			    var link = document.createElement('link');
+			    link.rel = 'stylesheet';
+			    link.type = 'text/css';
+			    link.href = src;
+			    link.media = 'all';
+			    document.head.appendChild(link);
+			  };
 
-				  var script = document.createElement('script');
-				  script.setAttribute("type", "text/javascript");
-				  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
-				  script.addEventListener("load", function() {
-				    // Instantiating InstantSearch.js with Algolia credentials
-				    const search = instantsearch({
-				      appId: '14DZKASAEJ',
-				      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
-				      indexName: 'iBug_website',
-				      searchParameters: {
-				        restrictSearchableAttributes: ['title', 'content']
-				      }
-				    });
+			  var script = document.createElement('script');
+			  script.setAttribute("type", "text/javascript");
+			  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
+			  script.addEventListener("load", function() {
+			    // Instantiating InstantSearch.js with Algolia credentials
+			    const search = instantsearch({
+			      appId: '14DZKASAEJ',
+			      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			      indexName: 'iBug_website',
+			      searchParameters: {
+			        restrictSearchableAttributes: ['title', 'content']
+			      }
+			    });
 
-				    const hitTemplate = function(hit) {
-				      const url = hit.url;
-				      const hightlight = hit._highlightResult;
-				      const title = hightlight.title && hightlight.title.value  || "";
-				      const content = hightlight.html && hightlight.html.value  || "";
+			    const hitTemplate = function(hit) {
+			      const url = hit.url;
+			      const hightlight = hit._highlightResult;
+			      const title = hightlight.title && hightlight.title.value  || "";
+			      const content = hightlight.html && hightlight.html.value  || "";
 
-				      return `
-				        <div class="list__item">
-				          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-				            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
-				            <div class="archive__item-excerpt" itemprop="description">${content}</div>
-				          </article>
-				        </div>
-				      `;
-				    }
+			      return `
+			        <div class="list__item">
+			          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			            <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			          </article>
+			        </div>
+			      `;
+			    }
 
-				    // Adding searchbar and results widgets
-				    search.addWidget(
-				      instantsearch.widgets.searchBox({
-				        container: '.search-searchbar',
-				        poweredBy: true,
-				        placeholder: 'Enter your search term...'
-				      })
-				    );
-				    search.addWidget(
-				      instantsearch.widgets.hits({
-				        container: '.search-hits',
-				        templates: {
-				          item: hitTemplate,
-				          empty: 'No results',
-				        }
-				      })
-				    );
+			    // Adding searchbar and results widgets
+			    search.addWidget(
+			      instantsearch.widgets.searchBox({
+			        container: '.search-searchbar',
+			        poweredBy: true,
+			        placeholder: 'Enter your search term...'
+			      })
+			    );
+			    search.addWidget(
+			      instantsearch.widgets.hits({
+			        container: '.search-hits',
+			        templates: {
+			          item: hitTemplate,
+			          empty: 'No results',
+			        }
+			      })
+			    );
 
-				    if (!search.started) {
-				      search.start();
-				    }
-				  });
-				  document.body.appendChild(script);
+			    if (!search.started) {
+			      search.start();
+			    }
+			  });
+			  document.body.appendChild(script);
 
-				  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
-				  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
-				};
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
+			};
 
-				// Starting the search only when toggle is clicked
-				$(document).ready(function() {
-				  var scriptLoaded = false;
+			// Starting the search only when toggle is clicked
+			$(document).ready(function() {
+			  var scriptLoaded = false;
 
-				  $(".search__toggle").on("click", function() {
-				    if (!scriptLoaded) {
-				      loadSearch();
-				      scriptLoaded = true;
-				    }
-				  });
-				});
-			</script>
-			<!-- Global site tag (gtag.js) - Google Analytics -->
-			<script async src="https://www.googletagmanager.com/gtag/js?id=G-V93196TX91"></script>
-			<script>
-				window.dataLayer = window.dataLayer || [];
-				function gtag(){dataLayer.push(arguments);}
-				gtag('js', new Date());
+			  $(".search__toggle").on("click", function() {
+			    if (!scriptLoaded) {
+			      loadSearch();
+			      scriptLoaded = true;
+			    }
+			  });
+			});
+		</script>
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-V93196TX91"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
 
-				gtag('config', 'G-V93196TX91', { 'anonymize_ip': false});
-			</script>
-			<script>
-				var disqus_config = function () {
-				  this.page.url = "https://ibug.io/blog/2021/01/linux-container-explained/";  /* Replace PAGE_URL with your page's canonical URL variable */
-				  this.page.identifier = "/blog/2021/01/linux-container-explained"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
-				};
-				(function() { /* DON'T EDIT BELOW THIS LINE */
-				  var d = document, s = d.createElement('script');
-				  s.src = 'https://ibugone.disqus.com/embed.js';
-				  s.setAttribute('data-timestamp', +new Date());
-				  (d.head || d.body).appendChild(s);
-				})();
-			</script>
-			<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-		</body>
-	</html>
+			gtag('config', 'G-V93196TX91', { 'anonymize_ip': false});
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/blog/2021/01/linux-container-explained/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2021/01/linux-container-explained"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	</body>
+</html>

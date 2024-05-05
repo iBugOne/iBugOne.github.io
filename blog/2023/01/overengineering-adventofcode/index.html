@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Minimal Mistakes Jekyll Theme 4.25.1 by Michael Rose
+  Minimal Mistakes Jekyll Theme 4.26.0 by Michael Rose
   Copyright 2013-2024 Michael Rose - mademistakes.com | @mmistakes
   Free for personal and commercial use under the MIT license
   https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
@@ -23,25 +23,16 @@
 		<meta property="article:published_time" content="2023-01-08T00:00:00+00:00">
 		<meta property="article:modified_time" content="2023-01-09T02:17:24+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2023/01/overengineering-adventofcode/">
-		<script type="application/ld+json">
-			{
-			  "@context": "https://schema.org",
-
-			    "@type": "Person",
-			    "name": "iBug",
-			    "url": "https://ibug.io/"
-
-			}
-		</script>
 		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
 		<!-- end _includes/seo.html -->
 		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<script>
+		<script type="text/javascript">
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+			window.enable_copy_code_button = true;
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=fe82767">
+		<link rel="stylesheet" href="/assets/css/main.css?v=0dc47db">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -68,19 +59,39 @@
 						</a>
 						<ul class="visible-links">
 							<li class="masthead__menu-item">
-								<a href="/about/">About</a>
+								<a
+                href="/about/"
+                
+                
+              >About</a>
 							</li>
 							<li class="masthead__menu-item">
-								<a href="/blog/">Blog</a>
+								<a
+                href="/blog/"
+                
+                
+              >Blog</a>
 							</li>
 							<li class="masthead__menu-item">
-								<a href="/projects/">Projects</a>
+								<a
+                href="/projects/"
+                
+                
+              >Projects</a>
 							</li>
 							<li class="masthead__menu-item">
-								<a href="/friends/">Friends</a>
+								<a
+                href="/friends/"
+                
+                
+              >Friends</a>
 							</li>
 							<li class="masthead__menu-item">
-								<a href="/cn/">中文内容</a>
+								<a
+                href="/cn/"
+                
+                
+              >中文内容</a>
 							</li>
 						</ul>
 						<button class="search__toggle" type="button">
@@ -117,126 +128,127 @@
 					</p>
 					<p>
 						<a href="https://github.com/iBug/AdventOfCode" class="btn btn--light-outline btn--large"><i class='fab fa-github'></i> GitHub</a>
-					</div>
+					</p>
 				</div>
-				<div id="main" role="main">
-					<div class="sidebar sticky">
-						<div itemscope itemtype="https://schema.org/Person" class="h-card">
-							<div class="author__avatar">
-								<a href="https://ibug.io/">
-									<img src="/image/avatar.png" alt="iBug" itemprop="image" class="u-photo">
-								</a>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person" class="h-card">
+						<div class="author__avatar">
+							<a href="https://ibug.io/">
+								<img src="/image/avatar.png" alt="iBug" itemprop="image" class="u-photo">
+							</a>
+						</div>
+						<div class="author__content">
+							<h3 class="author__name p-name" itemprop="name">
+								<a class="u-url" rel="me" href="https://ibug.io/" itemprop="url">iBug</a>
+							</h3>
+							<div class="author__bio p-note" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
 							</div>
-							<div class="author__content">
-								<h3 class="author__name p-name" itemprop="name">
-									<a class="u-url" rel="me" href="https://ibug.io/" itemprop="url">iBug</a>
-								</h3>
-								<div class="author__bio p-note" itemprop="description">
-									<p>Developer, System Administrator, Geek</p>
-								</div>
-							</div>
-							<div class="author__urls-wrapper">
-								<button class="btn btn--inverse">Follow</button>
-								<ul class="author__urls social-icons">
-									<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer me"><i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span></a></li>
-									<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
-									<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
-									<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
-									<li><a href="https://t.me/iBugThought" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-telegram" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
-									<!--
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer me"><i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/iBugThought" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-telegram" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
   <li>
     <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer me">
       <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
     </a>
   </li>
 -->
-								</ul>
-							</div>
+							</ul>
 						</div>
-						<nav class="nav__list">
-							<input id="ac-toc" name="accordion-toc" type="checkbox" />
-							<label for="ac-toc">Toggle menu</label>
-							<ul class="nav__items">
-								<li>
-									<span class="nav__sub-title">iBug on the Web</span>
-									<ul>
-										<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
-										<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
-										<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
-										<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
-										<li><a href="/open-source/"><i class="fas fa-fw fa-box-open"></i> Open Source</a></li>
-										<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
-										<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
-										<li><a href="/bookmarks/"><i class="fas fa-fw fa-bookmark"></i> Bookmarks</a></li>
-										<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
-										<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox" />
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/open-source/"><i class="fas fa-fw fa-box-open"></i> Open Source</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/bookmarks/"><i class="fas fa-fw fa-bookmark"></i> Bookmarks</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="Overengineering Advent of Code 2022">
+					<meta itemprop="description" content="Advent of Code (Wikipedia, link) is an annual event that releases a programming puzzle every day from December 1 to December 25. It’s a great chance to learn a new language or practice your skills.">
+					<meta itemprop="datePublished" content="2023-01-08T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2023-01-09T02:17:24+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#puzzles">Notes on puzzles</a></li>
+										<li><a href="#engineering">Engineering the project</a>
+											<ul>
+												<li><a href="#measurements">Adding measurements</a></li>
+												<li><a href="#multi-year">Adding multi-year support</a></li>
+											</ul>
+										</li>
+										<li><a href="#epilogue">Epilogue</a></li>
 									</ul>
+								</nav>
+							</aside>
+							<p><em>Advent of Code</em> (<a href="https://en.wikipedia.org/wiki/Advent_of_Code">Wikipedia</a>, <a href="https://adventofcode.com/">link</a>) is an annual event that releases a programming puzzle every day from December 1 to December 25. It’s a great chance to learn a new language or practice your skills.</p>
+							<p><img src="/image/adventofcode-2022.png" alt="Image" /></p>
+							<p>Considering that all the puzzles are designed to be lightweight, meaning that if implemented correctly, they’re solvable in no more than a few seconds with a reasonably small memory footprint, I picked Go as my language of choice. Go has been my preference over Python for a while, for being compiled into machine code and thus more performant, and a decent set of standard libraries.</p>
+							<h2 id="puzzles">Notes on puzzles</h2>
+							<p>The first 10 puzzles are very easy and doesn’t even require special knowledge. They’re practically just text processing and simulation, so there aren’t many comments to be made.</p>
+							<ul>
+								<li>
+									<p>Day 2: While it’s straightforward to implement a rock-paper-scissors game using <code class="language-plaintext highlighter-rouge">switch</code>es or lookup tables, noticing that shape <code class="language-plaintext highlighter-rouge">i+1</code> beats shape <code class="language-plaintext highlighter-rouge">i</code> allows us to simplify the code in an obscure way.</p>
+									<p>For example, I implemented the “shape score” as <code class="language-plaintext highlighter-rouge">int(s[2] - 'W')</code>, and the “outcome score” as <code class="language-plaintext highlighter-rouge">(4 + int(s[2]-'X') - int(s[0]-'A')) % 3 * 3</code> for the first part. For the second part, the “shape score” is now <code class="language-plaintext highlighter-rouge">1 + (int(s[0]-'A')+int(s[2]-'X')+2)%3</code>, and the “outcome score” is <code class="language-plaintext highlighter-rouge">int(s[2]-'X') * 3</code>.</p>
+									<p>This is certainly not the most readable code, but it’s a good example of how to use math to simplify code. Less code = less bugs, and if you’re really crazy about that, you can always add unit tests to ensure that the code doesn’t break unexpectedly. That’s not my style, though.</p>
 								</li>
 							</ul>
-						</nav>
-					</div>
-					<article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
-						<meta itemprop="headline" content="Overengineering Advent of Code 2022">
-						<meta itemprop="description" content="Advent of Code (Wikipedia, link) is an annual event that releases a programming puzzle every day from December 1 to December 25. It’s a great chance to learn a new language or practice your skills.">
-						<meta itemprop="datePublished" content="2023-01-08T00:00:00+00:00">
-						<meta itemprop="dateModified" content="2023-01-09T02:17:24+00:00">
-						<div class="page__inner-wrap">
-							<section class="page__content e-content" itemprop="text">
-								<aside class="sidebar__right sticky">
-									<nav class="toc">
-										<header>
-											<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
-										</header>
-										<ul class="toc__menu">
-											<li><a href="#puzzles">Notes on puzzles</a></li>
-											<li><a href="#engineering">Engineering the project</a>
-												<ul>
-													<li><a href="#measurements">Adding measurements</a></li>
-													<li><a href="#multi-year">Adding multi-year support</a></li>
-												</ul>
-											</li>
-											<li><a href="#epilogue">Epilogue</a></li>
-										</ul>
-									</nav>
-								</aside>
-								<p><em>Advent of Code</em> (<a href="https://en.wikipedia.org/wiki/Advent_of_Code">Wikipedia</a>, <a href="https://adventofcode.com/">link</a>) is an annual event that releases a programming puzzle every day from December 1 to December 25. It’s a great chance to learn a new language or practice your skills.</p>
-								<p><img src="/image/adventofcode-2022.png" alt="Image" /></p>
-								<p>Considering that all the puzzles are designed to be lightweight, meaning that if implemented correctly, they’re solvable in no more than a few seconds with a reasonably small memory footprint, I picked Go as my language of choice. Go has been my preference over Python for a while, for being compiled into machine code and thus more performant, and a decent set of standard libraries.</p>
-								<h2 id="puzzles">Notes on puzzles</h2>
-								<p>The first 10 puzzles are very easy and doesn’t even require special knowledge. They’re practically just text processing and simulation, so there aren’t many comments to be made.</p>
-								<ul>
-									<li>
-										<p>Day 2: While it’s straightforward to implement a rock-paper-scissors game using <code class="language-plaintext highlighter-rouge">switch</code>es or lookup tables, noticing that shape <code class="language-plaintext highlighter-rouge">i+1</code> beats shape <code class="language-plaintext highlighter-rouge">i</code> allows us to simplify the code in an obscure way.</p>
-										<p>For example, I implemented the “shape score” as <code class="language-plaintext highlighter-rouge">int(s[2] - 'W')</code>, and the “outcome score” as <code class="language-plaintext highlighter-rouge">(4 + int(s[2]-'X') - int(s[0]-'A')) % 3 * 3</code> for the first part. For the second part, the “shape score” is now <code class="language-plaintext highlighter-rouge">1 + (int(s[0]-'A')+int(s[2]-'X')+2)%3</code>, and the “outcome score” is <code class="language-plaintext highlighter-rouge">int(s[2]-'X') * 3</code>.</p>
-										<p>This is certainly not the most readable code, but it’s a good example of how to use math to simplify code. Less code = less bugs, and if you’re really crazy about that, you can always add unit tests to ensure that the code doesn’t break unexpectedly. That’s not my style, though.</p>
-									</li>
-								</ul>
-								<p>Starting from Day 11, the puzzles become more interesting. Some math or data structures are required to solve them.</p>
-								<ul>
-									<li>Day 11: The first part is plain simulation, but the second part can easily run the numbers out of range if you don’t manage them properly. Actually, modulo by the <a href="https://en.wikipedia.org/wiki/Least_common_multiple">least common multiple</a> of the divisors is a good way to keep them down.</li>
-									<li>Day 14, 15 and 23: With a large coordinate space but limited elements, it’s a better idea to use a map or set instead of contiguous memory.</li>
-									<li>Day 17 part 2: Running a simulation for 1000000000000 rounds is certainly not feasible, but it’s possible to find a pattern from the first 10000 or so rounds, and calculate the result from there.</li>
-									<li>Day 18 part 2: Finding internal holes would be difficult, but <a href="https://en.wikipedia.org/wiki/Flood_fill">flood filling</a> from the outside is an alternative approach.</li>
-									<li>Day 19 part 2: Even if searching for the “next robot to make” can’t keep the search space small, pruning near the leaves (i.e. stop searching in the last few minutes) can still cut it down by a large factor. This is the only way that I managed to bring the run time below 1 second.</li>
-									<li>Day 20 part 2: Again simulating for so many 811589153 steps is not feasible, so like Day 11 part 2, it’s important to find a correct modulo.</li>
-									<li>Day 21 part 2: At first this seems like tremendous work, but I made a bold assumption that the equation is linear (degree = 1), which turned out to be true. This enabled me to use very simple math to solve it.</li>
-									<li>Day 22 is my favorite puzzle. Finding an algorithm to fold a flat layout into a cube is far from easy, so I hard-coded it for my input. (It seems like everyone is getting the same layout.) Such a two-layer <code class="language-plaintext highlighter-rouge">switch</code> statement is prone to bugs and took me the longest time to debug.</li>
-									<li>Day 25: To my surprise, the puzzle is missing a part 2. Maybe the author is getting on a vacation?</li>
-								</ul>
-								<p>Finally, a magic trick that I discovered from Reddit for Day 15 part 2: Observing that the only uncovered space must be adjacent to multiple covered areas, examining the intersections of the edges of the beacons’ coverage areas produces a tiny search space. While it’s intuitive to build upon part 1’s solution, this discovery leads to a lightspeed solution.</p>
-								<h2 id="engineering">Engineering the project</h2>
-								<p>In fact, rushing to the puzzles was not even the first thing. I did not come across the event until my friend <a href="https://www.taoky.moe/">taoky</a> recommended it to me. He was already halfway through the puzzles (<a href="https://github.com/taoky/adventofcode">his <i class="fab fa-fw fa-github"></i> repository</a>) and had set himself a set of rules, including one where “<em>all solutions should take reasonable time and memory usage</em>”. We discussed various methods to measure the time and memory usage, when he set it forth that it was not easy to add measurements to every single program.</p>
-								<p>Based on our discussion, I decided I would leave room for measurements when designing the project. So the first decision was to reuse code as much as possible within the project. For example, I’d like all solutions to share the same “peripherals” like the <code class="language-plaintext highlighter-rouge">main</code> function. This way if I want to add an extra feasure like performance measurement, I only need to do it once.</p>
-								<p>The next decision was to compile solutions for all puzzles into a single binary. Go is not known for producing small binaries due to static linking, so having separate binaries for each solutions implies a non-trivial amount of unnecessary disk space. Another reason is that due to Go’s package design, it’s more complex to selectively compile individual files than to compile all files together (the “package”). With a <code class="language-plaintext highlighter-rouge">go.mod</code> file present, <code class="language-plaintext highlighter-rouge">go build</code> conveniently compiles all files in the same directory.</p>
-								<p>With that in mind, <a href="https://github.com/iBug/AdventOfCode/commit/73715a64f7e860dffa63382ed3dff14b8d4ae60d">here</a>’s the first commit of the project. In addition to the code itself, two more design ideas can be seen:</p>
-								<ul>
-									<li>Individual solutions are in their own files, calling <code class="language-plaintext highlighter-rouge">RegisterSolution</code> in their <code class="language-plaintext highlighter-rouge">init</code> functions to register themselves. Also, the solution function takes a single <code class="language-plaintext highlighter-rouge">io.Reader</code> interface as input, so that providing input can be more flexible if needed.</li>
-									<li>If multiple input files are provided, the solution function sees a concatenation of all of them, similar to a number of common Unix tools. However, this little care was later decided to be unnecessary, and only a single input file would be processed.</li>
-								</ul>
-								<p>Now with the project structure in place, I started working on the solutions. <a href="https://github.com/iBug/AdventOfCode/commit/4b695648807b47818e60ab19d246ff61183c7ce2">The second commit</a> added my solution for Day 1 part 1, and it followed the designed structure like this:</p>
-								<div class="language-go highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+							<p>Starting from Day 11, the puzzles become more interesting. Some math or data structures are required to solve them.</p>
+							<ul>
+								<li>Day 11: The first part is plain simulation, but the second part can easily run the numbers out of range if you don’t manage them properly. Actually, modulo by the <a href="https://en.wikipedia.org/wiki/Least_common_multiple">least common multiple</a> of the divisors is a good way to keep them down.</li>
+								<li>Day 14, 15 and 23: With a large coordinate space but limited elements, it’s a better idea to use a map or set instead of contiguous memory.</li>
+								<li>Day 17 part 2: Running a simulation for 1000000000000 rounds is certainly not feasible, but it’s possible to find a pattern from the first 10000 or so rounds, and calculate the result from there.</li>
+								<li>Day 18 part 2: Finding internal holes would be difficult, but <a href="https://en.wikipedia.org/wiki/Flood_fill">flood filling</a> from the outside is an alternative approach.</li>
+								<li>Day 19 part 2: Even if searching for the “next robot to make” can’t keep the search space small, pruning near the leaves (i.e. stop searching in the last few minutes) can still cut it down by a large factor. This is the only way that I managed to bring the run time below 1 second.</li>
+								<li>Day 20 part 2: Again simulating for so many 811589153 steps is not feasible, so like Day 11 part 2, it’s important to find a correct modulo.</li>
+								<li>Day 21 part 2: At first this seems like tremendous work, but I made a bold assumption that the equation is linear (degree = 1), which turned out to be true. This enabled me to use very simple math to solve it.</li>
+								<li>Day 22 is my favorite puzzle. Finding an algorithm to fold a flat layout into a cube is far from easy, so I hard-coded it for my input. (It seems like everyone is getting the same layout.) Such a two-layer <code class="language-plaintext highlighter-rouge">switch</code> statement is prone to bugs and took me the longest time to debug.</li>
+								<li>Day 25: To my surprise, the puzzle is missing a part 2. Maybe the author is getting on a vacation?</li>
+							</ul>
+							<p>Finally, a magic trick that I discovered from Reddit for Day 15 part 2: Observing that the only uncovered space must be adjacent to multiple covered areas, examining the intersections of the edges of the beacons’ coverage areas produces a tiny search space. While it’s intuitive to build upon part 1’s solution, this discovery leads to a lightspeed solution.</p>
+							<h2 id="engineering">Engineering the project</h2>
+							<p>In fact, rushing to the puzzles was not even the first thing. I did not come across the event until my friend <a href="https://www.taoky.moe/">taoky</a> recommended it to me. He was already halfway through the puzzles (<a href="https://github.com/taoky/adventofcode">his <i class="fab fa-fw fa-github"></i> repository</a>) and had set himself a set of rules, including one where “<em>all solutions should take reasonable time and memory usage</em>”. We discussed various methods to measure the time and memory usage, when he set it forth that it was not easy to add measurements to every single program.</p>
+							<p>Based on our discussion, I decided I would leave room for measurements when designing the project. So the first decision was to reuse code as much as possible within the project. For example, I’d like all solutions to share the same “peripherals” like the <code class="language-plaintext highlighter-rouge">main</code> function. This way if I want to add an extra feasure like performance measurement, I only need to do it once.</p>
+							<p>The next decision was to compile solutions for all puzzles into a single binary. Go is not known for producing small binaries due to static linking, so having separate binaries for each solutions implies a non-trivial amount of unnecessary disk space. Another reason is that due to Go’s package design, it’s more complex to selectively compile individual files than to compile all files together (the “package”). With a <code class="language-plaintext highlighter-rouge">go.mod</code> file present, <code class="language-plaintext highlighter-rouge">go build</code> conveniently compiles all files in the same directory.</p>
+							<p>With that in mind, <a href="https://github.com/iBug/AdventOfCode/commit/73715a64f7e860dffa63382ed3dff14b8d4ae60d">here</a>’s the first commit of the project. In addition to the code itself, two more design ideas can be seen:</p>
+							<ul>
+								<li>Individual solutions are in their own files, calling <code class="language-plaintext highlighter-rouge">RegisterSolution</code> in their <code class="language-plaintext highlighter-rouge">init</code> functions to register themselves. Also, the solution function takes a single <code class="language-plaintext highlighter-rouge">io.Reader</code> interface as input, so that providing input can be more flexible if needed.</li>
+								<li>If multiple input files are provided, the solution function sees a concatenation of all of them, similar to a number of common Unix tools. However, this little care was later decided to be unnecessary, and only a single input file would be processed.</li>
+							</ul>
+							<p>Now with the project structure in place, I started working on the solutions. <a href="https://github.com/iBug/AdventOfCode/commit/4b695648807b47818e60ab19d246ff61183c7ce2">The second commit</a> added my solution for Day 1 part 1, and it followed the designed structure like this:</p>
+							<div class="language-go highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
 
 <span class="k">import</span> <span class="p">(</span> <span class="o">...</span> <span class="p">)</span>
 
@@ -246,12 +258,12 @@
     <span class="n">RegisterSolution</span><span class="p">(</span><span class="s">"1-1"</span><span class="p">,</span> <span class="n">Solution1_1</span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre>
-									</div>
 								</div>
-								<p>While the first few days’ solutions were pretty ordinary, my design began to prosper when I started working on Day 5 part 2. The only difference between part 1 and part 2 is whether moving a stack of crates maintains or reverses their order. Compared to the common one-source-file-per-solution design, I can now reuse almost the whole function from part 1, and abstract the difference into a function parameter. This is how <code class="language-plaintext highlighter-rouge">day5.go</code> looks like after <a href="https://github.com/iBug/AdventOfCode/commit/fe63dc98e36b70c0f9ffb779eadffc34d2a7b80b">adding part 2</a>:</p>
-								<div class="language-go highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
+							</div>
+							<p>While the first few days’ solutions were pretty ordinary, my design began to prosper when I started working on Day 5 part 2. The only difference between part 1 and part 2 is whether moving a stack of crates maintains or reverses their order. Compared to the common one-source-file-per-solution design, I can now reuse almost the whole function from part 1, and abstract the difference into a function parameter. This is how <code class="language-plaintext highlighter-rouge">day5.go</code> looks like after <a href="https://github.com/iBug/AdventOfCode/commit/fe63dc98e36b70c0f9ffb779eadffc34d2a7b80b">adding part 2</a>:</p>
+							<div class="language-go highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">package</span> <span class="n">main</span>
 
 <span class="k">import</span> <span class="p">(</span> <span class="o">...</span> <span class="p">)</span>
 
@@ -265,346 +277,346 @@
 
 <span class="k">func</span> <span class="n">Solution5</span><span class="p">(</span><span class="n">r</span> <span class="n">io</span><span class="o">.</span><span class="n">Reader</span><span class="p">,</span> <span class="n">moveFunc</span> <span class="k">func</span><span class="p">(</span><span class="o">...</span><span class="p">))</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
 </code></pre>
-									</div>
 								</div>
-								<p>For Day 6, <a href="https://github.com/iBug/AdventOfCode/commit/cf19fad5b05e992dfdab9f6abcf2a87c4b808d7a">the benefit</a> is even more prominent:</p>
-								<div class="language-go highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="k">func</span> <span class="n">init</span><span class="p">()</span> <span class="p">{</span>
+							</div>
+							<p>For Day 6, <a href="https://github.com/iBug/AdventOfCode/commit/cf19fad5b05e992dfdab9f6abcf2a87c4b808d7a">the benefit</a> is even more prominent:</p>
+							<div class="language-go highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">func</span> <span class="n">init</span><span class="p">()</span> <span class="p">{</span>
     <span class="n">RegisterSolution</span><span class="p">(</span><span class="s">"6-1"</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">r</span> <span class="n">io</span><span class="o">.</span><span class="n">Reader</span><span class="p">)</span> <span class="p">{</span> <span class="n">Solution6</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="m">4</span><span class="p">)</span> <span class="p">})</span>
     <span class="n">RegisterSolution</span><span class="p">(</span><span class="s">"6-2"</span><span class="p">,</span> <span class="k">func</span><span class="p">(</span><span class="n">r</span> <span class="n">io</span><span class="o">.</span><span class="n">Reader</span><span class="p">)</span> <span class="p">{</span> <span class="n">Solution6</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="m">14</span><span class="p">)</span> <span class="p">})</span>
 <span class="p">}</span>
 </code></pre>
-									</div>
 								</div>
-								<p>Had I not designed the project this way, I would have to duplicate the whole function for part 2 only to change a single parameter, making things much more error-prone.</p>
-								<h3 id="measurements">Adding measurements</h3>
-								<p>Given the project design above, adding measurements is much simpler than it would have been if I had adopted the one-source-file-per-solution layout. It boils down to just two things:</p>
-								<ul>
-									<li>
-										<p>A command-line flag to enable measurements:</p>
-										<div class="language-go highlighter-rouge">
-											<div class="highlight">
-												<pre class="highlight"><code><span class="n">flag</span><span class="o">.</span><span class="n">BoolVar</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fShowPerformance</span><span class="p">,</span> <span class="s">"p"</span><span class="p">,</span> <span class="no">false</span><span class="p">,</span> <span class="s">"show performance information"</span><span class="p">)</span>
+							</div>
+							<p>Had I not designed the project this way, I would have to duplicate the whole function for part 2 only to change a single parameter, making things much more error-prone.</p>
+							<h3 id="measurements">Adding measurements</h3>
+							<p>Given the project design above, adding measurements is much simpler than it would have been if I had adopted the one-source-file-per-solution layout. It boils down to just two things:</p>
+							<ul>
+								<li>
+									<p>A command-line flag to enable measurements:</p>
+									<div class="language-go highlighter-rouge">
+										<div class="highlight">
+											<pre class="highlight"><code><span class="n">flag</span><span class="o">.</span><span class="n">BoolVar</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fShowPerformance</span><span class="p">,</span> <span class="s">"p"</span><span class="p">,</span> <span class="no">false</span><span class="p">,</span> <span class="s">"show performance information"</span><span class="p">)</span>
 </code></pre>
-											</div>
+										</div>
     </div>
-									</li>
-									<li>
-										<p>Adding <code class="language-plaintext highlighter-rouge">time.Now()</code> and <code class="language-plaintext highlighter-rouge">time.Since()</code> around the call to the solution function:</p>
-										<div class="language-go highlighter-rouge">
-											<div class="highlight">
-												<pre class="highlight"><code><span class="n">start</span> <span class="o">:=</span> <span class="n">time</span><span class="o">.</span><span class="n">Now</span><span class="p">()</span>
+								</li>
+								<li>
+									<p>Adding <code class="language-plaintext highlighter-rouge">time.Now()</code> and <code class="language-plaintext highlighter-rouge">time.Since()</code> around the call to the solution function:</p>
+									<div class="language-go highlighter-rouge">
+										<div class="highlight">
+											<pre class="highlight"><code><span class="n">start</span> <span class="o">:=</span> <span class="n">time</span><span class="o">.</span><span class="n">Now</span><span class="p">()</span>
 <span class="n">fn</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
 <span class="n">duration</span> <span class="o">:=</span> <span class="n">time</span><span class="o">.</span><span class="n">Since</span><span class="p">(</span><span class="n">startTime</span><span class="p">)</span>
 </code></pre>
-											</div>
+										</div>
     </div>
-										<p>… as well as displaying the result:</p>
-										<div class="language-go highlighter-rouge">
-											<div class="highlight">
-												<pre class="highlight"><code><span class="k">if</span> <span class="n">fShowPerformance</span> <span class="p">{</span>
+									<p>… as well as displaying the result:</p>
+									<div class="language-go highlighter-rouge">
+										<div class="highlight">
+											<pre class="highlight"><code><span class="k">if</span> <span class="n">fShowPerformance</span> <span class="p">{</span>
     <span class="n">fmt</span><span class="o">.</span><span class="n">Fprintf</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">Stderr</span><span class="p">,</span> <span class="s">"</span><span class="se">\n</span><span class="s">Duration: %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">duration</span><span class="p">)</span>
 <span class="p">}</span>
 </code></pre>
-											</div>
+										</div>
     </div>
-									</li>
-								</ul>
-								<p>Measuring memory usage is a bit more complicated. Go’s memory profiling doesn’t provide a simple “max usage in this session” metric, so I have to resort to OS-specific methods. On Linux, for the time being, I use <code class="language-plaintext highlighter-rouge">getrusage(2)</code> with <code class="language-plaintext highlighter-rouge">RUSAGE_SELF</code>, as two other known methods (using Cgroup and polling <code class="language-plaintext highlighter-rouge">/proc/self/status</code>) either require forking an extra process or add significant overhead and engineering complexity.</p>
-								<p>Now the program can produce a short summary of the performance when running a solution:</p>
-								<div class="language-console highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>./adventofcode <span class="nt">-p</span> 1-1 2022/inputs/1.txt
+								</li>
+							</ul>
+							<p>Measuring memory usage is a bit more complicated. Go’s memory profiling doesn’t provide a simple “max usage in this session” metric, so I have to resort to OS-specific methods. On Linux, for the time being, I use <code class="language-plaintext highlighter-rouge">getrusage(2)</code> with <code class="language-plaintext highlighter-rouge">RUSAGE_SELF</code>, as two other known methods (using Cgroup and polling <code class="language-plaintext highlighter-rouge">/proc/self/status</code>) either require forking an extra process or add significant overhead and engineering complexity.</p>
+							<p>Now the program can produce a short summary of the performance when running a solution:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>./adventofcode <span class="nt">-p</span> 1-1 2022/inputs/1.txt
 <span class="go">71780
 
 Time: 875µs, Memory: 7.8&nbsp;MiB
 </span></code></pre>
-									</div>
 								</div>
-								<p>There’s one caveat here: The “Max RSS” value returned by <code class="language-plaintext highlighter-rouge">getrsage(2)</code> is the peak memory usage during the whole program’s lifetime, starting from when it’s forked from the parent process, when it inherits all mapped pages (resident set). Using an interactive Bash gives a minimum value of around 7.7&nbsp;MiB, while using <code class="language-plaintext highlighter-rouge">sh -c './adventofcode -p'</code>, adding a level indirection, reduces the starting size to 1.2&nbsp;MiB.</p>
-								<h3 id="multi-year">Adding multi-year support</h3>
-								<p>Up until now, the project has a flat layout with no subdirectories, and all Go source files start with <code class="language-plaintext highlighter-rouge">package main</code>. This is because I did not plan to support multiple years at the beginning. However, as I started working on puzzles from 2021, I realized that I need a better structure to support multiple years without worrying about namespace issues, like both years having a <code class="language-plaintext highlighter-rouge">Solution1_1</code> function.</p>
-								<p>Moving each year’s solutions into a subdirectory is a natural choice. However, <code class="language-plaintext highlighter-rouge">go build</code> doesn’t pick up subdirectories by default, so I have to find a way to make it work. There are also some minor name searching issues, like <code class="language-plaintext highlighter-rouge">RegisterSolution</code> being defined in <code class="language-plaintext highlighter-rouge">main.go</code> but used in every solution file.</p>
-								<p>After a bit of trial-and-error, I <a href="https://github.com/iBug/AdventOfCode/commit/36b256c41897633bae53a1ca4c39476e0af9d858">carried out</a> the following changes:</p>
-								<ul>
-									<li>Split out the “solution registry” into a <code class="language-plaintext highlighter-rouge">common</code> subdirectory, making it a separate package that can be imported by each year’s package.
-										<ul>
-											<li>Each year’s package should import just <code class="language-plaintext highlighter-rouge">common.RegisterSolution</code>, possibly wrapping it up to add a custom “year identifier” (this was <a href="https://github.com/iBug/AdventOfCode/commit/7f7080aae1df181ec2b16eafc3bbd214610914c4">implemented</a> right after).</li>
-										</ul>
-									</li>
-									<li>Move all solution files into a <code class="language-plaintext highlighter-rouge">2022</code> subdirectory, and change the package name to just <code class="language-plaintext highlighter-rouge">year</code> (because I don’t expect this directory to be imported and used with the package name).</li>
-									<li>Add <code class="language-plaintext highlighter-rouge">import _ "adventofcode/2022"</code> in <code class="language-plaintext highlighter-rouge">main.go</code> for each year’s subdirectory.</li>
-								</ul>
-								<p>In subsequent commits, I implemented “year selection” (e.g. choosing between the solutions <code class="language-plaintext highlighter-rouge">2021/1-1</code> and <code class="language-plaintext highlighter-rouge">2022/1-1</code>) as well as more listings (e.g. <code class="language-plaintext highlighter-rouge">./adventofcode 2021/</code> to list all solutions for 2021).</p>
-								<p>With this in place, I can now add solutions for 2021 without worrying about name conflicts. For convenience, I also added auto-searching for input files in the current directory, so I can just run <code class="language-plaintext highlighter-rouge">./adventofcode 2021/1-1</code> to run the solution for Day 1 part 1 of 2021.</p>
-								<h2 id="epilogue">Epilogue</h2>
-								<p>At this point, the project has successfully deviated from a collection of solutions to small-but-interesting puzzles, and has become more like a general-purpose tool for this kind of events. Nevertheless, it’s a fun journey as a software engineering practice, in addition to solving the puzzles themselves.</p>
-								<p>Looking at these paths I’ve taken, it is manifest that the initial decisions in the right direction are highly contributory in easing the development process, particularly when I’m coming back later to add a new global feature. This experience once again emphasizes the importance and advantages of having a clear idea of the project before starting to write code, as well as keeping the code in an extensible and maintainable fashion.</p>
-							</section>
-							<footer class="page__meta">
-								<p class="page__taxonomy">
-									<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
-									<span itemprop="keywords">
-										<a href="/tag/development" class="page__taxonomy-item p-category" rel="tag">development</a>
-									</span>
-								</p>
-								<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2023-01-09">Jan 9, 2023</time></p>
-							</footer>
-							<section class="page__share">
-								<h4 class="page__share-title">Share on</h4>
-								<a href="https://twitter.com/intent/tweet?text=Overengineering+Advent+of+Code+2022%20https%3A%2F%2Fibug.io%2Fblog%2F2023%2F01%2Foverengineering-adventofcode%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
-								<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2023%2F01%2Foverengineering-adventofcode%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
-								<a href="https://www.linkedin.com/shareArticle?mini=true&url=https://ibug.io/blog/2023/01/overengineering-adventofcode/" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
-							</section>
-							<nav class="pagination">
-								<a href="/blog/2022/11/recover-minecraft-world/" class="pagination--pager" title="Recovering a Minecraft world from a crash, the technician way
+							</div>
+							<p>There’s one caveat here: The “Max RSS” value returned by <code class="language-plaintext highlighter-rouge">getrsage(2)</code> is the peak memory usage during the whole program’s lifetime, starting from when it’s forked from the parent process, when it inherits all mapped pages (resident set). Using an interactive Bash gives a minimum value of around 7.7&nbsp;MiB, while using <code class="language-plaintext highlighter-rouge">sh -c './adventofcode -p'</code>, adding a level indirection, reduces the starting size to 1.2&nbsp;MiB.</p>
+							<h3 id="multi-year">Adding multi-year support</h3>
+							<p>Up until now, the project has a flat layout with no subdirectories, and all Go source files start with <code class="language-plaintext highlighter-rouge">package main</code>. This is because I did not plan to support multiple years at the beginning. However, as I started working on puzzles from 2021, I realized that I need a better structure to support multiple years without worrying about namespace issues, like both years having a <code class="language-plaintext highlighter-rouge">Solution1_1</code> function.</p>
+							<p>Moving each year’s solutions into a subdirectory is a natural choice. However, <code class="language-plaintext highlighter-rouge">go build</code> doesn’t pick up subdirectories by default, so I have to find a way to make it work. There are also some minor name searching issues, like <code class="language-plaintext highlighter-rouge">RegisterSolution</code> being defined in <code class="language-plaintext highlighter-rouge">main.go</code> but used in every solution file.</p>
+							<p>After a bit of trial-and-error, I <a href="https://github.com/iBug/AdventOfCode/commit/36b256c41897633bae53a1ca4c39476e0af9d858">carried out</a> the following changes:</p>
+							<ul>
+								<li>Split out the “solution registry” into a <code class="language-plaintext highlighter-rouge">common</code> subdirectory, making it a separate package that can be imported by each year’s package.
+									<ul>
+										<li>Each year’s package should import just <code class="language-plaintext highlighter-rouge">common.RegisterSolution</code>, possibly wrapping it up to add a custom “year identifier” (this was <a href="https://github.com/iBug/AdventOfCode/commit/7f7080aae1df181ec2b16eafc3bbd214610914c4">implemented</a> right after).</li>
+									</ul>
+								</li>
+								<li>Move all solution files into a <code class="language-plaintext highlighter-rouge">2022</code> subdirectory, and change the package name to just <code class="language-plaintext highlighter-rouge">year</code> (because I don’t expect this directory to be imported and used with the package name).</li>
+								<li>Add <code class="language-plaintext highlighter-rouge">import _ "adventofcode/2022"</code> in <code class="language-plaintext highlighter-rouge">main.go</code> for each year’s subdirectory.</li>
+							</ul>
+							<p>In subsequent commits, I implemented “year selection” (e.g. choosing between the solutions <code class="language-plaintext highlighter-rouge">2021/1-1</code> and <code class="language-plaintext highlighter-rouge">2022/1-1</code>) as well as more listings (e.g. <code class="language-plaintext highlighter-rouge">./adventofcode 2021/</code> to list all solutions for 2021).</p>
+							<p>With this in place, I can now add solutions for 2021 without worrying about name conflicts. For convenience, I also added auto-searching for input files in the current directory, so I can just run <code class="language-plaintext highlighter-rouge">./adventofcode 2021/1-1</code> to run the solution for Day 1 part 1 of 2021.</p>
+							<h2 id="epilogue">Epilogue</h2>
+							<p>At this point, the project has successfully deviated from a collection of solutions to small-but-interesting puzzles, and has become more like a general-purpose tool for this kind of events. Nevertheless, it’s a fun journey as a software engineering practice, in addition to solving the puzzles themselves.</p>
+							<p>Looking at these paths I’ve taken, it is manifest that the initial decisions in the right direction are highly contributory in easing the development process, particularly when I’m coming back later to add a new global feature. This experience once again emphasizes the importance and advantages of having a clear idea of the project before starting to write code, as well as keeping the code in an extensible and maintainable fashion.</p>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/development" class="page__taxonomy-item p-category" rel="tag">development</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2023-01-09">Jan 9, 2023</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=Overengineering+Advent+of+Code+2022%20https%3A%2F%2Fibug.io%2Fblog%2F2023%2F01%2Foverengineering-adventofcode%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2023%2F01%2Foverengineering-adventofcode%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https://ibug.io/blog/2023/01/overengineering-adventofcode/" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/blog/2022/11/recover-minecraft-world/" class="pagination--pager" title="Recovering a Minecraft world from a crash, the technician way
 ">Previous</a>
-								<a href="/blog/2023/04/checkin-infrastructure/" class="pagination--pager" title="My automated Daily Health Report infrastructure
+							<a href="/blog/2023/04/checkin-infrastructure/" class="pagination--pager" title="My automated Daily Health Report infrastructure
 ">Next</a>
-							</nav>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+				<div class="page__related">
+					<h2 class="page__related-title">You may also enjoy</h2>
+					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/linux-container.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are w...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											24 minute read
+										</span>
+									</p>
+								</div>
+							</article>
 						</div>
-						<div class="page__comments">
-							<h4 class="page__comments-title">Leave a comment</h4>
-							<section id="disqus_thread"></section>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/24.png" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2022/05/programming-24-game/" rel="permalink">Taking the 24 puzzle game to the next level
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now a...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2022-05-25T00:00:00+00:00">May 25, 2022</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											19 minute read
+										</span>
+									</p>
+								</div>
+							</article>
 						</div>
-					</article>
-					<div class="page__related">
-						<h2 class="page__related-title">You may also enjoy</h2>
-						<div class="grid__wrapper">
-							<div class="grid__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-teaser">
-										<img src="/image/teaser/linux-container.jpg" alt="">
-									</div>
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are w...</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-												24 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="grid__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-teaser">
-										<img src="/image/teaser/24.png" alt="">
-									</div>
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2022/05/programming-24-game/" rel="permalink">Taking the 24 puzzle game to the next level
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now a...</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2022-05-25T00:00:00+00:00">May 25, 2022</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-												19 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="grid__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-												16 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="grid__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-teaser">
-										<img src="/image/teaser/vpn-imagine.jpg" alt="">
-									</div>
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-												15 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											16 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/vpn-imagine.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											15 minute read
+										</span>
+									</p>
+								</div>
+							</article>
 						</div>
 					</div>
 				</div>
 			</div>
-			<div class="search-content">
-				<div class="search-content__inner-wrap">
-					<div class="search-searchbar"></div>
-					<div class="search-hits"></div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
 				</div>
-			</div>
-			<div id="footer" class="page__footer">
-				<footer>
-					<!-- start custom footer snippets -->
-					<!-- end custom footer snippets -->
-					<div class="page__footer-follow">
-						<ul class="social-icons">
-							<li><strong>Follow:</strong></li>
-							<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
-							<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
-							<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
-						</ul>
-					</div>
-					<div class="page__footer-copyright">
-						<p>&copy; 2024 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
-						<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
-						<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
-						<p>
-							Site version <a href="/status" class="version-text">G-866</a>
-						</p>
-					</div>
-				</footer>
-			</div>
-			<script src="/assets/js/main.min.js"></script>
-			<script>
-				// Including InstantSearch.js library and styling
-				const loadSearch = function() {
-				  const loadCSS = function(src) {
-				    var link = document.createElement('link');
-				    link.rel = 'stylesheet';
-				    link.type = 'text/css';
-				    link.href = src;
-				    link.media = 'all';
-				    document.head.appendChild(link);
-				  };
+				<div class="page__footer-copyright">
+					<p>&copy; 2024 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
+					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
+					<p>
+						Site version <a href="/status" class="version-text">G-867</a>
+					</p>
+				</div>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<script>
+			// Including InstantSearch.js library and styling
+			const loadSearch = function() {
+			  const loadCSS = function(src) {
+			    var link = document.createElement('link');
+			    link.rel = 'stylesheet';
+			    link.type = 'text/css';
+			    link.href = src;
+			    link.media = 'all';
+			    document.head.appendChild(link);
+			  };
 
-				  var script = document.createElement('script');
-				  script.setAttribute("type", "text/javascript");
-				  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
-				  script.addEventListener("load", function() {
-				    // Instantiating InstantSearch.js with Algolia credentials
-				    const search = instantsearch({
-				      appId: '14DZKASAEJ',
-				      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
-				      indexName: 'iBug_website',
-				      searchParameters: {
-				        restrictSearchableAttributes: ['title', 'content']
-				      }
-				    });
+			  var script = document.createElement('script');
+			  script.setAttribute("type", "text/javascript");
+			  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
+			  script.addEventListener("load", function() {
+			    // Instantiating InstantSearch.js with Algolia credentials
+			    const search = instantsearch({
+			      appId: '14DZKASAEJ',
+			      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			      indexName: 'iBug_website',
+			      searchParameters: {
+			        restrictSearchableAttributes: ['title', 'content']
+			      }
+			    });
 
-				    const hitTemplate = function(hit) {
-				      const url = hit.url;
-				      const hightlight = hit._highlightResult;
-				      const title = hightlight.title && hightlight.title.value  || "";
-				      const content = hightlight.html && hightlight.html.value  || "";
+			    const hitTemplate = function(hit) {
+			      const url = hit.url;
+			      const hightlight = hit._highlightResult;
+			      const title = hightlight.title && hightlight.title.value  || "";
+			      const content = hightlight.html && hightlight.html.value  || "";
 
-				      return `
-				        <div class="list__item">
-				          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-				            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
-				            <div class="archive__item-excerpt" itemprop="description">${content}</div>
-				          </article>
-				        </div>
-				      `;
-				    }
+			      return `
+			        <div class="list__item">
+			          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			            <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			          </article>
+			        </div>
+			      `;
+			    }
 
-				    // Adding searchbar and results widgets
-				    search.addWidget(
-				      instantsearch.widgets.searchBox({
-				        container: '.search-searchbar',
-				        poweredBy: true,
-				        placeholder: 'Enter your search term...'
-				      })
-				    );
-				    search.addWidget(
-				      instantsearch.widgets.hits({
-				        container: '.search-hits',
-				        templates: {
-				          item: hitTemplate,
-				          empty: 'No results',
-				        }
-				      })
-				    );
+			    // Adding searchbar and results widgets
+			    search.addWidget(
+			      instantsearch.widgets.searchBox({
+			        container: '.search-searchbar',
+			        poweredBy: true,
+			        placeholder: 'Enter your search term...'
+			      })
+			    );
+			    search.addWidget(
+			      instantsearch.widgets.hits({
+			        container: '.search-hits',
+			        templates: {
+			          item: hitTemplate,
+			          empty: 'No results',
+			        }
+			      })
+			    );
 
-				    if (!search.started) {
-				      search.start();
-				    }
-				  });
-				  document.body.appendChild(script);
+			    if (!search.started) {
+			      search.start();
+			    }
+			  });
+			  document.body.appendChild(script);
 
-				  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
-				  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
-				};
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
+			};
 
-				// Starting the search only when toggle is clicked
-				$(document).ready(function() {
-				  var scriptLoaded = false;
+			// Starting the search only when toggle is clicked
+			$(document).ready(function() {
+			  var scriptLoaded = false;
 
-				  $(".search__toggle").on("click", function() {
-				    if (!scriptLoaded) {
-				      loadSearch();
-				      scriptLoaded = true;
-				    }
-				  });
-				});
-			</script>
-			<!-- Global site tag (gtag.js) - Google Analytics -->
-			<script async src="https://www.googletagmanager.com/gtag/js?id=G-V93196TX91"></script>
-			<script>
-				window.dataLayer = window.dataLayer || [];
-				function gtag(){dataLayer.push(arguments);}
-				gtag('js', new Date());
+			  $(".search__toggle").on("click", function() {
+			    if (!scriptLoaded) {
+			      loadSearch();
+			      scriptLoaded = true;
+			    }
+			  });
+			});
+		</script>
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-V93196TX91"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
 
-				gtag('config', 'G-V93196TX91', { 'anonymize_ip': false});
-			</script>
-			<script>
-				var disqus_config = function () {
-				  this.page.url = "https://ibug.io/blog/2023/01/overengineering-adventofcode/";  /* Replace PAGE_URL with your page's canonical URL variable */
-				  this.page.identifier = "/blog/2023/01/overengineering-adventofcode"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
-				};
-				(function() { /* DON'T EDIT BELOW THIS LINE */
-				  var d = document, s = d.createElement('script');
-				  s.src = 'https://ibugone.disqus.com/embed.js';
-				  s.setAttribute('data-timestamp', +new Date());
-				  (d.head || d.body).appendChild(s);
-				})();
-			</script>
-			<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-		</body>
-	</html>
+			gtag('config', 'G-V93196TX91', { 'anonymize_ip': false});
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/blog/2023/01/overengineering-adventofcode/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2023/01/overengineering-adventofcode"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	</body>
+</html>

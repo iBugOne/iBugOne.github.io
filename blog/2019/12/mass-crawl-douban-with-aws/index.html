@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Minimal Mistakes Jekyll Theme 4.25.1 by Michael Rose
+  Minimal Mistakes Jekyll Theme 4.26.0 by Michael Rose
   Copyright 2013-2024 Michael Rose - mademistakes.com | @mmistakes
   Free for personal and commercial use under the MIT license
   https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
@@ -23,25 +23,16 @@
 		<meta property="article:published_time" content="2019-12-28T00:00:00+00:00">
 		<meta property="article:modified_time" content="2022-04-30T19:59:16+00:00">
 		<link rel="canonical" href="https://ibug.io/blog/2019/12/mass-crawl-douban-with-aws/">
-		<script type="application/ld+json">
-			{
-			  "@context": "https://schema.org",
-
-			    "@type": "Person",
-			    "name": "iBug",
-			    "url": "https://ibug.io/"
-
-			}
-		</script>
 		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
 		<!-- end _includes/seo.html -->
 		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<script>
+		<script type="text/javascript">
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+			window.enable_copy_code_button = true;
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=fe82767">
+		<link rel="stylesheet" href="/assets/css/main.css?v=0dc47db">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -68,19 +59,39 @@
 						</a>
 						<ul class="visible-links">
 							<li class="masthead__menu-item">
-								<a href="/about/">About</a>
+								<a
+                href="/about/"
+                
+                
+              >About</a>
 							</li>
 							<li class="masthead__menu-item">
-								<a href="/blog/">Blog</a>
+								<a
+                href="/blog/"
+                
+                
+              >Blog</a>
 							</li>
 							<li class="masthead__menu-item">
-								<a href="/projects/">Projects</a>
+								<a
+                href="/projects/"
+                
+                
+              >Projects</a>
 							</li>
 							<li class="masthead__menu-item">
-								<a href="/friends/">Friends</a>
+								<a
+                href="/friends/"
+                
+                
+              >Friends</a>
 							</li>
 							<li class="masthead__menu-item">
-								<a href="/cn/">中文内容</a>
+								<a
+                href="/cn/"
+                
+                
+              >中文内容</a>
 							</li>
 						</ul>
 						<button class="search__toggle" type="button">
@@ -117,131 +128,132 @@
 					</p>
 					<p>
 						<a href="https://github.com/iBug/douban-spider" class="btn btn--light-outline btn--large"><i class="fab fa-github" aria-hidden="true"></i> GitHub</a>
-					</div>
+					</p>
 				</div>
-				<div id="main" role="main">
-					<div class="sidebar sticky">
-						<div itemscope itemtype="https://schema.org/Person" class="h-card">
-							<div class="author__avatar">
-								<a href="https://ibug.io/">
-									<img src="/image/avatar.png" alt="iBug" itemprop="image" class="u-photo">
-								</a>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person" class="h-card">
+						<div class="author__avatar">
+							<a href="https://ibug.io/">
+								<img src="/image/avatar.png" alt="iBug" itemprop="image" class="u-photo">
+							</a>
+						</div>
+						<div class="author__content">
+							<h3 class="author__name p-name" itemprop="name">
+								<a class="u-url" rel="me" href="https://ibug.io/" itemprop="url">iBug</a>
+							</h3>
+							<div class="author__bio p-note" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
 							</div>
-							<div class="author__content">
-								<h3 class="author__name p-name" itemprop="name">
-									<a class="u-url" rel="me" href="https://ibug.io/" itemprop="url">iBug</a>
-								</h3>
-								<div class="author__bio p-note" itemprop="description">
-									<p>Developer, System Administrator, Geek</p>
-								</div>
-							</div>
-							<div class="author__urls-wrapper">
-								<button class="btn btn--inverse">Follow</button>
-								<ul class="author__urls social-icons">
-									<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer me"><i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span></a></li>
-									<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
-									<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
-									<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
-									<li><a href="https://t.me/iBugThought" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-telegram" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
-									<!--
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer me"><i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/iBugThought" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-telegram" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
   <li>
     <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer me">
       <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
     </a>
   </li>
 -->
-								</ul>
-							</div>
-						</div>
-						<nav class="nav__list">
-							<input id="ac-toc" name="accordion-toc" type="checkbox" />
-							<label for="ac-toc">Toggle menu</label>
-							<ul class="nav__items">
-								<li>
-									<span class="nav__sub-title">iBug on the Web</span>
-									<ul>
-										<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
-										<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
-										<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
-										<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
-										<li><a href="/open-source/"><i class="fas fa-fw fa-box-open"></i> Open Source</a></li>
-										<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
-										<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
-										<li><a href="/bookmarks/"><i class="fas fa-fw fa-bookmark"></i> Bookmarks</a></li>
-										<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
-										<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
-									</ul>
-								</li>
 							</ul>
-						</nav>
+						</div>
 					</div>
-					<article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
-						<meta itemprop="headline" content="High-performance mass web crawling on AWS">
-						<meta itemprop="description" content="The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on the training data of 9M user-item pairs and a social network.">
-						<meta itemprop="datePublished" content="2019-12-28T00:00:00+00:00">
-						<meta itemprop="dateModified" content="2022-04-30T19:59:16+00:00">
-						<div class="page__inner-wrap">
-							<section class="page__content e-content" itemprop="text">
-								<aside class="sidebar__right sticky">
-									<nav class="toc">
-										<header>
-											<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
-										</header>
-										<ul class="toc__menu">
-											<li><a href="#part-1">Part 1: Scrapy and ScrapingHub</a></li>
-											<li><a href="#part-2">Part 2: Expansion onto AWS, distributed crawling with centralized management</a>
-												<ul>
-													<li><a href="#central-management">The central manager server</a></li>
-													<li><a href="#distributed-crawlers">Distributed crawler clients</a></li>
-													<li><a href="#part-2-results">Results</a></li>
-												</ul>
-											</li>
-											<li><a href="#part-3">Part 3: Redesigned management architecture, fine-grained control, more robust and faster</a>
-												<ul>
-													<li><a href="#limitations">Limitations of the previous-generation spider swarm</a></li>
-													<li><a href="#new-spider-architecture">Ditching Scrapy and reverting to requests + BeautifulSoup4</a></li>
-													<li><a href="#new-server-architecture">Pre-computed job pool and MySQL</a>
-														<ul>
-															<li><a href="#unexpected-response">One bad bug led to the failure of the previous swarm</a></li>
-															<li><a href="#new-job-pool">Pre-computed job pool</a></li>
-															<li><a href="#switching-to-mysql">An RDBMS that scales</a></li>
-														</ul>
-													</li>
-													<li><a href="#refresh-ip">Continuous refresh of banned IPs</a></li>
-													<li><a href="#part-3-results">Results</a></li>
-												</ul>
-											</li>
-											<li><a href="#gallery">Gallery</a></li>
-										</ul>
-									</nav>
-								</aside>
-								<p>The 3rd-and-last experiment of course <em>Web Information Processing and Application</em> required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on the training data of 9M user-item pairs and a social network.</p>
-								<p>The interesting part is, all user and rating data are real, i.e. unmasked. This makes it possible to, instead of playing nicely by doing data analysis, crawl the target data directly, bypassing the aim of the experiment to learn about recommendation systems, which is exactly the way I chose and I’m going to describe in this article.</p>
-								<p>To make things challenging, the target website, <a href="https://www.douban.com/">Douban</a>, has a moderate level of anti-spider techniques in place. This makes it impossible to just submit a truckload of requests hoping to retrieve all data desired, but more advanced technologies and cleverer tactics are mandatory before pulling it off.</p>
-								<h2 id="part-1">Part 1: Scrapy and ScrapingHub</h2>
-								<p>Previously I’ve done crawlers using <a href="https://2.python-requests.org/">requests</a> + <a href="https://www.crummy.com/software/BeautifulSoup/">Beautiful Soup</a>, but this time under suggestions from my roommate, I decided to try it out with <a href="https://scrapy.org/">Scrapy</a>, a said-to-be-great web crawling framework.</p>
-								<p>Scrapy is a framework extremely easy to start with. I followed the guide on Scrapy’s website and wrote less than 30 lines of Python (<a href="https://github.com/iBug/douban-spider/commit/8aead82">commit</a>), and the first version of my spider was ready to go.</p>
-								<p>It didn’t take too long before I picked up on Douban’s anti-spider techniques. My server’s IP was banned (fortunately, only temporarily) and all requests to Douban were getting 403 responses.</p>
-								<p>I fortuitously recalled that GitHub Student Pack provides an offer from <a href="https://scrapinghub.com/">ScrapingHub</a>, the company behind Scrapy, containing one scraper unit, for free forever. Following their guide on deployment, I asked my teammate to modify my spider to adopt Scrapy’s project layout (<a href="https://github.com/iBug/douban-spider/compare/cecbcfb..8eb1ff1">commit</a>), redeemed the Student Pack offer, and deployed my first scraper project onto ScrapingHub cloud.</p>
-								<figure>
-									<img src="/image/scrapinghub.png" alt="ScrapingHub results" />
-									<figcaption>
-										My job history on ScrapingHub, all of which are for this experiment
-									</figcaption>
-								</figure>
-								<p>ScrapingHub has forced AutoThrottle enabled for all jobs, so my first SH job survived for longer before it started receiving 403 responses. Looking at the stats, the job maintained its position for about 40 minutes, before signals of having its IP banned emerged. I updated the scraper a few times to include detections for more variations of indications of an IP ban, but never made it over an hour. And because I only attempted to avoid the IP ban by throttling and detecting, the actual “targets” contained in the code remained the same, which accounted for high duplication in crawled results in the first few runs, which in turn led to a quick drop in the increase of the submitted result (of this course experiment).</p>
-								<p>Recalling that I had spare promotional credits from AWS Educate, I came up with the idea of utilizing the large IP pool of AWS, which has another advantage of the ease to swap out a banned one.</p>
-								<h2 id="part-2">Part 2: Expansion onto AWS, distributed crawling with centralized management</h2>
-								<p>The high duplication rate of results from the first few runs on ScrapingHub was alarming: I knew that I wouldn’t make any real success if I didn’t build a centralized job dispatcher and data collector, so the first thing before moving onto AWS is to create a control center.</p>
-								<h3 id="central-management">The central manager server</h3>
-								<p>I picked my favorite quickstarter framework Flask, implemented three simple interfaces <code class="language-plaintext highlighter-rouge">get job</code>, <code class="language-plaintext highlighter-rouge">update job</code> and <code class="language-plaintext highlighter-rouge">add result</code>. To make things absolutely simple yet reliable, I picked SQLite as database backend because it’s easy to setup and query (<code class="language-plaintext highlighter-rouge">sqlite3</code> CLI is ready for use). I designed a “job pool” with push-pop architecture, where each job record is a to-be-crawled URL, and is deleted from the pool once it’s requested. The spider then crawls the page, send results back to the control center, as well as the “Next Page” link in the page back into the job pool if there is one. It didn’t even take a lot of effort to work this out (<a href="https://github.com/iBug/douban-spider/blob/5da2c80/server.py">code</a>). The initial content in the “job pool” is Page 1 of all 20000 users, imported from experiment materials manually. A user is considered “done” if one of the pages in the chain doesn’t contain a “Next Page” link, meaning that the last page for this user has been reached.</p>
-								<p>Deployment is just as easy. I wrapped the server up in a Docker container, put it on my primary server on Amazon Lightsail (2&nbsp;GB instance, has some other stuff running already), configured Nginx and added a DNS record on Cloudflare. Then I started the spider on my workstation and send a few initial requests, to test if everything proceeds as expected. After cleaning a few obvious bugs out of the code base, I started configuring a spider client.</p>
-								<h3 id="distributed-crawlers">Distributed crawler clients</h3>
-								<p>Because I planned to spawn a large amount of clients, I want to lower their cost (I have only $100 credits and can’t spend overbudget), so I started off with t3.nano instances as they offered twice the CPU power and slightly less expense over the previous-generation t2.nano. Configuring the environment wasn’t any difficult, as all that was needed was a deploy key and dependency packages. The former can be generated locally and have the public part uploaded to GitHub before copying the private part onto the spider server, and the latter is as easy as running <code class="language-plaintext highlighter-rouge">pip install</code>.</p>
-								<p>To make further deployment easier, I created a systemd service for the spider job, and added <code class="language-plaintext highlighter-rouge">git pull</code> before starting, so I only need to restart all servers and they’d pull in latest changes automatically. This is the service file that I wrote for this job.</p>
-								<div class="language-ini highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="nn">[Unit]</span>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox" />
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/open-source/"><i class="fas fa-fw fa-box-open"></i> Open Source</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/bookmarks/"><i class="fas fa-fw fa-bookmark"></i> Bookmarks</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="High-performance mass web crawling on AWS">
+					<meta itemprop="description" content="The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on the training data of 9M user-item pairs and a social network.">
+					<meta itemprop="datePublished" content="2019-12-28T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2022-04-30T19:59:16+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#part-1">Part 1: Scrapy and ScrapingHub</a></li>
+										<li><a href="#part-2">Part 2: Expansion onto AWS, distributed crawling with centralized management</a>
+											<ul>
+												<li><a href="#central-management">The central manager server</a></li>
+												<li><a href="#distributed-crawlers">Distributed crawler clients</a></li>
+												<li><a href="#part-2-results">Results</a></li>
+											</ul>
+										</li>
+										<li><a href="#part-3">Part 3: Redesigned management architecture, fine-grained control, more robust and faster</a>
+											<ul>
+												<li><a href="#limitations">Limitations of the previous-generation spider swarm</a></li>
+												<li><a href="#new-spider-architecture">Ditching Scrapy and reverting to requests + BeautifulSoup4</a></li>
+												<li><a href="#new-server-architecture">Pre-computed job pool and MySQL</a>
+													<ul>
+														<li><a href="#unexpected-response">One bad bug led to the failure of the previous swarm</a></li>
+														<li><a href="#new-job-pool">Pre-computed job pool</a></li>
+														<li><a href="#switching-to-mysql">An RDBMS that scales</a></li>
+													</ul>
+												</li>
+												<li><a href="#refresh-ip">Continuous refresh of banned IPs</a></li>
+												<li><a href="#part-3-results">Results</a></li>
+											</ul>
+										</li>
+										<li><a href="#gallery">Gallery</a></li>
+									</ul>
+								</nav>
+							</aside>
+							<p>The 3rd-and-last experiment of course <em>Web Information Processing and Application</em> required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on the training data of 9M user-item pairs and a social network.</p>
+							<p>The interesting part is, all user and rating data are real, i.e. unmasked. This makes it possible to, instead of playing nicely by doing data analysis, crawl the target data directly, bypassing the aim of the experiment to learn about recommendation systems, which is exactly the way I chose and I’m going to describe in this article.</p>
+							<p>To make things challenging, the target website, <a href="https://www.douban.com/">Douban</a>, has a moderate level of anti-spider techniques in place. This makes it impossible to just submit a truckload of requests hoping to retrieve all data desired, but more advanced technologies and cleverer tactics are mandatory before pulling it off.</p>
+							<h2 id="part-1">Part 1: Scrapy and ScrapingHub</h2>
+							<p>Previously I’ve done crawlers using <a href="https://2.python-requests.org/">requests</a> + <a href="https://www.crummy.com/software/BeautifulSoup/">Beautiful Soup</a>, but this time under suggestions from my roommate, I decided to try it out with <a href="https://scrapy.org/">Scrapy</a>, a said-to-be-great web crawling framework.</p>
+							<p>Scrapy is a framework extremely easy to start with. I followed the guide on Scrapy’s website and wrote less than 30 lines of Python (<a href="https://github.com/iBug/douban-spider/commit/8aead82">commit</a>), and the first version of my spider was ready to go.</p>
+							<p>It didn’t take too long before I picked up on Douban’s anti-spider techniques. My server’s IP was banned (fortunately, only temporarily) and all requests to Douban were getting 403 responses.</p>
+							<p>I fortuitously recalled that GitHub Student Pack provides an offer from <a href="https://scrapinghub.com/">ScrapingHub</a>, the company behind Scrapy, containing one scraper unit, for free forever. Following their guide on deployment, I asked my teammate to modify my spider to adopt Scrapy’s project layout (<a href="https://github.com/iBug/douban-spider/compare/cecbcfb..8eb1ff1">commit</a>), redeemed the Student Pack offer, and deployed my first scraper project onto ScrapingHub cloud.</p>
+							<figure>
+								<img src="/image/scrapinghub.png" alt="ScrapingHub results" />
+								<figcaption>
+									My job history on ScrapingHub, all of which are for this experiment
+								</figcaption>
+							</figure>
+							<p>ScrapingHub has forced AutoThrottle enabled for all jobs, so my first SH job survived for longer before it started receiving 403 responses. Looking at the stats, the job maintained its position for about 40 minutes, before signals of having its IP banned emerged. I updated the scraper a few times to include detections for more variations of indications of an IP ban, but never made it over an hour. And because I only attempted to avoid the IP ban by throttling and detecting, the actual “targets” contained in the code remained the same, which accounted for high duplication in crawled results in the first few runs, which in turn led to a quick drop in the increase of the submitted result (of this course experiment).</p>
+							<p>Recalling that I had spare promotional credits from AWS Educate, I came up with the idea of utilizing the large IP pool of AWS, which has another advantage of the ease to swap out a banned one.</p>
+							<h2 id="part-2">Part 2: Expansion onto AWS, distributed crawling with centralized management</h2>
+							<p>The high duplication rate of results from the first few runs on ScrapingHub was alarming: I knew that I wouldn’t make any real success if I didn’t build a centralized job dispatcher and data collector, so the first thing before moving onto AWS is to create a control center.</p>
+							<h3 id="central-management">The central manager server</h3>
+							<p>I picked my favorite quickstarter framework Flask, implemented three simple interfaces <code class="language-plaintext highlighter-rouge">get job</code>, <code class="language-plaintext highlighter-rouge">update job</code> and <code class="language-plaintext highlighter-rouge">add result</code>. To make things absolutely simple yet reliable, I picked SQLite as database backend because it’s easy to setup and query (<code class="language-plaintext highlighter-rouge">sqlite3</code> CLI is ready for use). I designed a “job pool” with push-pop architecture, where each job record is a to-be-crawled URL, and is deleted from the pool once it’s requested. The spider then crawls the page, send results back to the control center, as well as the “Next Page” link in the page back into the job pool if there is one. It didn’t even take a lot of effort to work this out (<a href="https://github.com/iBug/douban-spider/blob/5da2c80/server.py">code</a>). The initial content in the “job pool” is Page 1 of all 20000 users, imported from experiment materials manually. A user is considered “done” if one of the pages in the chain doesn’t contain a “Next Page” link, meaning that the last page for this user has been reached.</p>
+							<p>Deployment is just as easy. I wrapped the server up in a Docker container, put it on my primary server on Amazon Lightsail (2&nbsp;GB instance, has some other stuff running already), configured Nginx and added a DNS record on Cloudflare. Then I started the spider on my workstation and send a few initial requests, to test if everything proceeds as expected. After cleaning a few obvious bugs out of the code base, I started configuring a spider client.</p>
+							<h3 id="distributed-crawlers">Distributed crawler clients</h3>
+							<p>Because I planned to spawn a large amount of clients, I want to lower their cost (I have only $100 credits and can’t spend overbudget), so I started off with t3.nano instances as they offered twice the CPU power and slightly less expense over the previous-generation t2.nano. Configuring the environment wasn’t any difficult, as all that was needed was a deploy key and dependency packages. The former can be generated locally and have the public part uploaded to GitHub before copying the private part onto the spider server, and the latter is as easy as running <code class="language-plaintext highlighter-rouge">pip install</code>.</p>
+							<p>To make further deployment easier, I created a systemd service for the spider job, and added <code class="language-plaintext highlighter-rouge">git pull</code> before starting, so I only need to restart all servers and they’d pull in latest changes automatically. This is the service file that I wrote for this job.</p>
+							<div class="language-ini highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nn">[Unit]</span>
 <span class="py">Description</span><span class="p">=</span><span class="s">Douban Spider</span>
 <span class="py">After</span><span class="p">=</span><span class="s">multi-user.target</span>
 <span class="py">StartLimitIntervalSec</span><span class="p">=</span><span class="s">0</span>
@@ -258,84 +270,84 @@
 <span class="nn">[Install]</span>
 <span class="py">WantedBy</span><span class="p">=</span><span class="s">multi-user.target</span>
 </code></pre>
-									</div>
 								</div>
-								<p>I ran <code class="language-plaintext highlighter-rouge">systemctl daemon-reload</code> to let systemd reload and be aware of my new service unit. I then started the spider with <code class="language-plaintext highlighter-rouge">systemctl start spider.service</code> and followed <code class="language-plaintext highlighter-rouge">journalctl -ef</code> to check if the spider is running properly. To make the spider start automatically on boot, I ran <code class="language-plaintext highlighter-rouge">systemctl enable spider.service</code>.</p>
-								<p>As I was going to work around Douban’s IP limitations, I let the spider shut down itself when it discovers the IP ban (<a href="https://github.com/iBug/douban-spider/commit/d4b7e20">commit</a>). This way by looking at the number of running instances on EC2 dashboard, I can determine how many IPs have been banned, and can get new IPs by starting them up again (rebooting doesn’t change instance IP, must stop completely and then start again).</p>
-								<p>I then rebooted the server once, and checked again to be 100% sure that everything is working as expected. Confirming that, I shut down the server and took a snapshot of it.</p>
-								<figure>
-									<img src="/image/spider-aws/snapshot.png" alt="Snapshot of a spider instance" />
-									<figcaption>
-										Information panel of a snapshot taken from a properly configured spider instance, ready for deployment
-									</figcaption>
-								</figure>
-								<p>And as well, before launching new instances from this snapshot, an AMI (Amazon Machine Image) has to be registered based off of it, so I did one as well.</p>
-								<figure>
-									<img src="/image/spider-aws/ami.png" alt="AMI registered from the above snapshot" />
-									<figcaption>
-										Information panel of an Amazon Machine Image registered from the above snapshot
-									</figcaption>
-								</figure>
-								<p>I Googled about AWS service limits, and acknowledged that there was a “20 instances per region” limit on EC2. So I attempted to create 20 t3.nano instances from the AMI, but was informed that the launch request would fail for exceeding another resource limit of 32 vCPUs. OK, that was fine, I decided to launch 12 instance first, and launch the remaining 8 with one vCPU disabled, resulting in a total of 32 vCPUs. Unfortunately it failed again for unknown reasons, though I managed to figure it out that disabled vCPUs still count, so I ended up creating t2.nano instances for the rest of them.</p>
-								<p>It wasn’t necessarily something bad, however, as T2 series of instances can burst to 100% CPU for 30 minutes after startup, which should cover most of its lifetime before it gets banned.</p>
-								<div class="notice">
-									<p>I have forgotten how I realized this, but the current actuality is that there’s no more “instance limit”, but only a limit on total vCPU count. This is still effectively a limit on the number of instances you can have simultaneously, though you get to keep less if you run multi-core instances.</p>
-								</div>
-								<p>My final setup was 32 t2.nano instances per region so as to maximize concurrency with maximum number of IPs available at once, while keeping cost low.</p>
-								<h3 id="part-2-results">Results</h3>
-								<p>As soon as I booted up my first batch of 32 t2.nano instances, I noticed an unexpected situation: The manager server is running at constant 100% CPU load. Because Lightsail instances are backed by EC2 T2 series, I knew it wouldn’t sustain for long before having its CPU throttled due to insufficient CPU credits. So I cut off two spider clients, and launched an m5.large instance for the control center.</p>
-								<p>Things went on smoothly for a while, and before the job pool depleted, I could gather 500k to 600k results (up to 30 per page). I re-created the pool from scratch a few times, shuffled it each time, and restarted the whole spider swarm. Every time I “refreshed” the database, I could gather another 500k to 600k results, and things went strange in the same mysterious way. The problem was, I estimated that there’d be a total of 30M results, so 500k to 600k was really a small portion.</p>
-								<p>It’s still delighting that the crawled data from the first few attempts improved the RMSE of our submission from 1.341 to 1.308, though the urgency of a revolutionary refresh also emerged.</p>
-								<h2 id="part-3">Part 3: Redesigned management architecture, fine-grained control, more robust and faster</h2>
-								<p>The first version of the spider swarm was successful to an extent, but a highly-managed framework was cumbersome to further enhancements. I decided to identify the limitations and look for alternatives.</p>
-								<h3 id="limitations">Limitations of the previous-generation spider swarm</h3>
-								<ul>
-									<li>The first thing to emphasize is that Scrapy is too powerful and comprehensive to be flexible. I only want to make requests and get results as rapidly as possible.
-										<ul>
-											<li>Scrapy manages almost everything for you, including concurrency control and speed limiting, which is pretty much unwanted when I need to have fine-grained control over them.</li>
-										</ul>
-									</li>
-									<li>Pool management was poor. “Jobs” can get lost if they aren’t sent back (pushed back) to the control center. This is most likely the primary cause for the quick depletion of the job pool after gathering ~500k results. (There was indeed a serious bug in the spider client, which I’ll talk about later on)</li>
-									<li>Unacceptably high CPU usage from the server application, which needs a serious reform as well. Looking at the screen of <code class="language-plaintext highlighter-rouge">htop</code>, I guess that a large portion of the usage is made by SQLite queries, as I was doing a high concurrency server application with millions of rows in the database. SQLite doesn’t suit this kind of workload, really.</li>
-								</ul>
-								<p>These barriers ought to be overcome one by one, so I started this revolution from the spider client.</p>
-								<h3 id="new-spider-architecture">Ditching Scrapy and reverting to requests + BeautifulSoup4</h3>
-								<p>Scrapy is an all-in-one comprehensive framework. You focus on extracting data from the fetched page, and Scrapy handles everything else for you. Unfortunately, this is a huge barrier for whoever wants to tune it in every aspect. It even handles 302 redirects, which takes quite some effort to disable. This is why I switched back to my original approach using requests to fetch content, and parse it with BeautifulSoup4. Paired with Python’s stock multithreading library, this new client easily achieved twice the speed of that of Scrapy. It’s surely possible to dig into Scrapy and tune it, but why waste that time and effort when it can be easily solved by switching away?</p>
-								<p>Previously when using Scrapy, I had to override its <code class="language-plaintext highlighter-rouge">start_requests</code> method to fetch jobs from the server, and because Scrapy handles concurrency, I could not control how frequently a client fetches jobs, which was, to be honest, messy. With requests and <code class="language-plaintext highlighter-rouge">threading</code>, I have full control over concurrency, and I can reliably decide or predict how many jobs should be fetched by a client before it “exhausts”.</p>
-								<h3 id="new-server-architecture">Pre-computed job pool and MySQL</h3>
-								<p>Another problem of the previous generation of my spider swarm was that rapid draining of the job pool always occurred too soon (after fetching ~500k records). This was actually a bug.</p>
-								<h4 id="unexpected-response">One bad bug led to the failure of the previous swarm</h4>
-								<p>In my first few “durability tests”, I discovered that Douban would send either a 403 or a 302 response when it detects unusual traffic. The former was easy to detect, but with Scrapy, 302 redirects are handled automatically, and I spent more than half an hour Googling just to disable this behavior. With <code class="language-plaintext highlighter-rouge">requests</code>, this is as simple as supplying <code class="language-plaintext highlighter-rouge">allow_redirect=False</code> to the request method, which then enables the simplicity of checking the status code of the response.</p>
-								<p>The true failure was, Douban actually sends 200 responses occasionally, with the HTML body containing a single line of JavaScript that redirects to another page, with the browser’s information supplied. I didn’t realize this until I noticed that this second-generation swarm gradually stopped working completely, and SSH-ed into one of the spider servers, and checked the program log. Because I treated 200 responses as success, the spiders would only find that there was no data items and “Next Page” links in the returned page, and thinking that this “page chain” had been completed.</p>
-								<h4 id="new-job-pool">Pre-computed job pool</h4>
-								<p>Detecting this “new” kind of unwanted response was not hard, but it must be done. But the good thing is, I ditched the “pop-push” job pool design as well. This time I first ran a small bunch of spiders to crawl the Page 1 for all 20000 Douban users, extracted the total number of items from those pages, and computed the number of pages for each user, storing them into the database as the new job pool. No more jobs would be removed from the database, only marked as completed. This way I could easily discover failed jobs and re-enable them by flipping the “completed” flag manually by editing the database.</p>
-								<h4 id="switching-to-mysql">An RDBMS that scales</h4>
-								<p>The 1st-gen control center used SQLite as its database engine. SQLite is a lightweight, easy-to-start database. The problem is, it’s a single-file DB engine, and <strong>doesn’t scale</strong>. I had millions of rows in the results table, and a large portion of responses when I try to query it using the <code class="language-plaintext highlighter-rouge">sqlite3</code> CLI utility (for analysis purposes) are “<em>Error: database is locked</em>”. The database also grows terribly, at more than 400&nbsp;MB in size. Due to being constantly written to, I could even hardly make a copy of it without corruption. I had to do a <code class="language-plaintext highlighter-rouge">cp</code> command for 10 times before I could have an intact copy of the database for copying back to my computer for future analysis.</p>
-								<p>SQLite isn’t the right tool for millions of records, really.</p>
-								<p>MySQL is a better database engine that’s widely used in production, and I have some experiences with it, so it became an apparent option to switch to it. As Debian provides MariaDB as the replacement for MySQL, installation was straightforward. I the modified the code to adopt the new database.</p>
-								<p>A few points to note:</p>
-								<ul>
-									<li>Debian and its derivatives (including Ubuntu) uses the PyPI package <a href="https://pypi.org/project/mysqlclient/"><code class="language-plaintext highlighter-rouge">mysqlclient</code></a> to provide the package <code class="language-plaintext highlighter-rouge">python3-mysqldb</code>. It’s compatible with the now-abandoned <code class="language-plaintext highlighter-rouge">MySQLdb</code> package. Any code written for <code class="language-plaintext highlighter-rouge">MySQLdb</code> should remain unchanged, because even the import line remains as <code class="language-plaintext highlighter-rouge">import MySQLdb</code> instead of <code class="language-plaintext highlighter-rouge">import mysqlclient</code> (the latter will throw an <code class="language-plaintext highlighter-rouge">ImportError</code> for not finding the module).</li>
-									<li>The MySQL uses a connection-cursor architecture, so instead of calling <code class="language-plaintext highlighter-rouge">db.execute</code> and <code class="language-plaintext highlighter-rouge">db.fetch*</code> methods directly (as is the case with Python’s stock SQLite library), a cursor must be created first, and then <code class="language-plaintext highlighter-rouge">cursor.execute</code> and <code class="language-plaintext highlighter-rouge">cursor.fetch*</code> methods will be available. Similarly, cursors need separate closing than the DB connection itself.</li>
-									<li>
-										<p>The painful thing is that SQLite uses the question mark <code class="language-plaintext highlighter-rouge">?</code> as placeholder for query data (<a href="https://xkcd.com/327/">NEVER join database queries</a>), while MySQL uses <code class="language-plaintext highlighter-rouge">%s</code>. Compare the following code:</p>
-										<div class="language-sql highlighter-rouge">
-											<div class="highlight">
-												<pre class="highlight"><code><span class="n">SQLite</span><span class="p">:</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">records</span> <span class="p">(</span><span class="k">user</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">rating</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="o">?</span><span class="p">,</span> <span class="o">?</span><span class="p">,</span> <span class="o">?</span><span class="p">);</span>
+							</div>
+							<p>I ran <code class="language-plaintext highlighter-rouge">systemctl daemon-reload</code> to let systemd reload and be aware of my new service unit. I then started the spider with <code class="language-plaintext highlighter-rouge">systemctl start spider.service</code> and followed <code class="language-plaintext highlighter-rouge">journalctl -ef</code> to check if the spider is running properly. To make the spider start automatically on boot, I ran <code class="language-plaintext highlighter-rouge">systemctl enable spider.service</code>.</p>
+							<p>As I was going to work around Douban’s IP limitations, I let the spider shut down itself when it discovers the IP ban (<a href="https://github.com/iBug/douban-spider/commit/d4b7e20">commit</a>). This way by looking at the number of running instances on EC2 dashboard, I can determine how many IPs have been banned, and can get new IPs by starting them up again (rebooting doesn’t change instance IP, must stop completely and then start again).</p>
+							<p>I then rebooted the server once, and checked again to be 100% sure that everything is working as expected. Confirming that, I shut down the server and took a snapshot of it.</p>
+							<figure>
+								<img src="/image/spider-aws/snapshot.png" alt="Snapshot of a spider instance" />
+								<figcaption>
+									Information panel of a snapshot taken from a properly configured spider instance, ready for deployment
+								</figcaption>
+							</figure>
+							<p>And as well, before launching new instances from this snapshot, an AMI (Amazon Machine Image) has to be registered based off of it, so I did one as well.</p>
+							<figure>
+								<img src="/image/spider-aws/ami.png" alt="AMI registered from the above snapshot" />
+								<figcaption>
+									Information panel of an Amazon Machine Image registered from the above snapshot
+								</figcaption>
+							</figure>
+							<p>I Googled about AWS service limits, and acknowledged that there was a “20 instances per region” limit on EC2. So I attempted to create 20 t3.nano instances from the AMI, but was informed that the launch request would fail for exceeding another resource limit of 32 vCPUs. OK, that was fine, I decided to launch 12 instance first, and launch the remaining 8 with one vCPU disabled, resulting in a total of 32 vCPUs. Unfortunately it failed again for unknown reasons, though I managed to figure it out that disabled vCPUs still count, so I ended up creating t2.nano instances for the rest of them.</p>
+							<p>It wasn’t necessarily something bad, however, as T2 series of instances can burst to 100% CPU for 30 minutes after startup, which should cover most of its lifetime before it gets banned.</p>
+							<div class="notice">
+								<p>I have forgotten how I realized this, but the current actuality is that there’s no more “instance limit”, but only a limit on total vCPU count. This is still effectively a limit on the number of instances you can have simultaneously, though you get to keep less if you run multi-core instances.</p>
+							</div>
+							<p>My final setup was 32 t2.nano instances per region so as to maximize concurrency with maximum number of IPs available at once, while keeping cost low.</p>
+							<h3 id="part-2-results">Results</h3>
+							<p>As soon as I booted up my first batch of 32 t2.nano instances, I noticed an unexpected situation: The manager server is running at constant 100% CPU load. Because Lightsail instances are backed by EC2 T2 series, I knew it wouldn’t sustain for long before having its CPU throttled due to insufficient CPU credits. So I cut off two spider clients, and launched an m5.large instance for the control center.</p>
+							<p>Things went on smoothly for a while, and before the job pool depleted, I could gather 500k to 600k results (up to 30 per page). I re-created the pool from scratch a few times, shuffled it each time, and restarted the whole spider swarm. Every time I “refreshed” the database, I could gather another 500k to 600k results, and things went strange in the same mysterious way. The problem was, I estimated that there’d be a total of 30M results, so 500k to 600k was really a small portion.</p>
+							<p>It’s still delighting that the crawled data from the first few attempts improved the RMSE of our submission from 1.341 to 1.308, though the urgency of a revolutionary refresh also emerged.</p>
+							<h2 id="part-3">Part 3: Redesigned management architecture, fine-grained control, more robust and faster</h2>
+							<p>The first version of the spider swarm was successful to an extent, but a highly-managed framework was cumbersome to further enhancements. I decided to identify the limitations and look for alternatives.</p>
+							<h3 id="limitations">Limitations of the previous-generation spider swarm</h3>
+							<ul>
+								<li>The first thing to emphasize is that Scrapy is too powerful and comprehensive to be flexible. I only want to make requests and get results as rapidly as possible.
+									<ul>
+										<li>Scrapy manages almost everything for you, including concurrency control and speed limiting, which is pretty much unwanted when I need to have fine-grained control over them.</li>
+									</ul>
+								</li>
+								<li>Pool management was poor. “Jobs” can get lost if they aren’t sent back (pushed back) to the control center. This is most likely the primary cause for the quick depletion of the job pool after gathering ~500k results. (There was indeed a serious bug in the spider client, which I’ll talk about later on)</li>
+								<li>Unacceptably high CPU usage from the server application, which needs a serious reform as well. Looking at the screen of <code class="language-plaintext highlighter-rouge">htop</code>, I guess that a large portion of the usage is made by SQLite queries, as I was doing a high concurrency server application with millions of rows in the database. SQLite doesn’t suit this kind of workload, really.</li>
+							</ul>
+							<p>These barriers ought to be overcome one by one, so I started this revolution from the spider client.</p>
+							<h3 id="new-spider-architecture">Ditching Scrapy and reverting to requests + BeautifulSoup4</h3>
+							<p>Scrapy is an all-in-one comprehensive framework. You focus on extracting data from the fetched page, and Scrapy handles everything else for you. Unfortunately, this is a huge barrier for whoever wants to tune it in every aspect. It even handles 302 redirects, which takes quite some effort to disable. This is why I switched back to my original approach using requests to fetch content, and parse it with BeautifulSoup4. Paired with Python’s stock multithreading library, this new client easily achieved twice the speed of that of Scrapy. It’s surely possible to dig into Scrapy and tune it, but why waste that time and effort when it can be easily solved by switching away?</p>
+							<p>Previously when using Scrapy, I had to override its <code class="language-plaintext highlighter-rouge">start_requests</code> method to fetch jobs from the server, and because Scrapy handles concurrency, I could not control how frequently a client fetches jobs, which was, to be honest, messy. With requests and <code class="language-plaintext highlighter-rouge">threading</code>, I have full control over concurrency, and I can reliably decide or predict how many jobs should be fetched by a client before it “exhausts”.</p>
+							<h3 id="new-server-architecture">Pre-computed job pool and MySQL</h3>
+							<p>Another problem of the previous generation of my spider swarm was that rapid draining of the job pool always occurred too soon (after fetching ~500k records). This was actually a bug.</p>
+							<h4 id="unexpected-response">One bad bug led to the failure of the previous swarm</h4>
+							<p>In my first few “durability tests”, I discovered that Douban would send either a 403 or a 302 response when it detects unusual traffic. The former was easy to detect, but with Scrapy, 302 redirects are handled automatically, and I spent more than half an hour Googling just to disable this behavior. With <code class="language-plaintext highlighter-rouge">requests</code>, this is as simple as supplying <code class="language-plaintext highlighter-rouge">allow_redirect=False</code> to the request method, which then enables the simplicity of checking the status code of the response.</p>
+							<p>The true failure was, Douban actually sends 200 responses occasionally, with the HTML body containing a single line of JavaScript that redirects to another page, with the browser’s information supplied. I didn’t realize this until I noticed that this second-generation swarm gradually stopped working completely, and SSH-ed into one of the spider servers, and checked the program log. Because I treated 200 responses as success, the spiders would only find that there was no data items and “Next Page” links in the returned page, and thinking that this “page chain” had been completed.</p>
+							<h4 id="new-job-pool">Pre-computed job pool</h4>
+							<p>Detecting this “new” kind of unwanted response was not hard, but it must be done. But the good thing is, I ditched the “pop-push” job pool design as well. This time I first ran a small bunch of spiders to crawl the Page 1 for all 20000 Douban users, extracted the total number of items from those pages, and computed the number of pages for each user, storing them into the database as the new job pool. No more jobs would be removed from the database, only marked as completed. This way I could easily discover failed jobs and re-enable them by flipping the “completed” flag manually by editing the database.</p>
+							<h4 id="switching-to-mysql">An RDBMS that scales</h4>
+							<p>The 1st-gen control center used SQLite as its database engine. SQLite is a lightweight, easy-to-start database. The problem is, it’s a single-file DB engine, and <strong>doesn’t scale</strong>. I had millions of rows in the results table, and a large portion of responses when I try to query it using the <code class="language-plaintext highlighter-rouge">sqlite3</code> CLI utility (for analysis purposes) are “<em>Error: database is locked</em>”. The database also grows terribly, at more than 400&nbsp;MB in size. Due to being constantly written to, I could even hardly make a copy of it without corruption. I had to do a <code class="language-plaintext highlighter-rouge">cp</code> command for 10 times before I could have an intact copy of the database for copying back to my computer for future analysis.</p>
+							<p>SQLite isn’t the right tool for millions of records, really.</p>
+							<p>MySQL is a better database engine that’s widely used in production, and I have some experiences with it, so it became an apparent option to switch to it. As Debian provides MariaDB as the replacement for MySQL, installation was straightforward. I the modified the code to adopt the new database.</p>
+							<p>A few points to note:</p>
+							<ul>
+								<li>Debian and its derivatives (including Ubuntu) uses the PyPI package <a href="https://pypi.org/project/mysqlclient/"><code class="language-plaintext highlighter-rouge">mysqlclient</code></a> to provide the package <code class="language-plaintext highlighter-rouge">python3-mysqldb</code>. It’s compatible with the now-abandoned <code class="language-plaintext highlighter-rouge">MySQLdb</code> package. Any code written for <code class="language-plaintext highlighter-rouge">MySQLdb</code> should remain unchanged, because even the import line remains as <code class="language-plaintext highlighter-rouge">import MySQLdb</code> instead of <code class="language-plaintext highlighter-rouge">import mysqlclient</code> (the latter will throw an <code class="language-plaintext highlighter-rouge">ImportError</code> for not finding the module).</li>
+								<li>The MySQL uses a connection-cursor architecture, so instead of calling <code class="language-plaintext highlighter-rouge">db.execute</code> and <code class="language-plaintext highlighter-rouge">db.fetch*</code> methods directly (as is the case with Python’s stock SQLite library), a cursor must be created first, and then <code class="language-plaintext highlighter-rouge">cursor.execute</code> and <code class="language-plaintext highlighter-rouge">cursor.fetch*</code> methods will be available. Similarly, cursors need separate closing than the DB connection itself.</li>
+								<li>
+									<p>The painful thing is that SQLite uses the question mark <code class="language-plaintext highlighter-rouge">?</code> as placeholder for query data (<a href="https://xkcd.com/327/">NEVER join database queries</a>), while MySQL uses <code class="language-plaintext highlighter-rouge">%s</code>. Compare the following code:</p>
+									<div class="language-sql highlighter-rouge">
+										<div class="highlight">
+											<pre class="highlight"><code><span class="n">SQLite</span><span class="p">:</span> <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">records</span> <span class="p">(</span><span class="k">user</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">rating</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="o">?</span><span class="p">,</span> <span class="o">?</span><span class="p">,</span> <span class="o">?</span><span class="p">);</span>
 <span class="n">MySQL</span><span class="p">:</span>  <span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">records</span> <span class="p">(</span><span class="k">user</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">rating</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="o">%</span><span class="n">s</span><span class="p">,</span> <span class="o">%</span><span class="n">s</span><span class="p">,</span> <span class="o">%</span><span class="n">s</span><span class="p">);</span>
 </code></pre>
-											</div>
+										</div>
     </div>
-										<p>It was somewhat frustrating to hunt for all those question marks and replacing them with <code class="language-plaintext highlighter-rouge">%s</code>’s when you can’t use text-based find-and-replace. Still, though, I managed to get this work done.</p>
-									</li>
-								</ul>
-								<h3 id="refresh-ip">Continuous refresh of banned IPs</h3>
-								<p>As this time I made some changes to increase the aggregate crawl speed, it could be anticipated that IPs would be banned sooner than in the first generation, which rendered IP refreshing more important. I had already known that AWS provided an extensive REST API, as well as a powerful CLI utility <code class="language-plaintext highlighter-rouge">aws</code>.</p>
-								<p>I didn’t even need to install the <code class="language-plaintext highlighter-rouge">aws</code> CLI utility because it comes preinstalled on every AMI, so all that was needed was to create an IAM user and generate API credentials following the <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html">AWS official documentation</a>.</p>
-								<p>After figuring out all functionalities that I needed, I created a “runner script” that does everything automatically.</p>
-								<div class="language-shell highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code><span class="c">#!/bin/bash</span>
+									<p>It was somewhat frustrating to hunt for all those question marks and replacing them with <code class="language-plaintext highlighter-rouge">%s</code>’s when you can’t use text-based find-and-replace. Still, though, I managed to get this work done.</p>
+								</li>
+							</ul>
+							<h3 id="refresh-ip">Continuous refresh of banned IPs</h3>
+							<p>As this time I made some changes to increase the aggregate crawl speed, it could be anticipated that IPs would be banned sooner than in the first generation, which rendered IP refreshing more important. I had already known that AWS provided an extensive REST API, as well as a powerful CLI utility <code class="language-plaintext highlighter-rouge">aws</code>.</p>
+							<p>I didn’t even need to install the <code class="language-plaintext highlighter-rouge">aws</code> CLI utility because it comes preinstalled on every AMI, so all that was needed was to create an IAM user and generate API credentials following the <a href="https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html">AWS official documentation</a>.</p>
+							<p>After figuring out all functionalities that I needed, I created a “runner script” that does everything automatically.</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="c">#!/bin/bash</span>
 
 <span class="k">case</span> <span class="s2">"</span><span class="nv">$1</span><span class="s2">"</span> <span class="k">in
   </span>1<span class="p">)</span> <span class="nv">REGION</span><span class="o">=</span><span class="s1">'ap-northeast-1'</span><span class="p">;;</span>
@@ -359,13 +371,13 @@
   aws <span class="nt">--output</span> json <span class="nt">--region</span> <span class="s2">"</span><span class="nv">$REGION</span><span class="s2">"</span> ec2 <span class="s2">"</span><span class="nv">$ACTION</span><span class="s2">"</span> <span class="nt">--instance-ids</span> <span class="nv">$INSTANCES</span>
 <span class="k">fi</span>
 </code></pre>
-									</div>
 								</div>
-								<p>The above script will attempt to list all spider instances (all of them are t2.nano), and depending on arguments, try to stop them and start them back up so they have new IPs to start with.</p>
-								<p>I then created a cron job that restarts each batch every hour, which looks like this:</p>
-								<div class="language-text highlighter-rouge">
-									<div class="highlight">
-										<pre class="highlight"><code>0,1 * * * * /root/job.sh 1 1
+							</div>
+							<p>The above script will attempt to list all spider instances (all of them are t2.nano), and depending on arguments, try to stop them and start them back up so they have new IPs to start with.</p>
+							<p>I then created a cron job that restarts each batch every hour, which looks like this:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>0,1 * * * * /root/job.sh 1 1
 2,3 * * * * /root/job.sh 1 2
 15,16 * * * * /root/job.sh 2 1
 17,18 * * * * /root/job.sh 2 2
@@ -374,300 +386,300 @@
 45,46 * * * * /root/job.sh 4 1
 47,48 * * * * /root/job.sh 4 2
 </code></pre>
-									</div>
 								</div>
-								<p>This way a batch of instances will get new IPs every hour, effectively bypassing Douban’s IP limitations, which is another key to the success of the 2nd-gen spider swarm.</p>
-								<h3 id="part-3-results">Results</h3>
-								<p>With everything set up, I packed up a new AMI for the spider client, copied the AMI to 3 other AWS regions, and launched as many instances as possible, giving a total of 126 spider clients running simultaneously.</p>
-								<p>This new spider swarm achieved almost twice the speed of the old version, at a sustained rate of around 1,700 records per second, when the old version could only maintain a burst speed of 900 records per second, before quickly dropping to 500 records per second. What’s more satisfactory was that it was fault-tolerant, finally crawling 20.7M records (out of a total of 21.6M) before completely stopped working after around 12 hours.</p>
-								<p>The crawled data covered more than 90% of the test set of the experiment, and boosted the RMSE value of our submission from 1.304 to a whopping 0.546. We managed to make it one step further to 0.539 by adding the crawled data to our training set. For the record, the 2nd place, who also played with web spiders, only managed to get the RMSE value to 0.87. This is a great success.</p>
-								<p>On a side note, you probably shouldn’t attempt this if you don’t have credits on AWS. This 3-day journey through AWS with a spider swarm cost me an astonishing amount of US$44.96, with more than $30 spent on EC2 and more than $10 spent on traffic (AWS charges for traffic beyond 1&nbsp;GB). Fortunately, I have them all covered by my remaining credits from AWS Educate, making this whole crawler project an enjoyable experience.</p>
-								<h2 id="gallery">Gallery</h2>
-								<figure class="third ">
-									<a href="/image/spider-aws/instances.us-west-1.png" title="The EC2 instances screen on US West 1 region">
-										<img src="/image/spider-aws/instances.us-west-1.png" alt="AWS console" />
-									</a>
-									<a href="/image/spider-aws/spiders-with-master.png" title="In Tokyo region lies the « spider master »">
-										<img src="/image/spider-aws/spiders-with-master.png" alt="AWS console" />
-									</a>
-									<a href="/image/spider-aws/shutting-down.png" title="Job done, spiders are shut down now.">
-										<img src="/image/spider-aws/shutting-down.png" alt="AWS console" />
-									</a>
-								</figure>
-							</section>
-							<footer class="page__meta">
-								<p class="page__taxonomy">
-									<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
-									<span itemprop="keywords">
-										<a href="/tag/aws" class="page__taxonomy-item p-category" rel="tag">aws</a><span class="sep">, </span>
-										<a href="/tag/web" class="page__taxonomy-item p-category" rel="tag">web</a>
-									</span>
-								</p>
-								<p class="page__taxonomy">
-									<strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
-									<span itemprop="keywords">
-										<a href="/category/story" class="page__taxonomy-item p-category" rel="tag">story</a>
-									</span>
-								</p>
-								<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2022-04-30">Apr 30, 2022</time></p>
-							</footer>
-							<section class="page__share">
-								<h4 class="page__share-title">Share on</h4>
-								<a href="https://twitter.com/intent/tweet?text=High-performance+mass+web+crawling+on+AWS%20https%3A%2F%2Fibug.io%2Fblog%2F2019%2F12%2Fmass-crawl-douban-with-aws%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
-								<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2019%2F12%2Fmass-crawl-douban-with-aws%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
-								<a href="https://www.linkedin.com/shareArticle?mini=true&url=https://ibug.io/blog/2019/12/mass-crawl-douban-with-aws/" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
-							</section>
-							<nav class="pagination">
-								<a href="/blog/2019/12/manage-servers-with-ssh-ca/" class="pagination--pager" title="Managing servers with OpenSSH Certificate Authority
+							</div>
+							<p>This way a batch of instances will get new IPs every hour, effectively bypassing Douban’s IP limitations, which is another key to the success of the 2nd-gen spider swarm.</p>
+							<h3 id="part-3-results">Results</h3>
+							<p>With everything set up, I packed up a new AMI for the spider client, copied the AMI to 3 other AWS regions, and launched as many instances as possible, giving a total of 126 spider clients running simultaneously.</p>
+							<p>This new spider swarm achieved almost twice the speed of the old version, at a sustained rate of around 1,700 records per second, when the old version could only maintain a burst speed of 900 records per second, before quickly dropping to 500 records per second. What’s more satisfactory was that it was fault-tolerant, finally crawling 20.7M records (out of a total of 21.6M) before completely stopped working after around 12 hours.</p>
+							<p>The crawled data covered more than 90% of the test set of the experiment, and boosted the RMSE value of our submission from 1.304 to a whopping 0.546. We managed to make it one step further to 0.539 by adding the crawled data to our training set. For the record, the 2nd place, who also played with web spiders, only managed to get the RMSE value to 0.87. This is a great success.</p>
+							<p>On a side note, you probably shouldn’t attempt this if you don’t have credits on AWS. This 3-day journey through AWS with a spider swarm cost me an astonishing amount of US$44.96, with more than $30 spent on EC2 and more than $10 spent on traffic (AWS charges for traffic beyond 1&nbsp;GB). Fortunately, I have them all covered by my remaining credits from AWS Educate, making this whole crawler project an enjoyable experience.</p>
+							<h2 id="gallery">Gallery</h2>
+							<figure class="third ">
+								<a href="/image/spider-aws/instances.us-west-1.png" title="The EC2 instances screen on US West 1 region">
+									<img src="/image/spider-aws/instances.us-west-1.png" alt="AWS console" />
+								</a>
+								<a href="/image/spider-aws/spiders-with-master.png" title="In Tokyo region lies the « spider master »">
+									<img src="/image/spider-aws/spiders-with-master.png" alt="AWS console" />
+								</a>
+								<a href="/image/spider-aws/shutting-down.png" title="Job done, spiders are shut down now.">
+									<img src="/image/spider-aws/shutting-down.png" alt="AWS console" />
+								</a>
+							</figure>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/aws" class="page__taxonomy-item p-category" rel="tag">aws</a><span class="sep">, </span>
+									<a href="/tag/web" class="page__taxonomy-item p-category" rel="tag">web</a>
+								</span>
+							</p>
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+								<span itemprop="keywords">
+									<a href="/category/story" class="page__taxonomy-item p-category" rel="tag">story</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2022-04-30">Apr 30, 2022</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=High-performance+mass+web+crawling+on+AWS%20https%3A%2F%2Fibug.io%2Fblog%2F2019%2F12%2Fmass-crawl-douban-with-aws%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2019%2F12%2Fmass-crawl-douban-with-aws%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https://ibug.io/blog/2019/12/mass-crawl-douban-with-aws/" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/blog/2019/12/manage-servers-with-ssh-ca/" class="pagination--pager" title="Managing servers with OpenSSH Certificate Authority
 ">Previous</a>
-								<a href="/blog/2020/02/use-mysql-cli-without-password/" class="pagination--pager" title="3 ways to use MySQL / MariaDB CLI without password
+							<a href="/blog/2020/02/use-mysql-cli-without-password/" class="pagination--pager" title="3 ways to use MySQL / MariaDB CLI without password
 ">Next</a>
-							</nav>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+				<div class="page__related">
+					<h2 class="page__related-title">You may also enjoy</h2>
+					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/linux-container.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are w...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											20 minute read
+										</span>
+									</p>
+								</div>
+							</article>
 						</div>
-						<div class="page__comments">
-							<h4 class="page__comments-title">Leave a comment</h4>
-							<section id="disqus_thread"></section>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/ldap.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											14 minute read
+										</span>
+									</p>
+								</div>
+							</article>
 						</div>
-					</article>
-					<div class="page__related">
-						<h2 class="page__related-title">You may also enjoy</h2>
-						<div class="grid__wrapper">
-							<div class="grid__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-teaser">
-										<img src="/image/teaser/linux-container.jpg" alt="">
-									</div>
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are w...</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-												20 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="grid__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-teaser">
-										<img src="/image/teaser/ldap.jpg" alt="">
-									</div>
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-												14 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="grid__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-teaser">
-										<img src="/image/teaser/24.png" alt="">
-									</div>
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2022/05/programming-24-game/" rel="permalink">Taking the 24 puzzle game to the next level
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now a...</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2022-05-25T00:00:00+00:00">May 25, 2022</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-												12 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
-							<div class="grid__item">
-								<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-									<div class="archive__item-teaser">
-										<img src="/image/teaser/vpn-imagine.jpg" alt="">
-									</div>
-									<div class="archive__item-text">
-										<h2 class="archive__item-title no_toc" itemprop="headline">
-											<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
-											</a>
-										</h2>
-										<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
-										<p class="page__meta">
-											<span class="page__meta-date">
-												<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-												<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
-											</span>
-											<span class="page__meta-sep"></span>
-											<span class="page__meta-readtime">
-												<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-												16 minute read
-											</span>
-										</p>
-									</div>
-								</article>
-							</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/24.png" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2022/05/programming-24-game/" rel="permalink">Taking the 24 puzzle game to the next level
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now a...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2022-05-25T00:00:00+00:00">May 25, 2022</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											12 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/vpn-imagine.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											16 minute read
+										</span>
+									</p>
+								</div>
+							</article>
 						</div>
 					</div>
 				</div>
 			</div>
-			<div class="search-content">
-				<div class="search-content__inner-wrap">
-					<div class="search-searchbar"></div>
-					<div class="search-hits"></div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
 				</div>
-			</div>
-			<div id="footer" class="page__footer">
-				<footer>
-					<!-- start custom footer snippets -->
-					<!-- end custom footer snippets -->
-					<div class="page__footer-follow">
-						<ul class="social-icons">
-							<li><strong>Follow:</strong></li>
-							<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
-							<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
-							<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
-						</ul>
-					</div>
-					<div class="page__footer-copyright">
-						<p>&copy; 2024 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
-						<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
-						<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
-						<p>
-							Site version <a href="/status" class="version-text">G-866</a>
-						</p>
-					</div>
-				</footer>
-			</div>
-			<script src="/assets/js/main.min.js"></script>
-			<script>
-				// Including InstantSearch.js library and styling
-				const loadSearch = function() {
-				  const loadCSS = function(src) {
-				    var link = document.createElement('link');
-				    link.rel = 'stylesheet';
-				    link.type = 'text/css';
-				    link.href = src;
-				    link.media = 'all';
-				    document.head.appendChild(link);
-				  };
+				<div class="page__footer-copyright">
+					<p>&copy; 2024 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
+					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
+					<p>
+						Site version <a href="/status" class="version-text">G-867</a>
+					</p>
+				</div>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<script>
+			// Including InstantSearch.js library and styling
+			const loadSearch = function() {
+			  const loadCSS = function(src) {
+			    var link = document.createElement('link');
+			    link.rel = 'stylesheet';
+			    link.type = 'text/css';
+			    link.href = src;
+			    link.media = 'all';
+			    document.head.appendChild(link);
+			  };
 
-				  var script = document.createElement('script');
-				  script.setAttribute("type", "text/javascript");
-				  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
-				  script.addEventListener("load", function() {
-				    // Instantiating InstantSearch.js with Algolia credentials
-				    const search = instantsearch({
-				      appId: '14DZKASAEJ',
-				      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
-				      indexName: 'iBug_website',
-				      searchParameters: {
-				        restrictSearchableAttributes: ['title', 'content']
-				      }
-				    });
+			  var script = document.createElement('script');
+			  script.setAttribute("type", "text/javascript");
+			  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
+			  script.addEventListener("load", function() {
+			    // Instantiating InstantSearch.js with Algolia credentials
+			    const search = instantsearch({
+			      appId: '14DZKASAEJ',
+			      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			      indexName: 'iBug_website',
+			      searchParameters: {
+			        restrictSearchableAttributes: ['title', 'content']
+			      }
+			    });
 
-				    const hitTemplate = function(hit) {
-				      const url = hit.url;
-				      const hightlight = hit._highlightResult;
-				      const title = hightlight.title && hightlight.title.value  || "";
-				      const content = hightlight.html && hightlight.html.value  || "";
+			    const hitTemplate = function(hit) {
+			      const url = hit.url;
+			      const hightlight = hit._highlightResult;
+			      const title = hightlight.title && hightlight.title.value  || "";
+			      const content = hightlight.html && hightlight.html.value  || "";
 
-				      return `
-				        <div class="list__item">
-				          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-				            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
-				            <div class="archive__item-excerpt" itemprop="description">${content}</div>
-				          </article>
-				        </div>
-				      `;
-				    }
+			      return `
+			        <div class="list__item">
+			          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			            <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			          </article>
+			        </div>
+			      `;
+			    }
 
-				    // Adding searchbar and results widgets
-				    search.addWidget(
-				      instantsearch.widgets.searchBox({
-				        container: '.search-searchbar',
-				        poweredBy: true,
-				        placeholder: 'Enter your search term...'
-				      })
-				    );
-				    search.addWidget(
-				      instantsearch.widgets.hits({
-				        container: '.search-hits',
-				        templates: {
-				          item: hitTemplate,
-				          empty: 'No results',
-				        }
-				      })
-				    );
+			    // Adding searchbar and results widgets
+			    search.addWidget(
+			      instantsearch.widgets.searchBox({
+			        container: '.search-searchbar',
+			        poweredBy: true,
+			        placeholder: 'Enter your search term...'
+			      })
+			    );
+			    search.addWidget(
+			      instantsearch.widgets.hits({
+			        container: '.search-hits',
+			        templates: {
+			          item: hitTemplate,
+			          empty: 'No results',
+			        }
+			      })
+			    );
 
-				    if (!search.started) {
-				      search.start();
-				    }
-				  });
-				  document.body.appendChild(script);
+			    if (!search.started) {
+			      search.start();
+			    }
+			  });
+			  document.body.appendChild(script);
 
-				  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
-				  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
-				};
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
+			};
 
-				// Starting the search only when toggle is clicked
-				$(document).ready(function() {
-				  var scriptLoaded = false;
+			// Starting the search only when toggle is clicked
+			$(document).ready(function() {
+			  var scriptLoaded = false;
 
-				  $(".search__toggle").on("click", function() {
-				    if (!scriptLoaded) {
-				      loadSearch();
-				      scriptLoaded = true;
-				    }
-				  });
-				});
-			</script>
-			<!-- Global site tag (gtag.js) - Google Analytics -->
-			<script async src="https://www.googletagmanager.com/gtag/js?id=G-V93196TX91"></script>
-			<script>
-				window.dataLayer = window.dataLayer || [];
-				function gtag(){dataLayer.push(arguments);}
-				gtag('js', new Date());
+			  $(".search__toggle").on("click", function() {
+			    if (!scriptLoaded) {
+			      loadSearch();
+			      scriptLoaded = true;
+			    }
+			  });
+			});
+		</script>
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-V93196TX91"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
 
-				gtag('config', 'G-V93196TX91', { 'anonymize_ip': false});
-			</script>
-			<script>
-				var disqus_config = function () {
-				  this.page.url = "https://ibug.io/blog/2019/12/mass-crawl-douban-with-aws/";  /* Replace PAGE_URL with your page's canonical URL variable */
-				  this.page.identifier = "/blog/2019/12/mass-crawl-douban-with-aws"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
-				};
-				(function() { /* DON'T EDIT BELOW THIS LINE */
-				  var d = document, s = d.createElement('script');
-				  s.src = 'https://ibugone.disqus.com/embed.js';
-				  s.setAttribute('data-timestamp', +new Date());
-				  (d.head || d.body).appendChild(s);
-				})();
-			</script>
-			<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-		</body>
-	</html>
+			gtag('config', 'G-V93196TX91', { 'anonymize_ip': false});
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/blog/2019/12/mass-crawl-douban-with-aws/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2019/12/mass-crawl-douban-with-aws"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	</body>
+</html>
