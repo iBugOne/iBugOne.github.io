@@ -1,28 +1,193 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-05-05T17:36:33+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Reload SSL certificates with systemd</title><link href="https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd/" rel="alternate" type="text/html" title="Reload SSL certificates with systemd" /><published>2024-03-31T00:00:00+00:00</published><updated>2024-04-01T18:23:24+00:00</updated><id>https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd</id><content type="html" xml:base="https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd/"><![CDATA[<p>Recently I relinquished an old domain on my server and had to re-issue a certificate to drop that domain off.
-				Previously it ran Let’s Encrypt’s official client Certbot, set up back in 2019.
-				All my recent setups have been using acme.sh, so I figured that this was a perfect chance to switch this one over as well.</p>
-			<p>Getting acme.sh to issue a new certificate for my updated domain list is easy enough and out of scope for this article.
-				But when it comes to reloading the certificate for services using it, I have to think twice.
-				Back in the days when Nginx was the sole consumer of the certificate, I directly referenced the certificate files in <code class="language-plaintext highlighter-rouge">/etc/letsencrypt/live/</code> from Nginx config, and somehow slappped a <code class="language-plaintext highlighter-rouge">systemctl reload nginx</code> into crontab to handle the reload.
-				Now that there are multiple services using the certificate, I no longer consider it a good idea to reload all the services in a crontab.
-				There has to be a better way.</p>
-			<p>Since all my services are managed by systemd, using an extra “service” or whatever unit to group them together seems like a better idea.
-				Systemd’s <code class="language-plaintext highlighter-rouge">ReloadPropagatedFrom=</code> option and its inverse <code class="language-plaintext highlighter-rouge">PropagatesReloadTo=</code> immediately come to mind. With the right direction, it’s easy to Google out this answer: <a href="https://unix.stackexchange.com/q/334471/211239">How do I reload a group of systemd services?</a></p>
-			<p>Realizing that “target” is the simplest unit type in systemd’s abstraction, this is the minimum that suits my needs.</p>
-			<div class="language-ini highlighter-rouge">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-05-14T15:38:59+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Migrating Ubuntu onto ZFS</title><link href="https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs/" rel="alternate" type="text/html" title="Migrating Ubuntu onto ZFS" /><published>2024-05-14T00:00:00+00:00</published><updated>2024-05-14T23:37:49+00:00</updated><id>https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs</id><content type="html" xml:base="https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs/"><![CDATA[<p>As part of a planned disk migration, I decided to move my Ubuntu installation from a traditional ext4 setup to ZFS.
+				I did a lot of preparation and research, but things went much smoother than I had previously anticipated.
+				I did not even have to consult IPMI for any recovery.</p>
+			<p>Existing partition layout:</p>
+			<div class="language-console highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.target
+					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>fdisk <span class="nt">-l</span> /dev/nvme1n1
+<span class="go">[...]
+Device             Start        End    Sectors  Size Type
+/dev/nvme1n1p1      2048    1050623    1048576  512M EFI System
+/dev/nvme1n1p2   1050624  269486079  268435456  128G Linux filesystem
+/dev/nvme1n1p3 269486080 3907029134 3637543055  1.7T Solaris /usr &amp; Apple ZFS
+</span></code></pre>
+				</div>
+			</div>
+			<p>Since I already have <code class="language-plaintext highlighter-rouge">/home</code> running on ZFS <code class="language-plaintext highlighter-rouge">pool0</code>, there’s not much to prepare.
+				All I need to move is the rootfs itself, which has around 20&nbsp;GB of data.</p>
+			<p>Start by installing anything necessary:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>apt <span class="nb">install </span>zfs-initramfs arch-install-scripts
+</code></pre>
+				</div>
+			</div>
+			<p>Then create the dataset layout:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="c"># pool0 already has xattr=sa</span>
+zfs create <span class="se">\</span>
+  <span class="nt">-o</span> <span class="nv">canmount</span><span class="o">=</span>off <span class="se">\</span>
+  <span class="nt">-o</span> <span class="nv">mountpoint</span><span class="o">=</span>none <span class="se">\</span>
+  <span class="nt">-o</span> <span class="nv">acltype</span><span class="o">=</span>posix <span class="se">\</span>
+  pool0/ROOT
+zfs create <span class="nt">-o</span> <span class="nv">mountpoint</span><span class="o">=</span>/mnt/new pool0/ROOT/ubuntu
+
+rsync <span class="nt">-avSHAXx</span> <span class="nt">--delete</span> / /mnt/new/
+</code></pre>
+				</div>
+			</div>
+			<p>Now there’s a little deviation from common setup.
+				I don’t trust GRUB’s ZFS support, so I’m going to merge <code class="language-plaintext highlighter-rouge">/boot</code> into the EFI partition (which has a decent 512&nbsp;MB of capacity).
+				This is a decision made after surveying my friends’ setup.</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="c"># Merge data</span>
+rsync <span class="nt">-ax</span> /boot/ /boot/efi/ <span class="c"># Ignore any errors</span>
+umount /boot/efi
+vim /etc/fstab
+<span class="c"># Change /boot/efi to /boot</span>
+<span class="c"># Also remove the current rootfs entry</span>
+systemctl daemon-reload
+mount /boot
+</code></pre>
+				</div>
+			</div>
+			<p>Now prepare GRUB:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>zpool <span class="nb">set </span><span class="nv">bootfs</span><span class="o">=</span>pool0/ROOT/ubuntu pool0
+mount <span class="nt">-o</span> <span class="nb">bind</span> /boot /mnt/new/boot
+arch-chroot /mnt/new
+</code></pre>
+				</div>
+			</div>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>grub-install
+<span class="go">Installing for x86_64-efi platform.
+grub-install: error: cannot find EFI directory.
+</span></code></pre>
+				</div>
+			</div>
+			<p>Well, if only <code class="language-plaintext highlighter-rouge">grub-install</code> didn’t hard-code <code class="language-plaintext highlighter-rouge">/boot/efi</code> (which is against the FHS standard anyways).
+				Fortunately, I recall a small detail that could make this work in another convenient way:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>dpkg-reconfigure grub-efi-amd64
+</code></pre>
+				</div>
+			</div>
+			<p>Also regenerate GRUB configuration:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>zfs <span class="nb">set </span><span class="nv">mountpoint</span><span class="o">=</span>/ pool0/ROOT/ubuntu
+update-grub
+</code></pre>
+				</div>
+			</div>
+			<p>Now double-check the GRUB configuration at <code class="language-plaintext highlighter-rouge">/boot/grub/grub.cfg</code> and make sure there are lines like this:</p>
+			<div class="language-text highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>linux /vmlinuz [...] root=ZFS=pool0/ROOT/ubuntu [...]
+</code></pre>
+				</div>
+			</div>
+			<p>After verifying paths to the kernel and the initrd image are correct, reboot:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>reboot
+</code></pre>
+				</div>
+			</div>
+			<p>In just a minute, I noticed my server came back up.
+				Time to confirm everything is working as expected:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>mount
+<span class="go">pool0/ROOT/ubuntu on / type zfs (rw,relatime,xattr,posixacl,casesensitive)
+
+</span><span class="gp">#</span><span class="w"> </span><span class="nb">df</span> <span class="nt">-h</span> /
+<span class="go">Filesystem         Size  Used Avail Use% Mounted on
+pool0/ROOT/ubuntu  1.2T   11G  1.1T   1% /
+
+</span><span class="gp">#</span><span class="w"> </span>zfs get compressratio pool0/ROOT
+<span class="go">NAME        PROPERTY       VALUE  SOURCE
+pool0/ROOT  compressratio  2.02x  -
+</span></code></pre>
+				</div>
+			</div>
+			<p>The last thing is to rewrite my rootfs backup script to take snapshots directly, instead of rsync-ing to another ZFS pool before taking a snapshot there.
+				After taking a snapshot, I can also send it away as a “backup against disk failure”.</p>
+			<p>A slightly revised version of my snapshotting script, sans the sending part:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="c">#!/bin/sh</span>
+
+<span class="nb">set</span> <span class="nt">-e</span>
+
+<span class="nv">DATASET</span><span class="o">=</span>pool0/ROOT/ubuntu
+<span class="nv">DATE</span><span class="o">=</span><span class="si">$(</span><span class="nb">date</span> +%Y%m%d<span class="si">)</span>
+<span class="nv">SNAPSHOT</span><span class="o">=</span><span class="s2">"</span><span class="nv">$DATASET</span><span class="s2">@</span><span class="nv">$DATE</span><span class="s2">"</span>
+<span class="nv">RETENTION_DAYS</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">1</span><span class="k">:-</span><span class="nv">7</span><span class="k">}</span><span class="s2">"</span>
+<span class="nv">RETENTION</span><span class="o">=</span><span class="s2">"</span><span class="k">$((</span>RETENTION_DAYS <span class="o">*</span> <span class="m">86400</span><span class="k">))</span><span class="s2">"</span>
+
+<span class="nv">NOW</span><span class="o">=</span><span class="s2">"</span><span class="k">$((</span><span class="si">$(</span><span class="nb">date</span> +%s<span class="si">)</span> <span class="o">-</span> <span class="m">3600</span><span class="k">))</span><span class="s2">"</span>
+<span class="k">if</span> <span class="o">[</span> <span class="s2">"</span><span class="si">$(</span>zfs list <span class="nt">-Hpo</span> name <span class="s2">"</span><span class="nv">$SNAPSHOT</span><span class="s2">"</span><span class="si">)</span><span class="s2">"</span> <span class="o">=</span> <span class="s2">"</span><span class="nv">$SNAPSHOT</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+  </span><span class="nb">echo</span> <span class="s2">"Snapshot exists: </span><span class="nv">$SNAPSHOT</span><span class="s2">"</span>
+<span class="k">else
+  </span>zfs snapshot <span class="nt">-ro</span> ibug:retention<span class="o">=</span><span class="s2">"</span><span class="nv">$RETENTION</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$SNAPSHOT</span><span class="s2">"</span>
+<span class="k">fi
+
+</span>zfs list <span class="nt">-Hpt</span> snapshot <span class="nt">-o</span> name,creation,ibug:retention <span class="s2">"</span><span class="nv">$DATASET</span><span class="s2">"</span> |
+  <span class="k">while </span><span class="nb">read</span> <span class="nt">-r</span> zNAME zCREATION zRETENTION<span class="p">;</span> <span class="k">do
+  if</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$zRETENTION</span><span class="s2">"</span> <span class="o">=</span> <span class="s2">"-"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
+    <span class="c"># assume default value</span>
+    <span class="nv">zRETENTION</span><span class="o">=</span><span class="s2">"</span><span class="k">$((</span><span class="m">7</span> <span class="o">*</span> <span class="m">86400</span><span class="k">))</span><span class="s2">"</span>
+  <span class="k">fi
+  </span><span class="nv">UNTIL</span><span class="o">=</span><span class="s2">"</span><span class="k">$((</span>zCREATION <span class="o">+</span> zRETENTION<span class="k">))</span><span class="s2">"</span>
+  <span class="nv">UNTIL_DATE</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span><span class="nb">date</span> <span class="nt">-d</span> <span class="s2">"@</span><span class="nv">$UNTIL</span><span class="s2">"</span> <span class="s2">"+%Y-%m-%d %H:%M:%S"</span><span class="si">)</span><span class="s2">"</span>
+  <span class="nb">echo</span> <span class="s2">"</span><span class="nv">$zNAME</span><span class="s2">: </span><span class="nv">$UNTIL_DATE</span><span class="s2">"</span>
+  <span class="k">if</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$NOW</span><span class="s2">"</span> <span class="nt">-ge</span> <span class="s2">"</span><span class="nv">$UNTIL</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
+    </span>zfs destroy <span class="nt">-rv</span> <span class="s2">"</span><span class="nv">$zNAME</span><span class="s2">"</span>
+  <span class="k">fi
+done</span>
+</code></pre>
+				</div>
+			</div>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="c"># crontab</span>
+15 4 <span class="k">*</span> <span class="k">*</span> 1,5     /root/backup.sh 30
+15 4 <span class="k">*</span> <span class="k">*</span> 0,2-4,6 /root/backup.sh  7
+</code></pre>
+				</div>
+			</div>
+			]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><category term="zfs" /><summary type="html"><![CDATA[As part of a planned disk migration, I decided to move my Ubuntu installation from a traditional ext4 setup to ZFS. I did a lot of preparation and research, but things went much smoother than I had previously anticipated. I did not even have to consult IPMI for any recovery.]]></summary></entry><entry><title type="html">Reload SSL certificates with systemd</title><link href="https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd/" rel="alternate" type="text/html" title="Reload SSL certificates with systemd" /><published>2024-03-31T00:00:00+00:00</published><updated>2024-04-01T18:23:24+00:00</updated><id>https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd</id><content type="html" xml:base="https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd/"><![CDATA[<p>Recently I relinquished an old domain on my server and had to re-issue a certificate to drop that domain off.
+			Previously it ran Let’s Encrypt’s official client Certbot, set up back in 2019.
+			All my recent setups have been using acme.sh, so I figured that this was a perfect chance to switch this one over as well.</p>
+		<p>Getting acme.sh to issue a new certificate for my updated domain list is easy enough and out of scope for this article.
+			But when it comes to reloading the certificate for services using it, I have to think twice.
+			Back in the days when Nginx was the sole consumer of the certificate, I directly referenced the certificate files in <code class="language-plaintext highlighter-rouge">/etc/letsencrypt/live/</code> from Nginx config, and somehow slappped a <code class="language-plaintext highlighter-rouge">systemctl reload nginx</code> into crontab to handle the reload.
+			Now that there are multiple services using the certificate, I no longer consider it a good idea to reload all the services in a crontab.
+			There has to be a better way.</p>
+		<p>Since all my services are managed by systemd, using an extra “service” or whatever unit to group them together seems like a better idea.
+			Systemd’s <code class="language-plaintext highlighter-rouge">ReloadPropagatedFrom=</code> option and its inverse <code class="language-plaintext highlighter-rouge">PropagatesReloadTo=</code> immediately come to mind. With the right direction, it’s easy to Google out this answer: <a href="https://unix.stackexchange.com/q/334471/211239">How do I reload a group of systemd services?</a></p>
+		<p>Realizing that “target” is the simplest unit type in systemd’s abstraction, this is the minimum that suits my needs.</p>
+		<div class="language-ini highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.target
 </span><span class="nn">[Unit]</span>
 <span class="py">Description</span><span class="p">=</span><span class="s">SSL certificates reload helper</span>
 <span class="py">PropagatesReloadTo</span><span class="p">=</span><span class="s">nginx.service</span>
 <span class="py">PropagatesReloadTo</span><span class="p">=</span><span class="s">postfix.service</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Then, following the above Unix &amp; Linux answer, here’s a “path” unit that lets systemd monitor the certificate files for changes.</p>
-			<div class="language-ini highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.path
+		</div>
+		<p>Then, following the above Unix &amp; Linux answer, here’s a “path” unit that lets systemd monitor the certificate files for changes.</p>
+		<div class="language-ini highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.path
 </span><span class="nn">[Unit]</span>
 <span class="py">Description</span><span class="p">=</span><span class="s">SSL certificate reload helper</span>
 <span class="py">Wants</span><span class="p">=</span><span class="s">%N.target</span>
@@ -33,13 +198,13 @@
 <span class="nn">[Install]</span>
 <span class="py">WantedBy</span><span class="p">=</span><span class="s">multi-user.target</span>
 </code></pre>
-				</div>
 			</div>
-			<p>The <code class="language-plaintext highlighter-rouge">Wants=</code> setting here ensure that the corresponding target unit is activated, otherwise it cannot be <code class="language-plaintext highlighter-rouge">reload</code>ed.</p>
-			<p>There’s one deficiency in the answer above: A “path” unit can only <em>activate</em> another unit, not <em>reload</em> it. So I still have to create a oneshot service that calls <code class="language-plaintext highlighter-rouge">systemctl reload</code> on the target, which itself can then be activated by the “path” unit.</p>
-			<div class="language-ini highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.service
+		</div>
+		<p>The <code class="language-plaintext highlighter-rouge">Wants=</code> setting here ensure that the corresponding target unit is activated, otherwise it cannot be <code class="language-plaintext highlighter-rouge">reload</code>ed.</p>
+		<p>There’s one deficiency in the answer above: A “path” unit can only <em>activate</em> another unit, not <em>reload</em> it. So I still have to create a oneshot service that calls <code class="language-plaintext highlighter-rouge">systemctl reload</code> on the target, which itself can then be activated by the “path” unit.</p>
+		<div class="language-ini highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.service
 </span><span class="nn">[Unit]</span>
 <span class="py">Description</span><span class="p">=</span><span class="s">SSL certificate reload helper</span>
 <span class="py">StartLimitIntervalSec</span><span class="p">=</span><span class="s">5s</span>
@@ -49,25 +214,25 @@
 <span class="py">Type</span><span class="p">=</span><span class="s">oneshot</span>
 <span class="py">ExecStart</span><span class="p">=</span><span class="s">/bin/systemctl reload %N.target</span>
 </code></pre>
-				</div>
 			</div>
-			<p>It’s important that this service comes with <code class="language-plaintext highlighter-rouge">Type=oneshot</code> and <em>without</em> <code class="language-plaintext highlighter-rouge">RemainAfterExit=yes</code>, so that it can be repeatedly activated by the “path” unit.</p>
-			<p>Now I can test if things work:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>systemctl daemon-reload
+		</div>
+		<p>It’s important that this service comes with <code class="language-plaintext highlighter-rouge">Type=oneshot</code> and <em>without</em> <code class="language-plaintext highlighter-rouge">RemainAfterExit=yes</code>, so that it can be repeatedly activated by the “path” unit.</p>
+		<p>Now I can test if things work:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>systemctl daemon-reload
 systemctl <span class="nb">enable</span> <span class="nt">--now</span> ssl-certificate.path
 acme.sh <span class="nt">--install-cert</span> <span class="nt">-d</span> <span class="s2">"</span><span class="nv">$HOSTNAME</span><span class="s2">"</span> <span class="se">\</span>
   <span class="nt">--cert-file</span> <span class="s2">"/etc/ssl/private/</span><span class="nv">$HOSTNAME</span><span class="s2">/cert.pem"</span> <span class="se">\</span>
   <span class="nt">--key-file</span> <span class="s2">"/etc/ssl/private/</span><span class="nv">$HOSTNAME</span><span class="s2">/privkey.pem"</span> <span class="se">\</span>
   <span class="nt">--fullchain-file</span> <span class="s2">"/etc/ssl/private/</span><span class="nv">$HOSTNAME</span><span class="s2">/fullchain.pem"</span>
 </code></pre>
-				</div>
 			</div>
-			<p>And then inspect the services:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>systemctl status nginx.service
+		</div>
+		<p>And then inspect the services:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>systemctl status nginx.service
 <span class="go">[...]
 Mar 31 19:20:11 hostname systemd[1]: Reloading A high performance web server and a reverse proxy server...
 Mar 31 19:20:12 hostname systemd[1]: Reloaded A high performance web server and a reverse proxy server.
@@ -77,89 +242,89 @@ Mar 31 19:20:12 hostname systemd[1]: Reloaded A high performance web server and 
 Mar 31 19:20:11 hostname systemd[1]: Reloading Postfix Mail Transport Agent...
 Mar 31 19:20:12 hostname systemd[1]: Reloaded Postfix Mail Transport Agent.
 </span></code></pre>
-				</div>
 			</div>
-			<p>So now, job done. As acme.sh stores install information, the next time these certificates are renewed, acme.sh will automatically copy them over to <code class="language-plaintext highlighter-rouge">/etc/ssl/private/$HOSTNAME/</code>, and systemd will pick up the changes and reload the services.</p>
-			]]></content><author><name>iBug</name></author><category term="linux" /><summary type="html"><![CDATA[Recently I relinquished an old domain on my server and had to re-issue a certificate to drop that domain off. Previously it ran Let’s Encrypt’s official client Certbot, set up back in 2019. All my recent setups have been using acme.sh, so I figured that this was a perfect chance to switch this one over as well.]]></summary></entry><entry><title type="html">I almost broke our lab’s storage server…</title><link href="https://ibug.io/blog/2024/03/stupid-dell-recovery/" rel="alternate" type="text/html" title="I almost broke our lab’s storage server…" /><published>2024-03-13T00:00:00+00:00</published><updated>2024-03-27T18:34:21+00:00</updated><id>https://ibug.io/blog/2024/03/stupid-dell-recovery</id><content type="html" xml:base="https://ibug.io/blog/2024/03/stupid-dell-recovery/"><![CDATA[<p>Recently we discovered that both SSDs on our storage server were giving worrisome SMART values, so we started replacing them.
-			One of them was used only for ZFS L2ARC, so pulling it out was easy.
-			The other runs the rootfs and we couldn’t touch it for the time being, so we inserted a backup drive thinking we can migrate the OS later on.</p>
-		<p>After returning from the datacenter, I start working on the migration.
-			The initial steps are nothing but ordinary:</p>
-		<ul>
-			<li>Examine the spare drive to ensure there’s no important data on it, then wipe it (<code class="language-plaintext highlighter-rouge">blkdiscard -f /dev/sdb</code>).</li>
-			<li>Create the partition table that closely resembles the current system drive’s layout: 100&nbsp;MB for the EFI partition (down from 512&nbsp;MB), 32&nbsp;GB for rootfs, and the rest for an LVM PV.</li>
-			<li>Format the partitions: <code class="language-plaintext highlighter-rouge">mkfs.vfat /dev/sdb1</code>, <code class="language-plaintext highlighter-rouge">mkfs.ext4 /dev/sdb2</code>, <code class="language-plaintext highlighter-rouge">pvcreate /dev/sdb3</code>.</li>
-			<li>Copy the rootfs over: <code class="language-plaintext highlighter-rouge">mount /dev/sdb2 /t</code>, <code class="language-plaintext highlighter-rouge">rsync -aHAXx / /t</code>.</li>
-			<li>Reinstall the bootloader: <code class="language-plaintext highlighter-rouge">mount /dev/sdb1 /t/boot/efi</code>, <code class="language-plaintext highlighter-rouge">arch-chroot /t</code>, <code class="language-plaintext highlighter-rouge">grub-install</code> (target is <code class="language-plaintext highlighter-rouge">x86_64-efi</code>), <code class="language-plaintext highlighter-rouge">update-grub</code>.</li>
-			<li>Start migrating LVs: <code class="language-plaintext highlighter-rouge">vgextend pve /dev/sdb3</code>, <code class="language-plaintext highlighter-rouge">pvmove /dev/sda3 /dev/sdb3</code>.</li>
-		</ul>
-		<p>At this point, a quick thought emerges: This is not the final drive to run the system on and is only here for the transitional period.
-			A second migration is planned when the new SSD arrives. So why not take this chance and move the rootfs onto LVM as well?</p>
-		<p>With that in mind, I hit Ctrl-C to <code class="language-plaintext highlighter-rouge">pvmove</code>, unbeknownst that it’s interruptible and terminating the <code class="language-plaintext highlighter-rouge">pvmove</code> process only pauses the operation.
-			For a moment, I thought I successfully canceled it and tried to re-partition the new drive.
-			Since the new PV is still in use by the suspended <code class="language-plaintext highlighter-rouge">pvmove</code> operation, the kernel would not accept any changes to <code class="language-plaintext highlighter-rouge">/dev/sdb3</code>.
-			During this process, I deleted and recreated the new rootfs (<code class="language-plaintext highlighter-rouge">/dev/sdb2</code>) and the new PV (<code class="language-plaintext highlighter-rouge">/dev/sdb3</code>) many times, and even tried manually editing LVM metadata (via <code class="language-plaintext highlighter-rouge">vgcfgbackup pve</code>, edit <code class="language-plaintext highlighter-rouge">/etc/lvm/backup/pve</code> and <code class="language-plaintext highlighter-rouge">vgcfgrestore pve</code>), before finally giving up and rebooting the system.</p>
-		<p>As a daily dose for a SysAdmin, the server didn’t boot up as expected.
-			I fired up a browser to connect to the machine’s IPMI, only to find that the remote console feature for iDRAC 9 was locked behind a paywall for goodness’ sake.
-			Thanks to God almighty Dell, things have been unnecessarily more complicated than ever before.
-			I carefully recalled every step taken and quickly identified the problem - one important thing forgotten - GRUB was successfully reinstalled on the new EFI partition (which was somehow left intact during the whole fiddling process), pointing to the now-deleted new root partition, and so it’s now stuck with GRUB.</p>
-		<p>Fortunately, out of precaution, I had previously configured the IPMI with serial-over-LAN, so I at least still have serial access to the server with <code class="language-plaintext highlighter-rouge">ipmitool</code>. This saved me from a trip back to the datacenter.</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>ipmitool <span class="nt">-I</span> lanplus <span class="nt">-H</span> &lt;ip&gt; <span class="nt">-U</span> &lt;user&gt; <span class="nt">-P</span> &lt;password&gt; sol activate
+		</div>
+		<p>So now, job done. As acme.sh stores install information, the next time these certificates are renewed, acme.sh will automatically copy them over to <code class="language-plaintext highlighter-rouge">/etc/ssl/private/$HOSTNAME/</code>, and systemd will pick up the changes and reload the services.</p>
+		]]></content><author><name>iBug</name></author><category term="linux" /><summary type="html"><![CDATA[Recently I relinquished an old domain on my server and had to re-issue a certificate to drop that domain off. Previously it ran Let’s Encrypt’s official client Certbot, set up back in 2019. All my recent setups have been using acme.sh, so I figured that this was a perfect chance to switch this one over as well.]]></summary></entry><entry><title type="html">I almost broke our lab’s storage server…</title><link href="https://ibug.io/blog/2024/03/stupid-dell-recovery/" rel="alternate" type="text/html" title="I almost broke our lab’s storage server…" /><published>2024-03-13T00:00:00+00:00</published><updated>2024-03-27T18:34:21+00:00</updated><id>https://ibug.io/blog/2024/03/stupid-dell-recovery</id><content type="html" xml:base="https://ibug.io/blog/2024/03/stupid-dell-recovery/"><![CDATA[<p>Recently we discovered that both SSDs on our storage server were giving worrisome SMART values, so we started replacing them.
+		One of them was used only for ZFS L2ARC, so pulling it out was easy.
+		The other runs the rootfs and we couldn’t touch it for the time being, so we inserted a backup drive thinking we can migrate the OS later on.</p>
+	<p>After returning from the datacenter, I start working on the migration.
+		The initial steps are nothing but ordinary:</p>
+	<ul>
+		<li>Examine the spare drive to ensure there’s no important data on it, then wipe it (<code class="language-plaintext highlighter-rouge">blkdiscard -f /dev/sdb</code>).</li>
+		<li>Create the partition table that closely resembles the current system drive’s layout: 100&nbsp;MB for the EFI partition (down from 512&nbsp;MB), 32&nbsp;GB for rootfs, and the rest for an LVM PV.</li>
+		<li>Format the partitions: <code class="language-plaintext highlighter-rouge">mkfs.vfat /dev/sdb1</code>, <code class="language-plaintext highlighter-rouge">mkfs.ext4 /dev/sdb2</code>, <code class="language-plaintext highlighter-rouge">pvcreate /dev/sdb3</code>.</li>
+		<li>Copy the rootfs over: <code class="language-plaintext highlighter-rouge">mount /dev/sdb2 /t</code>, <code class="language-plaintext highlighter-rouge">rsync -aHAXx / /t</code>.</li>
+		<li>Reinstall the bootloader: <code class="language-plaintext highlighter-rouge">mount /dev/sdb1 /t/boot/efi</code>, <code class="language-plaintext highlighter-rouge">arch-chroot /t</code>, <code class="language-plaintext highlighter-rouge">grub-install</code> (target is <code class="language-plaintext highlighter-rouge">x86_64-efi</code>), <code class="language-plaintext highlighter-rouge">update-grub</code>.</li>
+		<li>Start migrating LVs: <code class="language-plaintext highlighter-rouge">vgextend pve /dev/sdb3</code>, <code class="language-plaintext highlighter-rouge">pvmove /dev/sda3 /dev/sdb3</code>.</li>
+	</ul>
+	<p>At this point, a quick thought emerges: This is not the final drive to run the system on and is only here for the transitional period.
+		A second migration is planned when the new SSD arrives. So why not take this chance and move the rootfs onto LVM as well?</p>
+	<p>With that in mind, I hit Ctrl-C to <code class="language-plaintext highlighter-rouge">pvmove</code>, unbeknownst that it’s interruptible and terminating the <code class="language-plaintext highlighter-rouge">pvmove</code> process only pauses the operation.
+		For a moment, I thought I successfully canceled it and tried to re-partition the new drive.
+		Since the new PV is still in use by the suspended <code class="language-plaintext highlighter-rouge">pvmove</code> operation, the kernel would not accept any changes to <code class="language-plaintext highlighter-rouge">/dev/sdb3</code>.
+		During this process, I deleted and recreated the new rootfs (<code class="language-plaintext highlighter-rouge">/dev/sdb2</code>) and the new PV (<code class="language-plaintext highlighter-rouge">/dev/sdb3</code>) many times, and even tried manually editing LVM metadata (via <code class="language-plaintext highlighter-rouge">vgcfgbackup pve</code>, edit <code class="language-plaintext highlighter-rouge">/etc/lvm/backup/pve</code> and <code class="language-plaintext highlighter-rouge">vgcfgrestore pve</code>), before finally giving up and rebooting the system.</p>
+	<p>As a daily dose for a SysAdmin, the server didn’t boot up as expected.
+		I fired up a browser to connect to the machine’s IPMI, only to find that the remote console feature for iDRAC 9 was locked behind a paywall for goodness’ sake.
+		Thanks to God almighty Dell, things have been unnecessarily more complicated than ever before.
+		I carefully recalled every step taken and quickly identified the problem - one important thing forgotten - GRUB was successfully reinstalled on the new EFI partition (which was somehow left intact during the whole fiddling process), pointing to the now-deleted new root partition, and so it’s now stuck with GRUB.</p>
+	<p>Fortunately, out of precaution, I had previously configured the IPMI with serial-over-LAN, so I at least still have serial access to the server with <code class="language-plaintext highlighter-rouge">ipmitool</code>. This saved me from a trip back to the datacenter.</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>ipmitool <span class="nt">-I</span> lanplus <span class="nt">-H</span> &lt;ip&gt; <span class="nt">-U</span> &lt;user&gt; <span class="nt">-P</span> &lt;password&gt; sol activate
 </code></pre>
-			</div>
 		</div>
-		<p>And better yet, this iDRAC 9 can change BIOS settings, most notably the boot order and one-time boot override. This definitely helped the most in the absence of that goddamn remote console.</p>
-		<p><img src="/image/server/idrac-boot-override.png" alt="image" /></p>
-		<p>After some trial and error, I got myself into the GRUB command line, and it didn’t look quite well:</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">grub rescue&gt;</span><span class="w"> 
+	</div>
+	<p>And better yet, this iDRAC 9 can change BIOS settings, most notably the boot order and one-time boot override. This definitely helped the most in the absence of that goddamn remote console.</p>
+	<p><img src="/image/server/idrac-boot-override.png" alt="image" /></p>
+	<p>After some trial and error, I got myself into the GRUB command line, and it didn’t look quite well:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">grub rescue&gt;</span><span class="w"> 
 </span></code></pre>
-			</div>
 		</div>
-		<p>There’s pretty much just the <code class="language-plaintext highlighter-rouge">ls</code> command, and it doesn’t even recognize the EFI partition (FAT32 filesystem). With some more twiddling, I found this “rescue mode” capable of reading ext4, which shed some light to the situation.</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">grub rescue&gt;</span><span class="w"> </span><span class="nb">set </span><span class="nv">root</span><span class="o">=(</span>hd0,gpt2<span class="o">)</span>
+	</div>
+	<p>There’s pretty much just the <code class="language-plaintext highlighter-rouge">ls</code> command, and it doesn’t even recognize the EFI partition (FAT32 filesystem). With some more twiddling, I found this “rescue mode” capable of reading ext4, which shed some light to the situation.</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">grub rescue&gt;</span><span class="w"> </span><span class="nb">set </span><span class="nv">root</span><span class="o">=(</span>hd0,gpt2<span class="o">)</span>
 <span class="gp">grub rescue&gt;</span><span class="w"> </span><span class="nb">ls</span> /boot/grub
 <span class="go">fonts  grub.cfg  grubenv  locale  unicode.pf2  x86_64-efi
 </span></code></pre>
-			</div>
 		</div>
-		<p>Now things began to turn to the upswing.</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">grub rescue&gt;</span><span class="w"> </span><span class="nb">set </span><span class="nv">prefix</span><span class="o">=</span>/boot/grub
+	</div>
+	<p>Now things began to turn to the upswing.</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">grub rescue&gt;</span><span class="w"> </span><span class="nb">set </span><span class="nv">prefix</span><span class="o">=</span>/boot/grub
 <span class="gp">grub rescue&gt;</span><span class="w"> </span>insmod normal
 <span class="gp">grub rescue&gt;</span><span class="w"> </span>normal
 </code></pre>
-			</div>
 		</div>
-		<p>In a few seconds, I was delighted to discover that the system was up and running, and continued migrating the rootfs.</p>
-		<p>After everything’s done, out of every precaution, I installed <code class="language-plaintext highlighter-rouge">grub-efi-amd64-signed</code>, which provides a large, monolithic <code class="language-plaintext highlighter-rouge">grubx64.efi</code> that has all the “optional” modules built-in, so it no longer relies on the filesystem for, e.g., LVM support, in case a similar disaster happens again.</p>
-		<h2 id="anecdote">Anecdote</h2>
-		<p>When trying to remove the faulty drive from the server, I at first made a wrong recall for its position, and we instead pulled out a running large-capacity HDD. Luckily it was not damaged, so we quickly inserted it back. Thanks to ZFS’s design, it automatically triggered a resilver, which completed in just a blink.</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code># zpool status
+	</div>
+	<p>In a few seconds, I was delighted to discover that the system was up and running, and continued migrating the rootfs.</p>
+	<p>After everything’s done, out of every precaution, I installed <code class="language-plaintext highlighter-rouge">grub-efi-amd64-signed</code>, which provides a large, monolithic <code class="language-plaintext highlighter-rouge">grubx64.efi</code> that has all the “optional” modules built-in, so it no longer relies on the filesystem for, e.g., LVM support, in case a similar disaster happens again.</p>
+	<h2 id="anecdote">Anecdote</h2>
+	<p>When trying to remove the faulty drive from the server, I at first made a wrong recall for its position, and we instead pulled out a running large-capacity HDD. Luckily it was not damaged, so we quickly inserted it back. Thanks to ZFS’s design, it automatically triggered a resilver, which completed in just a blink.</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code># zpool status
   pool: rpool
  state: ONLINE
   scan: resilvered 63.4M in 00:00:03 with 0 errors on Tue Mar 12 17:03:23 2024
 </code></pre>
-			</div>
 		</div>
-		<p>If this were a hardware RAID, a tedious and time-consuming rebuild would have been inevitable. It’s only with ZFS that this rapid recovery is possible.</p>
-		<h2 id="conclusion">Conclusion</h2>
-		<p>This incident was a good lesson for me, and some big takeaways I’d draw:</p>
-		<ul>
-			<li>Don’t panic under pressure.</li>
-			<li>Use ZFS so you can sleep well at night.</li>
-			<li>Fuck Dell, next time buy from another vendor that doesn’t lock basic features behind a paywall.</li>
-		</ul>
-		<p>Plus, the correct way to cancel a <code class="language-plaintext highlighter-rouge">pvmove</code> operation is in <a href="https://linux.die.net/man/8/pvmove"><code class="language-plaintext highlighter-rouge">man 8 pvmove</code></a>, and it’s right at the 2nd paragraph of the Description section.</p>
-		]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><summary type="html"><![CDATA[Recently we discovered that both SSDs on our storage server were giving worrisome SMART values, so we started replacing them. One of them was used only for ZFS L2ARC, so pulling it out was easy. The other runs the rootfs and we couldn’t touch it for the time being, so we inserted a backup drive thinking we can migrate the OS later on.]]></summary></entry><entry><title type="html">My firewall solution for RDP</title><link href="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/" rel="alternate" type="text/html" title="My firewall solution for RDP" /><published>2024-02-28T00:00:00+00:00</published><updated>2024-02-28T18:33:21+00:00</updated><id>https://ibug.io/blog/2024/02/linux-firewall-for-rdp</id><content type="html" xml:base="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/"><![CDATA[<p>Today I stumbled upon <a href="https://www.v2ex.com/t/1019147">this V2EX post</a> (Simplified Chinese) where the OP shared their PowerShell implementation of a “makeshift fail2ban” for RDP (<a href="https://github.com/Qetesh/rdpFail2Ban">their GitHub repository</a>). Their script looked very clean and robust, but needless to say, it is unnecessarily difficult on Windows. So on this rare (maybe?) occasion I decide to share my firewall for securing RDP access to my Windows hosts.</p>
+	</div>
+	<p>If this were a hardware RAID, a tedious and time-consuming rebuild would have been inevitable. It’s only with ZFS that this rapid recovery is possible.</p>
+	<h2 id="conclusion">Conclusion</h2>
+	<p>This incident was a good lesson for me, and some big takeaways I’d draw:</p>
+	<ul>
+		<li>Don’t panic under pressure.</li>
+		<li>Use ZFS so you can sleep well at night.</li>
+		<li>Fuck Dell, next time buy from another vendor that doesn’t lock basic features behind a paywall.</li>
+	</ul>
+	<p>Plus, the correct way to cancel a <code class="language-plaintext highlighter-rouge">pvmove</code> operation is in <a href="https://linux.die.net/man/8/pvmove"><code class="language-plaintext highlighter-rouge">man 8 pvmove</code></a>, and it’s right at the 2nd paragraph of the Description section.</p>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><summary type="html"><![CDATA[Recently we discovered that both SSDs on our storage server were giving worrisome SMART values, so we started replacing them. One of them was used only for ZFS L2ARC, so pulling it out was easy. The other runs the rootfs and we couldn’t touch it for the time being, so we inserted a backup drive thinking we can migrate the OS later on.]]></summary></entry><entry><title type="html">My firewall solution for RDP</title><link href="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/" rel="alternate" type="text/html" title="My firewall solution for RDP" /><published>2024-02-28T00:00:00+00:00</published><updated>2024-02-28T18:33:21+00:00</updated><id>https://ibug.io/blog/2024/02/linux-firewall-for-rdp</id><content type="html" xml:base="https://ibug.io/blog/2024/02/linux-firewall-for-rdp/"><![CDATA[<p>Today I stumbled upon <a href="https://www.v2ex.com/t/1019147">this V2EX post</a> (Simplified Chinese) where the OP shared their PowerShell implementation of a “makeshift fail2ban” for RDP (<a href="https://github.com/Qetesh/rdpFail2Ban">their GitHub repository</a>). Their script looked very clean and robust, but needless to say, it is unnecessarily difficult on Windows. So on this rare (maybe?) occasion I decide to share my firewall for securing RDP access to my Windows hosts.</p>
 	<p><strong>None</strong> of my Windows hosts (PCs and VMs) has their RDP port exposed to the public internet directly, and they’re all connected to my mesh VPN (which is out of scope for this blog article). My primary public internet entry gateway for the intranet runs Debian with fully manually configured iptables-based firewall, and I frequently work on it through SSH.</p>
 	<p>My goal is to expose the RDP port only to myself. There are a few obvious solutions eliminated for different reasons:</p>
 	<ul>
@@ -1311,196 +1476,4 @@ Failed to write VG test.</code></pre>
 		<h1>谢谢！</h1>
 		<p><small>本页面的链接：<a href="https://ibug.io/p/59"><i class="fas fa-fw fa-link"></i> ibug.io/p/59</a></small></p>
 	</section>
-	]]></content><author><name>iBug</name></author></entry><entry><title type="html">Prolonging eMMC Life Span with Proxmox VE</title><link href="https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/" rel="alternate" type="text/html" title="Prolonging eMMC Life Span with Proxmox VE" /><published>2023-07-15T00:00:00+00:00</published><updated>2023-07-15T20:32:06+00:00</updated><id>https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve</id><content type="html" xml:base="https://ibug.io/blog/2023/07/prolonging-emmc-life-span-with-proxmox-ve/"><![CDATA[<p>Since my blog on <a href="/p/49">installing Proxmox VE on eMMC</a>, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, as eMMCs typically do not offer the level of endurance as anything better than USB flash drives. Among many concerns, the most important one is the limited number of write cycles that an eMMC can sustain, while Proxmox VE, being an enterprise-grade product, has to constantly write stuff like logs to the storage. I came across <a href="https://fat-nerds.com/dot-nerd/cut-down-proxmox-ve-emmc-sd-read-write/">this blog (fat-nerds.com)</a> on reducing eMMC writes on a Proxmox VE installation on a single-board computer from a Hong Kong guy, so I figure I’d share my ideas here.</p>
-	<p>This article will be a remix of the original blog, with some of my own experiences blended in.</p>
-	<p>As a courtesy, here’s the disclaimer from the original blog:</p>
-	<blockquote>
-		<p>警告：下面的設定不應該被應用於有重大價值的伺服器上面！這只是筆者強行在便宜硬件上塞進PVE並以更暴力的方式去為其續命的手段。</p>
-	</blockquote>
-	<blockquote>
-		<p>WARNING: The following settings should not be applied to valuable production servers! This is just a method for the author to force Proxmox VE onto cheap hardware and to prolong its life span.</p>
-	</blockquote>
-	<h2 id="swap">Disable swap</h2>
-	<p>Swap is the mechanism of offloading some memory from physical RAM to disk in order to improve RAM management efficiency. If you have a lot of physical RAM, chances are swap isn’t going to be much helpful while producing a lot of writes to the disk. On a default Proxmox VE installation, the swap size is set from 4&nbsp;GB to 8&nbsp;GB, depending on your RAM capacity and disk size.</p>
-	<p>You can temporarily disable swap by setting sysctl <code class="language-plaintext highlighter-rouge">vm.swappiness</code> to 0:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>sysctl vm.swappiness<span class="o">=</span>0
-</code></pre>
-		</div>
-	</div>
-	<p>Or why not just remove the swap space altogether?</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>swapoff <span class="nt">-a</span>  <span class="c"># disables swap</span>
-vim /etc/fstab  <span class="c"># remove the swap entry</span>
-lvremove /dev/pve/swap  <span class="c"># remove the swap logical volume</span>
-</code></pre>
-		</div>
-	</div>
-	<p>In most cases, you won’t need swap on a Proxmox VE host. If you find yourself needing swap, you should probably consider upgrading your RAM instead.</p>
-	<h2 id="logs">System logs</h2>
-	<h3 id="move-logs">Move logs to another disk</h3>
-	<p>Every system produces logs, but Proxmox VE is particularly prolific on this. In a production environment, you’ll want to keep the logs by storing them on a separate disk (but why is it running on an eMMC in the first place?). So get another reliable disk and migrate the logs:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="c"># assuming the new disk is /dev/sdX</span>
-systemctl stop rsyslog
-
-mount /dev/sdX1 /var/log1
-rsync <span class="nt">-avAXx</span> /var/log/ /var/log1/
-<span class="nb">rm</span> <span class="nt">-rf</span> /var/log
-<span class="nb">mkdir</span> /var/log
-umount /var/log1
-vim /etc/fstab  <span class="c"># add an entry for /dev/sdX1</span>
-systemctl daemon-reload  <span class="c"># see notes</span>
-mount /var/log
-
-systemctl start rsyslog
-</code></pre>
-		</div>
-	</div>
-	<p>Notes on the above commands:</p>
-	<ul>
-		<li>Rsync is better than <code class="language-plaintext highlighter-rouge">cp</code> if you need to perform a non-trivial copy operation. (The original blog uses <code class="language-plaintext highlighter-rouge">cp</code>.)</li>
-		<li>Using <code class="language-plaintext highlighter-rouge">fstab</code> guarantees any mounts are consistent and persistent across reboots.</li>
-		<li>
-			<p>Why <code class="language-plaintext highlighter-rouge">systemctl daemon-reload</code> after edting <code class="language-plaintext highlighter-rouge">fstab</code>? Because <a href="https://unix.stackexchange.com/q/474743/211239">systemd is sometimes too smart</a> (I got bitten by this once).</p>
-		</li>
-	</ul>
-	<h3 id="disable-logs">Or disable logs altogether</h3>
-	<p>On a hobbyist setup, you may be fine with disabling logs altogether.</p>
-	<p>The original blog suggests replacing a few file with symlinks to <code class="language-plaintext highlighter-rouge">/dev/null</code>, which I find rather incomplete and ineffective. On my 5-GB-used rootfs, <code class="language-plaintext highlighter-rouge">/var/log</code> takes 1.8&nbsp;GB, of which <code class="language-plaintext highlighter-rouge">/var/log/journal</code> eats 1.6&nbsp;GB alone, so systemd journal is the first thing to go. Editing <code class="language-plaintext highlighter-rouge">/etc/systemd/journald.conf</code> and setting <code class="language-plaintext highlighter-rouge">Storage=none</code> will stop its disk hogging, but better yet, you can keep a minimal amount of logs by combining <code class="language-plaintext highlighter-rouge">Storage=volatile</code> and <code class="language-plaintext highlighter-rouge">RuntimeMaxUse=16M</code> (<a href="https://unix.stackexchange.com/a/705057/211239">ref</a>).</p>
-	<p>If you’re on Proxmox VE 8+, you can create an “override” file for systemd-journald by adding your customizations to <code class="language-plaintext highlighter-rouge">/etc/systemd/journald.conf.d/override.conf</code>. This will save some trouble when the stock configuration file gets updated and you’re asked to merge the changes.</p>
-	<p>For other logs, you can simply replace them with symlinks to <code class="language-plaintext highlighter-rouge">/dev/null</code>. For example:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="nb">ln</span> <span class="nt">-sfn</span> /dev/null /var/log/lastlog
-</code></pre>
-		</div>
-	</div>
-	<p>I’m not keen on this method as other logs only comes at a rate of a few hundred MBs per week, so I’d rather keep them around.</p>
-	<h2 id="pve-services">Stop certain PVE services</h2>
-	<p>The original blog suggests stopping a few non-essential services as they (which I couldn’t verify, nor do I believe so):</p>
-	<ul>
-		<li>High-Availability-related services (you don’t need HA on a single-node setup):
-			<ul>
-				<li><code class="language-plaintext highlighter-rouge">pve-ha-lrm</code></li>
-				<li><code class="language-plaintext highlighter-rouge">pve-ha-crm</code></li>
-			</ul>
-		</li>
-		<li>Firewall logger: <code class="language-plaintext highlighter-rouge">pvefw-logger</code></li>
-		<li>Non-essential and non-PVE services:
-			<ul>
-				<li>spiceproxy (required for SPICE console, but noVNC is better)</li>
-				<li>corosync (required for multi-node setup)</li>
-			</ul>
-		</li>
-	</ul>
-	<p>Except for <code class="language-plaintext highlighter-rouge">pvefw-logger</code>, stopping these services will not save you much disk writes as per my experiences.</p>
-	<h2 id="rrdcached">Reduce <code class="language-plaintext highlighter-rouge">rrdcached</code> writes</h2>
-	<p><code class="language-plaintext highlighter-rouge">rrdcached</code> is the service that stores and provides data for the PVE web interface to display graphs on system resource usage. I have no idea how much writes it produces, so I just relay the optimization given in the original blog.</p>
-	<ul>
-		<li>Edit <code class="language-plaintext highlighter-rouge">/etc/default/rrdcached</code>:
-			<ul>
-				<li>Set <code class="language-plaintext highlighter-rouge">WRITE_TIMEOUT=3600</code> so it only writes to disk once per hour.</li>
-				<li>Comment out <code class="language-plaintext highlighter-rouge">JOURNAL_PATH</code> so it stops writing journals (not the data itself).</li>
-				<li>Add <code class="language-plaintext highlighter-rouge">FLUSH_TIMEOUT=7200</code> (timeout for <code class="language-plaintext highlighter-rouge">flush</code> command, not sure how useful it is).</li>
-			</ul>
-		</li>
-		<li>
-			<p>Edit <code class="language-plaintext highlighter-rouge">/etc/init.d/rrdcached</code> for it to pick up the new <code class="language-plaintext highlighter-rouge">FLUSH_TIMEOUT</code> value:</p>
-			<p>Find these lines:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">${</span><span class="nv">WRITE_TIMEOUT</span>:+-w<span class="p"> </span><span class="k">${</span><span class="nv">WRITE_TIMEOUT</span><span class="k">}}</span> <span class="se">\</span>
-<span class="k">${</span><span class="nv">WRITE_JITTER</span>:+-z<span class="p"> </span><span class="k">${</span><span class="nv">WRITE_JITTER</span><span class="k">}}</span> <span class="se">\</span>
-</code></pre>
-				</div>
-    </div>
-			<p>And insert one line for <code class="language-plaintext highlighter-rouge">FLUSH_TIMEOUT</code>:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">${</span><span class="nv">WRITE_TIMEOUT</span>:+-w<span class="p"> </span><span class="k">${</span><span class="nv">WRITE_TIMEOUT</span><span class="k">}}</span> <span class="se">\</span>
-<span class="k">${</span><span class="nv">FLUSH_TIMEOUT</span>:+-f<span class="p"> </span><span class="k">${</span><span class="nv">FLUSH_TIMEOUT</span><span class="k">}}</span> <span class="se">\</span>
-<span class="k">${</span><span class="nv">WRITE_JITTER</span>:+-z<span class="p"> </span><span class="k">${</span><span class="nv">WRITE_JITTER</span><span class="k">}}</span> <span class="se">\</span>
-</code></pre>
-				</div>
-    </div>
-		</li>
-	</ul>
-	<p>After editing both files, restart the service: <code class="language-plaintext highlighter-rouge">systemctl restart rrdcached.service</code></p>
-	<h2 id="pvestatd">Stop <code class="language-plaintext highlighter-rouge">pvestatd</code></h2>
-	<p><code class="language-plaintext highlighter-rouge">pvestatd</code> provides an interface for hardware information for the PVE system. It shouldn’t produce much writes and stopping it will prevent creation of new VMs and containers, so I don’t recommend stopping it. The original blog probably included this option as a result of a mistake or ignorance.</p>
-	<h2 id="conclusion">Conclusion</h2>
-	<p>We can see how Proxmox VE is designed to provide enterprise-grade reliability and durability, at the expense of producing lots of disk writes for its various components like system logging and statistics. Based on the above analysis, it seems perfectly reasonable that Proxmox VE decides not to support eMMC storage.</p>
-	<p>This blog combines a few tips from the original blog and my own experiences. I hope it helps you with your Proxmox VE setup on any eMMC-backed devices.</p>
-	<div class="notice notice--primary">
-		<p class="align-center" style="font-size: 1.6em;">But <em>really</em>?</p>
-	</div>
-	<h2 class="no_toc" id="results">Results</h2>
-	<p>There’s one key question left unanswered by everything above: How much writes does Proxmox VE really produce?</p>
-	<p>To answer this question, let’s see some of my examples:</p>
-	<h3 class="no_toc" id="server-1">Server 1</h3>
-	<p>Specs:</p>
-	<ul>
-		<li>Two enterprise-grade SSDs in RAID 1</li>
-		<li>Running since October 2019</li>
-		<li>“Master” node in a multi-node cluster, with the entire cluster running over 2,000 VMs and containers (~10 on this host)</li>
-	</ul>
-	<p>Total writes as of July 2023 (rootfs-only, thanks to <a href="https://unix.stackexchange.com/q/121699/211239">this answer</a>):</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="c"># lrwxrwxrwx 1 root root 7 Jul 12 15:48 /dev/pve/root -&gt; ../dm-4</span>
-<span class="c"># cat /sys/fs/ext4/dm-4/lifetime_write_kbytes</span>
-17017268104
-</code></pre>
-		</div>
-	</div>
-	<p>Result: 4.5&nbsp;TB annually.</p>
-	<h3 class="no_toc" id="server-2">Server 2</h3>
-	<p>Specs:</p>
-	<ul>
-		<li>Two ol’ rusty spinning drives in RAID 1</li>
-		<li>Running since January 2022</li>
-		<li>Belongs to a multi-node cluster, running around 20 VMs (~3 on this host)</li>
-	</ul>
-	<p>Total writes as of July 2023 (rootfs-only):</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="c"># lrwxrwxrwx 1 root root 7 Jan 21  2022 /dev/pve/root -&gt; ../dm-1</span>
-<span class="c"># cat /sys/fs/ext4/dm-1/lifetime_write_kbytes</span>
-2336580629
-</code></pre>
-		</div>
-	</div>
-	<p>Result: 1.5&nbsp;TB annually.</p>
-	<h3 class="no_toc" id="server-3">Server 3</h3>
-	<p>Specs:</p>
-	<ul>
-		<li>Lab’s storage server, single SSD for rootfs and ZFS SLOG (ZIL)</li>
-		<li>Running since October 2022</li>
-		<li>Single-node setup, running 2 VMs</li>
-		<li>Data is stored separately</li>
-	</ul>
-	<p>Total writes as of July 2023:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="c"># smartctl -A /dev/sda</span>
-241 Total_LBAs_Written 2849895751
-</code></pre>
-		</div>
-	</div>
-	<p><code class="language-plaintext highlighter-rouge">humanize.naturalsize(2849895751 * 512, format="%.2f")</code>: 1.46&nbsp;TB (≈ 2&nbsp;TB annually)</p>
-	<h3 class="no_toc" id="emmc-write-life">eMMC Write Life</h3>
-	<p>This one really depends on the hardware you get. In 2023 virtually every reasonable TLC flash chip should withstand at least 1,000 P/E cycles, so even a pathetic 8&nbsp;GB eMMC should last around 10&nbsp;TB of writes, <a href="https://forums.raspberrypi.com/viewtopic.php?t=291808">as that on a Raspberry Pi Compute Module 4</a>.</p>
-	<p>If you get anything larger than that, you should be fine expecting it to survive at least 20&nbsp;TB of writes.</p>
-	<h2 class="no_toc" id="real-conclusion">REAL Conclusion</h2>
-	<p>Congratulations on reading this far.</p>
-	<p>If you managed to hold your paranoia and refrain from putting anything into action, you can now sit back and relax. Unless you’re squeezing hundreds of VMs and containers into a single eMMC-driven board (poor board) without separate storage for VMs, your eMMC is not going to die anytime soon.</p>
-	<h2 id="references">References</h2>
-	<ul>
-		<li>Original blog (Traditional Chinese): <a href="https://fat-nerds.com/dot-nerd/cut-down-proxmox-ve-emmc-sd-read-write/">單板小主機上的Proxmox VE實務：暴力減少eMMC或SD卡的讀寫耗損</a></li>
-		<li><a href="https://forums.raspberrypi.com/viewtopic.php?t=291808">CM4 eMMC durability - Terabytes written value (TBW)?</a></li>
-	</ul>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><category term="proxmox-ve" /><summary type="html"><![CDATA[Since my blog on installing Proxmox VE on eMMC, there’s been a lot of discussion over the Internet on this. I suspect that Proxmox decided not to include eMMCs in their hardware options by design, as eMMCs typically do not offer the level of endurance as anything better than USB flash drives. Among many concerns, the most important one is the limited number of write cycles that an eMMC can sustain, while Proxmox VE, being an enterprise-grade product, has to constantly write stuff like logs to the storage. I came across this blog (fat-nerds.com) on reducing eMMC writes on a Proxmox VE installation on a single-board computer from a Hong Kong guy, so I figure I’d share my ideas here.]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author></entry></feed>
