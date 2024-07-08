@@ -1,31 +1,208 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-06-22T19:14:23+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Migrating Ubuntu onto ZFS</title><link href="https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs/" rel="alternate" type="text/html" title="Migrating Ubuntu onto ZFS" /><published>2024-05-14T00:00:00+00:00</published><updated>2024-05-14T23:37:49+00:00</updated><id>https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs</id><content type="html" xml:base="https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs/"><![CDATA[<p>As part of a planned disk migration, I decided to move my Ubuntu installation from a traditional ext4 setup to ZFS.
-				I did a lot of preparation and research, but things went much smoother than I had previously anticipated.
-				I did not even have to consult IPMI for any recovery.</p>
-			<p>Existing partition layout:</p>
-			<div class="language-console highlighter-rouge">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-07-08T07:14:09+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Driving pppd with systemd</title><link href="https://ibug.io/blog/2024/07/pppd-with-systemd/" rel="alternate" type="text/html" title="Driving pppd with systemd" /><published>2024-07-07T00:00:00+00:00</published><updated>2024-07-08T15:12:59+00:00</updated><id>https://ibug.io/blog/2024/07/pppd-with-systemd</id><content type="html" xml:base="https://ibug.io/blog/2024/07/pppd-with-systemd/"><![CDATA[<p>I moved my soft router (Intel N5105, Debian) from school to home, and at home it’s behind an ONU on bridge mode, so it’ll have to do PPPoE itself.</p>
+			<p>Getting started with PPPoE on Debian is exactly the same as on Ubuntu: Install <code class="language-plaintext highlighter-rouge">pppoeconf</code> and run <code class="language-plaintext highlighter-rouge">pppoeconf</code>, then fill in the DSL username and password. Then I can see <code class="language-plaintext highlighter-rouge">ppp0</code> interface up and working.</p>
+			<p>However, as I use <code class="language-plaintext highlighter-rouge">systemd-networkd</code> on my router while <code class="language-plaintext highlighter-rouge">pppd</code> appears to bundle ifupdown, I’ll have to fix everything needed for <code class="language-plaintext highlighter-rouge">pppd</code> to work with systemd-networkd.</p>
+			<h2 id="systemd-service">Systemd service</h2>
+			<p>The first thing is to get it to start at boot. Looking through Google, a <a href="https://gist.github.com/rany2/330c8fe202b318cacdcb54830c20f98c">Gist</a> provides the exact systemd service file I need. After copying it to <code class="language-plaintext highlighter-rouge">/etc/systemd/system/ppp@.service</code>, I tried to start it with <code class="language-plaintext highlighter-rouge">systemctl start pppd@dsl-provider</code>. It seems like there’s a misconfiguration:</p>
+			<div class="language-text highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>fdisk <span class="nt">-l</span> /dev/nvme1n1
+					<pre class="highlight"><code>/usr/sbin/pppd: Can't open options file /etc/ppp/peers/dsl/provider: No such file or directory
+</code></pre>
+				</div>
+			</div>
+			<p>The instance name is surely <code class="language-plaintext highlighter-rouge">dsl-provider</code> and not <code class="language-plaintext highlighter-rouge">dsl/provider</code>, so I look more closely at the service file.</p>
+			<div class="language-ini highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="nn">[...]</span>
+<span class="py">Description</span><span class="p">=</span><span class="s">PPP connection for %I</span>
+<span class="nn">[...]</span>
+<span class="py">ExecStart</span><span class="p">=</span><span class="s">/usr/sbin/pppd up_sdnotify nolog call %I</span>
+</code></pre>
+				</div>
+			</div>
+			<p>The systemd man page <a href="https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html"><code class="language-plaintext highlighter-rouge">systemd.unit(5)</code></a> says:</p>
+			<blockquote>
+				<table>
+					<thead>
+						<tr>
+							<th>Specifier</th>
+							<th>Meaning</th>
+							<th>Details</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>“%i”</td>
+							<td>Instance name</td>
+							<td>For instantiated units this is the string between the first “@” character and the type suffix. Empty for non-instantiated units.</td>
+						</tr>
+						<tr>
+							<td>“%I”</td>
+							<td>Unescaped instance name</td>
+							<td>Same as “%i”, but with escaping undone.</td>
+						</tr>
+					</tbody>
+				</table>
+			</blockquote>
+			<p>Fair enough, let’s change <code class="language-plaintext highlighter-rouge">%I</code> to <code class="language-plaintext highlighter-rouge">%i</code> and try starting <code class="language-plaintext highlighter-rouge">pppd@dsl-provider</code> again.</p>
+			<h2 id="systemd-networkd">systemd-networkd</h2>
+			<p>Now that <code class="language-plaintext highlighter-rouge">ppp0</code> is up, time to configure routes and routing rules with <code class="language-plaintext highlighter-rouge">systemd-networkd</code>. I created a file <code class="language-plaintext highlighter-rouge">/etc/systemd/network/10-ppp0.network</code>.</p>
+			<div class="language-ini highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="nn">[Match]</span>
+<span class="py">Name</span><span class="p">=</span><span class="s">ppp0</span>
+
+<span class="nn">[Network]</span>
+<span class="py">DHCP</span><span class="p">=</span><span class="s">yes</span>
+<span class="c"># ...
+</span></code></pre>
+				</div>
+			</div>
+			<p>After restarting systemd-networkd, I was disappointed to see that the PPP-negotiated IP address was removed, only leaving an SLAAC IPv6 address behind. With some searching through <code class="language-plaintext highlighter-rouge">systemd.network(5)</code>, I found <code class="language-plaintext highlighter-rouge">KeepConfiguration=yes</code> was what I was looking for.</p>
+			<h2 id="start-order">Start order</h2>
+			<p>One problem still remains: At the time systemd-networkd starts, <code class="language-plaintext highlighter-rouge">ppp0</code> is not yet up, and systemd-networkd simply skips its configuration. A solution seems trivial:</p>
+			<div class="language-ini highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="c"># systemctl edit pppd@dsl-provider
+</span><span class="nn">[Unit]</span>
+<span class="py">Before</span><span class="p">=</span><span class="s">systemd-networkd.service</span>
+</code></pre>
+				</div>
+			</div>
+			<p>… except it doesn’t seem to have any effect.</p>
+			<p>I wouldn’t bother digging into pppd, so I look around for something analogous to ifupdown’s <code class="language-plaintext highlighter-rouge">up</code> script, which is <code class="language-plaintext highlighter-rouge">/etc/ppp/ip-up.d/</code>. So I could just drop another script to notify systemd-networkd.</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="c"># /etc/ppp/ip-up.d/1systemd-networkd</span>
+<span class="c">#!/bin/sh</span>
+
+networkctl reconfigure <span class="s2">"</span><span class="nv">$PPP_IFACE</span><span class="s2">"</span>
+</code></pre>
+				</div>
+			</div>
+			<p>I also noticed that when bringing in ifupdown, the <code class="language-plaintext highlighter-rouge">pppoeconf</code>-created config looks like this:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>auto dsl-provider
+iface dsl-provider inet ppp
+    pre-up /bin/ip <span class="nb">link set </span>enp3s0 up <span class="c"># line maintained by pppoeconf</span>
+    provider dsl-provider
+</code></pre>
+				</div>
+			</div>
+			<p>So to maintain behavioral compatibility, I configured the systemd service like this:</p>
+			<div class="language-ini highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="c"># systemctl edit pppd@dsl-provider
+</span><span class="nn">[Unit]</span>
+<span class="py">BindsTo</span><span class="p">=</span><span class="s">sys-subsystem-net-devices-enp3s0.device</span>
+<span class="py">After</span><span class="p">=</span><span class="s">sys-subsystem-net-devices-enp3s0.device</span>
+</code></pre>
+				</div>
+			</div>
+			<p>After multiple reboots and manual restarts of <code class="language-plaintext highlighter-rouge">pppd@dsl-provider.service</code>, I’m convinced that this is a reliable solution.</p>
+			<h2 id="extra">Extra: IPv6 PD</h2>
+			<p>As the home ISP provides IPv6 Prefix Delegation (but my school didn’t), it would be nice to take it and distribute it to the LAN. Online tutorials are abundant, e.g. <a href="https://major.io/p/dhcpv6-prefix-delegation-with-systemd-networkd/" rel="nofollow noopener">this one</a>. With everything set supposedly up, I was disappointed to see only a single SLAAC IPv6 address on <code class="language-plaintext highlighter-rouge">ppp0</code> itself, and <code class="language-plaintext highlighter-rouge">journalctl -eu systemd-networkd</code> shows no sign of receiving a PD allocation.</p>
+			<p>After poking around with <code class="language-plaintext highlighter-rouge">IPv6AcceptRA=</code> and <code class="language-plaintext highlighter-rouge">[DHCPv6] PrefixDelegationHint=</code> settings for a while, I decided to capture some packets for investigation. I started <code class="language-plaintext highlighter-rouge">tcpdump -i ppp0 -w /tmp/ppp0.pcap icmp6 or udp port 546</code> and restarted <code class="language-plaintext highlighter-rouge">systemd-networkd</code>. After a few seconds, the pcap file contains exactly 4 packets that I need (some items omitted for brevity):</p>
+			<div class="language-markdown highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="p">-</span> ICMPv6: Router Solicitation from 00:00:00:00:00:00
+<span class="p">-</span> ICMPv6: Router Advertisement from 00:00:5e:00:01:99
+<span class="p">  -</span> Flags: 0x40 (only O)
+<span class="p">  -</span> ICMPv6 Option: Prefix information (2001:db8::/64)
+<span class="p">    -</span> Flags: L + A
+<span class="p">-</span> DHCPv6: Information-request XID: 0x8bf4f0 CID: 00020000ab11503f79e54f10745d
+<span class="p">  -</span> Option Request
+<span class="p">    -</span> Option: Option Request (6)
+<span class="p">    -</span> Length: 10
+<span class="p">    -</span> Requested Option code: DNS recursive name server (23)
+<span class="p">    -</span> Requested Option code: Simple Network Time Protocol Server (31)
+<span class="p">    -</span> Requested Option code: Lifetime (32)
+<span class="p">    -</span> Requested Option code: NTP Server (56)
+<span class="p">    -</span> Requested Option code: INF_MAX_RT (83)
+<span class="p">-</span> DHCPv6: Reply XID: 0x8bf4f0 CID: 00020000ab11503f79e54f10745d
+</code></pre>
+				</div>
+			</div>
+			<p>Clearly the client isn’t even requesting a PD allocation with <code class="language-plaintext highlighter-rouge">PrefixDelegationHint=</code> set. With some more Google-ing, I added <code class="language-plaintext highlighter-rouge">[DHCPv6] WithoutRA=solicit</code> to <code class="language-plaintext highlighter-rouge">10-ppp0.network</code> and restarted <code class="language-plaintext highlighter-rouge">systemd-networkd</code>. There are 6 packets, but the order appears a little bit off:</p>
+			<div class="language-markdown highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="p">-</span> Solicit XID: 0x2bc2aa CID: 00020000ab11503f79e54f10745d
+<span class="p">-</span> Advertise XID: 0x2bc2aa CID: 00020000ab11503f79e54f10745d
+<span class="p">-</span> Request XID: 0xf8c1dd CID: 00020000ab11503f79e54f10745d
+<span class="p">  -</span> Identity Association for Prefix Delegation
+<span class="p">-</span> Reply XID: 0xf8c1dd CID: 00020000ab11503f79e54f10745d
+<span class="p">-</span> Router Solicitation from 00:00:00:00:00:00
+<span class="p">-</span> Router Advertisement from 00:00:5e:00:01:99
+</code></pre>
+				</div>
+			</div>
+			<p>This time DHCP request comes <em>before</em> the RS/RA pair, which is not what I expected. But at least it’s now requesting a PD prefix.</p>
+			<p>Then I found <a href="https://unix.stackexchange.com/a/715025/211239">this answer</a> straight to the point, summarized as:</p>
+			<ul>
+				<li>The “managed” (M) flag indicates the client should acquire an address via DHCPv6, and triggers DHCPv6 Solicit and Request messages.</li>
+				<li>The “other” (O) flag indicates the client should do SLAAC while acquiring other configuration information via DHCPv6, and triggers DHCPv6 Information-request messages.</li>
+				<li>When both flags are present, the O flag is superseded by the M flag and has no effect.</li>
+			</ul>
+			<p>So systemd-networkd is implementing everything correctly, and I should configure systemd-networkd to always send Solicit messages regardless of the RA flags received. This is done by setting <code class="language-plaintext highlighter-rouge">[IPv6AcceptRA] DHCPv6Client=always</code></p>
+			<p>Now with every detail understood, after a restart of <code class="language-plaintext highlighter-rouge">systemd-networkd</code>, I finally see the PD prefix allocated:</p>
+			<div class="language-text highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>systemd-networkd[528]: ppp0: DHCP: received delegated prefix 2001:db8:0:a00::/60
+systemd-networkd[528]: enp1s0: DHCP-PD address 2001:db8:0:a00:2a0:c9ff:feee:c4b/64 (valid for 2d 23h 59min 59s, preferred for 1d 23h 59min 59s)
+systemd-networkd[528]: enp2s0: DHCP-PD address 2001:db8:0:a01:2a0:c9ff:feee:c4c/64 (valid for 2d 23h 59min 59s, preferred for 1d 23h 59min 59s)
+</code></pre>
+				</div>
+			</div>
+			<h2 id="sum-up">Sum up</h2>
+			<ul>
+				<li>Use systemd to start <code class="language-plaintext highlighter-rouge">pppd</code> as a system service.
+					<ul>
+						<li>Order it before <code class="language-plaintext highlighter-rouge">network.target</code>, but don’t bother with <code class="language-plaintext highlighter-rouge">systemd-networkd.service</code>.</li>
+					</ul>
+				</li>
+				<li>Use a custom script in <code class="language-plaintext highlighter-rouge">ip-up.d</code> to invoke systemd-networkd to reconfigure after it’s up.</li>
+				<li>
+					<p>For IPv6 PD, use both:</p>
+					<div class="language-ini highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code><span class="nn">[DHCPv6]</span>
+<span class="py">PrefixDelegationHint</span><span class="p">=</span><span class="s">::/60</span>
+
+<span class="nn">[IPv6AcceptRA]</span>
+<span class="py">DHCPv6Client</span><span class="p">=</span><span class="s">always</span>
+</code></pre>
+						</div>
+    </div>
+				</li>
+			</ul>
+			]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[I moved my soft router (Intel N5105, Debian) from school to home, and at home it’s behind an ONU on bridge mode, so it’ll have to do PPPoE itself.]]></summary></entry><entry><title type="html">Migrating Ubuntu onto ZFS</title><link href="https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs/" rel="alternate" type="text/html" title="Migrating Ubuntu onto ZFS" /><published>2024-05-14T00:00:00+00:00</published><updated>2024-05-14T23:37:49+00:00</updated><id>https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs</id><content type="html" xml:base="https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs/"><![CDATA[<p>As part of a planned disk migration, I decided to move my Ubuntu installation from a traditional ext4 setup to ZFS.
+			I did a lot of preparation and research, but things went much smoother than I had previously anticipated.
+			I did not even have to consult IPMI for any recovery.</p>
+		<p>Existing partition layout:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>fdisk <span class="nt">-l</span> /dev/nvme1n1
 <span class="go">[...]
 Device             Start        End    Sectors  Size Type
 /dev/nvme1n1p1      2048    1050623    1048576  512M EFI System
 /dev/nvme1n1p2   1050624  269486079  268435456  128G Linux filesystem
 /dev/nvme1n1p3 269486080 3907029134 3637543055  1.7T Solaris /usr &amp; Apple ZFS
 </span></code></pre>
-				</div>
 			</div>
-			<p>Since I already have <code class="language-plaintext highlighter-rouge">/home</code> running on ZFS <code class="language-plaintext highlighter-rouge">pool0</code>, there’s not much to prepare.
-				All I need to move is the rootfs itself, which has around 20&nbsp;GB of data.</p>
-			<p>Start by installing anything necessary:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>apt <span class="nb">install </span>zfs-initramfs arch-install-scripts
+		</div>
+		<p>Since I already have <code class="language-plaintext highlighter-rouge">/home</code> running on ZFS <code class="language-plaintext highlighter-rouge">pool0</code>, there’s not much to prepare.
+			All I need to move is the rootfs itself, which has around 20&nbsp;GB of data.</p>
+		<p>Start by installing anything necessary:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>apt <span class="nb">install </span>zfs-initramfs arch-install-scripts
 </code></pre>
-				</div>
 			</div>
-			<p>Then create the dataset layout:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="c"># pool0 already has xattr=sa</span>
+		</div>
+		<p>Then create the dataset layout:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="c"># pool0 already has xattr=sa</span>
 zfs create <span class="se">\</span>
   <span class="nt">-o</span> <span class="nv">canmount</span><span class="o">=</span>off <span class="se">\</span>
   <span class="nt">-o</span> <span class="nv">mountpoint</span><span class="o">=</span>none <span class="se">\</span>
@@ -35,14 +212,14 @@ zfs create <span class="nt">-o</span> <span class="nv">mountpoint</span><span cl
 
 rsync <span class="nt">-avSHAXx</span> <span class="nt">--delete</span> / /mnt/new/
 </code></pre>
-				</div>
 			</div>
-			<p>Now there’s a little deviation from common setup.
-				I don’t trust GRUB’s ZFS support, so I’m going to merge <code class="language-plaintext highlighter-rouge">/boot</code> into the EFI partition (which has a decent 512&nbsp;MB of capacity).
-				This is a decision made after surveying my friends’ setup.</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="c"># Merge data</span>
+		</div>
+		<p>Now there’s a little deviation from common setup.
+			I don’t trust GRUB’s ZFS support, so I’m going to merge <code class="language-plaintext highlighter-rouge">/boot</code> into the EFI partition (which has a decent 512&nbsp;MB of capacity).
+			This is a decision made after surveying my friends’ setup.</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="c"># Merge data</span>
 rsync <span class="nt">-ax</span> /boot/ /boot/efi/ <span class="c"># Ignore any errors</span>
 umount /boot/efi
 vim /etc/fstab
@@ -51,60 +228,60 @@ vim /etc/fstab
 systemctl daemon-reload
 mount /boot
 </code></pre>
-				</div>
 			</div>
-			<p>Now prepare GRUB:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>zpool <span class="nb">set </span><span class="nv">bootfs</span><span class="o">=</span>pool0/ROOT/ubuntu pool0
+		</div>
+		<p>Now prepare GRUB:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>zpool <span class="nb">set </span><span class="nv">bootfs</span><span class="o">=</span>pool0/ROOT/ubuntu pool0
 mount <span class="nt">-o</span> <span class="nb">bind</span> /boot /mnt/new/boot
 arch-chroot /mnt/new
 </code></pre>
-				</div>
 			</div>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>grub-install
+		</div>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>grub-install
 <span class="go">Installing for x86_64-efi platform.
 grub-install: error: cannot find EFI directory.
 </span></code></pre>
-				</div>
 			</div>
-			<p>Well, if only <code class="language-plaintext highlighter-rouge">grub-install</code> didn’t hard-code <code class="language-plaintext highlighter-rouge">/boot/efi</code> (which is against the FHS standard anyways).
-				Fortunately, I recall a small detail that could make this work in another convenient way:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>dpkg-reconfigure grub-efi-amd64
+		</div>
+		<p>Well, if only <code class="language-plaintext highlighter-rouge">grub-install</code> didn’t hard-code <code class="language-plaintext highlighter-rouge">/boot/efi</code> (which is against the FHS standard anyways).
+			Fortunately, I recall a small detail that could make this work in another convenient way:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>dpkg-reconfigure grub-efi-amd64
 </code></pre>
-				</div>
 			</div>
-			<p>Also regenerate GRUB configuration:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>zfs <span class="nb">set </span><span class="nv">mountpoint</span><span class="o">=</span>/ pool0/ROOT/ubuntu
+		</div>
+		<p>Also regenerate GRUB configuration:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>zfs <span class="nb">set </span><span class="nv">mountpoint</span><span class="o">=</span>/ pool0/ROOT/ubuntu
 update-grub
 </code></pre>
-				</div>
 			</div>
-			<p>Now double-check the GRUB configuration at <code class="language-plaintext highlighter-rouge">/boot/grub/grub.cfg</code> and make sure there are lines like this:</p>
-			<div class="language-text highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>linux /vmlinuz [...] root=ZFS=pool0/ROOT/ubuntu [...]
+		</div>
+		<p>Now double-check the GRUB configuration at <code class="language-plaintext highlighter-rouge">/boot/grub/grub.cfg</code> and make sure there are lines like this:</p>
+		<div class="language-text highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>linux /vmlinuz [...] root=ZFS=pool0/ROOT/ubuntu [...]
 </code></pre>
-				</div>
 			</div>
-			<p>After verifying paths to the kernel and the initrd image are correct, reboot:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>reboot
+		</div>
+		<p>After verifying paths to the kernel and the initrd image are correct, reboot:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>reboot
 </code></pre>
-				</div>
 			</div>
-			<p>In just a minute, I noticed my server came back up.
-				Time to confirm everything is working as expected:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>mount
+		</div>
+		<p>In just a minute, I noticed my server came back up.
+			Time to confirm everything is working as expected:</p>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>mount
 <span class="go">pool0/ROOT/ubuntu on / type zfs (rw,relatime,xattr,posixacl,casesensitive)
 
 </span><span class="gp">#</span><span class="w"> </span><span class="nb">df</span> <span class="nt">-h</span> /
@@ -115,14 +292,14 @@ pool0/ROOT/ubuntu  1.2T   11G  1.1T   1% /
 <span class="go">NAME        PROPERTY       VALUE  SOURCE
 pool0/ROOT  compressratio  2.02x  -
 </span></code></pre>
-				</div>
 			</div>
-			<p>The last thing is to rewrite my rootfs backup script to take snapshots directly, instead of rsync-ing to another ZFS pool before taking a snapshot there.
-				After taking a snapshot, I can also send it away as a “backup against disk failure”.</p>
-			<p>A slightly revised version of my snapshotting script, sans the sending part:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="c">#!/bin/sh</span>
+		</div>
+		<p>The last thing is to rewrite my rootfs backup script to take snapshots directly, instead of rsync-ing to another ZFS pool before taking a snapshot there.
+			After taking a snapshot, I can also send it away as a “backup against disk failure”.</p>
+		<p>A slightly revised version of my snapshotting script, sans the sending part:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="c">#!/bin/sh</span>
 
 <span class="nb">set</span> <span class="nt">-e</span>
 
@@ -153,41 +330,41 @@ pool0/ROOT  compressratio  2.02x  -
   <span class="k">fi
 done</span>
 </code></pre>
-				</div>
 			</div>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="c"># crontab</span>
+		</div>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="c"># crontab</span>
 15 4 <span class="k">*</span> <span class="k">*</span> 1,5     /root/backup.sh 30
 15 4 <span class="k">*</span> <span class="k">*</span> 0,2-4,6 /root/backup.sh  7
 </code></pre>
-				</div>
 			</div>
-			]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><category term="zfs" /><summary type="html"><![CDATA[As part of a planned disk migration, I decided to move my Ubuntu installation from a traditional ext4 setup to ZFS. I did a lot of preparation and research, but things went much smoother than I had previously anticipated. I did not even have to consult IPMI for any recovery.]]></summary></entry><entry><title type="html">Reload SSL certificates with systemd</title><link href="https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd/" rel="alternate" type="text/html" title="Reload SSL certificates with systemd" /><published>2024-03-31T00:00:00+00:00</published><updated>2024-04-01T18:23:24+00:00</updated><id>https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd</id><content type="html" xml:base="https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd/"><![CDATA[<p>Recently I relinquished an old domain on my server and had to re-issue a certificate to drop that domain off.
-			Previously it ran Let’s Encrypt’s official client Certbot, set up back in 2019.
-			All my recent setups have been using acme.sh, so I figured that this was a perfect chance to switch this one over as well.</p>
-		<p>Getting acme.sh to issue a new certificate for my updated domain list is easy enough and out of scope for this article.
-			But when it comes to reloading the certificate for services using it, I have to think twice.
-			Back in the days when Nginx was the sole consumer of the certificate, I directly referenced the certificate files in <code class="language-plaintext highlighter-rouge">/etc/letsencrypt/live/</code> from Nginx config, and somehow slappped a <code class="language-plaintext highlighter-rouge">systemctl reload nginx</code> into crontab to handle the reload.
-			Now that there are multiple services using the certificate, I no longer consider it a good idea to reload all the services in a crontab.
-			There has to be a better way.</p>
-		<p>Since all my services are managed by systemd, using an extra “service” or whatever unit to group them together seems like a better idea.
-			Systemd’s <code class="language-plaintext highlighter-rouge">ReloadPropagatedFrom=</code> option and its inverse <code class="language-plaintext highlighter-rouge">PropagatesReloadTo=</code> immediately come to mind. With the right direction, it’s easy to Google out this answer: <a href="https://unix.stackexchange.com/q/334471/211239">How do I reload a group of systemd services?</a></p>
-		<p>Realizing that “target” is the simplest unit type in systemd’s abstraction, this is the minimum that suits my needs.</p>
-		<div class="language-ini highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.target
+		</div>
+		]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><category term="zfs" /><summary type="html"><![CDATA[As part of a planned disk migration, I decided to move my Ubuntu installation from a traditional ext4 setup to ZFS. I did a lot of preparation and research, but things went much smoother than I had previously anticipated. I did not even have to consult IPMI for any recovery.]]></summary></entry><entry><title type="html">Reload SSL certificates with systemd</title><link href="https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd/" rel="alternate" type="text/html" title="Reload SSL certificates with systemd" /><published>2024-03-31T00:00:00+00:00</published><updated>2024-04-01T18:23:24+00:00</updated><id>https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd</id><content type="html" xml:base="https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd/"><![CDATA[<p>Recently I relinquished an old domain on my server and had to re-issue a certificate to drop that domain off.
+		Previously it ran Let’s Encrypt’s official client Certbot, set up back in 2019.
+		All my recent setups have been using acme.sh, so I figured that this was a perfect chance to switch this one over as well.</p>
+	<p>Getting acme.sh to issue a new certificate for my updated domain list is easy enough and out of scope for this article.
+		But when it comes to reloading the certificate for services using it, I have to think twice.
+		Back in the days when Nginx was the sole consumer of the certificate, I directly referenced the certificate files in <code class="language-plaintext highlighter-rouge">/etc/letsencrypt/live/</code> from Nginx config, and somehow slappped a <code class="language-plaintext highlighter-rouge">systemctl reload nginx</code> into crontab to handle the reload.
+		Now that there are multiple services using the certificate, I no longer consider it a good idea to reload all the services in a crontab.
+		There has to be a better way.</p>
+	<p>Since all my services are managed by systemd, using an extra “service” or whatever unit to group them together seems like a better idea.
+		Systemd’s <code class="language-plaintext highlighter-rouge">ReloadPropagatedFrom=</code> option and its inverse <code class="language-plaintext highlighter-rouge">PropagatesReloadTo=</code> immediately come to mind. With the right direction, it’s easy to Google out this answer: <a href="https://unix.stackexchange.com/q/334471/211239">How do I reload a group of systemd services?</a></p>
+	<p>Realizing that “target” is the simplest unit type in systemd’s abstraction, this is the minimum that suits my needs.</p>
+	<div class="language-ini highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.target
 </span><span class="nn">[Unit]</span>
 <span class="py">Description</span><span class="p">=</span><span class="s">SSL certificates reload helper</span>
 <span class="py">PropagatesReloadTo</span><span class="p">=</span><span class="s">nginx.service</span>
 <span class="py">PropagatesReloadTo</span><span class="p">=</span><span class="s">postfix.service</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Then, following the above Unix &amp; Linux answer, here’s a “path” unit that lets systemd monitor the certificate files for changes.</p>
-		<div class="language-ini highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.path
+	</div>
+	<p>Then, following the above Unix &amp; Linux answer, here’s a “path” unit that lets systemd monitor the certificate files for changes.</p>
+	<div class="language-ini highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.path
 </span><span class="nn">[Unit]</span>
 <span class="py">Description</span><span class="p">=</span><span class="s">SSL certificate reload helper</span>
 <span class="py">Wants</span><span class="p">=</span><span class="s">%N.target</span>
@@ -198,13 +375,13 @@ done</span>
 <span class="nn">[Install]</span>
 <span class="py">WantedBy</span><span class="p">=</span><span class="s">multi-user.target</span>
 </code></pre>
-			</div>
 		</div>
-		<p>The <code class="language-plaintext highlighter-rouge">Wants=</code> setting here ensure that the corresponding target unit is activated, otherwise it cannot be <code class="language-plaintext highlighter-rouge">reload</code>ed.</p>
-		<p>There’s one deficiency in the answer above: A “path” unit can only <em>activate</em> another unit, not <em>reload</em> it. So I still have to create a oneshot service that calls <code class="language-plaintext highlighter-rouge">systemctl reload</code> on the target, which itself can then be activated by the “path” unit.</p>
-		<div class="language-ini highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.service
+	</div>
+	<p>The <code class="language-plaintext highlighter-rouge">Wants=</code> setting here ensure that the corresponding target unit is activated, otherwise it cannot be <code class="language-plaintext highlighter-rouge">reload</code>ed.</p>
+	<p>There’s one deficiency in the answer above: A “path” unit can only <em>activate</em> another unit, not <em>reload</em> it. So I still have to create a oneshot service that calls <code class="language-plaintext highlighter-rouge">systemctl reload</code> on the target, which itself can then be activated by the “path” unit.</p>
+	<div class="language-ini highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.service
 </span><span class="nn">[Unit]</span>
 <span class="py">Description</span><span class="p">=</span><span class="s">SSL certificate reload helper</span>
 <span class="py">StartLimitIntervalSec</span><span class="p">=</span><span class="s">5s</span>
@@ -214,25 +391,25 @@ done</span>
 <span class="py">Type</span><span class="p">=</span><span class="s">oneshot</span>
 <span class="py">ExecStart</span><span class="p">=</span><span class="s">/bin/systemctl reload %N.target</span>
 </code></pre>
-			</div>
 		</div>
-		<p>It’s important that this service comes with <code class="language-plaintext highlighter-rouge">Type=oneshot</code> and <em>without</em> <code class="language-plaintext highlighter-rouge">RemainAfterExit=yes</code>, so that it can be repeatedly activated by the “path” unit.</p>
-		<p>Now I can test if things work:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>systemctl daemon-reload
+	</div>
+	<p>It’s important that this service comes with <code class="language-plaintext highlighter-rouge">Type=oneshot</code> and <em>without</em> <code class="language-plaintext highlighter-rouge">RemainAfterExit=yes</code>, so that it can be repeatedly activated by the “path” unit.</p>
+	<p>Now I can test if things work:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>systemctl daemon-reload
 systemctl <span class="nb">enable</span> <span class="nt">--now</span> ssl-certificate.path
 acme.sh <span class="nt">--install-cert</span> <span class="nt">-d</span> <span class="s2">"</span><span class="nv">$HOSTNAME</span><span class="s2">"</span> <span class="se">\</span>
   <span class="nt">--cert-file</span> <span class="s2">"/etc/ssl/private/</span><span class="nv">$HOSTNAME</span><span class="s2">/cert.pem"</span> <span class="se">\</span>
   <span class="nt">--key-file</span> <span class="s2">"/etc/ssl/private/</span><span class="nv">$HOSTNAME</span><span class="s2">/privkey.pem"</span> <span class="se">\</span>
   <span class="nt">--fullchain-file</span> <span class="s2">"/etc/ssl/private/</span><span class="nv">$HOSTNAME</span><span class="s2">/fullchain.pem"</span>
 </code></pre>
-			</div>
 		</div>
-		<p>And then inspect the services:</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>systemctl status nginx.service
+	</div>
+	<p>And then inspect the services:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>systemctl status nginx.service
 <span class="go">[...]
 Mar 31 19:20:11 hostname systemd[1]: Reloading A high performance web server and a reverse proxy server...
 Mar 31 19:20:12 hostname systemd[1]: Reloaded A high performance web server and a reverse proxy server.
@@ -242,10 +419,10 @@ Mar 31 19:20:12 hostname systemd[1]: Reloaded A high performance web server and 
 Mar 31 19:20:11 hostname systemd[1]: Reloading Postfix Mail Transport Agent...
 Mar 31 19:20:12 hostname systemd[1]: Reloaded Postfix Mail Transport Agent.
 </span></code></pre>
-			</div>
 		</div>
-		<p>So now, job done. As acme.sh stores install information, the next time these certificates are renewed, acme.sh will automatically copy them over to <code class="language-plaintext highlighter-rouge">/etc/ssl/private/$HOSTNAME/</code>, and systemd will pick up the changes and reload the services.</p>
-		]]></content><author><name>iBug</name></author><category term="linux" /><summary type="html"><![CDATA[Recently I relinquished an old domain on my server and had to re-issue a certificate to drop that domain off. Previously it ran Let’s Encrypt’s official client Certbot, set up back in 2019. All my recent setups have been using acme.sh, so I figured that this was a perfect chance to switch this one over as well.]]></summary></entry><entry><title type="html">I almost broke our lab’s storage server…</title><link href="https://ibug.io/blog/2024/03/stupid-dell-recovery/" rel="alternate" type="text/html" title="I almost broke our lab’s storage server…" /><published>2024-03-13T00:00:00+00:00</published><updated>2024-03-27T18:34:21+00:00</updated><id>https://ibug.io/blog/2024/03/stupid-dell-recovery</id><content type="html" xml:base="https://ibug.io/blog/2024/03/stupid-dell-recovery/"><![CDATA[<p>Recently we discovered that both SSDs on our storage server were giving worrisome SMART values, so we started replacing them.
+	</div>
+	<p>So now, job done. As acme.sh stores install information, the next time these certificates are renewed, acme.sh will automatically copy them over to <code class="language-plaintext highlighter-rouge">/etc/ssl/private/$HOSTNAME/</code>, and systemd will pick up the changes and reload the services.</p>
+	]]></content><author><name>iBug</name></author><category term="linux" /><summary type="html"><![CDATA[Recently I relinquished an old domain on my server and had to re-issue a certificate to drop that domain off. Previously it ran Let’s Encrypt’s official client Certbot, set up back in 2019. All my recent setups have been using acme.sh, so I figured that this was a perfect chance to switch this one over as well.]]></summary></entry><entry><title type="html">I almost broke our lab’s storage server…</title><link href="https://ibug.io/blog/2024/03/stupid-dell-recovery/" rel="alternate" type="text/html" title="I almost broke our lab’s storage server…" /><published>2024-03-13T00:00:00+00:00</published><updated>2024-03-27T18:34:21+00:00</updated><id>https://ibug.io/blog/2024/03/stupid-dell-recovery</id><content type="html" xml:base="https://ibug.io/blog/2024/03/stupid-dell-recovery/"><![CDATA[<p>Recently we discovered that both SSDs on our storage server were giving worrisome SMART values, so we started replacing them.
 		One of them was used only for ZFS L2ARC, so pulling it out was easy.
 		The other runs the rootfs and we couldn’t touch it for the time being, so we inserted a backup drive thinking we can migrate the OS later on.</p>
 	<p>After returning from the datacenter, I start working on the migration.
@@ -1087,393 +1264,4 @@ COMMIT
 	</ul>
 	<p>For IPv6, you just need to increase the offset by 20 (IPv6 header is 40&nbsp;bytes), so the rule becomes <code class="language-plaintext highlighter-rouge">45 &amp; 0xFF = 1:4 &amp;&amp; 48 &amp; 0xFFFFFF = 0</code>.</p>
 	<p>This VPN server is running like a hearse so proofs are left out for brevity.</p>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.]]></summary></entry><entry><title type="html">Vlab 远程教学云桌面</title><link href="https://ibug.io/blog/2023/08/nju-talk/" rel="alternate" type="text/html" title="Vlab 远程教学云桌面" /><published>2023-08-19T00:00:00+00:00</published><updated>2024-01-08T04:40:54+00:00</updated><id>https://ibug.io/blog/2023/08/nju-talk</id><content type="html" xml:base="https://ibug.io/blog/2023/08/nju-talk/"><![CDATA[<section id="title">
-		<h1 class="title">Vlab<br>
-			远程教学云桌面</h1>
-		<p class="date">iBug @ USTC</p>
-		<p class="date">2023 年 8 月 19 日<br />
-			南京大学</p>
-	</section>
-	<section id="cover-image">
-		<style>
-			:root {
-			  --r-heading-font-weight: bold;
-			}
-
-			.slides section {
-			  max-height: 100%;
-			}
-
-			li img {
-			  vertical-align: middle;
-			}
-
-			li+li {
-			  margin-top: 0.25em;
-			}
-
-			.img-container {
-			  width: 100%;
-			  height: 100%;
-
-			  display: flex;
-			  flex-direction: column;
-			  justify-content: center;
-			}
-
-			.img-container img {
-			  display: block;
-			  max-height: 100%;
-			  margin: auto !important;
-			  object-fit: contain;
-			}
-
-			.reveal section>img {
-			  display: block;
-			  margin: auto !important;
-			  max-height: 95vh;
-			}
-
-			.border {
-			  border: 1px solid black;
-			}
-		</style>
-		<div class="img-container">
-			<img src="https://image.ibugone.com/vlab/vlab-in-browser.jpg" />
-		</div>
-	</section>
-	<section id="目录">
-		<h2>目录</h2>
-		<ol type="1">
-			<li>背景</li>
-			<li>第一代 Vlab</li>
-			<li>第二代 Vlab</li>
-			<li>技术分享</li>
-			<li>共享灵车</li>
-			<li>成果</li>
-		</ol>
-	</section>
-	<section>
-		<section id="background">
-			<h2>背景</h2>
-			<p>计算机实验的环境配置问题：</p>
-			<ul>
-				<li>学校机房开放时间有限，利用率低</li>
-				<li>部分实验软件体积大、对配置要求高（如 Vivado）</li>
-				<li>学生使用的系统环境不同，导致安装与使用时出现奇怪的问题</li>
-				<li>部分实验环境安装时容易损坏（如双系统安装）</li>
-			</ul>
-		</section>
-		<section id="background-idea">
-			<h2>思考</h2>
-			<p>能不能通过提供预先配置好实验环境的虚拟机来解决这个问题呢？</p>
-			<ul>
-				<li>Linux 虚拟机还是 Windows 虚拟机？</li>
-				<li>实验软件怎么配？</li>
-				<li>给学生分配多少系统资源？主机需要多少硬件配置？</li>
-				<li>单位支持：计算机实验教学中心</li>
-			</ul>
-		</section>
-	</section>
-	<section>
-		<section id="1st-gen">
-			<h2>第一代 Vlab</h2>
-			<ul>
-				<li>2019 年暑假搭建完成<br />
-					秋季学期小范围运营</li>
-				<li>接入校园网，提供 VNC 连接</li>
-				<li>打包虚拟机镜像预装 Vivado 方便实验</li>
-			</ul>
-		</section>
-		<section id="1st-gen-features">
-			<h3>平台特点</h3>
-			<ul>
-				<li>单台 E5 2630 v4 (2S)，<s>64</s> 128&nbsp;GB 内存，一些固态和机械</li>
-				<li>Ubuntu 18.04 + 3.10.0-957.el7🤔 + LXD snap</li>
-				<li>lxdbr0 ↔ USTCnet</li>
-			</ul>
-			<hr />
-			<ul>
-				<li>校园网接入：可以使用网络通选择出口或从校外连接
-					<ul>
-						<li><s>也可以挂 Minecraft 服务器、Terraria 服务器、……</s></li>
-					</ul>
-				</li>
-				<li>虚拟机镜像：(Ubuntu 1&nbsp;GB) + Xfce4 (2&nbsp;GB) + Vivado (<b>18&nbsp;GB</b>)
-					<ul>
-						<li>好在单机有 ZFS 可以用</li>
-					</ul>
-				</li>
-				<li>用 Django 糊了个面板（@taoky），使用统一身份认证登录</li>
-			</ul>
-		</section>
-		<section id="1st-gen-sumup">
-			<h3>总结经验</h3>
-			<ul>
-				<li><s>一台母鸡超卖也卖不动多少啊</s></li>
-				<li>避免将用户虚拟机直接连接在校园网上
-					<ul>
-						<li>这样既不方便使用，也不安全</li>
-						<li>机房 IP 早晚会不够用的（3× /24）</li>
-						<li>开个 NAT</li>
-					</ul>
-				</li>
-				<li>提供桌面和命令行的统一登录接口，方便用户连接使用</li>
-				<li>配备更多实验软件</li>
-				<li>完善用户文档</li>
-			</ul>
-		</section>
-	</section>
-	<section>
-		<section id="2nd-gen">
-			<h2>第二代 Vlab</h2>
-			<ul>
-				<li>2020 年寒假基本配置完成<br />
-					春季学期投入使用</li>
-				<li>改进了第一代 Vlab 的许多不足点</li>
-			</ul>
-		</section>
-		<section id="2nd-gen-infrastructure">
-			<h3>基础设施</h3>
-			<ul>
-				<li>采购：HPE MSA 1050，Gen10 节点 ×8, 251 交换机</li>
-				<li>Ubuntu ❌ Proxmox VE ✔</li>
-				<li>iSCSI 存储共享：LVM（no thin provisioning）</li>
-				<li>网络：VXLAN、NAT 网关</li>
-				<li><s>小修小补的</s> Django 面板</li>
-				<li>超卖能力++++</li>
-			</ul>
-		</section>
-		<section id="2nd-gen-network">
-			<div class="img-container">
-				<img src="https://image.ibugone.com/vlab/network-external-1.png" />
-			</div>
-		</section>
-		<section id="2nd-gen-network-internal">
-			<div class="img-container">
-				<img src="https://image.ibugone.com/vlab/network-internal.png" />
-			</div>
-		</section>
-		<section id="gateway">
-			<h3>年轻人的第一次卵路由实践</h3>
-			<ul>
-				<li>基础功能：为虚拟机提供 NAT 上网</li>
-				<li>基本操作：Debian LXC + 手搓 iproute2 + iptables（其实也没那么复杂）</li>
-				<li>DNS + 监控：AdGuard Home</li>
-				<li>流量记录：<code>-m conntrack --ctstate NEW -j NFLOG</code>
-					<ul>
-						<li>没有磁带，不宜全量镜像</li>
-					</ul>
-				</li>
-			</ul>
-		</section>
-		<section id="lxc-build">
-			<h3>稳定可靠的 LXC 镜像构建技术</h3>
-			<ul>
-				<li>Docker 提供 build environment，PVE 提供 base image</li>
-				<li>基于 shell 脚本和 GitHub Actions 的自动化流程
-					<ul>
-						<li><code>add_file</code>, <code>add_package</code>, <code>run</code> 等“指令”</li>
-						<li><s>就差发明一个 <code>Lxcfile</code> DSL 了</s></li>
-					</ul>
-				</li>
-				<li>Repository：<a href="https://github.com/USTC-vlab/labstrap"><i class="fab fa-github"></i>
-						USTC-vlab/labstrap</a>
-					<ul>
-						<li>精神前辈：图书馆查询🐔的 PXE 镜像构建：<a href="https://github.com/ustclug/liimstrap"><i class="fab fa-github"></i>
-								ustclug/liimstrap</a></li>
-					</ul>
-				</li>
-			</ul>
-		</section>
-	</section>
-	<section>
-		<section id="login">
-			<h2>登录方式</h2>
-			<p>不开放端口，各种协议都需要转发</p>
-			<p>VNC, SSH, and what?</p>
-		</section>
-		<section id="login-ssh-1">
-			<h3>SSH 统一登录</h3>
-			<ul>
-				<li>SSH 没有 Host header 怎么办：来点 PubkeyAuthentication</li>
-				<li><code>ssh <b>-i vm-114514.pem</b> ubuntu@vlab.ustc.edu.cn</code></li>
-				<li>鉴权：就像 GitHub / GitLab 一样直接按公钥区分用户（VM）
-					<ul>
-						<li>Django 提供一个 pubkey → VM IP address 的接口</li>
-					</ul>
-				</li>
-				<li>后端：<code>golang.org/x/crypto/ssh</code>
-					<ul>
-						<li>初版：Forked from <a href="https://github.com/tg123/sshpiper"><i class="fab fa-github"></i>
-								tg123/sshpiper</a></li>
-						<li>现在：<a href="https://github.com/USTC-vlab/sshmux"><i class="fab fa-github"></i> USTC-vlab/sshmux</a>
-						</li>
-						<li>sshpiper 重构了，不好用了 QwQ</li>
-					</ul>
-				</li>
-			</ul>
-		</section>
-		<section id="login-ssh-2">
-			<h3>SSH 统一登录</h3>
-			<ul>
-				<li>恢复模式（LXC）：<code>ssh <b>recovery</b>@vlab.ustc.edu.cn</code>
-					<ul>
-						<li>后台转接到 <code>pct enter &lt;vmid&gt;</code></li>
-					</ul>
-				</li>
-				<li>控制台模式（LXC）：<code>ssh <b>console</b>@vlab.ustc.edu.cn</code>
-					<ul>
-						<li>后台转接到 <code>pct console &lt;vmid&gt;</code></li>
-					</ul>
-				</li>
-				<li>控制台模式（KVM）：<code>ssh <b>serial</b>@vlab.ustc.edu.cn</code>
-					<ul>
-						<li>后台转接到 <code>qm serial &lt;vmid&gt;</code></li>
-					</ul>
-				</li>
-			</ul>
-		</section>
-		<section id="login-vnc-1">
-			<h3>VNC 统一登录</h3>
-			<ul>
-				<li>请出神仙：<a href="https://github.com/pdlan"><i class="fab fa-github"></i> pdlan</a>
-					<ul>
-						<li>逆向了 RealVNC，写了 10,000 行 C艹，到处 <code>co_await</code>，……</li>
-						<li>顺带还实现了 TLS 加密</li>
-						<li>顺带还实现了……</li>
-						<li>外加一个 unix-domain socket 发送管理指令</li>
-					</ul>
-				</li>
-				<li><s>一起来大受震撼吧</s></li>
-				<li>使用 VNC 软件连接：
-					<ul>
-						<li>服务器：<code>vlab.ustc.edu.cn</code>（标准端口 5900/tcp）</li>
-						<li>用户名：<code>PB17000001:114514</code>（用户名 + VM ID，如果用户有多个 VM 的话）</li>
-					</ul>
-				</li>
-			</ul>
-		</section>
-		<section id="login-vnc-2">
-			<h3>VNC 统一登录</h3>
-			<ul>
-				<li>开源贡献：</li>
-				<li>
-					<img src="https://image.ibugone.com/vlab/tigervnc-pr-pdlan.png" />
-					<img src="https://image.ibugone.com/vlab/novnc-pr-pdlan.png" />
-				</li>
-			</ul>
-		</section>
-		<section id="login-rdp">
-			<h3>RDP 统一登录</h3>
-			<ul>
-				<li><s>咕咕咕了，Windows VM 支持还没搞定</s></li>
-				<li>RDP 一大坨非常起夜级的协议，<s>不是很想逆向</s></li>
-				<li><i class="fas fa-fw fa-lightbulb-on"></i> 计划规格：<code>loadbalanceinfo</code></li>
-			</ul>
-		</section>
-		<section id="login-browser">
-			<h3>浏览器登录</h3>
-			<ul>
-				<li>VNC：魔改版 noVNC
-					<ul>
-						<li>没错，vncmux 顺带还实现了 WebSocket</li>
-					</ul>
-				</li>
-				<li>SSH：Go → WASM</li>
-				<li>RDP：从入门到放弃</li>
-			</ul>
-		</section>
-	</section>
-	<section>
-		<section id="hearses">
-			<h2>灵车时间</h2>
-		</section>
-		<section id="vlab-software-1">
-			<h3>磁盘容量</h3>
-			<ul>
-				<li>一个虚拟机镜像就已经 21&nbsp;GB 了</li>
-				<li>+MATLAB, +Mathematica, +<a href="https://image.ibugone.com/vlab/node_modules-meme.png">node_modules</a></li>
-				<li>我们的存储阵列里就有 114514 份 Vivado</li>
-			</ul>
-		</section>
-		<section id="vlab-software-2">
-			<h3>Bind mount!</h3>
-			<ul>
-				<li>local-lvm 开个新卷给 <code>/opt/vlab</code></li>
-				<li>mp0: /opt/vlab,mp=/opt/vlab,ro=1</li>
-				<li>易于维护：Rsync cron job</li>
-			</ul>
-		</section>
-		<section id="novnc-fun">
-			<h3>No... VNC?</h3>
-			<p><img src="https://image.ibugone.com/vlab/no-vnc.png" /></p>
-		</section>
-		<section>
-			<img src="https://image.ibugone.com/vlab/502.png" />
-		</section>
-		<section id="lvm-metadata-full">
-			<h3>Everything breaks if pushed too hard...</h3>
-			<pre style="font-size: 1em;"><code>VG test 1723 metadata on /dev/sdc1 (521759&nbsp;bytes) exceeds maximum metadata size (521472&nbsp;bytes)
-Failed to write VG test.</code></pre>
-			<p><a href="https://ibug.io/p/52"><i class="fas fa-fw fa-arrow-alt-circle-right"></i> ibug.io/p/52</a></p>
-		</section>
-		<section id="iowait-spike">
-			<h3>IOWait（<code>%wa</code>）午夜准时爆炸</h3>
-			<p style="width: 100%; height: 8em; display: flex; justify-content: space-evenly;">
-				<img src="https://image.ibugone.com/vlab/iowait-load-average.png" />
-				<img src="https://image.ibugone.com/vlab/iowait-iowait.png" />
-			</p>
-			<p>
-				替用户停掉了 <code>man-db.timer</code> 和 <code>apt-daily-upgrade.timer</code>，
-				<br />
-				给 <code>logrotate.timer</code> 补上了 <code>RandomizedDelaySec=3h</code>。
-			</p>
-		</section>
-		<section id="other-software-gore">
-			<h3>其他灵异事件</h3>
-			<ul>
-				<li>
-					一运行备份，网卡就掉了 😦<br />
-					解决方法：两边开启 jumbo frame，MTU 拉到 9000 字节
-				</li>
-				<li>存储服务器的密码掉了</li>
-				<li>PVE HA 过于热情（+<code>nofailback</code>）</li>
-				<li>Vivado 又双叒叕炸了
-					<ol type="1">
-						<li><code>LD_PRELOAD</code> += <code>libudev.so.1</code></li>
-						<li><code>LD_PRELOAD</code> += <code>libdbus-glib-1.so.2</code></li>
-					</ol>
-				</li>
-			</ul>
-		</section>
-	</section>
-	<section>
-		<section id="results">
-			<h2>成果</h2>
-			<ul>
-				<li>自 2020 年春季学期运行至今</li>
-				<li>与 <a href="https://fpgaol.ustc.edu.cn/">FPGA Online</a> 和 <a href="https://verilogoj.ustc.edu.cn/">Verilog
-						OJ</a> 等项目结合，实现纯在线 FPGA 编程教学</li>
-				<li>Grafana：<a href="https://monitor.ibugone.com/grafana/d/2">monitor.ibugone.com/grafana/d/2</a></li>
-			</ul>
-		</section>
-		<section>
-			<div class="img-container">
-				<img src="https://image.ibugone.com/vlab/containers-2023-08.png" />
-			</div>
-		</section>
-		<section>
-			<h3>学习资料</h3>
-			<ul>
-				<li>用户文档：<a href="https://vlab.ustc.edu.cn/docs/">vlab.ustc.edu.cn/docs</a></li>
-				<li>维护文档：<a href="https://vlab.ibugone.com/">vlab.ibugone.com</a></li>
-				<li>GitHub Org：<a href="https://github.com/USTC-vlab"><i class="fab fa-github"></i> USTC-vlab</a></li>
-			</ul>
-		</section>
-	</section>
-	<section id="outro">
-		<h1>谢谢！</h1>
-		<p><small>本页面的链接：<a href="https://ibug.io/p/59"><i class="fas fa-fw fa-link"></i> ibug.io/p/59</a></small></p>
-	</section>
-	]]></content><author><name>iBug</name></author></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.]]></summary></entry></feed>
