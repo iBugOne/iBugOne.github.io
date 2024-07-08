@@ -31,7 +31,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=a0cc8ce">
+		<link rel="stylesheet" href="/assets/css/main.css?v=654518e">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -263,7 +263,7 @@
 </span></code></pre>
 								</div>
 							</div>
-							<p>After restarting systemd-networkd, I was disappointed to see that the PPP-negotiated IP address was removed, only leaving an SLAAC IPv6 address behind. With some searching through <code class="language-plaintext highlighter-rouge">systemd.network(5)</code>, I found <code class="language-plaintext highlighter-rouge">KeepConfiguration=yes</code> was what I was looking for.</p>
+							<p>After restarting systemd-networkd, I was disappointed to see the PPP-negotiated IP address removed, only leaving an SLAAC IPv6 address behind. With some searching through <code class="language-plaintext highlighter-rouge">systemd.network(5)</code>, I found <code class="language-plaintext highlighter-rouge">KeepConfiguration=yes</code> was what I was looking for.</p>
 							<h2 id="start-order">Start order</h2>
 							<p>One problem still remains: At the time systemd-networkd starts, <code class="language-plaintext highlighter-rouge">ppp0</code> is not yet up, and systemd-networkd simply skips its configuration. A solution seems trivial:</p>
 							<div class="language-ini highlighter-rouge">
@@ -307,7 +307,7 @@ iface dsl-provider inet ppp
 							</div>
 							<p>After multiple reboots and manual restarts of <code class="language-plaintext highlighter-rouge">pppd@dsl-provider.service</code>, I’m convinced that this is a reliable solution.</p>
 							<h2 id="extra">Extra: IPv6 PD</h2>
-							<p>As the home ISP provides IPv6 Prefix Delegation (but my school didn’t), it would be nice to take it and distribute it to the LAN. Online tutorials are abundant, e.g. <a href="https://major.io/p/dhcpv6-prefix-delegation-with-systemd-networkd/" rel="nofollow noopener">this one</a>. With everything set supposedly up, I was disappointed to see only a single SLAAC IPv6 address on <code class="language-plaintext highlighter-rouge">ppp0</code> itself, and <code class="language-plaintext highlighter-rouge">journalctl -eu systemd-networkd</code> shows no sign of receiving a PD allocation.</p>
+							<p>As the home ISP provides IPv6 Prefix Delegation (but my school didn’t), it would be nice to take it and distribute it to the LAN. Online tutorials are abundant, e.g. <a href="https://major.io/p/dhcpv6-prefix-delegation-with-systemd-networkd/" rel="nofollow noopener">this one</a>. With everything set supposedly up, I was again disappointed to see only a single SLAAC IPv6 address on <code class="language-plaintext highlighter-rouge">ppp0</code> itself, and <code class="language-plaintext highlighter-rouge">journalctl -eu systemd-networkd</code> shows no sign of receiving a PD allocation.</p>
 							<p>After poking around with <code class="language-plaintext highlighter-rouge">IPv6AcceptRA=</code> and <code class="language-plaintext highlighter-rouge">[DHCPv6] PrefixDelegationHint=</code> settings for a while, I decided to capture some packets for investigation. I started <code class="language-plaintext highlighter-rouge">tcpdump -i ppp0 -w /tmp/ppp0.pcap icmp6 or udp port 546</code> and restarted <code class="language-plaintext highlighter-rouge">systemd-networkd</code>. After a few seconds, the pcap file contains exactly 4 packets that I need (some items omitted for brevity):</p>
 							<div class="language-markdown highlighter-rouge">
 								<div class="highlight">
@@ -537,7 +537,7 @@ systemd-networkd[528]: enp2s0: DHCP-PD address 2001:db8:0:a01:2a0:c9ff:feee:c4c/
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-885</a>
+						Site version <a href="/status" class="version-text">G-886</a>
 					</p>
 				</div>
 			</footer>
