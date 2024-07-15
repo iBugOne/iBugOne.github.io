@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-07-08T14:39:01+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Driving pppd with systemd</title><link href="https://ibug.io/blog/2024/07/pppd-with-systemd/" rel="alternate" type="text/html" title="Driving pppd with systemd" /><published>2024-07-07T00:00:00+00:00</published><updated>2024-07-08T22:33:36+00:00</updated><id>https://ibug.io/blog/2024/07/pppd-with-systemd</id><content type="html" xml:base="https://ibug.io/blog/2024/07/pppd-with-systemd/"><![CDATA[<p>I moved my soft router (Intel N5105, Debian) from school to home, and at home it’s behind an ONU on bridge mode, so it’ll have to do PPPoE itself.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-07-15T17:26:18+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Driving pppd with systemd</title><link href="https://ibug.io/blog/2024/07/pppd-with-systemd/" rel="alternate" type="text/html" title="Driving pppd with systemd" /><published>2024-07-07T00:00:00+00:00</published><updated>2024-07-16T01:25:55+00:00</updated><id>https://ibug.io/blog/2024/07/pppd-with-systemd</id><content type="html" xml:base="https://ibug.io/blog/2024/07/pppd-with-systemd/"><![CDATA[<p>I moved my soft router (Intel N5105, Debian) from school to home, and at home it’s behind an ONU on bridge mode, so it’ll have to do PPPoE itself.</p>
 			<p>Getting started with PPPoE on Debian is exactly the same as on Ubuntu: Install <code class="language-plaintext highlighter-rouge">pppoeconf</code> and run <code class="language-plaintext highlighter-rouge">pppoeconf</code>, then fill in the DSL username and password. Then I can see <code class="language-plaintext highlighter-rouge">ppp0</code> interface up and working.</p>
 			<p>However, as I use <code class="language-plaintext highlighter-rouge">systemd-networkd</code> on my router while <code class="language-plaintext highlighter-rouge">pppd</code> appears to bundle ifupdown, I’ll have to fix everything needed for <code class="language-plaintext highlighter-rouge">pppd</code> to work with systemd-networkd.</p>
 			<h2 id="systemd-service">Systemd service</h2>
@@ -153,15 +153,23 @@ systemd-networkd[528]: enp2s0: DHCP-PD address 2001:db8:0:a01:2a0:c9ff:feee:c4c/
 </code></pre>
 				</div>
 			</div>
+			<h2 id="update-1">Update: Stuck booting</h2>
+			<p>A few days after this blog post, my local ISP ran into an outage that rendered the PPPoE connection unoperational.
+				When I couldn’t identify the issue initially, I tried rebooting the router and it never came back up again.
+				I plugged in a monitor and a keyboard, only to find systemd repeatedly trying to bring up <code class="language-plaintext highlighter-rouge">pppd@dsl-provider.service</code> when it would not succeed.
+				The failure to start <code class="language-plaintext highlighter-rouge">pppd</code> resulted in complete unavailability of the network stack.</p>
+			<p>I recalled that with OpenWRT this wasn’t the case, as the PPPoE interface being down would not impact any other interfaces.
+				So I ended up removing all dependencies on <code class="language-plaintext highlighter-rouge">pppd@.service</code>, making it an ordinary system service that’s only <code class="language-plaintext highlighter-rouge">WantedBy=multi-user.target</code>.
+				Considering that pppd will call <code class="language-plaintext highlighter-rouge">networkctl reconfigure</code> when it establishes the <code class="language-plaintext highlighter-rouge">ppp0</code> interface, the removal of systemd dependences shouldn’t have any consequences.</p>
 			<h2 id="sum-up">Sum up</h2>
 			<ul>
 				<li>Use systemd to start <code class="language-plaintext highlighter-rouge">pppd</code> as a system service.
 					<ul>
-						<li>Order it before <code class="language-plaintext highlighter-rouge">network.target</code>, but don’t bother with <code class="language-plaintext highlighter-rouge">systemd-networkd.service</code>.</li>
+						<li>No need to bother with ordering.</li>
 					</ul>
 				</li>
-				<li>Add <code class="language-plaintext highlighter-rouge">KeepConfiguration=yes</code> to systemd-networkd.</li>
-				<li>Use a custom script in <code class="language-plaintext highlighter-rouge">ip-up.d</code> to invoke systemd-networkd to reconfigure after it’s up.</li>
+				<li>Add <code class="language-plaintext highlighter-rouge">KeepConfiguration=yes</code> to <code class="language-plaintext highlighter-rouge">ppp0.network</code>.</li>
+				<li>Use a custom script in <code class="language-plaintext highlighter-rouge">ip-up.d</code> to invoake systemd-networkd to reconfigure after it’s up.</li>
 				<li>
 					<p>For IPv6 PD, use both:</p>
 					<div class="language-ini highlighter-rouge">
