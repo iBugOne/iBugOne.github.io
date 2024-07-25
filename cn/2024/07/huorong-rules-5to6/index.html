@@ -9,17 +9,20 @@
 	<head>
 		<meta charset="utf-8">
 		<!-- begin _includes/seo.html -->
-		<title>Tag: fpga - iBug</title>
-		<meta name="description" content="The little personal site for iBug">
+		<title>将火绒 5.0 规则转换为 6.0 - iBug</title>
+		<meta name="description" content="就这么一点微小的差别，真是折腾人，写点 JavaScript 来转换一下吧。">
 		<meta name="author" content="iBug">
-		<meta property="og:type" content="website">
+		<meta property="article:author" content="iBug">
+		<meta property="og:type" content="article">
 		<meta property="og:locale" content="en_US">
 		<meta property="og:site_name" content="iBug">
-		<meta property="og:title" content="Tag: fpga">
-		<meta property="og:url" content="https://ibug.io/tag/fpga/">
-		<meta property="og:description" content="The little personal site for iBug">
+		<meta property="og:title" content="将火绒 5.0 规则转换为 6.0">
+		<meta property="og:url" content="https://ibug.io/cn/2024/07/huorong-rules-5to6/">
+		<meta property="og:description" content="就这么一点微小的差别，真是折腾人，写点 JavaScript 来转换一下吧。">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
-		<link rel="canonical" href="https://ibug.io/tag/fpga/">
+		<meta property="article:published_time" content="2024-07-26T00:00:00+00:00">
+		<meta property="article:modified_time" content="2024-07-26T05:40:32+00:00">
+		<link rel="canonical" href="https://ibug.io/cn/2024/07/huorong-rules-5to6/">
 		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
 		<!-- end _includes/seo.html -->
 		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
@@ -37,7 +40,7 @@
 			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
 		</script>
 	</head>
-	<body class="layout--autopages">
+	<body class="layout--single">
 		<nav class="skip-links">
 			<ul>
 				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
@@ -105,12 +108,23 @@
 		</div>
 		<div class="initial-content">
 			<div class="page__hero--overlay"
-  style=" background-image: url('/image/header/mountain-1.jpg');"
+  style=" background-image: linear-gradient(rgba(0, 146, 202, 0.3), rgba(0, 0, 0, 0.2)), url('/image/header/cloud-1.jpg');"
 >
 				<div class="wrapper">
 					<h1 id="page-title" class="page__title" itemprop="headline">
-						Tag: fpga
+						将火绒 5.0 规则转换为 6.0
 					</h1>
+					<p class="page__meta">
+						<span class="page__meta-date">
+							<i class="far fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2024-07-26T00:00:00+00:00">Jul 26, 2024</time>
+						</span>
+						<span class="page__meta-sep"></span>
+						<span class="page__meta-readtime">
+							<i class="far fa-clock" aria-hidden="true"></i>
+							less than 1 minute read
+						</span>
+					</p>
 				</div>
 			</div>
 			<div id="main" role="main">
@@ -169,32 +183,115 @@
 						</ul>
 					</nav>
 				</div>
-				<div class="archive">
-					<div class="entries-list">
-						<div class="list__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2018/11/program-nexys4-ddr-with-storage/" rel="permalink">Programming the On-Board SPI Flash of Digilent Nexys4 DDR
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">This semester I have the course “Experiments of Digital Circuits”, the content of which is designing digital circuits using Vivado software, and writing Verilog code. Most of the lab papers require...</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2018-11-16T00:00:00+00:00">Nov 16, 2018</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-clock" aria-hidden="true"></i>
-											less than 1 minute read
-										</span>
-									</p>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork" lang="zh-CN">
+					<meta itemprop="headline" content="将火绒 5.0 规则转换为 6.0">
+					<meta itemprop="description" content="就这么一点微小的差别，真是折腾人，写点 JavaScript 来转换一下吧。">
+					<meta itemprop="datePublished" content="2024-07-26T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2024-07-26T05:40:32+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-th-list"></i> 目录</h4>
+									</header>
+								</nav>
+							</aside>
+							<p>就这么一点微小的差别，真是折腾人，写点 JavaScript 来转换一下吧。</p>
+							<p>对于「自定义规则」：</p>
+							<ul>
+								<li>JSON 格式，最外层的 <code class="language-plaintext highlighter-rouge">ver</code> 从 <code class="language-plaintext highlighter-rouge">5.0</code> 变成了 <code class="language-plaintext highlighter-rouge">6.0</code></li>
+								<li>每条规则多了 <code class="language-plaintext highlighter-rouge">cmdline</code>（完整的命令行）、<code class="language-plaintext highlighter-rouge">p_procname</code>（父进程名）、<code class="language-plaintext highlighter-rouge">p_cmdline</code>（父进程的完整命令行）三个字段</li>
+								<li>每条文件规则多了个 <code class="language-plaintext highlighter-rouge">res_cmdline</code>，不知道是干嘛的</li>
+							</ul>
+							<p>对于「自动处理规则」：</p>
+							<ul>
+								<li>同样的 <code class="language-plaintext highlighter-rouge">ver</code> 从 <code class="language-plaintext highlighter-rouge">5.0</code> 变成了 <code class="language-plaintext highlighter-rouge">6.0</code></li>
+								<li>每条自动处理规则多了 <code class="language-plaintext highlighter-rouge">cmdline</code>（完整的命令行）、<code class="language-plaintext highlighter-rouge">p_procname</code>（父进程名）、<code class="language-plaintext highlighter-rouge">p_cmdline</code>（父进程的完整命令行）、<code class="language-plaintext highlighter-rouge">res_cmdline</code>（不知道干嘛的）四个字段</li>
+							</ul>
+							<p>```html</p>
+							<p><input id="fileInput" type="file" name="file" accept=".json" />
+								<a id="download" class="btn btn--primary">下载</a></p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code id="fileContent">请先上传文件</code></pre>
 								</div>
-							</article>
-						</div>
+							</div>
+							<script type="text/javascript">
+								function processHipsuser(file) {
+								  file.ver = "6.0";
+								  for (let rule of file.data) {
+								    rule.cmdline = "*";
+								    rule.p_procname = "*";
+								    rule.p_cmdline = "*";
+								    for (let policy of rule.policies) {
+								      policy.res_cmdline = "*";
+								    }
+								  }
+								  return file;
+								}
+
+								function processHipsuserAuto(file) {
+								  file.ver = "6.0";
+								  for (let key in file.data) {
+								    let rules = file.data[key];
+								    for (let rule of rules) {
+								      rule.cmdline = "*";
+								      rule.res_cmdline = "*";
+								      rule.p_procname = "*";
+								      rule.p_cmdline = "*";
+								    }
+								  }
+								  return file;
+								}
+
+								function handleFileSelect(event) {
+								  const reader = new FileReader()
+								  const downloadButton = document.getElementById('download');
+								  reader.onload = function(event) {
+								    var file = JSON.parse(event.target.result);
+								    if (file.tag === "hipsuser") {
+								      file = processHipsuser(file);
+								    } else if (file.tag === "hipsuser_auto") {
+								      file = processHipsuserAuto(file);
+								    } else {
+								      file = "Unknown file type";
+								    }
+								    let output = JSON.stringify(file, null, 2);
+								    document.getElementById('fileContent').textContent = output;
+
+								    downloadButton.href = URL.createObjectURL(new Blob([output], {type: 'application/json'}));
+								  };
+
+								  let file = event.target.files[0];
+								  reader.readAsText(file);
+								  let newname = file.name.replace(/\.json$/i, "-6.0.json");
+								  downloadButton.download = newname;
+								}
+
+								document.getElementById('fileInput').addEventListener('change', handleFileSelect, false);
+							</script>
+						</section>
+						<footer class="page__meta">
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2024-07-26">Jul 26, 2024</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://twitter.com/intent/tweet?text=%E5%B0%86%E7%81%AB%E7%BB%92+5.0+%E8%A7%84%E5%88%99%E8%BD%AC%E6%8D%A2%E4%B8%BA+6.0%20https%3A%2F%2Fibug.io%2Fcn%2F2024%2F07%2Fhuorong-rules-5to6%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fcn%2F2024%2F07%2Fhuorong-rules-5to6%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https://ibug.io/cn/2024/07/huorong-rules-5to6/" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+						</section>
+						<nav class="pagination">
+							<a href="/cn/2022/12/telegram-english-win10-font/" class="pagination--pager" title="修复 Telegram Desktop 在英文版 Windows 10 中字体显示不正常的问题
+">Previous</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
+						</nav>
 					</div>
-				</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
 			</div>
 		</div>
 		<div class="search-content">
@@ -317,5 +414,18 @@
 
 			gtag('config', 'G-V93196TX91', { 'anonymize_ip': false});
 		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/cn/2024/07/huorong-rules-5to6/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/cn/2024/07/huorong-rules-5to6"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 	</body>
 </html>
