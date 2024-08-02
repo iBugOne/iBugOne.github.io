@@ -1,111 +1,377 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-07-25T21:41:47+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Driving pppd with systemd</title><link href="https://ibug.io/blog/2024/07/pppd-with-systemd/" rel="alternate" type="text/html" title="Driving pppd with systemd" /><published>2024-07-07T00:00:00+00:00</published><updated>2024-07-16T01:25:55+00:00</updated><id>https://ibug.io/blog/2024/07/pppd-with-systemd</id><content type="html" xml:base="https://ibug.io/blog/2024/07/pppd-with-systemd/"><![CDATA[<p>I moved my soft router (Intel N5105, Debian) from school to home, and at home it’s behind an ONU on bridge mode, so it’ll have to do PPPoE itself.</p>
-			<p>Getting started with PPPoE on Debian is exactly the same as on Ubuntu: Install <code class="language-plaintext highlighter-rouge">pppoeconf</code> and run <code class="language-plaintext highlighter-rouge">pppoeconf</code>, then fill in the DSL username and password. Then I can see <code class="language-plaintext highlighter-rouge">ppp0</code> interface up and working.</p>
-			<p>However, as I use <code class="language-plaintext highlighter-rouge">systemd-networkd</code> on my router while <code class="language-plaintext highlighter-rouge">pppd</code> appears to bundle ifupdown, I’ll have to fix everything needed for <code class="language-plaintext highlighter-rouge">pppd</code> to work with systemd-networkd.</p>
-			<h2 id="systemd-service">Systemd service</h2>
-			<p>The first thing is to get it to start at boot. Looking through Google, a <a href="https://gist.github.com/rany2/330c8fe202b318cacdcb54830c20f98c">Gist</a> provides the exact systemd service file I need. After copying it to <code class="language-plaintext highlighter-rouge">/etc/systemd/system/ppp@.service</code>, I tried to start it with <code class="language-plaintext highlighter-rouge">systemctl start pppd@dsl-provider</code>. It seems like there’s a misconfiguration:</p>
-			<div class="language-text highlighter-rouge">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-08-02T19:28:50+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Why my IPv4 gets stuck? - Debugging network issues with bpftrace</title><link href="https://ibug.io/blog/2024/08/first-touch-bpftrace/" rel="alternate" type="text/html" title="Why my IPv4 gets stuck? - Debugging network issues with bpftrace" /><published>2024-08-03T00:00:00+00:00</published><updated>2024-08-03T03:22:32+00:00</updated><id>https://ibug.io/blog/2024/08/first-touch-bpftrace</id><content type="html" xml:base="https://ibug.io/blog/2024/08/first-touch-bpftrace/"><![CDATA[<p>I run a Debian-based software router on my home network. It’s connected to multiple ISPs, so I have some policy routing rules to balance the traffic between them. Some time ago, I noticed that the IPv4 connectivity got stuck intermittently when it didn’t use to, while IPv6 was working fine. It’s also interesting that the issue only happened with one specific ISP, in the egress direction, and only a few specific devices were affected.</p>
+			<p>At first I suspected the ISP’s equipment, but a clue quickly dismissed that suspicion: Connection to the same ISP worked fine when initiated from the router itself, as well as many other unaffected devices. So the issue must be within the router.</p>
+			<p>As usual, every network debugging begins with a packet capture. I start <code class="language-plaintext highlighter-rouge">tcpdump</code> on both the LAN interface and the problematic WAN interface, then try <code class="language-plaintext highlighter-rouge">curl</code>-ing something from an affected device. Packet capture shows a few back-and-forth packets, then the device keeps sending packets but the router doesn’t forward them to the WAN interface anymore. Time for a closer look.</p>
+			<h2 id="identifying-the-issue">Identifying the issue</h2>
+			<p>On an affected device, <code class="language-plaintext highlighter-rouge">curl</code> gets stuck somewhere in the middle:</p>
+			<div class="language-console highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code>/usr/sbin/pppd: Can't open options file /etc/ppp/peers/dsl/provider: No such file or directory
+					<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>curl <span class="nt">-vso</span> /dev/null https://www.cloudflare.com/
+<span class="go">*   Trying 104.16.124.96:443...
+</span><span class="gp">* Connected to www.cloudflare.com (104.16.124.96) port 443 (#</span>0<span class="o">)</span>
+<span class="go">* ALPN: offers h2,http/1.1
+} [5&nbsp;bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [512&nbsp;bytes data]
+*  CAfile: /etc/ssl/certs/ca-certificates.crt
+*  CApath: /etc/ssl/certs
+{ [5&nbsp;bytes data]
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+{ [122&nbsp;bytes data]
+^C
+</span></code></pre>
+				</div>
+			</div>
+			<p><code class="language-plaintext highlighter-rouge">tcpdump</code> shows nothing special:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>tcpdump <span class="nt">-ni</span> any <span class="s1">'host 104.16.124.96 and tcp port 443'</span>
+<span class="gp">02:03:47.403905 lan0 In  IP 172.17.0.2.49194 &gt;</span><span class="w"> </span>104.16.124.96.443: Flags <span class="o">[</span>S], <span class="nb">seq </span>1854398703, win 65535, options <span class="o">[</span>mss 1460,sackOK,TS val 1651776756 ecr 0,nop,wscale 10], length 0
+<span class="gp">02:03:47.403956 ppp0 Out IP 10.250.193.4.49194 &gt;</span><span class="w"> </span>104.16.124.96.443: Flags <span class="o">[</span>S], <span class="nb">seq </span>1854398703, win 65535, options <span class="o">[</span>mss 1432,sackOK,TS val 1651776756 ecr 0,nop,wscale 10], length 0
+<span class="gp">02:03:47.447663 ppp0 In  IP 104.16.124.96.443 &gt;</span><span class="w"> </span>10.250.193.4.49194: Flags <span class="o">[</span>S.], <span class="nb">seq </span>1391350792, ack 1854398704, win 65535, options <span class="o">[</span>mss 1460,sackOK,TS val 141787839 ecr 1651776756,nop,wscale 13], length 0
+<span class="gp">02:03:47.447696 lan0 Out IP 104.16.124.96.443 &gt;</span><span class="w"> </span>172.17.0.2.49194: Flags <span class="o">[</span>S.], <span class="nb">seq </span>1391350792, ack 1854398704, win 65535, options <span class="o">[</span>mss 1460,sackOK,TS val 141787839 ecr 1651776756,nop,wscale 13], length 0
+<span class="gp">02:03:47.447720 lan0 In  IP 172.17.0.2.49194 &gt;</span><span class="w"> </span>104.16.124.96.443: Flags <span class="o">[</span>.], ack 1, win 64, options <span class="o">[</span>nop,nop,TS val 1651776800 ecr 141787839], length 0
+<span class="gp">02:03:47.452705 lan0 In  IP 172.17.0.2.49194 &gt;</span><span class="w"> </span>104.16.124.96.443: Flags <span class="o">[</span>P.], <span class="nb">seq </span>1:518, ack 1, win 64, options <span class="o">[</span>nop,nop,TS val 1651776804 ecr 141787839], length 517
+<span class="gp">02:03:47.452751 ppp0 Out IP 10.250.193.4.49194 &gt;</span><span class="w"> </span>104.16.124.96.443: Flags <span class="o">[</span>P.], <span class="nb">seq </span>1:518, ack 1, win 64, options <span class="o">[</span>nop,nop,TS val 1651776804 ecr 141787839], length 517
+<span class="gp">02:03:47.496507 ppp0 In  IP 104.16.124.96.443 &gt;</span><span class="w"> </span>10.250.193.4.49194: Flags <span class="o">[</span>.], ack 518, win 9, options <span class="o">[</span>nop,nop,TS val 141787888 ecr 1651776804], length 0
+<span class="gp">02:03:47.496527 lan0 Out IP 104.16.124.96.443 &gt;</span><span class="w"> </span>172.17.0.2.49194: Flags <span class="o">[</span>.], ack 518, win 9, options <span class="o">[</span>nop,nop,TS val 141787888 ecr 1651776804], length 0
+<span class="gp">02:03:47.498147 ppp0 In  IP 104.16.124.96.443 &gt;</span><span class="w"> </span>10.250.193.4.49194: Flags <span class="o">[</span>P.], <span class="nb">seq </span>1:2737, ack 518, win 9, options <span class="o">[</span>nop,nop,TS val 141787890 ecr 1651776804], length 2736
+<span class="gp">02:03:47.498165 lan0 Out IP 104.16.124.96.443 &gt;</span><span class="w"> </span>172.17.0.2.49194: Flags <span class="o">[</span>P.], <span class="nb">seq </span>1:2737, ack 518, win 9, options <span class="o">[</span>nop,nop,TS val 141787890 ecr 1651776804], length 2736
+<span class="gp">02:03:47.498175 lan0 In  IP 172.17.0.2.49194 &gt;</span><span class="w"> </span>104.16.124.96.443: Flags <span class="o">[</span>.], ack 2737, win 70, options <span class="o">[</span>nop,nop,TS val 1651776850 ecr 141787890], length 0
+<span class="gp">02:03:47.498195 ppp0 In  IP 104.16.124.96.443 &gt;</span><span class="w"> </span>10.250.193.4.49194: Flags <span class="o">[</span>P.], <span class="nb">seq </span>2737:3758, ack 518, win 9, options <span class="o">[</span>nop,nop,TS val 141787890 ecr 1651776804], length 1021
+<span class="gp">02:03:47.498228 ppp0 Out IP 10.250.193.4.49194 &gt;</span><span class="w"> </span>104.16.124.96.443: Flags <span class="o">[</span>R], <span class="nb">seq </span>1854399221, win 0, length 0
+<span class="go">^C
+711 packets captured
+720 packets received by filter
+0 packets dropped by kernel
+</span></code></pre>
+				</div>
+			</div>
+			<p>Considering the complexity of the policy routing, I tried inspecting conntrack status in parallel. Nothing unusual there either, until I tried matching conntrack events with <code class="language-plaintext highlighter-rouge">tcpdump</code>:</p>
+			<div class="language-console highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>conntrack <span class="nt">-E</span> <span class="nt">-s</span> 172.17.0.2 <span class="nt">-p</span> tcp <span class="nt">--dport</span> 443 2&gt;/dev/null | ts %.T
+<span class="go">02:03:47.404103     [NEW] tcp      6 120 SYN_SENT src=172.17.0.2 dst=104.16.124.96 sport=49194 dport=443 [UNREPLIED] src=104.16.124.96 dst=10.250.193.4 sport=443 dport=49194
+02:03:47.447748  [UPDATE] tcp      6 60 SYN_RECV src=172.17.0.2 dst=104.16.124.96 sport=49194 dport=443 src=104.16.124.96 dst=10.250.193.4 sport=443 dport=49194 mark=48
+02:03:47.447843 [DESTROY] tcp      6 432000 ESTABLISHED src=172.17.0.2 dst=104.16.124.96 sport=49194 dport=443 src=104.16.124.96 dst=10.250.193.4 sport=443 dport=49194 [ASSURED] mark=48
+02:03:47.452798     [NEW] tcp      6 300 ESTABLISHED src=172.17.0.2 dst=104.16.124.96 sport=49194 dport=443 [UNREPLIED] src=104.16.124.96 dst=10.250.193.4 sport=443 dport=49194
+02:03:47.496572  [UPDATE] tcp      6 300 src=172.17.0.2 dst=104.16.124.96 sport=49194 dport=443 src=104.16.124.96 dst=10.250.193.4 sport=443 dport=49194 mark=48
+02:03:47.498195  [UPDATE] tcp      6 300 src=172.17.0.2 dst=104.16.124.96 sport=49194 dport=443 src=104.16.124.96 dst=10.250.193.4 sport=443 dport=49194 [ASSURED] mark=48
+02:03:47.498243 [DESTROY] tcp      6 432000 ESTABLISHED src=172.17.0.2 dst=104.16.124.96 sport=49194 dport=443 src=104.16.124.96 dst=10.250.193.4 sport=443 dport=49194 [ASSURED] mark=48
+^C
+</span></code></pre>
+				</div>
+			</div>
+			<p>With <code class="language-plaintext highlighter-rouge">ts</code> (from <a href="https://packages.debian.org/stable/moreutils"><code class="language-plaintext highlighter-rouge">moreutils</code></a>) adding timestamps to conntrack events, I can see that the conntrack entry is destroyed right after (+123μs) the second packet comes in from the device. Subsequent packets causes (+93μs) the same conntrack entry to be recreated, so <code class="language-plaintext highlighter-rouge">curl</code> could somehow complete the SSL handshake to a point where it only sends one packet and nothing afterwards for the connection to be recreated for a third time.</p>
+			<p>Clearly the second packet should be considered <code class="language-plaintext highlighter-rouge">ESTABLISHED</code> by conntrack and makes no sense to trigger a <code class="language-plaintext highlighter-rouge">DESTROY</code> event. I’m at a loss here and start trying random things hoping to find a clue. I tried downgrading the kernel to 5.10 (from Bullseye) and upgrading to 6.9 (from Bookworm backports), but nothing changed, eliminating the possibility of a kernel bug.</p>
+			<p>After scrutinizing my firewall rules, I noticed a small difference between IPv4 and IPv6 rules:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="c"># rules.v4</span>
+<span class="k">*</span>nat
+<span class="c"># ...</span>
+<span class="nt">-A</span> POSTROUTING <span class="nt">-o</span> ppp+ <span class="nt">-j</span> MASQUERADE
+COMMIT
+
+<span class="k">*</span>mangle
+:PREROUTING ACCEPT <span class="o">[</span>0:0]
+<span class="c"># ...</span>
+<span class="nt">-A</span> PREROUTING <span class="nt">-j</span> CONNMARK <span class="nt">--restore-mark</span>
+<span class="nt">-A</span> PREROUTING <span class="nt">-m</span> mark <span class="o">!</span> <span class="nt">--mark</span> 0 <span class="nt">-j</span> ACCEPT
+<span class="c">#A PREROUTING -m conntrack --ctstate NEW,RELATED -j MARK --set-xmark 0x100/0x100</span>
+<span class="nt">-A</span> PREROUTING <span class="nt">-m</span> mark <span class="nt">--mark</span> 0/0xff <span class="nt">-j</span> ExtraConn
+<span class="nt">-A</span> PREROUTING <span class="nt">-m</span> mark <span class="nt">--mark</span> 0/0xff <span class="nt">-j</span> IntraConn
+<span class="nt">-A</span> PREROUTING <span class="nt">-m</span> mark <span class="nt">--mark</span> 0/0xff <span class="nt">-j</span> MARK <span class="nt">--set-xmark</span> 0x30/0xff
+<span class="nt">-A</span> PREROUTING <span class="nt">-j</span> CONNMARK <span class="nt">--save-mark</span>
+<span class="c"># ...</span>
+<span class="nt">-A</span> ExtraConn <span class="nt">-i</span> ppp0 <span class="nt">-j</span> MARK <span class="nt">--set-xmark</span> 0x30/0xff
+<span class="c"># ...</span>
+<span class="nt">-A</span> IntraConn <span class="nt">-s</span> 172.17.0.2/32 <span class="nt">-j</span> iBugOptimized
+<span class="c"># ...</span>
+<span class="nt">-A</span> iBugOptimized <span class="nt">-j</span> MARK <span class="nt">--set-xmark</span> 0x36/0xff
+<span class="nt">-A</span> iBugOptimized <span class="nt">-j</span> ACCEPT
+COMMIT
 </code></pre>
 				</div>
 			</div>
-			<p>The instance name is surely <code class="language-plaintext highlighter-rouge">dsl-provider</code> and not <code class="language-plaintext highlighter-rouge">dsl/provider</code>, so I look more closely at the service file.</p>
-			<div class="language-ini highlighter-rouge">
+			<p>However, <code class="language-plaintext highlighter-rouge">rules.v6</code> is missing the last rule in <code class="language-plaintext highlighter-rouge">iBugOptimized</code>, and IPv6 is somehow exempt from the conntrack issue. Removing this extra <code class="language-plaintext highlighter-rouge">ACCEPT</code> rule from <code class="language-plaintext highlighter-rouge">rules.v4</code> fully restores the connectivity. So this is certainly the cause, but how is it related to the actual issue?</p>
+			<h2 id="investigation">Investigation</h2>
+			<p><em>I know there are some decent tools on GitHub that aids in debugging iptables, which is notorious for its complexity. But since I wrote the entire firewall rule set and am still maintaining it by hand, I’m going for the hard route of watching and understanding every single rule.</em></p>
+			<p>The difference for that single <code class="language-plaintext highlighter-rouge">ACCEPT</code> rule is, it skips the <code class="language-plaintext highlighter-rouge">--save-mark</code> step, so the assigned firewall mark is not saved to its corresponding conntrack entry. When a reply packet comes in, conntrack has nothing for the <code class="language-plaintext highlighter-rouge">--restore-mark</code> step, so the packet gets assigned the “default” mark of <code class="language-plaintext highlighter-rouge">0x30</code> and <em>then</em> this value gets saved. I should have noticed the wrong conntrack mark earlier, as <code class="language-plaintext highlighter-rouge">conntrack -L</code> clearly showed a mark of 48 instead of the intended 54 (<code class="language-plaintext highlighter-rouge">0x36</code> from <code class="language-plaintext highlighter-rouge">iBugOptimized</code>). This narrows the cause down to a discrepancy between the packet mark and the conntrack mark.</p>
+			<p>Firewall marks are a more flexible way to implement slightly complicated policy-based routing, as it defers the routing decision to the <code class="language-plaintext highlighter-rouge">mangle/PREROUTING</code> chain instead of the single-chain global routing rules. In my case, every ISP gets assigned a fwmark routing rule like this:</p>
+			<div class="language-text highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code><span class="nn">[...]</span>
+					<pre class="highlight"><code>9:      from all fwmark 0x30/0xff lookup eth0 proto static
+9:      from all fwmark 0x31/0xff lookup eth1 proto static
+9:      from all fwmark 0x36/0xff lookup ppp0 proto static
+</code></pre>
+				</div>
+			</div>
+			<p>Presumably, subsequent packets from the same connection should be routed to <code class="language-plaintext highlighter-rouge">eth0</code> because it has the mark <code class="language-plaintext highlighter-rouge">0x30</code> restored from conntrack entry. This is not the case, however, as <code class="language-plaintext highlighter-rouge">tcpdump</code> shows nothing on <code class="language-plaintext highlighter-rouge">eth0</code> and everything on <code class="language-plaintext highlighter-rouge">ppp0</code>.</p>
+			<p>Unless there’s some magic in the kernel for it to decide to destroy a connection simply for a packet mark mismatch, this is not close enough to the root cause. Verifying the magic is relatively easy:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>iptables <span class="nt">-I</span> PREROUTING <span class="nt">-s</span> 172.17.0.2/32 <span class="nt">-j</span> Test
+iptables <span class="nt">-A</span> Test <span class="nt">-m</span> conntrack <span class="nt">--ctstate</span> NEW <span class="nt">-j</span> MARK <span class="nt">--set-xmark</span> 0x36/0xff
+iptables <span class="nt">-A</span> Test <span class="nt">-m</span> conntrack <span class="nt">--ctstate</span> ESTABLISHED <span class="nt">-j</span> MARK <span class="nt">--set-xmark</span> 0x30/0xff
+</code></pre>
+				</div>
+			</div>
+			<p>This time, even if <code class="language-plaintext highlighter-rouge">conntrack</code> shows no mark (i.e. zero) on the connection, the packets are still routed correctly to <code class="language-plaintext highlighter-rouge">ppp0</code>, and curl gets stuck as the same place as before. So the kernel doesn’t care about the conntrack mark at all.</p>
+			<p>Unfortunately, this is about as far as userspace inspection can go. I need to find out why exactly the kernel decides to destroy the conntrack entry.</p>
+			<h2 id="bpftrace-comes-in"><code class="language-plaintext highlighter-rouge">bpftrace</code> comes in</h2>
+			<p>I’ve seen professional kernel network developers extensively running <code class="language-plaintext highlighter-rouge">bpftrace</code> to debug network issues (THANK YOU to the guy behind the Telegram channel <em>Welcome to the Black Parade</em>), so I’m giving it a try.</p>
+			<p>First thing is to figure out what to hook. Searching through Google did not reveal a trace point for conntrack events, but I get to know about the conntrack path. With help from ChatGPT, I begin with <code class="language-plaintext highlighter-rouge">kprobe:nf_ct_delete</code> and putting together all struct definitions starting from <code class="language-plaintext highlighter-rouge">struct nf_conn</code>:</p>
+			<div class="language-c highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;linux/socket.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;net/netfilter/nf_conntrack.h&gt;</span><span class="cp">
+</span>
+<span class="n">kprobe</span><span class="o">:</span><span class="n">nf_ct_delete</span>
+<span class="p">{</span>
+    <span class="c1">// The first argument is the struct nf_conn</span>
+    <span class="err">$</span><span class="n">ct</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">nf_conn</span> <span class="o">*</span><span class="p">)</span><span class="n">arg0</span><span class="p">;</span>
+
+    <span class="c1">// Check if the connection is for IPv4</span>
+    <span class="k">if</span> <span class="p">(</span><span class="err">$</span><span class="n">ct</span><span class="o">-&gt;</span><span class="n">tuplehash</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">tuple</span><span class="p">.</span><span class="n">src</span><span class="p">.</span><span class="n">l3num</span> <span class="o">==</span> <span class="n">AF_INET</span><span class="p">)</span> <span class="p">{</span>
+        <span class="err">$</span><span class="n">src_ip</span> <span class="o">=</span> <span class="err">$</span><span class="n">ct</span><span class="o">-&gt;</span><span class="n">tuplehash</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">tuple</span><span class="p">.</span><span class="n">src</span><span class="p">.</span><span class="n">u3</span><span class="p">.</span><span class="n">ip</span><span class="p">;</span>
+        <span class="err">$</span><span class="n">dst_ip</span> <span class="o">=</span> <span class="err">$</span><span class="n">ct</span><span class="o">-&gt;</span><span class="n">tuplehash</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">tuple</span><span class="p">.</span><span class="n">dst</span><span class="p">.</span><span class="n">u3</span><span class="p">.</span><span class="n">ip</span><span class="p">;</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"Conntrack destroyed (IPv4): src=%s dst=%s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+                <span class="n">ntop</span><span class="p">(</span><span class="err">$</span><span class="n">src_ip</span><span class="p">),</span> <span class="n">ntop</span><span class="p">(</span><span class="err">$</span><span class="n">dst_ip</span><span class="p">));</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+				</div>
+			</div>
+			<p>Seems all good, except it won’t compile:</p>
+			<div class="language-text highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>ERROR: Can not access field 'u3' on expression of type 'none'
+        $dst_ip = $ct-&gt;tuplehash[0].tuple.dst.u3.ip;
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+</code></pre>
+				</div>
+			</div>
+			<p>After another half-hour of struggling and bothering with ChatGPT, I gave up trying to access the destination tuple, and thought I’d be fine with inspecting the stack trace:</p>
+			<div class="language-c highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;linux/socket.h&gt;</span><span class="cp">
+#include</span> <span class="cpf">&lt;net/netfilter/nf_conntrack.h&gt;</span><span class="cp">
+</span>
+<span class="n">kprobe</span><span class="o">:</span><span class="n">nf_ct_delete</span>
+<span class="p">{</span>
+    <span class="c1">// The first argument is the struct nf_conn</span>
+    <span class="err">$</span><span class="n">ct</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">nf_conn</span> <span class="o">*</span><span class="p">)</span><span class="n">arg0</span><span class="p">;</span>
+
+    <span class="c1">// Check if the connection is for IPv4</span>
+    <span class="k">if</span> <span class="p">(</span><span class="err">$</span><span class="n">ct</span><span class="o">-&gt;</span><span class="n">tuplehash</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">tuple</span><span class="p">.</span><span class="n">src</span><span class="p">.</span><span class="n">l3num</span> <span class="o">==</span> <span class="n">AF_INET</span><span class="p">)</span> <span class="p">{</span>
+        <span class="err">$</span><span class="n">tuple_orig</span> <span class="o">=</span> <span class="err">$</span><span class="n">ct</span><span class="o">-&gt;</span><span class="n">tuplehash</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">tuple</span><span class="p">;</span>
+        <span class="err">$</span><span class="n">src_ip</span> <span class="o">=</span> <span class="err">$</span><span class="n">tuple_orig</span><span class="p">.</span><span class="n">src</span><span class="p">.</span><span class="n">u3</span><span class="p">.</span><span class="n">ip</span><span class="p">;</span>
+        <span class="err">$</span><span class="n">src_port_n</span> <span class="o">=</span> <span class="err">$</span><span class="n">tuple_orig</span><span class="p">.</span><span class="n">src</span><span class="p">.</span><span class="n">u</span><span class="p">.</span><span class="n">all</span><span class="p">;</span>
+        <span class="err">$</span><span class="n">src_port</span> <span class="o">=</span> <span class="p">(</span><span class="err">$</span><span class="n">src_port_n</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">|</span> <span class="p">((</span><span class="err">$</span><span class="n">src_port_n</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x00FF00</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="err">$</span><span class="n">src_ip</span> <span class="o">!=</span> <span class="mh">0x020011ac</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="err">$</span><span class="n">mark</span> <span class="o">=</span> <span class="err">$</span><span class="n">ct</span><span class="o">-&gt;</span><span class="n">mark</span><span class="p">;</span>
+        <span class="n">printf</span><span class="p">(</span><span class="s">"Conntrack destroyed (IPv4): src=%s sport=%d mark=%d</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+                <span class="n">ntop</span><span class="p">(</span><span class="err">$</span><span class="n">src_ip</span><span class="p">),</span> <span class="err">$</span><span class="n">src_port</span><span class="p">,</span> <span class="err">$</span><span class="n">mark</span><span class="p">);</span>
+
+        <span class="n">printf</span><span class="p">(</span><span class="s">"%s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span> <span class="n">kstack</span><span class="p">());</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+				</div>
+			</div>
+			<p>Noteworthy is that I have to filter the connections in the program, otherwise my screen gets flooded with unrelated events.</p>
+			<p>The output comes promising:</p>
+			<div class="language-text highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code>Attaching 1 probe...
+Conntrack destroyed (IPv4): src=172.17.0.2 sport=39456 mark=0 proto=6
+
+    nf_ct_delete+1
+    nf_nat_inet_fn+188
+    nf_nat_ipv4_out+80
+    nf_hook_slow+70
+    ip_output+220
+    ip_forward_finish+132
+    ip_forward+1296
+    ip_rcv+404
+    __netif_receive_skb_one_core+145
+    __netif_receive_skb+21
+    netif_receive_skb+300
+    ...
+</code></pre>
+				</div>
+			</div>
+			<p>Reading the source code from the top few functions of the call stack:</p>
+			<div class="language-c highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="c1">// net/netfilter/nf_nat_proto.c</span>
+
+<span class="k">static</span> <span class="kt">unsigned</span> <span class="kt">int</span>
+<span class="nf">nf_nat_ipv4_out</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">priv</span><span class="p">,</span> <span class="k">struct</span> <span class="n">sk_buff</span> <span class="o">*</span><span class="n">skb</span><span class="p">,</span>
+                <span class="k">const</span> <span class="k">struct</span> <span class="n">nf_hook_state</span> <span class="o">*</span><span class="n">state</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="cp">#ifdef CONFIG_XFRM
+</span>    <span class="k">const</span> <span class="k">struct</span> <span class="n">nf_conn</span> <span class="o">*</span><span class="n">ct</span><span class="p">;</span>
+    <span class="k">enum</span> <span class="n">ip_conntrack_info</span> <span class="n">ctinfo</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">err</span><span class="p">;</span>
+<span class="cp">#endif
+</span>    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">ret</span><span class="p">;</span>
+
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">nf_nat_ipv4_fn</span><span class="p">(</span><span class="n">priv</span><span class="p">,</span> <span class="n">skb</span><span class="p">,</span> <span class="n">state</span><span class="p">);</span> <span class="c1">// &lt;-- call to nf_nat_ipv4_fn</span>
+<span class="cp">#ifdef CONFIG_XFRM
+</span>    <span class="k">if</span> <span class="p">(</span><span class="n">ret</span> <span class="o">!=</span> <span class="n">NF_ACCEPT</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+</code></pre>
+				</div>
+			</div>
+			<div class="language-c highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="c1">// net/netfilter/nf_nat_proto.c</span>
+
+<span class="k">static</span> <span class="kt">unsigned</span> <span class="kt">int</span>
+<span class="nf">nf_nat_ipv4_fn</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">priv</span><span class="p">,</span> <span class="k">struct</span> <span class="n">sk_buff</span> <span class="o">*</span><span class="n">skb</span><span class="p">,</span>
+               <span class="k">const</span> <span class="k">struct</span> <span class="n">nf_hook_state</span> <span class="o">*</span><span class="n">state</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// ...</span>
+
+    <span class="k">return</span> <span class="n">nf_nat_inet_fn</span><span class="p">(</span><span class="n">priv</span><span class="p">,</span> <span class="n">skb</span><span class="p">,</span> <span class="n">state</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+				</div>
+			</div>
+			<div class="language-c highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="c1">// net/netfilter/nf_nat_core.c</span>
+
+<span class="kt">unsigned</span> <span class="kt">int</span>
+<span class="nf">nf_nat_inet_fn</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">priv</span><span class="p">,</span> <span class="k">struct</span> <span class="n">sk_buff</span> <span class="o">*</span><span class="n">skb</span><span class="p">,</span>
+               <span class="k">const</span> <span class="k">struct</span> <span class="n">nf_hook_state</span> <span class="o">*</span><span class="n">state</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// ...</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">nf_nat_oif_changed</span><span class="p">(</span><span class="n">state</span><span class="o">-&gt;</span><span class="n">hook</span><span class="p">,</span> <span class="n">ctinfo</span><span class="p">,</span> <span class="n">nat</span><span class="p">,</span> <span class="n">state</span><span class="o">-&gt;</span><span class="n">out</span><span class="p">))</span>
+            <span class="k">goto</span> <span class="n">oif_changed</span><span class="p">;</span>
+    <span class="c1">// ...</span>
+
+<span class="nl">oif_changed:</span>
+    <span class="n">nf_ct_kill_acct</span><span class="p">(</span><span class="n">ct</span><span class="p">,</span> <span class="n">ctinfo</span><span class="p">,</span> <span class="n">skb</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">NF_DROP</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+				</div>
+			</div>
+			<p>As far as function inlining goes, there’s only one way <code class="language-plaintext highlighter-rouge">nf_nat_inet_fn</code> calls into <code class="language-plaintext highlighter-rouge">nf_ct_delete</code>, which is through <code class="language-plaintext highlighter-rouge">nf_ct_kill_acct</code>. And the only reason for that is <code class="language-plaintext highlighter-rouge">nf_nat_oif_changed</code>.</p>
+			<h2 id="conclusion">Conclusion</h2>
+			<p>Now everything makes sense. With a badly placed <code class="language-plaintext highlighter-rouge">ACCEPT</code> rule, the conntrack connection gets saved a different mark than desired, and then destroyed because subsequent packets are routed differently for having the wrong mark. The timestamp difference of related events also roughly matches up the distance of the code path. It also must be a NAT’ed connection, as this way of <code class="language-plaintext highlighter-rouge">nf_ct_delete</code> is only reachable when the packet is about to be sent to the egress interface.</p>
+			]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[I run a Debian-based software router on my home network. It’s connected to multiple ISPs, so I have some policy routing rules to balance the traffic between them. Some time ago, I noticed that the IPv4 connectivity got stuck intermittently when it didn’t use to, while IPv6 was working fine. It’s also interesting that the issue only happened with one specific ISP, in the egress direction, and only a few specific devices were affected.]]></summary></entry><entry><title type="html">Driving pppd with systemd</title><link href="https://ibug.io/blog/2024/07/pppd-with-systemd/" rel="alternate" type="text/html" title="Driving pppd with systemd" /><published>2024-07-07T00:00:00+00:00</published><updated>2024-07-16T01:25:55+00:00</updated><id>https://ibug.io/blog/2024/07/pppd-with-systemd</id><content type="html" xml:base="https://ibug.io/blog/2024/07/pppd-with-systemd/"><![CDATA[<p>I moved my soft router (Intel N5105, Debian) from school to home, and at home it’s behind an ONU on bridge mode, so it’ll have to do PPPoE itself.</p>
+		<p>Getting started with PPPoE on Debian is exactly the same as on Ubuntu: Install <code class="language-plaintext highlighter-rouge">pppoeconf</code> and run <code class="language-plaintext highlighter-rouge">pppoeconf</code>, then fill in the DSL username and password. Then I can see <code class="language-plaintext highlighter-rouge">ppp0</code> interface up and working.</p>
+		<p>However, as I use <code class="language-plaintext highlighter-rouge">systemd-networkd</code> on my router while <code class="language-plaintext highlighter-rouge">pppd</code> appears to bundle ifupdown, I’ll have to fix everything needed for <code class="language-plaintext highlighter-rouge">pppd</code> to work with systemd-networkd.</p>
+		<h2 id="systemd-service">Systemd service</h2>
+		<p>The first thing is to get it to start at boot. Looking through Google, a <a href="https://gist.github.com/rany2/330c8fe202b318cacdcb54830c20f98c">Gist</a> provides the exact systemd service file I need. After copying it to <code class="language-plaintext highlighter-rouge">/etc/systemd/system/ppp@.service</code>, I tried to start it with <code class="language-plaintext highlighter-rouge">systemctl start pppd@dsl-provider</code>. It seems like there’s a misconfiguration:</p>
+		<div class="language-text highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>/usr/sbin/pppd: Can't open options file /etc/ppp/peers/dsl/provider: No such file or directory
+</code></pre>
+			</div>
+		</div>
+		<p>The instance name is surely <code class="language-plaintext highlighter-rouge">dsl-provider</code> and not <code class="language-plaintext highlighter-rouge">dsl/provider</code>, so I look more closely at the service file.</p>
+		<div class="language-ini highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="nn">[...]</span>
 <span class="py">Description</span><span class="p">=</span><span class="s">PPP connection for %I</span>
 <span class="nn">[...]</span>
 <span class="py">ExecStart</span><span class="p">=</span><span class="s">/usr/sbin/pppd up_sdnotify nolog call %I</span>
 </code></pre>
-				</div>
 			</div>
-			<p>The systemd man page <a href="https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html"><code class="language-plaintext highlighter-rouge">systemd.unit(5)</code></a> says:</p>
-			<blockquote>
-				<table>
-					<thead>
-						<tr>
-							<th>Specifier</th>
-							<th>Meaning</th>
-							<th>Details</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>“%i”</td>
-							<td>Instance name</td>
-							<td>For instantiated units this is the string between the first “@” character and the type suffix. Empty for non-instantiated units.</td>
-						</tr>
-						<tr>
-							<td>“%I”</td>
-							<td>Unescaped instance name</td>
-							<td>Same as “%i”, but with escaping undone.</td>
-						</tr>
-					</tbody>
-				</table>
-			</blockquote>
-			<p>Fair enough, let’s change <code class="language-plaintext highlighter-rouge">%I</code> to <code class="language-plaintext highlighter-rouge">%i</code> and try starting <code class="language-plaintext highlighter-rouge">pppd@dsl-provider</code> again.</p>
-			<h2 id="systemd-networkd">systemd-networkd</h2>
-			<p>Now that <code class="language-plaintext highlighter-rouge">ppp0</code> is up, time to configure routes and routing rules with <code class="language-plaintext highlighter-rouge">systemd-networkd</code>. I created a file <code class="language-plaintext highlighter-rouge">/etc/systemd/network/10-ppp0.network</code>.</p>
-			<div class="language-ini highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="nn">[Match]</span>
+		</div>
+		<p>The systemd man page <a href="https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html"><code class="language-plaintext highlighter-rouge">systemd.unit(5)</code></a> says:</p>
+		<blockquote>
+			<table>
+				<thead>
+					<tr>
+						<th>Specifier</th>
+						<th>Meaning</th>
+						<th>Details</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>“%i”</td>
+						<td>Instance name</td>
+						<td>For instantiated units this is the string between the first “@” character and the type suffix. Empty for non-instantiated units.</td>
+					</tr>
+					<tr>
+						<td>“%I”</td>
+						<td>Unescaped instance name</td>
+						<td>Same as “%i”, but with escaping undone.</td>
+					</tr>
+				</tbody>
+			</table>
+		</blockquote>
+		<p>Fair enough, let’s change <code class="language-plaintext highlighter-rouge">%I</code> to <code class="language-plaintext highlighter-rouge">%i</code> and try starting <code class="language-plaintext highlighter-rouge">pppd@dsl-provider</code> again.</p>
+		<h2 id="systemd-networkd">systemd-networkd</h2>
+		<p>Now that <code class="language-plaintext highlighter-rouge">ppp0</code> is up, time to configure routes and routing rules with <code class="language-plaintext highlighter-rouge">systemd-networkd</code>. I created a file <code class="language-plaintext highlighter-rouge">/etc/systemd/network/10-ppp0.network</code>.</p>
+		<div class="language-ini highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="nn">[Match]</span>
 <span class="py">Name</span><span class="p">=</span><span class="s">ppp0</span>
 
 <span class="nn">[Network]</span>
 <span class="py">DHCP</span><span class="p">=</span><span class="s">yes</span>
 <span class="c"># ...
 </span></code></pre>
-				</div>
 			</div>
-			<p>After restarting systemd-networkd, I was disappointed to see the PPP-negotiated IP address removed, only leaving an SLAAC IPv6 address behind. With some searching through <code class="language-plaintext highlighter-rouge">systemd.network(5)</code>, I found <code class="language-plaintext highlighter-rouge">KeepConfiguration=yes</code> was what I was looking for.</p>
-			<h2 id="start-order">Start order</h2>
-			<p>One problem still remains: At the time systemd-networkd starts, <code class="language-plaintext highlighter-rouge">ppp0</code> is not yet up, and systemd-networkd simply skips its configuration. A solution seems trivial:</p>
-			<div class="language-ini highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="c"># systemctl edit pppd@dsl-provider
+		</div>
+		<p>After restarting systemd-networkd, I was disappointed to see the PPP-negotiated IP address removed, only leaving an SLAAC IPv6 address behind. With some searching through <code class="language-plaintext highlighter-rouge">systemd.network(5)</code>, I found <code class="language-plaintext highlighter-rouge">KeepConfiguration=yes</code> was what I was looking for.</p>
+		<h2 id="start-order">Start order</h2>
+		<p>One problem still remains: At the time systemd-networkd starts, <code class="language-plaintext highlighter-rouge">ppp0</code> is not yet up, and systemd-networkd simply skips its configuration. A solution seems trivial:</p>
+		<div class="language-ini highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="c"># systemctl edit pppd@dsl-provider
 </span><span class="nn">[Unit]</span>
 <span class="py">Before</span><span class="p">=</span><span class="s">systemd-networkd.service</span>
 </code></pre>
-				</div>
 			</div>
-			<p>… except it doesn’t seem to have any effect.</p>
-			<p>I wouldn’t bother digging into pppd, so I look around for something analogous to ifupdown’s <code class="language-plaintext highlighter-rouge">up</code> script, which is <code class="language-plaintext highlighter-rouge">/etc/ppp/ip-up.d/</code>. So I could just drop another script to notify systemd-networkd.</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="c"># /etc/ppp/ip-up.d/1systemd-networkd</span>
+		</div>
+		<p>… except it doesn’t seem to have any effect.</p>
+		<p>I wouldn’t bother digging into pppd, so I look around for something analogous to ifupdown’s <code class="language-plaintext highlighter-rouge">up</code> script, which is <code class="language-plaintext highlighter-rouge">/etc/ppp/ip-up.d/</code>. So I could just drop another script to notify systemd-networkd.</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="c"># /etc/ppp/ip-up.d/1systemd-networkd</span>
 <span class="c">#!/bin/sh</span>
 
 networkctl reconfigure <span class="s2">"</span><span class="nv">$PPP_IFACE</span><span class="s2">"</span>
 </code></pre>
-				</div>
 			</div>
-			<p>I also noticed that when bringing in ifupdown, the <code class="language-plaintext highlighter-rouge">pppoeconf</code>-created config looks like this:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>auto dsl-provider
+		</div>
+		<p>I also noticed that when bringing in ifupdown, the <code class="language-plaintext highlighter-rouge">pppoeconf</code>-created config looks like this:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>auto dsl-provider
 iface dsl-provider inet ppp
     pre-up /bin/ip <span class="nb">link set </span>enp3s0 up <span class="c"># line maintained by pppoeconf</span>
     provider dsl-provider
 </code></pre>
-				</div>
 			</div>
-			<p>So to maintain behavioral compatibility, I configured the systemd service like this:</p>
-			<div class="language-ini highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="c"># systemctl edit pppd@dsl-provider
+		</div>
+		<p>So to maintain behavioral compatibility, I configured the systemd service like this:</p>
+		<div class="language-ini highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="c"># systemctl edit pppd@dsl-provider
 </span><span class="nn">[Unit]</span>
 <span class="py">BindsTo</span><span class="p">=</span><span class="s">sys-subsystem-net-devices-enp3s0.device</span>
 <span class="py">After</span><span class="p">=</span><span class="s">sys-subsystem-net-devices-enp3s0.device</span>
 </code></pre>
-				</div>
 			</div>
-			<p>After multiple reboots and manual restarts of <code class="language-plaintext highlighter-rouge">pppd@dsl-provider.service</code>, I’m convinced that this is a reliable solution.</p>
-			<h2 id="extra">Extra: IPv6 PD</h2>
-			<p>As the home ISP provides IPv6 Prefix Delegation (but my school didn’t), it would be nice to take it and distribute it to the LAN. Online tutorials are abundant, e.g. <a href="https://major.io/p/dhcpv6-prefix-delegation-with-systemd-networkd/" rel="nofollow noopener">this one</a>. With everything set supposedly up, I was again disappointed to see only a single SLAAC IPv6 address on <code class="language-plaintext highlighter-rouge">ppp0</code> itself, and <code class="language-plaintext highlighter-rouge">journalctl -eu systemd-networkd</code> shows no sign of receiving a PD allocation.</p>
-			<p>After poking around with <code class="language-plaintext highlighter-rouge">IPv6AcceptRA=</code> and <code class="language-plaintext highlighter-rouge">[DHCPv6] PrefixDelegationHint=</code> settings for a while, I decided to capture some packets for investigation. I started <code class="language-plaintext highlighter-rouge">tcpdump -i ppp0 -w /tmp/ppp0.pcap icmp6 or udp port 546</code> and restarted <code class="language-plaintext highlighter-rouge">systemd-networkd</code>. After a few seconds, the pcap file contains exactly 4 packets that I need (some items omitted for brevity):</p>
-			<div class="language-markdown highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="p">-</span> ICMPv6: Router Solicitation from 00:00:00:00:00:00
+		</div>
+		<p>After multiple reboots and manual restarts of <code class="language-plaintext highlighter-rouge">pppd@dsl-provider.service</code>, I’m convinced that this is a reliable solution.</p>
+		<h2 id="extra">Extra: IPv6 PD</h2>
+		<p>As the home ISP provides IPv6 Prefix Delegation (but my school didn’t), it would be nice to take it and distribute it to the LAN. Online tutorials are abundant, e.g. <a href="https://major.io/p/dhcpv6-prefix-delegation-with-systemd-networkd/" rel="nofollow noopener">this one</a>. With everything set supposedly up, I was again disappointed to see only a single SLAAC IPv6 address on <code class="language-plaintext highlighter-rouge">ppp0</code> itself, and <code class="language-plaintext highlighter-rouge">journalctl -eu systemd-networkd</code> shows no sign of receiving a PD allocation.</p>
+		<p>After poking around with <code class="language-plaintext highlighter-rouge">IPv6AcceptRA=</code> and <code class="language-plaintext highlighter-rouge">[DHCPv6] PrefixDelegationHint=</code> settings for a while, I decided to capture some packets for investigation. I started <code class="language-plaintext highlighter-rouge">tcpdump -i ppp0 -w /tmp/ppp0.pcap icmp6 or udp port 546</code> and restarted <code class="language-plaintext highlighter-rouge">systemd-networkd</code>. After a few seconds, the pcap file contains exactly 4 packets that I need (some items omitted for brevity):</p>
+		<div class="language-markdown highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="p">-</span> ICMPv6: Router Solicitation from 00:00:00:00:00:00
 <span class="p">-</span> ICMPv6: Router Advertisement from 00:00:5e:00:01:99
 <span class="p">  -</span> Flags: 0x40 (only O)
 <span class="p">  -</span> ICMPv6 Option: Prefix information (2001:db8::/64)
@@ -121,12 +387,12 @@ iface dsl-provider inet ppp
 <span class="p">    -</span> Requested Option code: INF_MAX_RT (83)
 <span class="p">-</span> DHCPv6: Reply XID: 0x8bf4f0 CID: 00020000ab11503f79e54f10745d
 </code></pre>
-				</div>
 			</div>
-			<p>Clearly the client isn’t even requesting a PD allocation with <code class="language-plaintext highlighter-rouge">PrefixDelegationHint=</code> set. With some more Google-ing, I added <code class="language-plaintext highlighter-rouge">[DHCPv6] WithoutRA=solicit</code> to <code class="language-plaintext highlighter-rouge">10-ppp0.network</code> and restarted <code class="language-plaintext highlighter-rouge">systemd-networkd</code>. There are 6 packets, but the order appears a little bit off:</p>
-			<div class="language-markdown highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="p">-</span> Solicit XID: 0x2bc2aa CID: 00020000ab11503f79e54f10745d
+		</div>
+		<p>Clearly the client isn’t even requesting a PD allocation with <code class="language-plaintext highlighter-rouge">PrefixDelegationHint=</code> set. With some more Google-ing, I added <code class="language-plaintext highlighter-rouge">[DHCPv6] WithoutRA=solicit</code> to <code class="language-plaintext highlighter-rouge">10-ppp0.network</code> and restarted <code class="language-plaintext highlighter-rouge">systemd-networkd</code>. There are 6 packets, but the order appears a little bit off:</p>
+		<div class="language-markdown highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="p">-</span> Solicit XID: 0x2bc2aa CID: 00020000ab11503f79e54f10745d
 <span class="p">-</span> Advertise XID: 0x2bc2aa CID: 00020000ab11503f79e54f10745d
 <span class="p">-</span> Request XID: 0xf8c1dd CID: 00020000ab11503f79e54f10745d
 <span class="p">  -</span> Identity Association for Prefix Delegation
@@ -134,84 +400,84 @@ iface dsl-provider inet ppp
 <span class="p">-</span> Router Solicitation from 00:00:00:00:00:00
 <span class="p">-</span> Router Advertisement from 00:00:5e:00:01:99
 </code></pre>
-				</div>
 			</div>
-			<p>This time DHCP request comes <em>before</em> the RS/RA pair, which is not what I expected. But at least it’s now requesting a PD prefix.</p>
-			<p>Then I found <a href="https://unix.stackexchange.com/a/715025/211239">this answer</a> straight to the point, summarized as:</p>
-			<ul>
-				<li>The “managed” (M) flag indicates the client should acquire an address via DHCPv6, and triggers DHCPv6 Solicit and Request messages.</li>
-				<li>The “other” (O) flag indicates the client should do SLAAC while acquiring other configuration information via DHCPv6, and triggers DHCPv6 Information-request messages.</li>
-				<li>When both flags are present, the O flag is superseded by the M flag and has no effect.</li>
-			</ul>
-			<p>So systemd-networkd is implementing everything correctly, and I should configure systemd-networkd to always send Solicit messages regardless of the RA flags received. This is done by setting <code class="language-plaintext highlighter-rouge">[IPv6AcceptRA] DHCPv6Client=always</code></p>
-			<p>Now with every detail understood, after a restart of <code class="language-plaintext highlighter-rouge">systemd-networkd</code>, I finally see the PD prefix allocated:</p>
-			<div class="language-text highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code>systemd-networkd[528]: ppp0: DHCP: received delegated prefix 2001:db8:0:a00::/60
+		</div>
+		<p>This time DHCP request comes <em>before</em> the RS/RA pair, which is not what I expected. But at least it’s now requesting a PD prefix.</p>
+		<p>Then I found <a href="https://unix.stackexchange.com/a/715025/211239">this answer</a> straight to the point, summarized as:</p>
+		<ul>
+			<li>The “managed” (M) flag indicates the client should acquire an address via DHCPv6, and triggers DHCPv6 Solicit and Request messages.</li>
+			<li>The “other” (O) flag indicates the client should do SLAAC while acquiring other configuration information via DHCPv6, and triggers DHCPv6 Information-request messages.</li>
+			<li>When both flags are present, the O flag is superseded by the M flag and has no effect.</li>
+		</ul>
+		<p>So systemd-networkd is implementing everything correctly, and I should configure systemd-networkd to always send Solicit messages regardless of the RA flags received. This is done by setting <code class="language-plaintext highlighter-rouge">[IPv6AcceptRA] DHCPv6Client=always</code></p>
+		<p>Now with every detail understood, after a restart of <code class="language-plaintext highlighter-rouge">systemd-networkd</code>, I finally see the PD prefix allocated:</p>
+		<div class="language-text highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>systemd-networkd[528]: ppp0: DHCP: received delegated prefix 2001:db8:0:a00::/60
 systemd-networkd[528]: enp1s0: DHCP-PD address 2001:db8:0:a00:2a0:c9ff:feee:c4b/64 (valid for 2d 23h 59min 59s, preferred for 1d 23h 59min 59s)
 systemd-networkd[528]: enp2s0: DHCP-PD address 2001:db8:0:a01:2a0:c9ff:feee:c4c/64 (valid for 2d 23h 59min 59s, preferred for 1d 23h 59min 59s)
 </code></pre>
-				</div>
 			</div>
-			<h2 id="update-1">Update: Stuck booting</h2>
-			<p>A few days after this blog post, my local ISP ran into an outage that rendered the PPPoE connection unoperational.
-				When I couldn’t identify the issue initially, I tried rebooting the router and it never came back up again.
-				I plugged in a monitor and a keyboard, only to find systemd repeatedly trying to bring up <code class="language-plaintext highlighter-rouge">pppd@dsl-provider.service</code> when it would not succeed.
-				The failure to start <code class="language-plaintext highlighter-rouge">pppd</code> resulted in complete unavailability of the network stack.</p>
-			<p>I recalled that with OpenWRT this wasn’t the case, as the PPPoE interface being down would not impact any other interfaces.
-				So I ended up removing all dependencies on <code class="language-plaintext highlighter-rouge">pppd@.service</code>, making it an ordinary system service that’s only <code class="language-plaintext highlighter-rouge">WantedBy=multi-user.target</code>.
-				Considering that pppd will call <code class="language-plaintext highlighter-rouge">networkctl reconfigure</code> when it establishes the <code class="language-plaintext highlighter-rouge">ppp0</code> interface, the removal of systemd dependences shouldn’t have any consequences.</p>
-			<h2 id="sum-up">Sum up</h2>
-			<ul>
-				<li>Use systemd to start <code class="language-plaintext highlighter-rouge">pppd</code> as a system service.
-					<ul>
-						<li>No need to bother with ordering.</li>
-					</ul>
-				</li>
-				<li>Add <code class="language-plaintext highlighter-rouge">KeepConfiguration=yes</code> to <code class="language-plaintext highlighter-rouge">ppp0.network</code>.</li>
-				<li>Use a custom script in <code class="language-plaintext highlighter-rouge">ip-up.d</code> to invoake systemd-networkd to reconfigure after it’s up.</li>
-				<li>
-					<p>For IPv6 PD, use both:</p>
-					<div class="language-ini highlighter-rouge">
-						<div class="highlight">
-							<pre class="highlight"><code><span class="nn">[DHCPv6]</span>
+		</div>
+		<h2 id="update-1">Update: Stuck booting</h2>
+		<p>A few days after this blog post, my local ISP ran into an outage that rendered the PPPoE connection unoperational.
+			When I couldn’t identify the issue initially, I tried rebooting the router and it never came back up again.
+			I plugged in a monitor and a keyboard, only to find systemd repeatedly trying to bring up <code class="language-plaintext highlighter-rouge">pppd@dsl-provider.service</code> when it would not succeed.
+			The failure to start <code class="language-plaintext highlighter-rouge">pppd</code> resulted in complete unavailability of the network stack.</p>
+		<p>I recalled that with OpenWRT this wasn’t the case, as the PPPoE interface being down would not impact any other interfaces.
+			So I ended up removing all dependencies on <code class="language-plaintext highlighter-rouge">pppd@.service</code>, making it an ordinary system service that’s only <code class="language-plaintext highlighter-rouge">WantedBy=multi-user.target</code>.
+			Considering that pppd will call <code class="language-plaintext highlighter-rouge">networkctl reconfigure</code> when it establishes the <code class="language-plaintext highlighter-rouge">ppp0</code> interface, the removal of systemd dependences shouldn’t have any consequences.</p>
+		<h2 id="sum-up">Sum up</h2>
+		<ul>
+			<li>Use systemd to start <code class="language-plaintext highlighter-rouge">pppd</code> as a system service.
+				<ul>
+					<li>No need to bother with ordering.</li>
+				</ul>
+			</li>
+			<li>Add <code class="language-plaintext highlighter-rouge">KeepConfiguration=yes</code> to <code class="language-plaintext highlighter-rouge">ppp0.network</code>.</li>
+			<li>Use a custom script in <code class="language-plaintext highlighter-rouge">ip-up.d</code> to invoake systemd-networkd to reconfigure after it’s up.</li>
+			<li>
+				<p>For IPv6 PD, use both:</p>
+				<div class="language-ini highlighter-rouge">
+					<div class="highlight">
+						<pre class="highlight"><code><span class="nn">[DHCPv6]</span>
 <span class="py">PrefixDelegationHint</span><span class="p">=</span><span class="s">::/60</span>
 
 <span class="nn">[IPv6AcceptRA]</span>
 <span class="py">DHCPv6Client</span><span class="p">=</span><span class="s">always</span>
 </code></pre>
-						</div>
+					</div>
     </div>
-				</li>
-			</ul>
-			]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[I moved my soft router (Intel N5105, Debian) from school to home, and at home it’s behind an ONU on bridge mode, so it’ll have to do PPPoE itself.]]></summary></entry><entry><title type="html">Migrating Ubuntu onto ZFS</title><link href="https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs/" rel="alternate" type="text/html" title="Migrating Ubuntu onto ZFS" /><published>2024-05-14T00:00:00+00:00</published><updated>2024-05-14T23:37:49+00:00</updated><id>https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs</id><content type="html" xml:base="https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs/"><![CDATA[<p>As part of a planned disk migration, I decided to move my Ubuntu installation from a traditional ext4 setup to ZFS.
-			I did a lot of preparation and research, but things went much smoother than I had previously anticipated.
-			I did not even have to consult IPMI for any recovery.</p>
-		<p>Existing partition layout:</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>fdisk <span class="nt">-l</span> /dev/nvme1n1
+			</li>
+		</ul>
+		]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[I moved my soft router (Intel N5105, Debian) from school to home, and at home it’s behind an ONU on bridge mode, so it’ll have to do PPPoE itself.]]></summary></entry><entry><title type="html">Migrating Ubuntu onto ZFS</title><link href="https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs/" rel="alternate" type="text/html" title="Migrating Ubuntu onto ZFS" /><published>2024-05-14T00:00:00+00:00</published><updated>2024-05-14T23:37:49+00:00</updated><id>https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs</id><content type="html" xml:base="https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs/"><![CDATA[<p>As part of a planned disk migration, I decided to move my Ubuntu installation from a traditional ext4 setup to ZFS.
+		I did a lot of preparation and research, but things went much smoother than I had previously anticipated.
+		I did not even have to consult IPMI for any recovery.</p>
+	<p>Existing partition layout:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>fdisk <span class="nt">-l</span> /dev/nvme1n1
 <span class="go">[...]
 Device             Start        End    Sectors  Size Type
 /dev/nvme1n1p1      2048    1050623    1048576  512M EFI System
 /dev/nvme1n1p2   1050624  269486079  268435456  128G Linux filesystem
 /dev/nvme1n1p3 269486080 3907029134 3637543055  1.7T Solaris /usr &amp; Apple ZFS
 </span></code></pre>
-			</div>
 		</div>
-		<p>Since I already have <code class="language-plaintext highlighter-rouge">/home</code> running on ZFS <code class="language-plaintext highlighter-rouge">pool0</code>, there’s not much to prepare.
-			All I need to move is the rootfs itself, which has around 20&nbsp;GB of data.</p>
-		<p>Start by installing anything necessary:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>apt <span class="nb">install </span>zfs-initramfs arch-install-scripts
+	</div>
+	<p>Since I already have <code class="language-plaintext highlighter-rouge">/home</code> running on ZFS <code class="language-plaintext highlighter-rouge">pool0</code>, there’s not much to prepare.
+		All I need to move is the rootfs itself, which has around 20&nbsp;GB of data.</p>
+	<p>Start by installing anything necessary:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>apt <span class="nb">install </span>zfs-initramfs arch-install-scripts
 </code></pre>
-			</div>
 		</div>
-		<p>Then create the dataset layout:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="c"># pool0 already has xattr=sa</span>
+	</div>
+	<p>Then create the dataset layout:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="c"># pool0 already has xattr=sa</span>
 zfs create <span class="se">\</span>
   <span class="nt">-o</span> <span class="nv">canmount</span><span class="o">=</span>off <span class="se">\</span>
   <span class="nt">-o</span> <span class="nv">mountpoint</span><span class="o">=</span>none <span class="se">\</span>
@@ -221,14 +487,14 @@ zfs create <span class="nt">-o</span> <span class="nv">mountpoint</span><span cl
 
 rsync <span class="nt">-avSHAXx</span> <span class="nt">--delete</span> / /mnt/new/
 </code></pre>
-			</div>
 		</div>
-		<p>Now there’s a little deviation from common setup.
-			I don’t trust GRUB’s ZFS support, so I’m going to merge <code class="language-plaintext highlighter-rouge">/boot</code> into the EFI partition (which has a decent 512&nbsp;MB of capacity).
-			This is a decision made after surveying my friends’ setup.</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="c"># Merge data</span>
+	</div>
+	<p>Now there’s a little deviation from common setup.
+		I don’t trust GRUB’s ZFS support, so I’m going to merge <code class="language-plaintext highlighter-rouge">/boot</code> into the EFI partition (which has a decent 512&nbsp;MB of capacity).
+		This is a decision made after surveying my friends’ setup.</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="c"># Merge data</span>
 rsync <span class="nt">-ax</span> /boot/ /boot/efi/ <span class="c"># Ignore any errors</span>
 umount /boot/efi
 vim /etc/fstab
@@ -237,60 +503,60 @@ vim /etc/fstab
 systemctl daemon-reload
 mount /boot
 </code></pre>
-			</div>
 		</div>
-		<p>Now prepare GRUB:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>zpool <span class="nb">set </span><span class="nv">bootfs</span><span class="o">=</span>pool0/ROOT/ubuntu pool0
+	</div>
+	<p>Now prepare GRUB:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>zpool <span class="nb">set </span><span class="nv">bootfs</span><span class="o">=</span>pool0/ROOT/ubuntu pool0
 mount <span class="nt">-o</span> <span class="nb">bind</span> /boot /mnt/new/boot
 arch-chroot /mnt/new
 </code></pre>
-			</div>
 		</div>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>grub-install
+	</div>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>grub-install
 <span class="go">Installing for x86_64-efi platform.
 grub-install: error: cannot find EFI directory.
 </span></code></pre>
-			</div>
 		</div>
-		<p>Well, if only <code class="language-plaintext highlighter-rouge">grub-install</code> didn’t hard-code <code class="language-plaintext highlighter-rouge">/boot/efi</code> (which is against the FHS standard anyways).
-			Fortunately, I recall a small detail that could make this work in another convenient way:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>dpkg-reconfigure grub-efi-amd64
+	</div>
+	<p>Well, if only <code class="language-plaintext highlighter-rouge">grub-install</code> didn’t hard-code <code class="language-plaintext highlighter-rouge">/boot/efi</code> (which is against the FHS standard anyways).
+		Fortunately, I recall a small detail that could make this work in another convenient way:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>dpkg-reconfigure grub-efi-amd64
 </code></pre>
-			</div>
 		</div>
-		<p>Also regenerate GRUB configuration:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>zfs <span class="nb">set </span><span class="nv">mountpoint</span><span class="o">=</span>/ pool0/ROOT/ubuntu
+	</div>
+	<p>Also regenerate GRUB configuration:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>zfs <span class="nb">set </span><span class="nv">mountpoint</span><span class="o">=</span>/ pool0/ROOT/ubuntu
 update-grub
 </code></pre>
-			</div>
 		</div>
-		<p>Now double-check the GRUB configuration at <code class="language-plaintext highlighter-rouge">/boot/grub/grub.cfg</code> and make sure there are lines like this:</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>linux /vmlinuz [...] root=ZFS=pool0/ROOT/ubuntu [...]
+	</div>
+	<p>Now double-check the GRUB configuration at <code class="language-plaintext highlighter-rouge">/boot/grub/grub.cfg</code> and make sure there are lines like this:</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>linux /vmlinuz [...] root=ZFS=pool0/ROOT/ubuntu [...]
 </code></pre>
-			</div>
 		</div>
-		<p>After verifying paths to the kernel and the initrd image are correct, reboot:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>reboot
+	</div>
+	<p>After verifying paths to the kernel and the initrd image are correct, reboot:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>reboot
 </code></pre>
-			</div>
 		</div>
-		<p>In just a minute, I noticed my server came back up.
-			Time to confirm everything is working as expected:</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>mount
+	</div>
+	<p>In just a minute, I noticed my server came back up.
+		Time to confirm everything is working as expected:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>mount
 <span class="go">pool0/ROOT/ubuntu on / type zfs (rw,relatime,xattr,posixacl,casesensitive)
 
 </span><span class="gp">#</span><span class="w"> </span><span class="nb">df</span> <span class="nt">-h</span> /
@@ -301,14 +567,14 @@ pool0/ROOT/ubuntu  1.2T   11G  1.1T   1% /
 <span class="go">NAME        PROPERTY       VALUE  SOURCE
 pool0/ROOT  compressratio  2.02x  -
 </span></code></pre>
-			</div>
 		</div>
-		<p>The last thing is to rewrite my rootfs backup script to take snapshots directly, instead of rsync-ing to another ZFS pool before taking a snapshot there.
-			After taking a snapshot, I can also send it away as a “backup against disk failure”.</p>
-		<p>A slightly revised version of my snapshotting script, sans the sending part:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="c">#!/bin/sh</span>
+	</div>
+	<p>The last thing is to rewrite my rootfs backup script to take snapshots directly, instead of rsync-ing to another ZFS pool before taking a snapshot there.
+		After taking a snapshot, I can also send it away as a “backup against disk failure”.</p>
+	<p>A slightly revised version of my snapshotting script, sans the sending part:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="c">#!/bin/sh</span>
 
 <span class="nb">set</span> <span class="nt">-e</span>
 
@@ -339,17 +605,17 @@ pool0/ROOT  compressratio  2.02x  -
   <span class="k">fi
 done</span>
 </code></pre>
-			</div>
 		</div>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="c"># crontab</span>
+	</div>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="c"># crontab</span>
 15 4 <span class="k">*</span> <span class="k">*</span> 1,5     /root/backup.sh 30
 15 4 <span class="k">*</span> <span class="k">*</span> 0,2-4,6 /root/backup.sh  7
 </code></pre>
-			</div>
 		</div>
-		]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><category term="zfs" /><summary type="html"><![CDATA[As part of a planned disk migration, I decided to move my Ubuntu installation from a traditional ext4 setup to ZFS. I did a lot of preparation and research, but things went much smoother than I had previously anticipated. I did not even have to consult IPMI for any recovery.]]></summary></entry><entry><title type="html">Reload SSL certificates with systemd</title><link href="https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd/" rel="alternate" type="text/html" title="Reload SSL certificates with systemd" /><published>2024-03-31T00:00:00+00:00</published><updated>2024-04-01T18:23:24+00:00</updated><id>https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd</id><content type="html" xml:base="https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd/"><![CDATA[<p>Recently I relinquished an old domain on my server and had to re-issue a certificate to drop that domain off.
+	</div>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><category term="zfs" /><summary type="html"><![CDATA[As part of a planned disk migration, I decided to move my Ubuntu installation from a traditional ext4 setup to ZFS. I did a lot of preparation and research, but things went much smoother than I had previously anticipated. I did not even have to consult IPMI for any recovery.]]></summary></entry><entry><title type="html">Reload SSL certificates with systemd</title><link href="https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd/" rel="alternate" type="text/html" title="Reload SSL certificates with systemd" /><published>2024-03-31T00:00:00+00:00</published><updated>2024-04-01T18:23:24+00:00</updated><id>https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd</id><content type="html" xml:base="https://ibug.io/blog/2024/03/reload-ssl-cert-with-systemd/"><![CDATA[<p>Recently I relinquished an old domain on my server and had to re-issue a certificate to drop that domain off.
 		Previously it ran Let’s Encrypt’s official client Certbot, set up back in 2019.
 		All my recent setups have been using acme.sh, so I figured that this was a perfect chance to switch this one over as well.</p>
 	<p>Getting acme.sh to issue a new certificate for my updated domain list is easy enough and out of scope for this article.
@@ -1217,60 +1483,4 @@ tcpdump <span class="nt">-ttSni</span> any host 172.31.0.2 and host 172.31.1.11 
 	<p>Debugging Linux networking has always been a pain for its lack of proper tools and its complexity. Most of the times even reading and understanding packet captures requires immense knowledge of the protocols and all the involved components, as well as scrutinizing every single detail available. Sometimes it’s even necessary to think outside the box but fortunately not today.</p>
 	<p>Also worth mentioning is that it’s easy to suspect the fault of another piece of software, but detailed investigation is always necessary to actually lay the blame.</p>
 	<p>Just as a late reminder, useful bug reports always require detailed information and solid evidence. Glad I was able to have them at hand this time.</p>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><category term="proxmox-ve" /><summary type="html"><![CDATA[A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.]]></summary></entry><entry><title type="html">Running a dual-protocol OpenVPN/WireGuard VPN server on one port</title><link href="https://ibug.io/blog/2023/09/dual-protocol-vpn-port/" rel="alternate" type="text/html" title="Running a dual-protocol OpenVPN/WireGuard VPN server on one port" /><published>2023-09-26T00:00:00+00:00</published><updated>2023-09-26T14:26:49+00:00</updated><id>https://ibug.io/blog/2023/09/dual-protocol-vpn-port</id><content type="html" xml:base="https://ibug.io/blog/2023/09/dual-protocol-vpn-port/"><![CDATA[<p>Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.</p>
-	<p>In previous times, OpenVPN was the general preference for personal VPN services. Since the emergence of WireGuard, however, popularity has shifted significantly for its simplicity and performance. A challenge presents itself as there’s only one UDP port numbered 53, making it seemingly impossible to run both OpenVPN and WireGuard on the same port.</p>
-	<p>There solution hinges itself on a little bit of insights.</p>
-	<h2 id="inspiration">Inspiration</h2>
-	<p>In a similar situation, many local proxy software like Shadowsocks and V2ray support a feature called “mixed mode”, which accepts both HTTP and SOCKS5 connections on the same TCP port. This also seems impossible at first glance, but with a bit of knowledge in both protocols, it’s actually easy to pull it off.</p>
-	<ul>
-		<li>An HTTP proxy request, just like other HTTP requests, begins with an HTTP verb. In proxy requests, it’s either <code class="language-plaintext highlighter-rouge">GET</code> or <code class="language-plaintext highlighter-rouge">CONNECT</code>,</li>
-		<li>A SOCKS proxy request begins with a 1-byte header containing its version, which is <code class="language-plaintext highlighter-rouge">0x04</code> for SOCKS4 or <code class="language-plaintext highlighter-rouge">0x05</code> for SOCKS5.</li>
-	</ul>
-	<p>Now there’s a clear line between the two protocols, and we can identify them by looking at the first byte of the request. This is how most proxy implementations work, like <a href="https://github.com/3proxy/3proxy/commit/fb56b7d307a7bce1f2109c73864bad7c71716f3b#diff-e268b23274bc9df1b2c0957dfa85d684519282ed611f6135e795205e53fb6e3b">3proxy</a> and <a href="https://github.com/nadoo/glider/blob/4f12a4f3082940d8a4c56ba4f06f02a72d90d5d6/proxy/mixed/mixed.go#L84">glider</a>.</p>
-	<p>So the question is, is there a similar trait between OpenVPN and WireGuard? The answer is, as you would expect, yes.</p>
-	<h2 id="protocols">Protocols</h2>
-	<p>WireGuard runs over UDP and defines 4 packet types: 3 for handshake and 1 for data. All 4 packet types share the same 4-byte <a href="https://github.com/WireGuard/wireguard-linux/blob/fa41884c1c6deb6774135390e5813a97184903e0/drivers/net/wireguard/messages.h#L65">header</a>:</p>
-	<div class="language-rust highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">struct</span> <span class="n">message_header</span> <span class="p">{</span>
-    <span class="nb">u8</span> <span class="k">type</span><span class="p">;</span>
-    <span class="nb">u8</span> <span class="n">reserved_zero</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Similarly, all OpenVPN packet types share the same 1-byte <a href="https://build.openvpn.net/doxygen/network_protocol.html#network_protocol_external_types">header</a>:</p>
-	<div class="language-c highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">struct</span> <span class="n">header_byte</span> <span class="p">{</span>
-    <span class="kt">uint8_t</span> <span class="n">opcpde</span> <span class="o">:</span> <span class="mi">5</span><span class="p">;</span>
-    <span class="kt">uint8_t</span> <span class="n">key_id</span> <span class="o">:</span> <span class="mi">3</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>It’s worth noting that 0 is not a defined opcode, so the smallest valid value for this byte is 8, as <code class="language-plaintext highlighter-rouge">key_id</code> can be anything from 0 to 7.</p>
-	<h2 id="implementation">Implementation</h2>
-	<p>Now that we have the packet format for both protocols understood, we can implement a classifier that filters traffic in one protocol from the other.</p>
-	<p>Considering that the WireGuard packet format is much simpler than that of OpenVPN, I choose to identify WireGuard. With kernel firewall <code class="language-plaintext highlighter-rouge">iptables</code>, options are abundant, though I find <code class="language-plaintext highlighter-rouge">u32</code> the easiest:</p>
-	<div class="language-sh highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">*</span>nat
-:iBugVPN - <span class="o">[</span>0:0]
-<span class="nt">-A</span> PREROUTING <span class="nt">-m</span> addrtype <span class="nt">--dst-type</span> LOCAL <span class="nt">-p</span> udp <span class="nt">--dport</span> 53 <span class="nt">-j</span> iBugVPN
-<span class="nt">-A</span> iBugVPN <span class="nt">-m</span> u32 <span class="nt">--u32</span> <span class="s2">"25 &amp; 0xFF = 1:4 &amp;&amp; 28 &amp; 0xFFFFFF = 0"</span> <span class="nt">-j</span> REDIRECT <span class="nt">--to-port</span> 51820
-<span class="nt">-A</span> iBugVPN <span class="nt">-j</span> REDIRECT <span class="nt">--to-port</span> 1194
-COMMIT
-</code></pre>
-		</div>
-	</div>
-	<p>With both OpenVPN and WireGuard running on their standard ports, this will redirect each protocol to its respective service port. While these rules only operate on the initial packet, Linux conntrack will handle the rest of the connection.</p>
-	<p>The <code class="language-plaintext highlighter-rouge">u32</code> match is explained:</p>
-	<ul>
-		<li>Basic syntax: <code class="language-plaintext highlighter-rouge">&lt;offset&gt; [operators...] = &lt;range&gt;</code>, where <code class="language-plaintext highlighter-rouge">&lt;offset&gt;</code> is relative to the IP header. For UDP over IPv4, the application payload starts from 28 (20&nbsp;bytes of IPv4 and 8&nbsp;bytes of UDP)</li>
-		<li><code class="language-plaintext highlighter-rouge">25 &amp; 0xFF = 1:4</code>: The 28th byte is in range <code class="language-plaintext highlighter-rouge">1:4</code>.</li>
-		<li><code class="language-plaintext highlighter-rouge">28 &amp; 0xFFFFFF = 0</code>: The 29th to 31th bytes are all zero.</li>
-	</ul>
-	<p>For IPv6, you just need to increase the offset by 20 (IPv6 header is 40&nbsp;bytes), so the rule becomes <code class="language-plaintext highlighter-rouge">45 &amp; 0xFF = 1:4 &amp;&amp; 48 &amp; 0xFFFFFF = 0</code>.</p>
-	<p>This VPN server is running like a hearse so proofs are left out for brevity.</p>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries. This feature can be exploited to bypass authentication by connecting to a VPN server that’s also running on UDP 53.]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><category term="proxmox-ve" /><summary type="html"><![CDATA[A few days back when I was setting up a new VM to host some extra websites, I noticed an unexpected Nginx error page. As I don’t administer the new websites, I just added reverse proxy rules on the gateway Nginx server, and deferred the actual configuration to whoever is in charge of them.]]></summary></entry></feed>
