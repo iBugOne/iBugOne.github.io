@@ -29,7 +29,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=8a0a848">
+		<link rel="stylesheet" href="/assets/css/main.css?v=ed934f6">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -175,6 +175,28 @@
 				<div class="archive">
 					<h3 class="archive__subtitle">Recent posts</h3>
 					<div class="entries-list">
+						<div class="list__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2024/09/python3.12-user-packages/" rel="permalink">Make Python 3.12 install user packages without complaints
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">I have a habit of pip3 install --user and then expecting these packages under ~/.local/lib/ to be available for my Python scripts whenever I need them. However, with PEP 668 landing in Python 3.12,...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2024-09-02T00:00:00+00:00">Sep 2, 2024</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-clock" aria-hidden="true"></i>
+											1 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
 						<div class="list__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<div class="archive__item-text">
@@ -338,28 +360,6 @@
 								</div>
 							</article>
 						</div>
-						<div class="list__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2024/01/weather-forecast-with-grafana/" rel="permalink">Visualizing Weather Forecast with Grafana
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get ...</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2024-01-08T00:00:00+00:00">Jan 8, 2024</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-clock" aria-hidden="true"></i>
-											4 minute read
-										</span>
-									</p>
-								</div>
-							</article>
-						</div>
 					</div>
 					<nav class="pagination">
 						<ul>
@@ -370,7 +370,7 @@
 							<li><a href="/blog/4/">4</a></li>
 							<li><a href="/blog/5/">5</a></li>
 							<li><a href="#" class="disabled">&hellip;</a></li>
-							<li><a href="/blog/9/">9</a></li>
+							<li><a href="/blog/10/">10</a></li>
 							<li><a href="/blog/2/"><i class="fas fa-arrow-alt-right"></i> <span class="sr-only">Next</span></a></li>
 						</ul>
 					</nav>
@@ -400,7 +400,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-899</a>
+						Site version <a href="/status" class="version-text">G-900</a>
 					</p>
 				</div>
 			</footer>

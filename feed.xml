@@ -1,373 +1,401 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-09-02T05:05:40+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">镜像站 ZFS 调优实践</title><link href="https://ibug.io/blog/2024/08/nju-talk/" rel="alternate" type="text/html" title="镜像站 ZFS 调优实践" /><published>2024-08-17T00:00:00+00:00</published><updated>2024-08-23T03:14:52+00:00</updated><id>https://ibug.io/blog/2024/08/nju-talk</id><content type="html" xml:base="https://ibug.io/blog/2024/08/nju-talk/"><![CDATA[<section id="title">
-				<h1 class="title">2000 元的机械硬盘 &gt; 3000 元的固态硬盘？</h1>
-				<h2 style="font-weight: normal;">A.K.A. 镜像站 ZFS 调优实践</h2>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.3">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-09-02T18:36:16+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Make Python 3.12 install user packages without complaints</title><link href="https://ibug.io/blog/2024/09/python3.12-user-packages/" rel="alternate" type="text/html" title="Make Python 3.12 install user packages without complaints" /><published>2024-09-02T00:00:00+00:00</published><updated>2024-09-03T02:35:50+00:00</updated><id>https://ibug.io/blog/2024/09/python3.12-user-packages</id><content type="html" xml:base="https://ibug.io/blog/2024/09/python3.12-user-packages/"><![CDATA[<p>I have a habit of <code class="language-plaintext highlighter-rouge">pip3 install --user</code> and then expecting these packages under <code class="language-plaintext highlighter-rouge">~/.local/lib/</code> to be available for my Python scripts whenever I need them. However, with PEP 668 landing in Python 3.12, I now have to add <code class="language-plaintext highlighter-rouge">--break-system-packages</code> even for <em>user</em> packages. This is super annoying considered that I have multiple projects sharing the same set of common packages (e.g. <a href="https://squidfunk.github.io/mkdocs-material/"><code class="language-plaintext highlighter-rouge">mkdocs-material</code></a>, a nice MkDocs theme). So time to tell <code class="language-plaintext highlighter-rouge">pip</code> to jerk off on that complaint.</p>
+			<p>Obviously, aliasing <code class="language-plaintext highlighter-rouge">pip3</code> (as per my personal habit, I always prefer <code class="language-plaintext highlighter-rouge">python3</code> and <code class="language-plaintext highlighter-rouge">pip3</code> over <code class="language-plaintext highlighter-rouge">python</code> and <code class="language-plaintext highlighter-rouge">pip</code>) to <code class="language-plaintext highlighter-rouge">pip3 --break-system-packages</code> could work, with all the limitations that any other shell alias bear.</p>
+			<p>The key here is, by examining how virtual environments work, we can trick Python into thinking that <code class="language-plaintext highlighter-rouge">~/.local</code> is one of them. This is already documented in the <a href="https://docs.python.org/3/library/site.html"><code class="language-plaintext highlighter-rouge">site</code> package</a>:</p>
+			<blockquote>
+				<p>If a file named <code class="language-plaintext highlighter-rouge">pyvenv.cfg</code> exists one directory above <code class="language-plaintext highlighter-rouge">sys.executable</code> …</p>
+			</blockquote>
+			<p>So here’s the solution, assuming <code class="language-plaintext highlighter-rouge">~/.local/bin</code> is already in your <code class="language-plaintext highlighter-rouge">$PATH</code>:</p>
+			<ol>
+				<li>Symlink <code class="language-plaintext highlighter-rouge">/usr/bin/python3</code> to <code class="language-plaintext highlighter-rouge">~/.local/bin/python3</code></li>
+				<li>Copy <code class="language-plaintext highlighter-rouge">/usr/bin/pip3</code> to <code class="language-plaintext highlighter-rouge">~/.local/bin/pip3</code>, and change the shebang line to <code class="language-plaintext highlighter-rouge">#!/home/example/.local/bin/python3</code> (you’ll have to use the absolute path here, though).</li>
+				<li>
+					<p>Create <code class="language-plaintext highlighter-rouge">~/.local/pyvenv.cfg</code> with just one line of content:</p>
+					<div class="language-ini highlighter-rouge">
+						<div class="highlight">
+							<pre class="highlight"><code> <span class="py">include-system-site-packages</span> <span class="p">=</span> <span class="s">true</span>
+</code></pre>
+						</div>
+    </div>
+					<p>You can, of course, add other settings for <code class="language-plaintext highlighter-rouge">venv</code>, which is completely optional and up to you.</p>
+				</li>
+			</ol>
+			<p>Now whenever you install something with <code class="language-plaintext highlighter-rouge">pip3</code>, it’ll happily install it under <code class="language-plaintext highlighter-rouge">~/.local/lib/python3.12/site-packages</code> even without the need for <code class="language-plaintext highlighter-rouge">--user</code>.</p>
+			<p>If you prefer <code class="language-plaintext highlighter-rouge">python</code> or <code class="language-plaintext highlighter-rouge">pip</code> commands, you can just change the file names in the above steps accordingly.</p>
+			<p>Noteworthy points are:</p>
+			<ol>
+				<li>This certainly will work for the system Python installation (at <code class="language-plaintext highlighter-rouge">/usr</code>), which I wouldn’t recommend for obvious reasons. If you insist, you should at least do this under <code class="language-plaintext highlighter-rouge">/usr/local</code> instead.</li>
+				<li>This method is ineffective against scripts already shebanged with <code class="language-plaintext highlighter-rouge">#!/usr/bin/python3</code>. Consider developing the habit of running <code class="language-plaintext highlighter-rouge">python3 script.py</code> instead of <code class="language-plaintext highlighter-rouge">./script.py</code> like I do.</li>
+			</ol>
+			]]></content><author><name>iBug</name></author><category term="linux" /><category term="python" /><summary type="html"><![CDATA[I have a habit of pip3 install --user and then expecting these packages under ~/.local/lib/ to be available for my Python scripts whenever I need them. However, with PEP 668 landing in Python 3.12, I now have to add --break-system-packages even for user packages. This is super annoying considered that I have multiple projects sharing the same set of common packages (e.g. mkdocs-material, a nice MkDocs theme). So time to tell pip to jerk off on that complaint.]]></summary></entry><entry><title type="html">镜像站 ZFS 调优实践</title><link href="https://ibug.io/blog/2024/08/nju-talk/" rel="alternate" type="text/html" title="镜像站 ZFS 调优实践" /><published>2024-08-17T00:00:00+00:00</published><updated>2024-08-23T03:14:52+00:00</updated><id>https://ibug.io/blog/2024/08/nju-talk</id><content type="html" xml:base="https://ibug.io/blog/2024/08/nju-talk/"><![CDATA[<section id="title">
+			<h1 class="title">2000 元的机械硬盘 &gt; 3000 元的固态硬盘？</h1>
+			<h2 style="font-weight: normal;">A.K.A. 镜像站 ZFS 调优实践</h2>
+			<hr />
+			<p class="date">iBug @ USTC</p>
+			<p class="date">2024 年 8 月 17 日<br />
+				南京大学 开源软件论坛</p>
+		</section>
+		<section>
+			<section id="background">
+				<h2>USTC Mirrors</h2>
+				<ul>
+					<li>日均服务量：（2024-05 ~ 2024-06）
+						<ul>
+							<li>出流量 ~36&nbsp;TiB</li>
+							<li>HTTP 请求数 17M，响应流量 19&nbsp;TiB</li>
+							<li>Rsync 请求数 147.8K（21.8K），输出流量 10.3&nbsp;TiB</li>
+						</ul>
+					</li>
+					<li>极限情况的仓库容量：
+						<ul>
+							<li>HTTP 服务器（XFS）：63.3&nbsp;TiB / 66.0&nbsp;TiB (96%, 2023-12-18)</li>
+							<li>Rsync 服务器（ZFS）：42.4&nbsp;TiB / 43.2&nbsp;TiB (98%, 2023-11-21)</li>
+						</ul>
+					</li>
+				</ul>
+			</section>
+			<section id="background-2">
+				<h2>背景</h2>
+				<ul>
+					<li>HTTP 服务器：
+						<ul>
+							<li>2020 年下半年搭建</li>
+							<li>10&nbsp;TB <i class="fas fa-compact-disc fa-spin"></i> &times; 12</li>
+							<li>2&nbsp;TB <i class="fas fa-floppy-disk"></i> &times; 1</li>
+							<li>XFS on LVM on HW RAID</li>
+							<li>考虑到 XFS 不能缩，VG 留了 free PE</li>
+						</ul>
+					</li>
+					<li>Rsync 服务器：
+						<ul>
+							<li>2016 年下半年搭建</li>
+							<li>6&nbsp;TB <i class="fas fa-compact-disc fa-spin"></i> &times; 12</li>
+							<li>240&nbsp;GB <i class="fas fa-floppy-disk"></i> &times; 2 + 480&nbsp;GB <i class="fas fa-floppy-disk"></i> &times; 1 (Optane 900p)</li>
+							<li>RAID-Z3（8 data + 3 parity + 1 hot spare）</li>
+							<li>全默认参数（除了 <code>zfs_arc_max</code>）</li>
+						</ul>
+					</li>
+				</ul>
+				<p>硬盘 I/O 日常 &gt; 90%，校内下载 iso 不足 50&nbsp;MB/s</p>
+			</section>
+			<section id="background-2-image">
+				<div class="img-container">
+					<img src="https://image.ibugone.com/grafana/mirrors-io-utilization-may-2024.png" />
+					<p>USTC 镜像站两台服务器在 2024 年 5 月期间的磁盘负载</p>
+				</div>
+			</section>
+		</section>
+		<section>
+			<section id="zfs">
+				<h2>ZFS</h2>
+				<ul>
+					<li>单机存储的终极解决方案</li>
+					<li>集 RAID、LVM、FS 于一体</li>
+					<li>所有数据都有 checksum</li>
+					<li><s>Fire and forget</s></li>
+					<li>好多参数啊</li>
+				</ul>
+			</section>
+			<section id="zfs-learning">
+				<h3>前期学习与实验</h3>
+				<ul>
+					<li><s>从（另一个）老师那嫖了点盘</s>装上了 ZFS，用于 研&ensp;究&ensp;学&ensp;习</li>
+					<li>I/O 负载来源？<s>上 PT 站</s></li>
+					<li>练习时长两年半的成果：<i class="fas fa-arrow-up"></i> 1.20&nbsp;PiB, <i class="fas fa-arrow-down"></i> 1.83&nbsp;TiB</li>
+				</ul>
 				<hr />
-				<p class="date">iBug @ USTC</p>
-				<p class="date">2024 年 8 月 17 日<br />
-					南京大学 开源软件论坛</p>
+				<p>重要学习资料：</p>
+				<ul>
+					<li><a href="https://utcc.utoronto.ca/~cks/space/blog/">Chris Siebenmann's blog</a></li>
+					<li><a href="https://openzfs.github.io/openzfs-docs/">OpenZFS Documentation</a></li>
+					<li>iBug's blog: <a href="/p/62">Understanding ZFS block sizes</a> (<a href="/p/62">ibug.io/p/62</a>)
+						<ul>
+							<li>以及这篇 blog 底下的众多参考文献</li>
+						</ul>
+					</li>
+				</ul>
 			</section>
-			<section>
-				<section id="background">
-					<h2>USTC Mirrors</h2>
-					<ul>
-						<li>日均服务量：（2024-05 ~ 2024-06）
-							<ul>
-								<li>出流量 ~36&nbsp;TiB</li>
-								<li>HTTP 请求数 17M，响应流量 19&nbsp;TiB</li>
-								<li>Rsync 请求数 147.8K（21.8K），输出流量 10.3&nbsp;TiB</li>
-							</ul>
-						</li>
-						<li>极限情况的仓库容量：
-							<ul>
-								<li>HTTP 服务器（XFS）：63.3&nbsp;TiB / 66.0&nbsp;TiB (96%, 2023-12-18)</li>
-								<li>Rsync 服务器（ZFS）：42.4&nbsp;TiB / 43.2&nbsp;TiB (98%, 2023-11-21)</li>
-							</ul>
-						</li>
-					</ul>
-				</section>
-				<section id="background-2">
-					<h2>背景</h2>
-					<ul>
-						<li>HTTP 服务器：
-							<ul>
-								<li>2020 年下半年搭建</li>
-								<li>10&nbsp;TB <i class="fas fa-compact-disc fa-spin"></i> &times; 12</li>
-								<li>2&nbsp;TB <i class="fas fa-floppy-disk"></i> &times; 1</li>
-								<li>XFS on LVM on HW RAID</li>
-								<li>考虑到 XFS 不能缩，VG 留了 free PE</li>
-							</ul>
-						</li>
-						<li>Rsync 服务器：
-							<ul>
-								<li>2016 年下半年搭建</li>
-								<li>6&nbsp;TB <i class="fas fa-compact-disc fa-spin"></i> &times; 12</li>
-								<li>240&nbsp;GB <i class="fas fa-floppy-disk"></i> &times; 2 + 480&nbsp;GB <i class="fas fa-floppy-disk"></i> &times; 1 (Optane 900p)</li>
-								<li>RAID-Z3（8 data + 3 parity + 1 hot spare）</li>
-								<li>全默认参数（除了 <code>zfs_arc_max</code>）</li>
-							</ul>
-						</li>
-					</ul>
-					<p>硬盘 I/O 日常 &gt; 90%，校内下载 iso 不足 50&nbsp;MB/s</p>
-				</section>
-				<section id="background-2-image">
-					<div class="img-container">
-						<img src="https://image.ibugone.com/grafana/mirrors-io-utilization-may-2024.png" />
-						<p>USTC 镜像站两台服务器在 2024 年 5 月期间的磁盘负载</p>
-					</div>
-				</section>
+			<section id="zfs-image">
+				<div class="img-container">
+					<img src="https://image.ibugone.com/grafana/qb/2024-06-05.png" />
+					<p>好像给什么奇怪的东西加入了 Grafana</p>
+				</div>
 			</section>
-			<section>
-				<section id="zfs">
-					<h2>ZFS</h2>
-					<ul>
-						<li>单机存储的终极解决方案</li>
-						<li>集 RAID、LVM、FS 于一体</li>
-						<li>所有数据都有 checksum</li>
-						<li><s>Fire and forget</s></li>
-						<li>好多参数啊</li>
-					</ul>
-				</section>
-				<section id="zfs-learning">
-					<h3>前期学习与实验</h3>
-					<ul>
-						<li><s>从（另一个）老师那嫖了点盘</s>装上了 ZFS，用于 研&ensp;究&ensp;学&ensp;习</li>
-						<li>I/O 负载来源？<s>上 PT 站</s></li>
-						<li>练习时长两年半的成果：<i class="fas fa-arrow-up"></i> 1.20&nbsp;PiB, <i class="fas fa-arrow-down"></i> 1.83&nbsp;TiB</li>
-					</ul>
-					<hr />
-					<p>重要学习资料：</p>
-					<ul>
-						<li><a href="https://utcc.utoronto.ca/~cks/space/blog/">Chris Siebenmann's blog</a></li>
-						<li><a href="https://openzfs.github.io/openzfs-docs/">OpenZFS Documentation</a></li>
-						<li>iBug's blog: <a href="/p/62">Understanding ZFS block sizes</a> (<a href="/p/62">ibug.io/p/62</a>)
-							<ul>
-								<li>以及这篇 blog 底下的众多参考文献</li>
-							</ul>
-						</li>
-					</ul>
-				</section>
-				<section id="zfs-image">
-					<div class="img-container">
-						<img src="https://image.ibugone.com/grafana/qb/2024-06-05.png" />
-						<p>好像给什么奇怪的东西加入了 Grafana</p>
-					</div>
-				</section>
+		</section>
+		<section>
+			<section id="mirrors">
+				<h2>镜像站</h2>
+				<ul>
+					<li>提供文件下载服务</li>
+					<li><s>也提供「家庭宽带上下行流量比例平衡」服务</s></li>
+					<li>读多写少，并且几乎所有操作都是整个文件顺序读写</li>
+					<li>少量的数据损坏没啥不良后果</li>
+				</ul>
 			</section>
-			<section>
-				<section id="mirrors">
-					<h2>镜像站</h2>
-					<ul>
-						<li>提供文件下载服务</li>
-						<li><s>也提供「家庭宽带上下行流量比例平衡」服务</s></li>
-						<li>读多写少，并且几乎所有操作都是整个文件顺序读写</li>
-						<li>少量的数据损坏没啥不良后果</li>
-					</ul>
-				</section>
-				<section id="mirrors-file-distrib">
-					<div class="img-container">
-						<img src="https://image.ibugone.com/server/mirrors-file-size-distribution-2024-08.png" />
-						<p>2024 年 8 月 USTC 镜像仓库内的文件大小分布
-							<br>
-							其中中位数为 9.83&nbsp;KiB，平均大小为 1.60&nbsp;MiB</p>
-					</div>
-				</section>
-				<section id="mirrors2-rebuild">
-					<h3>重建 Rsync 服务器</h3>
-					<ul>
-						<li>RAID-Z3 的 overhead 较高，而且拆成两组 RAID-Z2 = 两倍的 IOPS</li>
-						<li>镜像站调优计划：
-							<ul>
-								<li><code>recordsize=1M</code>：反正都是全文件顺序读</li>
-								<li><code>compression=zstd</code>：至少可以压掉 &gt; 1M 文件的 padding
-									<ul>
-										<li>OpenZFS 2.2 将 early abort 机制推广到了 Zstd 3+，不必担心性能问题</li>
-									</ul>
-								</li>
-								<li><code>xattr=off</code>：谁家镜像需要 xattr？</li>
-								<li><code>atime=off</code>, <code>setuid=off</code>, <code>exec=off</code>, <code>devices=off</code>：开着干啥？</li>
-								<li><code>secondarycache=metadata</code>：Rsync 就别来消耗固态寿命了</li>
-							</ul>
-						</li>
-						<li>Danger Zone：
-							<ul>
-								<li><code>sync=disabled</code>：囤到 <code>zfs_txg_timeout</code> 再写盘</li>
-								<li><code>redundant_metadata=some</code>：偶尔坏个文件也没事</li>
-							</ul>
-						</li>
-						<li>Full version: <a href="https://docs.ustclug.org/services/mirrors/zfs/#setup">LUG @ USTC Documentation</a></li>
-					</ul>
-				</section>
-				<section id="zfs-parameters">
-					<h3>ZFS 参数</h3>
-					<ul>
-						<li>290+ 参数不能个个都学习嘛（感谢 Aron Xu @ BFSU）</li>
-						<li>ARC 容量：
-							<pre><code class="language-sh" data-trim>
+			<section id="mirrors-file-distrib">
+				<div class="img-container">
+					<img src="https://image.ibugone.com/server/mirrors-file-size-distribution-2024-08.png" />
+					<p>2024 年 8 月 USTC 镜像仓库内的文件大小分布
+						<br>
+						其中中位数为 9.83&nbsp;KiB，平均大小为 1.60&nbsp;MiB</p>
+				</div>
+			</section>
+			<section id="mirrors2-rebuild">
+				<h3>重建 Rsync 服务器</h3>
+				<ul>
+					<li>RAID-Z3 的 overhead 较高，而且拆成两组 RAID-Z2 = 两倍的 IOPS</li>
+					<li>镜像站调优计划：
+						<ul>
+							<li><code>recordsize=1M</code>：反正都是全文件顺序读</li>
+							<li><code>compression=zstd</code>：至少可以压掉 &gt; 1M 文件的 padding
+								<ul>
+									<li>OpenZFS 2.2 将 early abort 机制推广到了 Zstd 3+，不必担心性能问题</li>
+								</ul>
+							</li>
+							<li><code>xattr=off</code>：谁家镜像需要 xattr？</li>
+							<li><code>atime=off</code>, <code>setuid=off</code>, <code>exec=off</code>, <code>devices=off</code>：开着干啥？</li>
+							<li><code>secondarycache=metadata</code>：Rsync 就别来消耗固态寿命了</li>
+						</ul>
+					</li>
+					<li>Danger Zone：
+						<ul>
+							<li><code>sync=disabled</code>：囤到 <code>zfs_txg_timeout</code> 再写盘</li>
+							<li><code>redundant_metadata=some</code>：偶尔坏个文件也没事</li>
+						</ul>
+					</li>
+					<li>Full version: <a href="https://docs.ustclug.org/services/mirrors/zfs/#setup">LUG @ USTC Documentation</a></li>
+				</ul>
+			</section>
+			<section id="zfs-parameters">
+				<h3>ZFS 参数</h3>
+				<ul>
+					<li>290+ 参数不能个个都学习嘛（感谢 Aron Xu @ BFSU）</li>
+					<li>ARC 容量：
+						<pre><code class="language-sh" data-trim>
 # Set ARC size to 160-200&nbsp;GiB, keep 16&nbsp;GiB free for OS
 options zfs zfs_arc_max=214748364800
 options zfs zfs_arc_min=171798691840
 options zfs zfs_arc_sys_free=17179869184
         </code></pre>
-						</li>
-						<li>ARC 内容：
-							<pre><code class="language-sh" data-trim>
+					</li>
+					<li>ARC 内容：
+						<pre><code class="language-sh" data-trim>
 # Favor metadata to data by 20x (OpenZFS 2.2+)
 options zfs zfs_arc_meta_balance=2000
 
 # Allow up to 80% of ARC to be used for dnodes
 options zfs zfs_arc_dnode_limit_percent=80
         </code></pre>
-						</li>
-						<li>I/O 队列深度：
-							<pre><code class="language-sh" data-trim>
+					</li>
+					<li>I/O 队列深度：
+						<pre><code class="language-sh" data-trim>
 # See man page section "ZFS I/O Scheduler"
 options zfs zfs_vdev_async_read_max_active=8
 options zfs zfs_vdev_async_read_min_active=2
 options zfs zfs_vdev_scrub_max_active=5
 options zfs zfs_vdev_max_active=20000
         </code></pre>
-						</li>
-						<li>Full version: <a href="https://docs.ustclug.org/services/mirrors/zfs/#zfs-kernel-module">LUG @ USTC Documentation</a></li>
-					</ul>
-				</section>
-				<section id="mirrors2-rebuild-results">
-					<h3>重建成果</h3>
-					<ul>
-						<li>略感惊喜的压缩率：39.5T / 37.1T = 1.07x
-							<ul>
-								<li>正确用法：<code>zfs list -po name,logicalused,used</code></li>
-								<li>实际压缩率：1 + 6.57%（-2.67&nbsp;TB / -2.43&nbsp;TiB）</li>
-								<li><s>等于删了 <a href="https://image.ibugone.com/teaser/lenovo-legion-wechat-data.jpg">9 份微信数据</a></s></li>
-							</ul>
-						</li>
-						<li>合理的磁盘 I/O</li>
-					</ul>
-				</section>
-				<section id="mirrors2-io-image">
-					<div class="img-container">
-						<img src="https://image.ibugone.com/grafana/mirrors2-io-utilization-and-free-space-june-july-2024.png" />
-						<p>重建前后 Rsync 服务器的磁盘负载与空闲空间比较</p>
-					</div>
-				</section>
+					</li>
+					<li>Full version: <a href="https://docs.ustclug.org/services/mirrors/zfs/#zfs-kernel-module">LUG @ USTC Documentation</a></li>
+				</ul>
 			</section>
-			<section>
-				<section id="mirrors4">
-					<h2>HTTP 服务器</h2>
-					<ul>
-						<li>硬件 RAID + LVM + XFS + Kernel page cache（开箱即用？）</li>
-						<li>SSD？LVMCache！
-							<ul>
-								<li>1M extents? Block size? Algorithm?</li>
-								<li><i class="fas fa-skull"></i> GRUB2</li>
-								<li><i class="fas fa-skull"></i> "oldssd"</li>
-							</ul>
-						</li>
-						<li>XFS 不能缩，所以 VG 和 FS 两层都要留空间备用</li>
-					</ul>
-				</section>
-				<section id="mirrors4-dmcache-image">
-					<div class="img-container">
-						<img src="https://image.ibugone.com/grafana/mirrors4-dmcache-may-june-2024.png" />
-						<p>重建前 HTTP 服务器采用的 LVMcache 方案的命中率</p>
-					</div>
-				</section>
-				<section id="mirrors4-rebuild">
-					<h2>如法炮制</h2>
-					<ul>
-						<li>体验一下更加先进的 kernel：<code>6.8.8-3-pve</code>（无需 DKMS 哦）</li>
-						<li>重建为两组 RAID-Z2，开压缩
-							<ul>
-								<li>面向 HTTP 用户的服务器，所以 <code>secondarycache=all</code>（放着不动）</li>
-								<li>更好的 CPU，所以 <code>compression=zstd-8</code></li>
-							</ul>
-						</li>
-						<li>更快的 <code>zfs send -Lcp</code>：36 小时倒完 50+ TiB 仓库</li>
-						<li>压缩率：1 + 3.93%（-2.42&nbsp;TB / -2.20&nbsp;TiB）</li>
-					</ul>
-				</section>
-				<section id="mirrors2-4-io-image">
-					<div class="img-container">
-						<img src="https://image.ibugone.com/grafana/mirrors2-4-io-utilization-june-july-2024.png" />
-						<p>重建前后两台服务器的磁盘负载比较
-							<br>
-							左边为重建前，中间为仅 Rsync 服务器重建后，右边为两台服务器均重建后的负载</p>
-					</div>
-				</section>
-				<section id="mirrors2-4-zfs-arc-image">
-					<div class="img-container">
-						<img src="https://image.ibugone.com/grafana/mirrors2-4-zfs-arc-hit-rate.png" />
-						<p>两台服务器的 ZFS ARC 命中率</p>
-					</div>
-				</section>
-				<section id="mirrors2-4-recent-io-image">
-					<div class="img-container">
-						<img src="https://image.ibugone.com/grafana/mirrors2-4-disk-io-after-rebuild.png" />
-						<p>两台服务器重建后稳定的磁盘利用率</p>
-					</div>
-				</section>
+			<section id="mirrors2-rebuild-results">
+				<h3>重建成果</h3>
+				<ul>
+					<li>略感惊喜的压缩率：39.5T / 37.1T = 1.07x
+						<ul>
+							<li>正确用法：<code>zfs list -po name,logicalused,used</code></li>
+							<li>实际压缩率：1 + 6.57%（-2.67&nbsp;TB / -2.43&nbsp;TiB）</li>
+							<li><s>等于删了 <a href="https://image.ibugone.com/teaser/lenovo-legion-wechat-data.jpg">9 份微信数据</a></s></li>
+						</ul>
+					</li>
+					<li>合理的磁盘 I/O</li>
+				</ul>
 			</section>
-			<section>
-				<section id="misc">
-					<h2>杂项</h2>
-				</section>
-				<section id="zfs-compressratio">
-					<h3>ZFS 压缩率</h3>
-					<table>
-						<thead>
-							<tr>
-								<th>NAME</th>
-								<th>LUSED</th>
-								<th>USED</th>
-								<th>RATIO</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>pool0/repo/crates.io-index</td>
-								<td>2.19G</td>
-								<td>1.65G</td>
-								<td>3.01x</td>
-							</tr>
-							<tr>
-								<td>pool0/repo/elpa</td>
-								<td>3.35G</td>
-								<td>2.32G</td>
-								<td>1.67x</td>
-							</tr>
-							<tr>
-								<td>pool0/repo/rfc</td>
-								<td>4.37G</td>
-								<td>3.01G</td>
-								<td>1.56x</td>
-							</tr>
-							<tr>
-								<td>pool0/repo/debian-cdimage</td>
-								<td>1.58T</td>
-								<td>1.04T</td>
-								<td>1.54x</td>
-							</tr>
-							<tr>
-								<td>pool0/repo/tldp</td>
-								<td>4.89G</td>
-								<td>3.78G</td>
-								<td>1.48x</td>
-							</tr>
+			<section id="mirrors2-io-image">
+				<div class="img-container">
+					<img src="https://image.ibugone.com/grafana/mirrors2-io-utilization-and-free-space-june-july-2024.png" />
+					<p>重建前后 Rsync 服务器的磁盘负载与空闲空间比较</p>
+				</div>
+			</section>
+		</section>
+		<section>
+			<section id="mirrors4">
+				<h2>HTTP 服务器</h2>
+				<ul>
+					<li>硬件 RAID + LVM + XFS + Kernel page cache（开箱即用？）</li>
+					<li>SSD？LVMCache！
+						<ul>
+							<li>1M extents? Block size? Algorithm?</li>
+							<li><i class="fas fa-skull"></i> GRUB2</li>
+							<li><i class="fas fa-skull"></i> "oldssd"</li>
+						</ul>
+					</li>
+					<li>XFS 不能缩，所以 VG 和 FS 两层都要留空间备用</li>
+				</ul>
+			</section>
+			<section id="mirrors4-dmcache-image">
+				<div class="img-container">
+					<img src="https://image.ibugone.com/grafana/mirrors4-dmcache-may-june-2024.png" />
+					<p>重建前 HTTP 服务器采用的 LVMcache 方案的命中率</p>
+				</div>
+			</section>
+			<section id="mirrors4-rebuild">
+				<h2>如法炮制</h2>
+				<ul>
+					<li>体验一下更加先进的 kernel：<code>6.8.8-3-pve</code>（无需 DKMS 哦）</li>
+					<li>重建为两组 RAID-Z2，开压缩
+						<ul>
+							<li>面向 HTTP 用户的服务器，所以 <code>secondarycache=all</code>（放着不动）</li>
+							<li>更好的 CPU，所以 <code>compression=zstd-8</code></li>
+						</ul>
+					</li>
+					<li>更快的 <code>zfs send -Lcp</code>：36 小时倒完 50+ TiB 仓库</li>
+					<li>压缩率：1 + 3.93%（-2.42&nbsp;TB / -2.20&nbsp;TiB）</li>
+				</ul>
+			</section>
+			<section id="mirrors2-4-io-image">
+				<div class="img-container">
+					<img src="https://image.ibugone.com/grafana/mirrors2-4-io-utilization-june-july-2024.png" />
+					<p>重建前后两台服务器的磁盘负载比较
+						<br>
+						左边为重建前，中间为仅 Rsync 服务器重建后，右边为两台服务器均重建后的负载</p>
+				</div>
+			</section>
+			<section id="mirrors2-4-zfs-arc-image">
+				<div class="img-container">
+					<img src="https://image.ibugone.com/grafana/mirrors2-4-zfs-arc-hit-rate.png" />
+					<p>两台服务器的 ZFS ARC 命中率</p>
+				</div>
+			</section>
+			<section id="mirrors2-4-recent-io-image">
+				<div class="img-container">
+					<img src="https://image.ibugone.com/grafana/mirrors2-4-disk-io-after-rebuild.png" />
+					<p>两台服务器重建后稳定的磁盘利用率</p>
+				</div>
+			</section>
+		</section>
+		<section>
+			<section id="misc">
+				<h2>杂项</h2>
+			</section>
+			<section id="zfs-compressratio">
+				<h3>ZFS 压缩率</h3>
+				<table>
+					<thead>
+						<tr>
+							<th>NAME</th>
+							<th>LUSED</th>
+							<th>USED</th>
+							<th>RATIO</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>pool0/repo/crates.io-index</td>
+							<td>2.19G</td>
+							<td>1.65G</td>
+							<td>3.01x</td>
+						</tr>
+						<tr>
+							<td>pool0/repo/elpa</td>
+							<td>3.35G</td>
+							<td>2.32G</td>
+							<td>1.67x</td>
+						</tr>
+						<tr>
+							<td>pool0/repo/rfc</td>
+							<td>4.37G</td>
+							<td>3.01G</td>
+							<td>1.56x</td>
+						</tr>
+						<tr>
+							<td>pool0/repo/debian-cdimage</td>
+							<td>1.58T</td>
+							<td>1.04T</td>
+							<td>1.54x</td>
+						</tr>
+						<tr>
+							<td>pool0/repo/tldp</td>
+							<td>4.89G</td>
+							<td>3.78G</td>
+							<td>1.48x</td>
+						</tr>
+						<td>pool0/repo/loongnix</td>
+						<td>438G</td>
+						<td>332G</td>
+						<td>1.34x</td>
+					</tr>
+					<tr>
+						<td>pool0/repo/rosdistro</td>
+						<td>32.2M</td>
+						<td>26.6M</td>
+						<td>1.31x</td>
+					</tr>
+					<tr>
+					</tbody>
+				</table>
+				<p>我数学不好：<a href="https://github.com/openzfs/zfs/issues/7639"><i class="fab fa-github"></i> openzfs/zfs#7639</a></p>
+			</section>
+			<section id="zfs-compressratio-diff">
+				<h3>ZFS 压缩量</h3>
+				<table>
+					<thead>
+						<tr>
+							<th>NAME</th>
+							<th>LUSED</th>
+							<th>USED</th>
+							<th>DIFF</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>pool0/repo</td>
+							<td>58.3T</td>
+							<td>56.1T</td>
+							<td>2.2T</td>
+						</tr>
+						<tr>
+							<td>pool0/repo/debian-cdimage</td>
+							<td>1.6T</td>
+							<td>1.0T</td>
+							<td>549.6G</td>
+						</tr>
+						<tr>
+							<td>pool0/repo/opensuse</td>
+							<td>2.5T</td>
+							<td>2.3T</td>
+							<td>279.7G</td>
+						</tr>
+						<tr>
+							<td>pool0/repo/turnkeylinux</td>
+							<td>1.2T</td>
+							<td>1.0T</td>
+							<td>155.2G</td>
+						</tr>
+						<tr>
 							<td>pool0/repo/loongnix</td>
-							<td>438G</td>
-							<td>332G</td>
-							<td>1.34x</td>
+							<td>438.2G</td>
+							<td>331.9G</td>
+							<td>106.3G</td>
 						</tr>
 						<tr>
-							<td>pool0/repo/rosdistro</td>
-							<td>32.2M</td>
-							<td>26.6M</td>
-							<td>1.31x</td>
+							<td>pool0/repo/alpine</td>
+							<td>3.0T</td>
+							<td>2.9T</td>
+							<td>103.9G</td>
 						</tr>
 						<tr>
-						</tbody>
-					</table>
-					<p>我数学不好：<a href="https://github.com/openzfs/zfs/issues/7639"><i class="fab fa-github"></i> openzfs/zfs#7639</a></p>
-				</section>
-				<section id="zfs-compressratio-diff">
-					<h3>ZFS 压缩量</h3>
-					<table>
-						<thead>
-							<tr>
-								<th>NAME</th>
-								<th>LUSED</th>
-								<th>USED</th>
-								<th>DIFF</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>pool0/repo</td>
-								<td>58.3T</td>
-								<td>56.1T</td>
-								<td>2.2T</td>
-							</tr>
-							<tr>
-								<td>pool0/repo/debian-cdimage</td>
-								<td>1.6T</td>
-								<td>1.0T</td>
-								<td>549.6G</td>
-							</tr>
-							<tr>
-								<td>pool0/repo/opensuse</td>
-								<td>2.5T</td>
-								<td>2.3T</td>
-								<td>279.7G</td>
-							</tr>
-							<tr>
-								<td>pool0/repo/turnkeylinux</td>
-								<td>1.2T</td>
-								<td>1.0T</td>
-								<td>155.2G</td>
-							</tr>
-							<tr>
-								<td>pool0/repo/loongnix</td>
-								<td>438.2G</td>
-								<td>331.9G</td>
-								<td>106.3G</td>
-							</tr>
-							<tr>
-								<td>pool0/repo/alpine</td>
-								<td>3.0T</td>
-								<td>2.9T</td>
-								<td>103.9G</td>
-							</tr>
-							<tr>
-								<td>pool0/repo/openwrt</td>
-								<td>1.8T</td>
-								<td>1.7T</td>
-								<td>70.0G</td>
-							</tr>
-						</tbody>
-					</table>
-				</section>
-				<section id="grafana-zfs-io">
-					<h3>Grafana I/O 统计</h3>
-					<pre><code data-trim>
+							<td>pool0/repo/openwrt</td>
+							<td>1.8T</td>
+							<td>1.7T</td>
+							<td>70.0G</td>
+						</tr>
+					</tbody>
+				</table>
+			</section>
+			<section id="grafana-zfs-io">
+				<h3>Grafana I/O 统计</h3>
+				<pre><code data-trim>
 SELECT
   non_negative_derivative(sum("reads"), 1s) AS "read",
   non_negative_derivative(sum("writes"), 1s) AS "write"
@@ -382,55 +410,55 @@ FROM (
 WHERE $timeFilter
 GROUP BY time($interval), "pool"::tag fill(linear)
 </code></pre>
-					<p>跑得有点慢（毕竟要先 <code>GROUP BY</code> 每个 ZFS dataset 再一起 <code>sum</code>）</p>
-					<p>I/O 带宽：把里层的 <code>reads</code> 和 <code>writes</code> 换成 <code>nread</code> 和 <code>nwritten</code> 即可</p>
-				</section>
-				<section id="grafana-zfs-io-image">
-					<div class="img-container">
-						<img src="https://image.ibugone.com/grafana/mirrors2-4-zfs-io-count.png" />
-					</div>
-					<p></p>
-					<ul>
-						<li>如何用机械盘跑出平均 15K、最高 50K 的 IOPS？</li>
-						<li><s>把 ARC hit 算进去</s></li>
-					</ul>
-				</section>
+				<p>跑得有点慢（毕竟要先 <code>GROUP BY</code> 每个 ZFS dataset 再一起 <code>sum</code>）</p>
+				<p>I/O 带宽：把里层的 <code>reads</code> 和 <code>writes</code> 换成 <code>nread</code> 和 <code>nwritten</code> 即可</p>
 			</section>
-			<section>
-				<section id="hearse">
-					<h2>灵车时间</h2>
-				</section>
-				<section id="pve-kernel">
-					<h2>Proxmox Kernel</h2>
-					<ul>
-						<li>≈ Ubuntu Kernel</li>
-						<li><i class="fas fa-skull"></i> Rsync 容器</li>
-						<li><code>security/apparmor/af_unix.c</code>???</li>
-						<li><a href="https://docs.ustclug.org/faq/apparmor/">LUG Documentation: AppArmor</a></li>
-					</ul>
-					<pre><code class="language-sh" data-trim>
+			<section id="grafana-zfs-io-image">
+				<div class="img-container">
+					<img src="https://image.ibugone.com/grafana/mirrors2-4-zfs-io-count.png" />
+				</div>
+				<p></p>
+				<ul>
+					<li>如何用机械盘跑出平均 15K、最高 50K 的 IOPS？</li>
+					<li><s>把 ARC hit 算进去</s></li>
+				</ul>
+			</section>
+		</section>
+		<section>
+			<section id="hearse">
+				<h2>灵车时间</h2>
+			</section>
+			<section id="pve-kernel">
+				<h2>Proxmox Kernel</h2>
+				<ul>
+					<li>≈ Ubuntu Kernel</li>
+					<li><i class="fas fa-skull"></i> Rsync 容器</li>
+					<li><code>security/apparmor/af_unix.c</code>???</li>
+					<li><a href="https://docs.ustclug.org/faq/apparmor/">LUG Documentation: AppArmor</a></li>
+				</ul>
+				<pre><code class="language-sh" data-trim>
 dpkg-divert --package lxc-pve --rename --divert /usr/share/apparmor-features/features.stock --add /usr/share/apparmor-features/features
 wget -O /usr/share/apparmor-features/features https://github.com/proxmox/lxc/raw/master/debian/features
     </code></pre>
-				</section>
-				<section id="zerotier-data">
-					<div class="img-container">
-						<img src="https://image.ibugone.com/server/ls-zerotier-redhar-el.png" />
-						<p>ZeroTier 仓库中一眼重复的内容</p>
-					</div>
-				</section>
-				<section id="dedup">
-					<h3>Dedup!</h3>
-					<pre><code class="language-sh">zfs create -o dedup=on pool0/repo/zerotier</code></pre>
-					<pre><code class="language-sh" data-trim>
+			</section>
+			<section id="zerotier-data">
+				<div class="img-container">
+					<img src="https://image.ibugone.com/server/ls-zerotier-redhar-el.png" />
+					<p>ZeroTier 仓库中一眼重复的内容</p>
+				</div>
+			</section>
+			<section id="dedup">
+				<h3>Dedup!</h3>
+				<pre><code class="language-sh">zfs create -o dedup=on pool0/repo/zerotier</code></pre>
+				<pre><code class="language-sh" data-trim>
 # zdb -DDD pool0
 dedup = 4.93, compress = 1.23, copies = 1.00, dedup * compress / copies = 6.04
     </code></pre>
-					<p>效果倒是不错，但是不想像 ZFS dedup 这么灵怎么办？</p>
-				</section>
-				<section id="jdupes">
-					<h3>jdupes</h3>
-					<pre><code class="language-sh" data-trim>
+				<p>效果倒是不错，但是不想像 ZFS dedup 这么灵怎么办？</p>
+			</section>
+			<section id="jdupes">
+				<h3>jdupes</h3>
+				<pre><code class="language-sh" data-trim>
 # post-sync.sh
 # Do file-level deduplication for select repos
 case "$NAME" in
@@ -438,116 +466,116 @@ case "$NAME" in
     jdupes -L -Q -r -q "$DIR" ;;
 esac
     </code></pre>
-				</section>
-				<section id="jdupes-table">
-					<h3>jdupes 效果</h3>
-					<table>
-						<thead>
-							<tr>
-								<th>Name</th>
-								<th>Orig</th>
-								<th>Dedup</th>
-								<th>Diff</th>
-								<th>Ratio</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>proxmox</td>
-								<td>395.4G</td>
-								<td>162.6G</td>
-								<td>232.9G</td>
-								<td>2.43x</td>
-							</tr>
-							<tr>
-								<td>docker-ce</td>
-								<td>539.6G</td>
-								<td>318.2G</td>
-								<td>221.4G</td>
-								<td>1.70x</td>
-							</tr>
-							<tr>
-								<td>influxdata</td>
-								<td>248.4G</td>
-								<td>54.8G</td>
-								<td>193.6G</td>
-								<td>4.54x</td>
-							</tr>
-							<tr>
-								<td>salt</td>
-								<td>139.0G</td>
-								<td>87.2G</td>
-								<td>51.9G</td>
-								<td>1.59x</td>
-							</tr>
-							<tr>
-								<td>nginx</td>
-								<td>94.9G</td>
-								<td>59.7G</td>
-								<td>35.2G</td>
-								<td>1.59x</td>
-							</tr>
-							<tr>
-								<td>zerotier</td>
-								<td>29.8G</td>
-								<td>6.1G</td>
-								<td>23.7G</td>
-								<td>4.88x</td>
-							</tr>
-							<tr>
-								<td>mysql-repo</td>
-								<td>647.8G</td>
-								<td>632.5G</td>
-								<td>15.2G</td>
-								<td>1.02x</td>
-							</tr>
-							<tr>
-								<td>openresty</td>
-								<td>65.1G</td>
-								<td>53.4G</td>
-								<td>11.7G</td>
-								<td>1.22x</td>
-							</tr>
-							<tr>
-								<td>tailscale</td>
-								<td>17.9G</td>
-								<td>9.0G</td>
-								<td>9.0G</td>
-								<td>2.00x</td>
-							</tr>
-						</tbody>
-					</table>
-				</section>
 			</section>
-			<section id="conclusion">
-				<h2>只要 ZFS 用得好</h2>
-				<ul>
-					<li>妈妈再也不用担心我的硬盘分区</li>
-					<li>机械硬盘 <s>比西方的固态硬盘跑得还快</s></li>
-					<li>成为第一个不再<b>羡慕</b> TUNA 全闪的镜像站</li>
-					<li>免费的额外容量
-						<ul>
-							<li>Dedup 会员红包</li>
-						</ul>
-					</li>
-					<li>碎片率？</li>
-				</ul>
+			<section id="jdupes-table">
+				<h3>jdupes 效果</h3>
+				<table>
+					<thead>
+						<tr>
+							<th>Name</th>
+							<th>Orig</th>
+							<th>Dedup</th>
+							<th>Diff</th>
+							<th>Ratio</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>proxmox</td>
+							<td>395.4G</td>
+							<td>162.6G</td>
+							<td>232.9G</td>
+							<td>2.43x</td>
+						</tr>
+						<tr>
+							<td>docker-ce</td>
+							<td>539.6G</td>
+							<td>318.2G</td>
+							<td>221.4G</td>
+							<td>1.70x</td>
+						</tr>
+						<tr>
+							<td>influxdata</td>
+							<td>248.4G</td>
+							<td>54.8G</td>
+							<td>193.6G</td>
+							<td>4.54x</td>
+						</tr>
+						<tr>
+							<td>salt</td>
+							<td>139.0G</td>
+							<td>87.2G</td>
+							<td>51.9G</td>
+							<td>1.59x</td>
+						</tr>
+						<tr>
+							<td>nginx</td>
+							<td>94.9G</td>
+							<td>59.7G</td>
+							<td>35.2G</td>
+							<td>1.59x</td>
+						</tr>
+						<tr>
+							<td>zerotier</td>
+							<td>29.8G</td>
+							<td>6.1G</td>
+							<td>23.7G</td>
+							<td>4.88x</td>
+						</tr>
+						<tr>
+							<td>mysql-repo</td>
+							<td>647.8G</td>
+							<td>632.5G</td>
+							<td>15.2G</td>
+							<td>1.02x</td>
+						</tr>
+						<tr>
+							<td>openresty</td>
+							<td>65.1G</td>
+							<td>53.4G</td>
+							<td>11.7G</td>
+							<td>1.22x</td>
+						</tr>
+						<tr>
+							<td>tailscale</td>
+							<td>17.9G</td>
+							<td>9.0G</td>
+							<td>9.0G</td>
+							<td>2.00x</td>
+						</tr>
+					</tbody>
+				</table>
 			</section>
-			<section id="outro">
-				<h1>谢谢！</h1>
-				<small>
-					<p>本页面的链接：<a href="/p/72"><i class="fas fa-fw fa-link"></i> ibug.io/p/72</a></p>
-					<p>友情链接：2023 年南京大学报告：<a href="/p/59"><i class="fas fa-fw fa-link"></i> ibug.io/p/59</a></p>
-				</small>
-			</section>
-			]]></content><author><name>iBug</name></author></entry><entry><title type="html">Why my IPv4 gets stuck? - Debugging network issues with bpftrace</title><link href="https://ibug.io/blog/2024/08/first-touch-bpftrace/" rel="alternate" type="text/html" title="Why my IPv4 gets stuck? - Debugging network issues with bpftrace" /><published>2024-08-03T00:00:00+00:00</published><updated>2024-08-03T03:22:32+00:00</updated><id>https://ibug.io/blog/2024/08/first-touch-bpftrace</id><content type="html" xml:base="https://ibug.io/blog/2024/08/first-touch-bpftrace/"><![CDATA[<p>I run a Debian-based software router on my home network. It’s connected to multiple ISPs, so I have some policy routing rules to balance the traffic between them. Some time ago, I noticed that the IPv4 connectivity got stuck intermittently when it didn’t use to, while IPv6 was working fine. It’s also interesting that the issue only happened with one specific ISP, in the egress direction, and only a few specific devices were affected.</p>
-		<p>At first I suspected the ISP’s equipment, but a clue quickly dismissed that suspicion: Connection to the same ISP worked fine when initiated from the router itself, as well as many other unaffected devices. So the issue must be within the router.</p>
-		<p>As usual, every network debugging begins with a packet capture. I start <code class="language-plaintext highlighter-rouge">tcpdump</code> on both the LAN interface and the problematic WAN interface, then try <code class="language-plaintext highlighter-rouge">curl</code>-ing something from an affected device. Packet capture shows a few back-and-forth packets, then the device keeps sending packets but the router doesn’t forward them to the WAN interface anymore. Time for a closer look.</p>
-		<h2 id="identifying-the-issue">Identifying the issue</h2>
-		<p>On an affected device, <code class="language-plaintext highlighter-rouge">curl</code> gets stuck somewhere in the middle:</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>curl <span class="nt">-vso</span> /dev/null https://www.cloudflare.com/
+		</section>
+		<section id="conclusion">
+			<h2>只要 ZFS 用得好</h2>
+			<ul>
+				<li>妈妈再也不用担心我的硬盘分区</li>
+				<li>机械硬盘 <s>比西方的固态硬盘跑得还快</s></li>
+				<li>成为第一个不再<b>羡慕</b> TUNA 全闪的镜像站</li>
+				<li>免费的额外容量
+					<ul>
+						<li>Dedup 会员红包</li>
+					</ul>
+				</li>
+				<li>碎片率？</li>
+			</ul>
+		</section>
+		<section id="outro">
+			<h1>谢谢！</h1>
+			<small>
+				<p>本页面的链接：<a href="/p/72"><i class="fas fa-fw fa-link"></i> ibug.io/p/72</a></p>
+				<p>友情链接：2023 年南京大学报告：<a href="/p/59"><i class="fas fa-fw fa-link"></i> ibug.io/p/59</a></p>
+			</small>
+		</section>
+		]]></content><author><name>iBug</name></author></entry><entry><title type="html">Why my IPv4 gets stuck? - Debugging network issues with bpftrace</title><link href="https://ibug.io/blog/2024/08/first-touch-bpftrace/" rel="alternate" type="text/html" title="Why my IPv4 gets stuck? - Debugging network issues with bpftrace" /><published>2024-08-03T00:00:00+00:00</published><updated>2024-08-03T03:22:32+00:00</updated><id>https://ibug.io/blog/2024/08/first-touch-bpftrace</id><content type="html" xml:base="https://ibug.io/blog/2024/08/first-touch-bpftrace/"><![CDATA[<p>I run a Debian-based software router on my home network. It’s connected to multiple ISPs, so I have some policy routing rules to balance the traffic between them. Some time ago, I noticed that the IPv4 connectivity got stuck intermittently when it didn’t use to, while IPv6 was working fine. It’s also interesting that the issue only happened with one specific ISP, in the egress direction, and only a few specific devices were affected.</p>
+	<p>At first I suspected the ISP’s equipment, but a clue quickly dismissed that suspicion: Connection to the same ISP worked fine when initiated from the router itself, as well as many other unaffected devices. So the issue must be within the router.</p>
+	<p>As usual, every network debugging begins with a packet capture. I start <code class="language-plaintext highlighter-rouge">tcpdump</code> on both the LAN interface and the problematic WAN interface, then try <code class="language-plaintext highlighter-rouge">curl</code>-ing something from an affected device. Packet capture shows a few back-and-forth packets, then the device keeps sending packets but the router doesn’t forward them to the WAN interface anymore. Time for a closer look.</p>
+	<h2 id="identifying-the-issue">Identifying the issue</h2>
+	<p>On an affected device, <code class="language-plaintext highlighter-rouge">curl</code> gets stuck somewhere in the middle:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>curl <span class="nt">-vso</span> /dev/null https://www.cloudflare.com/
 <span class="go">*   Trying 104.16.124.96:443...
 </span><span class="gp">* Connected to www.cloudflare.com (104.16.124.96) port 443 (#</span>0<span class="o">)</span>
 <span class="go">* ALPN: offers h2,http/1.1
@@ -561,12 +589,12 @@ esac
 { [122&nbsp;bytes data]
 ^C
 </span></code></pre>
-			</div>
 		</div>
-		<p><code class="language-plaintext highlighter-rouge">tcpdump</code> shows nothing special:</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>tcpdump <span class="nt">-ni</span> any <span class="s1">'host 104.16.124.96 and tcp port 443'</span>
+	</div>
+	<p><code class="language-plaintext highlighter-rouge">tcpdump</code> shows nothing special:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>tcpdump <span class="nt">-ni</span> any <span class="s1">'host 104.16.124.96 and tcp port 443'</span>
 <span class="gp">02:03:47.403905 lan0 In  IP 172.17.0.2.49194 &gt;</span><span class="w"> </span>104.16.124.96.443: Flags <span class="o">[</span>S], <span class="nb">seq </span>1854398703, win 65535, options <span class="o">[</span>mss 1460,sackOK,TS val 1651776756 ecr 0,nop,wscale 10], length 0
 <span class="gp">02:03:47.403956 ppp0 Out IP 10.250.193.4.49194 &gt;</span><span class="w"> </span>104.16.124.96.443: Flags <span class="o">[</span>S], <span class="nb">seq </span>1854398703, win 65535, options <span class="o">[</span>mss 1432,sackOK,TS val 1651776756 ecr 0,nop,wscale 10], length 0
 <span class="gp">02:03:47.447663 ppp0 In  IP 104.16.124.96.443 &gt;</span><span class="w"> </span>10.250.193.4.49194: Flags <span class="o">[</span>S.], <span class="nb">seq </span>1391350792, ack 1854398704, win 65535, options <span class="o">[</span>mss 1460,sackOK,TS val 141787839 ecr 1651776756,nop,wscale 13], length 0
@@ -586,12 +614,12 @@ esac
 720 packets received by filter
 0 packets dropped by kernel
 </span></code></pre>
-			</div>
 		</div>
-		<p>Considering the complexity of the policy routing, I tried inspecting conntrack status in parallel. Nothing unusual there either, until I tried matching conntrack events with <code class="language-plaintext highlighter-rouge">tcpdump</code>:</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>conntrack <span class="nt">-E</span> <span class="nt">-s</span> 172.17.0.2 <span class="nt">-p</span> tcp <span class="nt">--dport</span> 443 2&gt;/dev/null | ts %.T
+	</div>
+	<p>Considering the complexity of the policy routing, I tried inspecting conntrack status in parallel. Nothing unusual there either, until I tried matching conntrack events with <code class="language-plaintext highlighter-rouge">tcpdump</code>:</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>conntrack <span class="nt">-E</span> <span class="nt">-s</span> 172.17.0.2 <span class="nt">-p</span> tcp <span class="nt">--dport</span> 443 2&gt;/dev/null | ts %.T
 <span class="go">02:03:47.404103     [NEW] tcp      6 120 SYN_SENT src=172.17.0.2 dst=104.16.124.96 sport=49194 dport=443 [UNREPLIED] src=104.16.124.96 dst=10.250.193.4 sport=443 dport=49194
 02:03:47.447748  [UPDATE] tcp      6 60 SYN_RECV src=172.17.0.2 dst=104.16.124.96 sport=49194 dport=443 src=104.16.124.96 dst=10.250.193.4 sport=443 dport=49194 mark=48
 02:03:47.447843 [DESTROY] tcp      6 432000 ESTABLISHED src=172.17.0.2 dst=104.16.124.96 sport=49194 dport=443 src=104.16.124.96 dst=10.250.193.4 sport=443 dport=49194 [ASSURED] mark=48
@@ -601,14 +629,14 @@ esac
 02:03:47.498243 [DESTROY] tcp      6 432000 ESTABLISHED src=172.17.0.2 dst=104.16.124.96 sport=49194 dport=443 src=104.16.124.96 dst=10.250.193.4 sport=443 dport=49194 [ASSURED] mark=48
 ^C
 </span></code></pre>
-			</div>
 		</div>
-		<p>With <code class="language-plaintext highlighter-rouge">ts</code> (from <a href="https://packages.debian.org/stable/moreutils"><code class="language-plaintext highlighter-rouge">moreutils</code></a>) adding timestamps to conntrack events, I can see that the conntrack entry is destroyed right after (+123μs) the second packet comes in from the device. Subsequent packets causes (+93μs) the same conntrack entry to be recreated, so <code class="language-plaintext highlighter-rouge">curl</code> could somehow complete the SSL handshake to a point where it only sends one packet and nothing afterwards for the connection to be recreated for a third time.</p>
-		<p>Clearly the second packet should be considered <code class="language-plaintext highlighter-rouge">ESTABLISHED</code> by conntrack and makes no sense to trigger a <code class="language-plaintext highlighter-rouge">DESTROY</code> event. I’m at a loss here and start trying random things hoping to find a clue. I tried downgrading the kernel to 5.10 (from Bullseye) and upgrading to 6.9 (from Bookworm backports), but nothing changed, eliminating the possibility of a kernel bug.</p>
-		<p>After scrutinizing my firewall rules, I noticed a small difference between IPv4 and IPv6 rules:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="c"># rules.v4</span>
+	</div>
+	<p>With <code class="language-plaintext highlighter-rouge">ts</code> (from <a href="https://packages.debian.org/stable/moreutils"><code class="language-plaintext highlighter-rouge">moreutils</code></a>) adding timestamps to conntrack events, I can see that the conntrack entry is destroyed right after (+123μs) the second packet comes in from the device. Subsequent packets causes (+93μs) the same conntrack entry to be recreated, so <code class="language-plaintext highlighter-rouge">curl</code> could somehow complete the SSL handshake to a point where it only sends one packet and nothing afterwards for the connection to be recreated for a third time.</p>
+	<p>Clearly the second packet should be considered <code class="language-plaintext highlighter-rouge">ESTABLISHED</code> by conntrack and makes no sense to trigger a <code class="language-plaintext highlighter-rouge">DESTROY</code> event. I’m at a loss here and start trying random things hoping to find a clue. I tried downgrading the kernel to 5.10 (from Bullseye) and upgrading to 6.9 (from Bookworm backports), but nothing changed, eliminating the possibility of a kernel bug.</p>
+	<p>After scrutinizing my firewall rules, I noticed a small difference between IPv4 and IPv6 rules:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="c"># rules.v4</span>
 <span class="k">*</span>nat
 <span class="c"># ...</span>
 <span class="nt">-A</span> POSTROUTING <span class="nt">-o</span> ppp+ <span class="nt">-j</span> MASQUERADE
@@ -633,39 +661,39 @@ COMMIT
 <span class="nt">-A</span> iBugOptimized <span class="nt">-j</span> ACCEPT
 COMMIT
 </code></pre>
-			</div>
 		</div>
-		<p>However, <code class="language-plaintext highlighter-rouge">rules.v6</code> is missing the last rule in <code class="language-plaintext highlighter-rouge">iBugOptimized</code>, and IPv6 is somehow exempt from the conntrack issue. Removing this extra <code class="language-plaintext highlighter-rouge">ACCEPT</code> rule from <code class="language-plaintext highlighter-rouge">rules.v4</code> fully restores the connectivity. So this is certainly the cause, but how is it related to the actual issue?</p>
-		<h2 id="investigation">Investigation</h2>
-		<p><em>I know there are some decent tools on GitHub that aids in debugging iptables, which is notorious for its complexity. But since I wrote the entire firewall rule set and am still maintaining it by hand, I’m going for the hard route of watching and understanding every single rule.</em></p>
-		<p>The difference for that single <code class="language-plaintext highlighter-rouge">ACCEPT</code> rule is, it skips the <code class="language-plaintext highlighter-rouge">--save-mark</code> step, so the assigned firewall mark is not saved to its corresponding conntrack entry. When a reply packet comes in, conntrack has nothing for the <code class="language-plaintext highlighter-rouge">--restore-mark</code> step, so the packet gets assigned the “default” mark of <code class="language-plaintext highlighter-rouge">0x30</code> and <em>then</em> this value gets saved. I should have noticed the wrong conntrack mark earlier, as <code class="language-plaintext highlighter-rouge">conntrack -L</code> clearly showed a mark of 48 instead of the intended 54 (<code class="language-plaintext highlighter-rouge">0x36</code> from <code class="language-plaintext highlighter-rouge">iBugOptimized</code>). This narrows the cause down to a discrepancy between the packet mark and the conntrack mark.</p>
-		<p>Firewall marks are a more flexible way to implement slightly complicated policy-based routing, as it defers the routing decision to the <code class="language-plaintext highlighter-rouge">mangle/PREROUTING</code> chain instead of the single-chain global routing rules. In my case, every ISP gets assigned a fwmark routing rule like this:</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>9:      from all fwmark 0x30/0xff lookup eth0 proto static
+	</div>
+	<p>However, <code class="language-plaintext highlighter-rouge">rules.v6</code> is missing the last rule in <code class="language-plaintext highlighter-rouge">iBugOptimized</code>, and IPv6 is somehow exempt from the conntrack issue. Removing this extra <code class="language-plaintext highlighter-rouge">ACCEPT</code> rule from <code class="language-plaintext highlighter-rouge">rules.v4</code> fully restores the connectivity. So this is certainly the cause, but how is it related to the actual issue?</p>
+	<h2 id="investigation">Investigation</h2>
+	<p><em>I know there are some decent tools on GitHub that aids in debugging iptables, which is notorious for its complexity. But since I wrote the entire firewall rule set and am still maintaining it by hand, I’m going for the hard route of watching and understanding every single rule.</em></p>
+	<p>The difference for that single <code class="language-plaintext highlighter-rouge">ACCEPT</code> rule is, it skips the <code class="language-plaintext highlighter-rouge">--save-mark</code> step, so the assigned firewall mark is not saved to its corresponding conntrack entry. When a reply packet comes in, conntrack has nothing for the <code class="language-plaintext highlighter-rouge">--restore-mark</code> step, so the packet gets assigned the “default” mark of <code class="language-plaintext highlighter-rouge">0x30</code> and <em>then</em> this value gets saved. I should have noticed the wrong conntrack mark earlier, as <code class="language-plaintext highlighter-rouge">conntrack -L</code> clearly showed a mark of 48 instead of the intended 54 (<code class="language-plaintext highlighter-rouge">0x36</code> from <code class="language-plaintext highlighter-rouge">iBugOptimized</code>). This narrows the cause down to a discrepancy between the packet mark and the conntrack mark.</p>
+	<p>Firewall marks are a more flexible way to implement slightly complicated policy-based routing, as it defers the routing decision to the <code class="language-plaintext highlighter-rouge">mangle/PREROUTING</code> chain instead of the single-chain global routing rules. In my case, every ISP gets assigned a fwmark routing rule like this:</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>9:      from all fwmark 0x30/0xff lookup eth0 proto static
 9:      from all fwmark 0x31/0xff lookup eth1 proto static
 9:      from all fwmark 0x36/0xff lookup ppp0 proto static
 </code></pre>
-			</div>
 		</div>
-		<p>Presumably, subsequent packets from the same connection should be routed to <code class="language-plaintext highlighter-rouge">eth0</code> because it has the mark <code class="language-plaintext highlighter-rouge">0x30</code> restored from conntrack entry. This is not the case, however, as <code class="language-plaintext highlighter-rouge">tcpdump</code> shows nothing on <code class="language-plaintext highlighter-rouge">eth0</code> and everything on <code class="language-plaintext highlighter-rouge">ppp0</code>.</p>
-		<p>Unless there’s some magic in the kernel for it to decide to destroy a connection simply for a packet mark mismatch, this is not close enough to the root cause. Verifying the magic is relatively easy:</p>
-		<div class="language-shell highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>iptables <span class="nt">-I</span> PREROUTING <span class="nt">-s</span> 172.17.0.2/32 <span class="nt">-j</span> Test
+	</div>
+	<p>Presumably, subsequent packets from the same connection should be routed to <code class="language-plaintext highlighter-rouge">eth0</code> because it has the mark <code class="language-plaintext highlighter-rouge">0x30</code> restored from conntrack entry. This is not the case, however, as <code class="language-plaintext highlighter-rouge">tcpdump</code> shows nothing on <code class="language-plaintext highlighter-rouge">eth0</code> and everything on <code class="language-plaintext highlighter-rouge">ppp0</code>.</p>
+	<p>Unless there’s some magic in the kernel for it to decide to destroy a connection simply for a packet mark mismatch, this is not close enough to the root cause. Verifying the magic is relatively easy:</p>
+	<div class="language-shell highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>iptables <span class="nt">-I</span> PREROUTING <span class="nt">-s</span> 172.17.0.2/32 <span class="nt">-j</span> Test
 iptables <span class="nt">-A</span> Test <span class="nt">-m</span> conntrack <span class="nt">--ctstate</span> NEW <span class="nt">-j</span> MARK <span class="nt">--set-xmark</span> 0x36/0xff
 iptables <span class="nt">-A</span> Test <span class="nt">-m</span> conntrack <span class="nt">--ctstate</span> ESTABLISHED <span class="nt">-j</span> MARK <span class="nt">--set-xmark</span> 0x30/0xff
 </code></pre>
-			</div>
 		</div>
-		<p>This time, even if <code class="language-plaintext highlighter-rouge">conntrack</code> shows no mark (i.e. zero) on the connection, the packets are still routed correctly to <code class="language-plaintext highlighter-rouge">ppp0</code>, and curl gets stuck as the same place as before. So the kernel doesn’t care about the conntrack mark at all.</p>
-		<p>Unfortunately, this is about as far as userspace inspection can go. I need to find out why exactly the kernel decides to destroy the conntrack entry.</p>
-		<h2 id="bpftrace-comes-in"><code class="language-plaintext highlighter-rouge">bpftrace</code> comes in</h2>
-		<p>I’ve seen professional kernel network developers extensively running <code class="language-plaintext highlighter-rouge">bpftrace</code> to debug network issues (THANK YOU to the guy behind the Telegram channel <em>Welcome to the Black Parade</em>), so I’m giving it a try.</p>
-		<p>First thing is to figure out what to hook. Searching through Google did not reveal a trace point for conntrack events, but I get to know about the conntrack path. With help from ChatGPT, I begin with <code class="language-plaintext highlighter-rouge">kprobe:nf_ct_delete</code> and putting together all struct definitions starting from <code class="language-plaintext highlighter-rouge">struct nf_conn</code>:</p>
-		<div class="language-c highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;linux/socket.h&gt;</span><span class="cp">
+	</div>
+	<p>This time, even if <code class="language-plaintext highlighter-rouge">conntrack</code> shows no mark (i.e. zero) on the connection, the packets are still routed correctly to <code class="language-plaintext highlighter-rouge">ppp0</code>, and curl gets stuck as the same place as before. So the kernel doesn’t care about the conntrack mark at all.</p>
+	<p>Unfortunately, this is about as far as userspace inspection can go. I need to find out why exactly the kernel decides to destroy the conntrack entry.</p>
+	<h2 id="bpftrace-comes-in"><code class="language-plaintext highlighter-rouge">bpftrace</code> comes in</h2>
+	<p>I’ve seen professional kernel network developers extensively running <code class="language-plaintext highlighter-rouge">bpftrace</code> to debug network issues (THANK YOU to the guy behind the Telegram channel <em>Welcome to the Black Parade</em>), so I’m giving it a try.</p>
+	<p>First thing is to figure out what to hook. Searching through Google did not reveal a trace point for conntrack events, but I get to know about the conntrack path. With help from ChatGPT, I begin with <code class="language-plaintext highlighter-rouge">kprobe:nf_ct_delete</code> and putting together all struct definitions starting from <code class="language-plaintext highlighter-rouge">struct nf_conn</code>:</p>
+	<div class="language-c highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;linux/socket.h&gt;</span><span class="cp">
 #include</span> <span class="cpf">&lt;net/netfilter/nf_conntrack.h&gt;</span><span class="cp">
 </span>
 <span class="n">kprobe</span><span class="o">:</span><span class="n">nf_ct_delete</span>
@@ -682,21 +710,21 @@ iptables <span class="nt">-A</span> Test <span class="nt">-m</span> conntrack <s
     <span class="p">}</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Seems all good, except it won’t compile:</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>ERROR: Can not access field 'u3' on expression of type 'none'
+	</div>
+	<p>Seems all good, except it won’t compile:</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>ERROR: Can not access field 'u3' on expression of type 'none'
         $dst_ip = $ct-&gt;tuplehash[0].tuple.dst.u3.ip;
                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 </code></pre>
-			</div>
 		</div>
-		<p>After another half-hour of struggling and bothering with ChatGPT, I gave up trying to access the destination tuple, and thought I’d be fine with inspecting the stack trace:</p>
-		<div class="language-c highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;linux/socket.h&gt;</span><span class="cp">
+	</div>
+	<p>After another half-hour of struggling and bothering with ChatGPT, I gave up trying to access the destination tuple, and thought I’d be fine with inspecting the stack trace:</p>
+	<div class="language-c highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="cp">#include</span> <span class="cpf">&lt;linux/socket.h&gt;</span><span class="cp">
 #include</span> <span class="cpf">&lt;net/netfilter/nf_conntrack.h&gt;</span><span class="cp">
 </span>
 <span class="n">kprobe</span><span class="o">:</span><span class="n">nf_ct_delete</span>
@@ -721,13 +749,13 @@ iptables <span class="nt">-A</span> Test <span class="nt">-m</span> conntrack <s
     <span class="p">}</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Noteworthy is that I have to filter the connections in the program, otherwise my screen gets flooded with unrelated events.</p>
-		<p>The output comes promising:</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>Attaching 1 probe...
+	</div>
+	<p>Noteworthy is that I have to filter the connections in the program, otherwise my screen gets flooded with unrelated events.</p>
+	<p>The output comes promising:</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>Attaching 1 probe...
 Conntrack destroyed (IPv4): src=172.17.0.2 sport=39456 mark=0 proto=6
 
     nf_ct_delete+1
@@ -743,12 +771,12 @@ Conntrack destroyed (IPv4): src=172.17.0.2 sport=39456 mark=0 proto=6
     netif_receive_skb+300
     ...
 </code></pre>
-			</div>
 		</div>
-		<p>Reading the source code from the top few functions of the call stack:</p>
-		<div class="language-c highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="c1">// net/netfilter/nf_nat_proto.c</span>
+	</div>
+	<p>Reading the source code from the top few functions of the call stack:</p>
+	<div class="language-c highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="c1">// net/netfilter/nf_nat_proto.c</span>
 
 <span class="k">static</span> <span class="kt">unsigned</span> <span class="kt">int</span>
 <span class="nf">nf_nat_ipv4_out</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">priv</span><span class="p">,</span> <span class="k">struct</span> <span class="n">sk_buff</span> <span class="o">*</span><span class="n">skb</span><span class="p">,</span>
@@ -766,11 +794,11 @@ Conntrack destroyed (IPv4): src=172.17.0.2 sport=39456 mark=0 proto=6
 </span>    <span class="k">if</span> <span class="p">(</span><span class="n">ret</span> <span class="o">!=</span> <span class="n">NF_ACCEPT</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
 </code></pre>
-			</div>
 		</div>
-		<div class="language-c highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="c1">// net/netfilter/nf_nat_proto.c</span>
+	</div>
+	<div class="language-c highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="c1">// net/netfilter/nf_nat_proto.c</span>
 
 <span class="k">static</span> <span class="kt">unsigned</span> <span class="kt">int</span>
 <span class="nf">nf_nat_ipv4_fn</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">priv</span><span class="p">,</span> <span class="k">struct</span> <span class="n">sk_buff</span> <span class="o">*</span><span class="n">skb</span><span class="p">,</span>
@@ -781,11 +809,11 @@ Conntrack destroyed (IPv4): src=172.17.0.2 sport=39456 mark=0 proto=6
     <span class="k">return</span> <span class="n">nf_nat_inet_fn</span><span class="p">(</span><span class="n">priv</span><span class="p">,</span> <span class="n">skb</span><span class="p">,</span> <span class="n">state</span><span class="p">);</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<div class="language-c highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="c1">// net/netfilter/nf_nat_core.c</span>
+	</div>
+	<div class="language-c highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="c1">// net/netfilter/nf_nat_core.c</span>
 
 <span class="kt">unsigned</span> <span class="kt">int</span>
 <span class="nf">nf_nat_inet_fn</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">priv</span><span class="p">,</span> <span class="k">struct</span> <span class="n">sk_buff</span> <span class="o">*</span><span class="n">skb</span><span class="p">,</span>
@@ -801,12 +829,12 @@ Conntrack destroyed (IPv4): src=172.17.0.2 sport=39456 mark=0 proto=6
     <span class="k">return</span> <span class="n">NF_DROP</span><span class="p">;</span>
 <span class="p">}</span>
 </code></pre>
-			</div>
 		</div>
-		<p>As far as function inlining goes, there’s only one way <code class="language-plaintext highlighter-rouge">nf_nat_inet_fn</code> calls into <code class="language-plaintext highlighter-rouge">nf_ct_delete</code>, which is through <code class="language-plaintext highlighter-rouge">nf_ct_kill_acct</code>. And the only reason for that is <code class="language-plaintext highlighter-rouge">nf_nat_oif_changed</code>.</p>
-		<h2 id="conclusion">Conclusion</h2>
-		<p>Now everything makes sense. With a badly placed <code class="language-plaintext highlighter-rouge">ACCEPT</code> rule, the conntrack connection gets saved a different mark than desired, and then destroyed because subsequent packets are routed differently for having the wrong mark. The timestamp difference of related events also roughly matches up the distance of the code path. It also must be a NAT’ed connection, as this way of <code class="language-plaintext highlighter-rouge">nf_ct_delete</code> is only reachable when the packet is about to be sent to the egress interface.</p>
-		]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[I run a Debian-based software router on my home network. It’s connected to multiple ISPs, so I have some policy routing rules to balance the traffic between them. Some time ago, I noticed that the IPv4 connectivity got stuck intermittently when it didn’t use to, while IPv6 was working fine. It’s also interesting that the issue only happened with one specific ISP, in the egress direction, and only a few specific devices were affected.]]></summary></entry><entry><title type="html">Driving pppd with systemd</title><link href="https://ibug.io/blog/2024/07/pppd-with-systemd/" rel="alternate" type="text/html" title="Driving pppd with systemd" /><published>2024-07-07T00:00:00+00:00</published><updated>2024-07-16T01:25:55+00:00</updated><id>https://ibug.io/blog/2024/07/pppd-with-systemd</id><content type="html" xml:base="https://ibug.io/blog/2024/07/pppd-with-systemd/"><![CDATA[<p>I moved my soft router (Intel N5105, Debian) from school to home, and at home it’s behind an ONU on bridge mode, so it’ll have to do PPPoE itself.</p>
+	</div>
+	<p>As far as function inlining goes, there’s only one way <code class="language-plaintext highlighter-rouge">nf_nat_inet_fn</code> calls into <code class="language-plaintext highlighter-rouge">nf_ct_delete</code>, which is through <code class="language-plaintext highlighter-rouge">nf_ct_kill_acct</code>. And the only reason for that is <code class="language-plaintext highlighter-rouge">nf_nat_oif_changed</code>.</p>
+	<h2 id="conclusion">Conclusion</h2>
+	<p>Now everything makes sense. With a badly placed <code class="language-plaintext highlighter-rouge">ACCEPT</code> rule, the conntrack connection gets saved a different mark than desired, and then destroyed because subsequent packets are routed differently for having the wrong mark. The timestamp difference of related events also roughly matches up the distance of the code path. It also must be a NAT’ed connection, as this way of <code class="language-plaintext highlighter-rouge">nf_ct_delete</code> is only reachable when the packet is about to be sent to the egress interface.</p>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[I run a Debian-based software router on my home network. It’s connected to multiple ISPs, so I have some policy routing rules to balance the traffic between them. Some time ago, I noticed that the IPv4 connectivity got stuck intermittently when it didn’t use to, while IPv6 was working fine. It’s also interesting that the issue only happened with one specific ISP, in the egress direction, and only a few specific devices were affected.]]></summary></entry><entry><title type="html">Driving pppd with systemd</title><link href="https://ibug.io/blog/2024/07/pppd-with-systemd/" rel="alternate" type="text/html" title="Driving pppd with systemd" /><published>2024-07-07T00:00:00+00:00</published><updated>2024-07-16T01:25:55+00:00</updated><id>https://ibug.io/blog/2024/07/pppd-with-systemd</id><content type="html" xml:base="https://ibug.io/blog/2024/07/pppd-with-systemd/"><![CDATA[<p>I moved my soft router (Intel N5105, Debian) from school to home, and at home it’s behind an ONU on bridge mode, so it’ll have to do PPPoE itself.</p>
 	<p>Getting started with PPPoE on Debian is exactly the same as on Ubuntu: Install <code class="language-plaintext highlighter-rouge">pppoeconf</code> and run <code class="language-plaintext highlighter-rouge">pppoeconf</code>, then fill in the DSL username and password. Then I can see <code class="language-plaintext highlighter-rouge">ppp0</code> interface up and working.</p>
 	<p>However, as I use <code class="language-plaintext highlighter-rouge">systemd-networkd</code> on my router while <code class="language-plaintext highlighter-rouge">pppd</code> appears to bundle ifupdown, I’ll have to fix everything needed for <code class="language-plaintext highlighter-rouge">pppd</code> to work with systemd-networkd.</p>
 	<h2 id="systemd-service">Systemd service</h2>
@@ -1645,192 +1673,4 @@ Mar 31 19:20:12 hostname systemd[1]: Reloaded Postfix Mail Transport Agent.
 	<p>Now I have a nice dashboard for viewing weather forecast for multiple cities:</p>
 	<p><img src="/image/grafana/caiyun-forecast-example.png" alt="Dashboard" /></p>
 	<p>If you’d like to try it yourself, I’ve published the dashboard on Grafana.com: <a href="https://grafana.com/grafana/dashboards/20259-weather-forecast/">Weather Forecast</a>. Just add the same datasource with your API key, and you can import my dashboard and start getting weather forecast for yourself.</p>
-	]]></content><author><name>iBug</name></author><category term="software" /><summary type="html"><![CDATA[Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get it to work as a weather forecast dashboard, instead of any historical time-series data.]]></summary></entry><entry><title type="html">Understanding ZFS block sizes</title><link href="https://ibug.io/blog/2023/10/zfs-block-size/" rel="alternate" type="text/html" title="Understanding ZFS block sizes" /><published>2023-10-30T00:00:00+00:00</published><updated>2023-10-30T02:58:51+00:00</updated><id>https://ibug.io/blog/2023/10/zfs-block-size</id><content type="html" xml:base="https://ibug.io/blog/2023/10/zfs-block-size/"><![CDATA[<p>ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.</p>
-	<p>We’ll begin with a slide from a ZFS talk from Lustre<sup id="fnref:dilger" role="doc-noteref"><a href="#fn:dilger" class="footnote" rel="footnote">1</a></sup> (page 5):</p>
-	<figure class=""><img src="/image/zfs/zfs-io-stack.png" alt="ZFS I/O Stack" />
-		<figcaption>
-			Figure 1. ZFS I/O Stack
-		</figcaption>
-	</figure>
-	<!-- This article will focus on the topmost layer (ZPL and DMU) and the lowermost layer (vdev and disk sectors). -->
-	<h2 id="logical-blocks">Logical blocks</h2>
-	<p>The first thing to understand is that there are at least two levels of “block” concepts in ZFS. There’s “logical blocks” on an upper layer (DMU), and “physical blocks” on a lower layer (vdev). The latter is easier to understand and it’s almost synonymous to “disk sectors”. It’s precisely the <code class="language-plaintext highlighter-rouge">ashift</code> parameter in <code class="language-plaintext highlighter-rouge">zpool create</code> command and usually matches the physical sector size of your disks (4&nbsp;KiB for modern disks). Once set, <code class="language-plaintext highlighter-rouge">ashift</code> is immutable and can only be changed when recreating the entire vdev array (fortunately not the entire pool<sup id="fnref:zfs101" role="doc-noteref"><a href="#fn:zfs101" class="footnote" rel="footnote">2</a></sup>). The “logical block”, however, is slightly more complicated, and beyond the expressibility of a few words. In short, it’s the smallest <em>meaningful</em> unit of data that ZFS can operate on, including reading, writing, checksumming, compression and deduplication.</p>
-	<h3 id="recordsize-and-volblocksize">“recordsize” and “volblocksize”</h3>
-	<p>You’ve probably seen <code class="language-plaintext highlighter-rouge">recordsize</code> being talked about extensively in ZFS tuning guides<sup id="fnref:tuning" role="doc-noteref"><a href="#fn:tuning" class="footnote" rel="footnote">3</a></sup>, which is already a great source of confusion. The default <code class="language-plaintext highlighter-rouge">recordsize</code> is 128&nbsp;KiB, which controls the <em>maximum</em> size of a logical block. The <em>actual</em> block size depends on the file you’re writing:</p>
-	<ul>
-		<li>If the file is smaller than or equal to <code class="language-plaintext highlighter-rouge">recordsize</code>, it’s stored as a single logical block of its size, rounded up to the nearest multiple of 512&nbsp;bytes.</li>
-		<li>If the file is larger than <code class="language-plaintext highlighter-rouge">recordsize</code>, it’s split into multiple logical blocks of <code class="language-plaintext highlighter-rouge">recordsize</code> each, with the last block being zero-padded to <code class="language-plaintext highlighter-rouge">recordsize</code>.</li>
-	</ul>
-	<p>As with other filesystems, if you change a small portion of a large file, only 128&nbsp;KiB (or whatever your <code class="language-plaintext highlighter-rouge">recordsize</code> is) is rewritten, along with new metadata and checksums. Large <code class="language-plaintext highlighter-rouge">recordsize</code> bloats the read/write amplification for random I/O workloads, while small <code class="language-plaintext highlighter-rouge">recordsize</code> increases the fragmentation and metadata overhead for large files. Note that ZFS always validates checksums, so every read operation is done on an entire block, even if only a few bytes are requested. So it is important to align your <code class="language-plaintext highlighter-rouge">recordsize</code> with your workload, like using 16&nbsp;KiB for (most) databases and 1&nbsp;MiB for media files. The default 128&nbsp;KiB is a good compromise for general-purpose workloads, and there certainly isn’t a one-size-fits-all solution. Also note that while <code class="language-plaintext highlighter-rouge">recordsize</code> can be changed on the fly, it only affects newly written data, and existing ones stay intact.</p>
-	<p>For ZVOLs, as you’d imagine, the rule is much simpler: Every block of <code class="language-plaintext highlighter-rouge">volblocksize</code> is a logical block, and it’s aligned to its own size. Since ZFS 2.2, the default <code class="language-plaintext highlighter-rouge">volblocksize</code> is 16&nbsp;KiB, providing a good balance between performance and compatibility.</p>
-	<h3 id="compression">Compression</h3>
-	<p>Compression is applied on a per-block basis, and compressed data is not shared between blocks. This is best shown with an example:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>zfs get compression tank/test
-<span class="go">NAME       PROPERTY     VALUE  SOURCE
-tank/test  compression  zstd   inherited from tank
-</span><span class="gp">$</span><span class="w"> </span><span class="nb">head</span> <span class="nt">-c</span> 131072 /dev/urandom <span class="o">&gt;</span> 128k
-<span class="gp">$</span><span class="w"> </span><span class="nb">cat </span>128k 128k 128k 128k 128k 128k 128k 128k <span class="o">&gt;</span> 1m
-<span class="gp">$</span><span class="w"> </span><span class="nb">du</span> <span class="nt">-sh</span> 128k 1m
-<span class="go">129K    128k
-1.1M    1m
-</span></code></pre>
-		</div>
-	</div>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span><span class="nb">head</span> <span class="nt">-c</span> 16384 /dev/urandom <span class="o">&gt;</span> 16k
-<span class="gp">$</span><span class="w"> </span><span class="nb">cat </span>16k 16k 16k 16k 16k 16k 16k 16k <span class="o">&gt;</span> 128k1
-<span class="gp">$</span><span class="w"> </span><span class="nb">cat </span>128k1 128k1 128k1 128k1 128k1 128k1 128k1 128k1 <span class="o">&gt;</span> 1m1
-<span class="gp">$</span><span class="w"> </span><span class="nb">du</span> <span class="nt">-sh</span> 16k 128k1 1m1
-<span class="go">17K     16k
-21K     128k1
-169K    1m1
-</span></code></pre>
-		</div>
-	</div>
-	<p>As you can see from <code class="language-plaintext highlighter-rouge">du</code>’s output above, despite containing 8 identical copies of the same 128&nbsp;KiB random data, the 1&nbsp;MiB file gains precisely nothing from compression, as each 128&nbsp;KiB block is compressed individually. The other test of combining 8 copies of 16&nbsp;KiB random data into one 128&nbsp;KiB file shows positive results, as the 128&nbsp;KiB file is only 21&nbsp;KiB in size. Similarly, the 1&nbsp;MiB file that contains 64 exact copies of the same 16&nbsp;KiB chunk is exactly 8 times the size of that 128&nbsp;KiB file, because the chunk data is not shared across 128&nbsp;KiB boundaries.</p>
-	<p>This brings up an interesting point: <strong>It’s beneficial to turn on compression even for filesystems with uncompressible data</strong><sup id="fnref:cks-1" role="doc-noteref"><a href="#fn:cks-1" class="footnote" rel="footnote">4</a></sup>. One direct impact is on the last block of a large file, where its zero-filled bytes up to <code class="language-plaintext highlighter-rouge">recordsize</code> compress very well. Using LZ4 or ZSTD, compression should have negligible impact on any reasonably modern CPU and reasonably sized disks.</p>
-	<p>There are two more noteworthy points about compression, both from <a href="https://openzfs.github.io/openzfs-docs/man/master/7/zfsprops.7.html"><code class="language-plaintext highlighter-rouge">man zfsprops.7</code></a>:</p>
-	<ol>
-		<li>
-			<blockquote>
-				<p>When any setting except <strong>off</strong> is selected, compression will explicitly check for blocks consisting of only zeroes (the NUL byte). When a zero-filled block is detected, it is stored as a hole and not compressed using the indicated compression algorithm.</p>
-			</blockquote>
-			<p>Instead of compressing entire blocks of zeroes like the last block of a large file, ZFS will not store anything about these zero blocks. Technically, this is done by omitting the corresponding ranges from the file’s indirect blocks<sup id="fnref:cks-1:1" role="doc-noteref"><a href="#fn:cks-1" class="footnote" rel="footnote">4</a></sup>.</p>
-			<p>Take this test for example: I created a file with 64&nbsp;KiB of urandom, then 256&nbsp;KiB of zeroes, then another 64&nbsp;KiB of urandom. The file is 384&nbsp;KiB in size, but only 128&nbsp;KiB is actually stored on disk:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zfs create pool0/srv/test
-<span class="gp">#</span><span class="w"> </span><span class="nb">cat</span> &lt;<span class="o">(</span><span class="nb">head</span> <span class="nt">-c</span> 64K /dev/urandom<span class="o">)</span> &lt;<span class="o">(</span><span class="nb">head</span> <span class="nt">-c</span> 256K /dev/zero<span class="o">)</span> &lt;<span class="o">(</span><span class="nb">head</span> <span class="nt">-c</span> 64K /dev/urandom<span class="o">)</span> <span class="o">&gt;</span> /srv/test/test
-<span class="gp">#</span><span class="w"> </span><span class="nb">du</span> <span class="nt">-sh</span> /srv/test/test
-<span class="go">145K    /srv/test/test
-</span></code></pre>
-				</div>
-    </div>
-			<p>We can also examine the file’s indirect blocks with <code class="language-plaintext highlighter-rouge">zdb</code>:</p>
-			<div class="language-console highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span><span class="nb">ls</span> <span class="nt">-li</span> /srv/test/test
-<span class="go">2 -rw-r--r-- 1 root root 393216 Oct 30 02:05 /srv/test/test
-</span><span class="gp">#</span><span class="w"> </span>zdb <span class="nt">-ddddd</span> pool0/srv/test 2
-<span class="go">[...]
-Indirect blocks:
-               0 L1  0:1791b7d3000:1000 20000L/1000P F=2 B=9769680/9769680 cksum=[...]
-               0  L0 0:1791b7b1000:11000 20000L/11000P F=1 B=9769680/9769680 cksum=[...]
-           40000  L0 0:1791b7c2000:11000 20000L/11000P F=1 B=9769680/9769680 cksum=[...]
-
-                segment [0000000000000000, 0000000000020000) size  128K
-                segment [0000000000040000, 0000000000060000) size  128K
-</span></code></pre>
-				</div>
-    </div>
-			<p>Here we can see only two L0 blocks allocated, each being 20000 (hex, dec = 131072) bytes logical and 11000 (hex, dec = 69632) bytes physical in size. The two L0 blocks match the two segments shown at the bottom, with the middle segment nowhere to be found.</p>
-		</li>
-		<li>
-			<blockquote>
-				<p>Any block being compressed must be no larger than 7/8 of its original size after compression, otherwise the compression will not be considered worthwhile and the block saved uncompressed. […] for example, 8&nbsp;KiB blocks on disks with 4&nbsp;KiB disk sectors must compress to 1/2 or less of their original size.</p>
-			</blockquote>
-			<p>This one should be self-explanatory.</p>
-		</li>
-	</ol>
-	<h2 id="raidz">RAIDZ</h2>
-	<p>Up until now we’ve only talked about logical blocks, which are all on the higher layers of the ZFS hierarchy. RAIDZ is where physical blocks (disk sectors) really come into play and adds another field of confusion.</p>
-	<p>Unlike traditional RAID 5/6/7<sup class="no-select">(?)</sup> that combine disks into an array and presents a single volume for the filesystem, RAIDZ handles each <em>logical block</em> separately. I’ll cite this illustration from Delphix<sup id="fnref:delphix" role="doc-noteref"><a href="#fn:delphix" class="footnote" rel="footnote">5</a></sup> to explain:</p>
-	<figure class=""><img src="/image/zfs/raidz-block-layout.png" alt="RAID-Z block layout" />
-		<figcaption>
-			Figure 2. RAID-Z block layout
-		</figcaption>
-	</figure>
-	<p>This example shows a 5-wide RAID-Z1 setup.</p>
-	<ul>
-		<li>A single-sector block takes another sector for parity, like the dark red block on row 3.</li>
-		<li>
-			<p>Multi-sector blocks are striped across disks, with parity sectors inserted every 4 sectors, matching the data-to-parity ratio of the vdev array.</p>
-			<ul>
-				<li>You may have noticed that parity sectors for the same block are always stored on the same disk that resembles RAID-4 instead of RAID-5. Keep in mind that ZFS reads, writes and verifies entire blocks, so interleaving parity sectors across disks will not provide any benefit, while keeping “stripes” on the same disk simplifies the logic for validation and reconstruction.</li>
-			</ul>
-		</li>
-		<li>In order to avoid unusable fragments, ZFS requires each allocated block to be padded to a multiple of (<em>p+1</em>) sectors, where <em>p</em> is the number of parity disks. For example, RAID-Z1 requires each block to be padded to a multiple of 2 sectors, and RAID-Z2 requires each block to be padded to a multiple of 3 sectors. This can be seen on rows 7 to 9, where the X sectors are reserved for parity padding.</li>
-	</ul>
-	<p>This design allows RAID to play well with ZFS’s log-structured design and avoids the need for read-modify-write cycles. Consequently, the RAID overhead is now dependent on your data and is no longer an intrinsic property of the RAID level and array width. The same Delphix article shares a nice spreadsheet<sup id="fnref:delphix-spreadsheet" role="doc-noteref"><a href="#fn:delphix-spreadsheet" class="footnote" rel="footnote">6</a></sup> that calculates RAID overhead for you:</p>
-	<p><a href="https://docs.google.com/a/delphix.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/"><img src="/image/zfs/raidz1-parity-overhead.png" alt="Size of parity overhead for RAID-Z1" /></a></p>
-	<h3 id="raidz-accounting">Accounting</h3>
-	<p>Accounting the storage space for a RAIDZ array is as problematic as it seems: There’s no way to calculate the available space in advance without knowledge on the block size pattern.</p>
-	<p>ZFS works around this by showing an estimate, assuming all data were stored as 128&nbsp;KiB blocks<sup id="fnref:zfs-4599" role="doc-noteref"><a href="#fn:zfs-4599" class="footnote" rel="footnote">7</a></sup>. On my test setup with five 16&nbsp;GiB disks in RAID-Z1 and <code class="language-plaintext highlighter-rouge">ashift=12</code>, the available space shows as 61.5G, while <code class="language-plaintext highlighter-rouge">zpool</code> shows the raw size as 79.5G:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zpool create <span class="nt">-o</span> <span class="nv">ashift</span><span class="o">=</span>12 <span class="nb">test </span>raidz1 nvme3n1p<span class="o">{</span>1,2,3,4,5<span class="o">}</span>
-<span class="gp">#</span><span class="w"> </span>zfs list <span class="nb">test</span>
-<span class="go">NAME   USED  AVAIL     REFER  MOUNTPOINT
-test   614K  61.5G      153K  /test
-</span><span class="gp">#</span><span class="w"> </span>zpool list <span class="nb">test</span>
-<span class="go">NAME   SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
-test  79.5G   768K  79.5G        -         -     0%     0%  1.00x    ONLINE  -
-</span></code></pre>
-		</div>
-	</div>
-	<p>When I increase <code class="language-plaintext highlighter-rouge">ashift</code> to 15 (32&nbsp;KiB sectors), the available space drops quite a bit, even if <code class="language-plaintext highlighter-rouge">zpool</code> shows the same raw size:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zpool create <span class="nt">-o</span> <span class="nv">ashift</span><span class="o">=</span>15 <span class="nb">test </span>raidz1 nvme3n1p<span class="o">{</span>1,2,3,4,5<span class="o">}</span>
-<span class="gp">#</span><span class="w"> </span>zfs list <span class="nb">test</span>
-<span class="go">NAME   USED  AVAIL     REFER  MOUNTPOINT
-test  4.00M  51.3G     1023K  /test
-</span><span class="gp">#</span><span class="w"> </span>zpool list <span class="nb">test</span>
-<span class="go">NAME   SIZE  ALLOC   FREE  CKPOINT  EXPANDSZ   FRAG    CAP  DEDUP    HEALTH  ALTROOT
-test  79.5G  7.31M  79.5G        -         -     0%     0%  1.00x    ONLINE  -
-</span></code></pre>
-		</div>
-	</div>
-	<p>In both cases, calculating the “raw” disk space from the available space gives roughly congruent results:</p>
-	<ul>
-		<li>61.5&nbsp;GiB × (1 + 25%) = 76.9&nbsp;GiB</li>
-		<li>51.3&nbsp;GiB × (1 + 50%) = 76.9&nbsp;GiB</li>
-	</ul>
-	<p>The default <code class="language-plaintext highlighter-rouge">refreservation</code> for non-sparse ZVOLs exhibits a similar behavior:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zfs create <span class="nt">-V</span> 4G <span class="nt">-o</span> <span class="nv">volblocksize</span><span class="o">=</span>8K <span class="nb">test</span>/v8k
-<span class="gp">#</span><span class="w"> </span>zfs create <span class="nt">-V</span> 4G <span class="nt">-o</span> <span class="nv">volblocksize</span><span class="o">=</span>16K <span class="nb">test</span>/v16k
-<span class="gp">#</span><span class="w"> </span>zfs get refreservation <span class="nb">test</span>/v8k <span class="nb">test</span>/v16k
-<span class="go">NAME       PROPERTY        VALUE      SOURCE
-test/v16k  refreservation  4.86G      local
-test/v8k   refreservation  6.53G      local
-</span></code></pre>
-		</div>
-	</div>
-	<p>Interestingly, neither of the <code class="language-plaintext highlighter-rouge">refreservation</code> sizes matches the RAID overhead as calculated in the Delphix spreadsheet<sup id="fnref:delphix-spreadsheet:1" role="doc-noteref"><a href="#fn:delphix-spreadsheet" class="footnote" rel="footnote">6</a></sup>, as you would expect some 6.0&nbsp;GiB for the 16k-volblocksized ZVOL and some 8.0&nbsp;GiB for the 8k-volblocksized one. <strong>Let’s just don’t forget that the whole accounting system assumed 128&nbsp;KiB blocks and scaled by that<sup id="fnref:acct-128k" role="doc-noteref"><a href="#fn:acct-128k" class="footnote" rel="footnote">8</a></sup>.</strong> So the actual meaning of 4.86G and 6.53G would be “the <em>equivalent</em> space if volblocksize had been 128&nbsp;KiB”. If we multiply both values by 1.25 (overhead for 128&nbsp;KiB blocks and 5-wide RAIDZ), we get 6.08&nbsp;GiB and 8.16&nbsp;GiB of raw disk spaces respectively, both of which match more closely the expected values. The final minor difference is due to the different amount of metadata required for different number of blocks.</p>
-	<h2 id="thoughts">Thoughts</h2>
-	<p>I never imagined I would delve this deep into ZFS when I first stumbled upon the question. There are lots of good write-ups on individual components of ZFS all around the web, and <a href="https://utcc.utoronto.ca/~cks/space/blog/">Chris Siebenmann’s blog</a> in particular. But few combine all the pieces together and paint the whole picture, so I had to spend some time synthesizing them by myself. As you’ve seen in the Luster slide, ZFS is so complex a beast that it’s hard to digest in its entirety. So for now I have no idea how much effort I would put into learning it, nor any future blogs I would write. But anyways, that’s one large mystery solved, for myself and my readers (you), and time to call it a day.</p>
-	<h2 id="references">References</h2>
-	<div class="footnotes" role="doc-endnotes">
-		<ol>
-			<li id="fn:dilger" role="doc-endnote">
-				<p>Andreas Dilger (2010) <a href="https://wiki.lustre.org/images/4/49/Beijing-2010.2-ZFS_overview_3.1_Dilger.pdf">ZFS Features &amp; Concepts TOI</a> <a href="#fnref:dilger" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-			</li>
-			<li id="fn:zfs101" role="doc-endnote">
-				<p>Jim Salter (2020) <a href="https://arstechnica.com/information-technology/2020/05/zfs-101-understanding-zfs-storage-and-performance/">ZFS 101 – Understanding ZFS storage and performance</a> <a href="#fnref:zfs101" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-			</li>
-			<li id="fn:tuning" role="doc-endnote">
-				<p>OpenZFS <a href="https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Workload%20Tuning.html">Workload Tuning</a> <a href="#fnref:tuning" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-			</li>
-			<li id="fn:cks-1" role="doc-endnote">
-				<p>Chris Siebenmann (2017) <a href="https://utcc.utoronto.ca/~cks/space/blog/solaris/ZFSFilePartialAndHoleStorage">ZFS’s recordsize, holes in files, and partial blocks</a> <a href="#fnref:cks-1" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:cks-1:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
-			</li>
-			<li id="fn:delphix" role="doc-endnote">
-				<p>Matthew Ahrens (2014) <a href="https://www.delphix.com/blog/zfs-raidz-stripe-width-or-how-i-learned-stop-worrying-and-love-raidz">How I Learned to Stop Worrying and Love RAIDZ</a> <a href="#fnref:delphix" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-			</li>
-			<li id="fn:delphix-spreadsheet" role="doc-endnote">
-				<p><a href="https://docs.google.com/a/delphix.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/">RAID-Z parity cost</a> (Google Sheets) <a href="#fnref:delphix-spreadsheet" class="reversefootnote" role="doc-backlink">&#8617;</a> <a href="#fnref:delphix-spreadsheet:1" class="reversefootnote" role="doc-backlink">&#8617;<sup>2</sup></a></p>
-			</li>
-			<li id="fn:zfs-4599" role="doc-endnote">
-				<p>openzfs/zfs#4599 (2016) <a href="https://github.com/openzfs/zfs/issues/4599">disk usage wrong when using larger recordsize, raidz and ashift=12</a> <a href="#fnref:zfs-4599" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-			</li>
-			<li id="fn:acct-128k" role="doc-endnote">
-				<p>Mike Gerdts (2019) <a href="https://github.com/illumos/illumos-gate/blob/b73ccab03ec36581b1ae5945ef1fee1d06c79ccf/usr/src/lib/libzfs/common/libzfs_dataset.c#L5118">(Code comment in <code class="language-plaintext highlighter-rouge">libzfs_dataset.c</code>)</a> <a href="#fnref:acct-128k" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
-			</li>
-		</ol>
-	</div>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="zfs" /><summary type="html"><![CDATA[ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="software" /><summary type="html"><![CDATA[Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get it to work as a weather forecast dashboard, instead of any historical time-series data.]]></summary></entry></feed>
