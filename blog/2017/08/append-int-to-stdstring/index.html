@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
-  Minimal Mistakes Jekyll Theme 4.26.2 by Michael Rose
-  Copyright 2013-2024 Michael Rose - mademistakes.com | @mmistakes
+  Minimal Mistakes Jekyll Theme 4.27.0 by Michael Rose
+  Copyright 2013-2025 Michael Rose - mademistakes.com | @mmistakes
   Free for personal and commercial use under the MIT license
   https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
 -->
@@ -31,7 +31,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=ab4f329">
+		<link rel="stylesheet" href="/assets/css/main.css?v=2d8ebcb">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -40,7 +40,7 @@
 			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
 		</script>
 	</head>
-	<body class="layout--single">
+	<body class="layout--single" dir="ltr">
 		<nav class="skip-links">
 			<ul>
 				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
@@ -268,9 +268,15 @@
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
-							<a href="https://twitter.com/intent/tweet?text=Append+int+to+%60std%3A%3Astring%60%20https%3A%2F%2Fibug.io%2Fblog%2F2017%2F08%2Fappend-int-to-stdstring%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
-							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2017%2F08%2Fappend-int-to-stdstring%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
-							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https://ibug.io/blog/2017/08/append-int-to-stdstring/" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+							<a href="https://x.com/intent/tweet?text=Append+int+to+%60std%3A%3Astring%60%20https%3A%2F%2Fibug.io%2Fblog%2F2017%2F08%2Fappend-int-to-stdstring%2F" class="btn btn--x" aria-label="Share on X" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on X">
+								<i class="fas fa-fw fa-share-alt" aria-hidden="true"></i><span> X</span>
+							</a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2017%2F08%2Fappend-int-to-stdstring%2F" class="btn btn--facebook" aria-label="Share on Facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook">
+								<i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span>
+							</a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https://ibug.io/blog/2017/08/append-int-to-stdstring/" class="btn btn--linkedin" aria-label="Share on LinkedIn" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn">
+								<i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span>
+							</a>
 						</section>
 						<nav class="pagination">
 							<a href="/blog/2017/06/android-phone-cores/" class="pagination--pager" title="Some ideas about multicore on Android
@@ -341,19 +347,20 @@
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<div class="archive__item-text">
 									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2018/03/joining-smokedetector/" rel="permalink">Joining SmokeDetector
+										<a href="/blog/2018/06/minimal-complete-verifiable-example/" rel="permalink">Minimal, Complete, Verifiable Example
 										</a>
 									</h2>
-									<p class="archive__item-excerpt" itemprop="description">After a plain request, an administrator of the SmokeDetector project added me under the Developers section of their team member list, which indicates that I am a known personnel for contributing a ...</p>
+									<p class="archive__item-excerpt" itemprop="description">How to create a Minimal, Complete, and Verifiable example
+									</p>
 									<p class="page__meta">
 										<span class="page__meta-date">
 											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2018-03-14T10:29:30+00:00">Mar 14, 2018</time>
+											<time datetime="2018-06-07T00:00:00+00:00">Jun 7, 2018</time>
 										</span>
 										<span class="page__meta-sep"></span>
 										<span class="page__meta-readtime">
 											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											3 minute read
+											2 minute read
 										</span>
 									</p>
 								</div>
@@ -362,23 +369,23 @@
 						<div class="grid__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<div class="archive__item-teaser">
-									<img src="/image/teaser/wireguard-openvpn.jpg" alt="">
+									<img src="/image/teaser/ldap.jpg" alt="">
 								</div>
 								<div class="archive__item-text">
 									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2023/09/dual-protocol-vpn-port/" rel="permalink">Running a dual-protocol OpenVPN/WireGuard VPN server on one port
+										<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
 										</a>
 									</h2>
-									<p class="archive__item-excerpt" itemprop="description">Public Wi-Fi and some campus network typically block traffic from unauthenticated clients, but more often allow traffic targeting UDP port 53 to pass through, which is normally used for DNS queries...</p>
+									<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
 									<p class="page__meta">
 										<span class="page__meta-date">
 											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2023-09-26T00:00:00+00:00">Sep 26, 2023</time>
+											<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
 										</span>
 										<span class="page__meta-sep"></span>
 										<span class="page__meta-readtime">
 											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											3 minute read
+											14 minute read
 										</span>
 									</p>
 								</div>
@@ -407,11 +414,11 @@
 					</ul>
 				</div>
 				<div class="page__footer-copyright">
-					<p>&copy; 2024 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>&copy; 2025 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-904</a>
+						Site version <a href="/status" class="version-text">G-926</a>
 					</p>
 				</div>
 			</footer>

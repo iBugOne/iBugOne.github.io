@@ -1,0 +1,1002 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.27.0 by Michael Rose
+  Copyright 2013-2025 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en-US" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>Beating $3k SSD with $2k HDD? - iBug</title>
+		<meta name="description" content="A.K.A. Practical ZFS application on USTC Mirrors. A writeup of the talk I gave at Nanjing University this August.">
+		<meta name="author" content="iBug">
+		<meta property="article:author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="Beating $3k SSD with $2k HDD?">
+		<meta property="og:url" content="https://ibug.io/blog/2024/10/ustc-mirrors-zfs-rebuild/">
+		<meta property="og:description" content="A.K.A. Practical ZFS application on USTC Mirrors. A writeup of the talk I gave at Nanjing University this August.">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2024-10-27T00:00:00+00:00">
+		<meta property="article:modified_time" content="2024-12-11T18:19:07+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2024/10/ustc-mirrors-zfs-rebuild/">
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script type="text/javascript">
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=2d8ebcb">
+		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<meta name="theme-color" content="#EDEDED">
+		<script>
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+	</head>
+	<body class="layout--single" dir="ltr">
+		<nav class="skip-links">
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt="iBug"></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a href="/about/">About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/blog/">Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/projects/">Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/friends/">Friends</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/cn/">中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<i class="fas fa-search"></i>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay" style=" background-image: url('/image/header/mountain-1.jpg');">
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						Beating $3k SSD with $2k HDD?
+					</h1>
+					<p class="page__lead">Practical ZFS application on USTC Mirrors
+					</p>
+					<p class="page__meta">
+						<span class="page__meta-date">
+							<i class="far fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2024-10-27T00:00:00+00:00">Oct 27, 2024</time>
+						</span>
+						<span class="page__meta-sep"></span>
+						<span class="page__meta-readtime">
+							<i class="far fa-clock" aria-hidden="true"></i>
+							12 minute read
+						</span>
+					</p>
+					<p>
+						<a href="/p/72" class="btn btn--light-outline btn--large"><i class="fas fa-presentation-screen"></i> View slides</a>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person" class="h-card">
+						<div class="author__avatar">
+							<a href="https://ibug.io/">
+								<img src="/image/avatar.png" alt="iBug" itemprop="image" class="u-photo">
+							</a>
+						</div>
+						<div class="author__content">
+							<h3 class="author__name p-name" itemprop="name">
+								<a class="u-url" rel="me" href="https://ibug.io/" itemprop="url">iBug</a>
+							</h3>
+							<div class="author__bio p-note" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer me"><i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/iBugThought" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-telegram" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer me">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox">
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/open-source/"><i class="fas fa-fw fa-box-open"></i> Open Source</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/bookmarks/"><i class="fas fa-fw fa-bookmark"></i> Bookmarks</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="Beating $3k SSD with $2k HDD?">
+					<meta itemprop="description" content="A.K.A. Practical ZFS application on USTC Mirrors. A writeup of the talk I gave at Nanjing University this August.">
+					<meta itemprop="datePublished" content="2024-10-27T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2024-12-11T18:19:07+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title">
+											<i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#background">Background</a></li>
+										<li><a href="#zfs">ZFS</a></li>
+										<li><a href="#mirrors">Mirrors</a></li>
+										<li><a href="#mirrors2">Rebuilding the Rsync server</a></li>
+										<li><a href="#mirrors4">Rebuilding the HTTP server</a></li>
+										<li>
+											<a href="#misc">Misc</a>
+											<ul>
+												<li><a href="#zfs-compression">ZFS compression</a></li>
+												<li><a href="#grafana-for-zfs-io">Grafana for ZFS I/O</a></li>
+												<li><a href="#apparmor">AppArmor</a></li>
+												<li><a href="#file-deduplication">File deduplication</a></li>
+											</ul>
+										</li>
+										<li>
+											<a href="#conclusion">Conclusion</a>
+											<ul>
+												<li><a href="#considerations">Considerations</a></li>
+											</ul>
+										</li>
+									</ul>
+								</nav>
+							</aside>
+							<p>A.K.A. Practical ZFS application on USTC Mirrors. A writeup of the talk I gave at Nanjing University this August.</p>
+							<h2 id="background">Background</h2>
+							<p><a href="https://mirrors.ustc.edu.cn/">USTC Open-Source Software Mirrors</a> is one of the largest public mirror sites in China. In the two months of May and June 2024, we served an average daily egress traffic of some 36 TiB, which breaks down as follows:</p>
+							<ul>
+								<li>19 TiB from HTTP/HTTPS, among 17M requests</li>
+								<li>10.3 TiB from rsync, among 21.8k requests (if we count one absurd client in, the number of requests goes to 147.8k)</li>
+							</ul>
+							<p>Over the years, as mirror repositories have grown and new repositories have been added, we have been running tight on disk space. For our two servers responsible for the mirror service, we have reached unhealthy levels of disk usage:</p>
+							<ul>
+								<li>HTTP server (XFS): 63.3 TiB used out of 66.0 TiB (96%, achieved on December 18, 2023)</li>
+								<li>Rsync server (ZFS): 42.4 TiB used out of 43.2 TiB (98%, achieved on November 21, 2023)</li>
+							</ul>
+							<p>The servers have the following configurations:</p>
+							<dl>
+								<dt>HTTP server</dt>
+								<dd>
+									<ul>
+										<li>Set up in Fall 2020</li>
+										<li>Intel Cascade Lake CPU, 256 GB DDR4 RAM</li>
+										<li>Twelve 10 TB HDDs + One 2 TB SSD</li>
+										<li>XFS on LVM on hardware RAID</li>
+										<li>Reserved free PEs on LVM VG level as XFS cannot be shrunk</li>
+									</ul>
+								</dd>
+								<dt>Rsync server</dt>
+								<dd>
+									<ul>
+										<li>Set up in Winter 2016</li>
+										<li>Intel Broadwell CPU, 256 GB DDR4 RAM</li>
+										<li>Twelve 6 TB HDDs + some smaller SSDs for OS and cache</li>
+										<li>RAID-Z3 on ZFS, 8 data disks + 3 parity disks + 1 hot spare</li>
+										<li>All default parameters (except <code class="language-plaintext highlighter-rouge">zfs_arc_max</code>)</li>
+									</ul>
+								</dd>
+							</dl>
+							<p>These servers are constantly running at an I/O utilization of over 90%, which results in less than 50 MB/s download speed even from within USTC campus. Clearly this is not the ideal performance for this kind of dedicated storage servers.</p>
+							<figure class=""><a href="https://image.ibugone.com/grafana/mirrors-io-utilization-may-2024.png" class="image-popup" title="I/O load of two servers from USTC Mirrors in May 2024
+"><img src="https://image.ibugone.com/grafana/mirrors-io-utilization-may-2024.png" alt="I/O load of two servers from USTC Mirrors in May 2024"></a>
+								<figcaption>
+									I/O load of two servers from USTC Mirrors in May 2024
+								</figcaption>
+							</figure>
+							<h2 id="zfs">ZFS</h2>
+							<p>ZFS is usually known for being the ultimate single-node storage solution. It combines RAID, volume management, and filesystem in one, and provides advanced features like snapshots, clones and send/receive. Everything in ZFS is checksummed, ensuring data integrity. For servers dedicated to storage, ZFS appears to be a “fire and forget” solution, which is easily challenged by its tremendous amount of tunables and parameters.</p>
+							<p>As preliminary learning and experiments, I sourced some drives for my own workstation and set up two ZFS pools on them. Then I signed up for some private tracker (PT) sites for I/O load to tune for. The results were quite satisfying: In two years and a half, my single-node PT station has generated 1.20 PiB of uploads.</p>
+							<p>Over the years, I have gathered some of my most important sources for learning ZFS:</p>
+							<ul>
+								<li>Chris’s Wiki: <a href="https://utcc.utoronto.ca/~cks/space/blog/">https://utcc.utoronto.ca/~cks/space/blog/</a>
+								</li>
+								<li>OpenZFS Documentation: <a href="https://openzfs.github.io/openzfs-docs/">https://openzfs.github.io/openzfs-docs/</a>
+								</li>
+								<li>My own blog: <a href="/p/62">Understanding ZFS block sizes</a>
+									<ul>
+										<li>Plus all references in the article</li>
+									</ul>
+								</li>
+							</ul>
+							<figure class=""><a href="https://image.ibugone.com/grafana/qb/2024-06-05.png" class="image-popup" title="A byproduct of my ZFS learning: A Grafana dashboard for qBittorrent (lol…)
+"><img src="https://image.ibugone.com/grafana/qb/2024-06-05.png" alt="A Grafana dashboard for qBittorrent"></a>
+								<figcaption>
+									A byproduct of my ZFS learning: A Grafana dashboard for qBittorrent (lol…)
+								</figcaption>
+							</figure>
+							<p>After these years of learning ZFS, I realized that there’s a substantial room for improvement in our mirror servers, by embracing ZFS and tuning it properly.</p>
+							<h2 id="mirrors">Mirrors</h2>
+							<p>Before we move on to rebuilding the ZFS pool, we need to understand our I/O workload. In essence, a mirror site:</p>
+							<ul>
+								<li>Provides file downloads</li>
+								<li>Also (begrudgingly) serves as speed tests</li>
+								<li>Mostly reads, and almost all reads are whole-file sequential reads</li>
+								<li>Can withstand minimal data loss as mirror contents can be easily re-synced</li>
+							</ul>
+							<figure class=""><a href="https://image.ibugone.com/server/mirrors-file-size-distribution-2024-08.png" class="image-popup" title="File size distribution of USTC Mirrors in August 2024
+"><img src="https://image.ibugone.com/server/mirrors-file-size-distribution-2024-08.png" alt="File size distribution of USTC Mirrors in August 2024"></a>
+								<figcaption>
+									File size distribution of USTC Mirrors in August 2024
+								</figcaption>
+							</figure>
+							<p>With those in mind, we analyzed our mirror content. As can be seen from the graph above, half of the 40M files are less than 10 KiB in size, and 90% of the files are less than 1 MiB. Still, the files are averaged at 1.6 MiB.</p>
+							<h2 id="mirrors2">Rebuilding the Rsync server</h2>
+							<p>In June, we set out to rebuild the Rsync server as it had a lower service traffic and importance, yet a disproportionately higher disk usage. We laid out the following plan:</p>
+							<ul>
+								<li>First, the RAID overhead of RAID-Z3 was too high (reiterating: half of the files are less than 10 KiB, and the disks have 4 KiB sectors), so we decided to switch to RAID-Z2 as well as split the RAID group into two. Two RAIDZ vdevs also implies double the IOPS, as each “block” (in ZFS parlance) is stored on only one vdev.</li>
+								<li>We then carefully select dataset properties to optimize for our workload:
+									<ul>
+										<li>
+											<code class="language-plaintext highlighter-rouge">recordsize=1M</code> to maximize sequential throughput and minimize fragmentation</li>
+										<li>
+											<code class="language-plaintext highlighter-rouge">compression=zstd</code> to (try to) save some disk space
+											<ul>
+												<li>
+													<p>Since OpenZFS 2.2, a mechanism called “early-abort” has been extended to Zstd compression (level 3+), which saves CPU cycles by testing data compressibility with LZ4 then Zstd 1, before actually trying to compress with Zstd.</p>
+													<p>We know that most of our mirror content is already compressed (like software packages and ISOs), so early-abort is urging us to use Zstd.</p>
+												</li>
+											</ul>
+										</li>
+										<li>
+											<code class="language-plaintext highlighter-rouge">xattr=off</code> as we don’t need extended attributes for mirror content.</li>
+										<li>
+											<code class="language-plaintext highlighter-rouge">atime=off</code> as we don’t need access time. Also cuts off a lot of writes.</li>
+										<li>
+											<code class="language-plaintext highlighter-rouge">setuid=off</code>, <code class="language-plaintext highlighter-rouge">exec=off</code>, <code class="language-plaintext highlighter-rouge">devices=off</code> to disable what we don’t need.</li>
+										<li>
+											<code class="language-plaintext highlighter-rouge">secondarycache=metadata</code> to cache metadata only, as this Rsync server has a much more uniform access pattern than the HTTP server. We would like to save our SSDs from unnecessary writes.</li>
+									</ul>
+								</li>
+								<li>Some slightly dangerous properties:
+									<ul>
+										<li>
+											<code class="language-plaintext highlighter-rouge">sync=disabled</code> to disable synchronous writes. This allows ZFS to buffer writes up to <code class="language-plaintext highlighter-rouge">zfs_txg_timeout</code> seconds and make better allocation decisions.</li>
+										<li>
+											<code class="language-plaintext highlighter-rouge">redundant_metadata=some</code> to trade some metadata redundancy for better write performance.</li>
+									</ul>
+									<p>We believe these changes are in alignment with our evaluation of data safety and loss tolerance.</p>
+								</li>
+								<li>
+									<p>For ZFS module parameters, the sheer number of 290+ tunables is overwhelming. Thanks to <a href="https://github.com/happyaron" class="user-mention">@happyaron</a>, the current ZFS maintainer in Debian and administrator of BFSU Mirror, we selected a handful of them:</p>
+									<div class="language-shell highlighter-rouge">
+										<div class="highlight">
+											<pre class="highlight"><code><span class="c"># Set ARC size to 160-200 GiB, keep 16 GiB free for OS</span>
+options zfs <span class="nv">zfs_arc_max</span><span class="o">=</span>214748364800
+options zfs <span class="nv">zfs_arc_min</span><span class="o">=</span>171798691840
+options zfs <span class="nv">zfs_arc_sys_free</span><span class="o">=</span>17179869184
+
+<span class="c"># Favor metadata to data by 20x (OpenZFS 2.2+)</span>
+options zfs <span class="nv">zfs_arc_meta_balance</span><span class="o">=</span>2000
+
+<span class="c"># Allow up to 80% of ARC to be used for dnodes</span>
+options zfs <span class="nv">zfs_arc_dnode_limit_percent</span><span class="o">=</span>80
+
+<span class="c"># See man page section "ZFS I/O Scheduler"</span>
+options zfs <span class="nv">zfs_vdev_async_read_max_active</span><span class="o">=</span>8
+options zfs <span class="nv">zfs_vdev_async_read_min_active</span><span class="o">=</span>2
+options zfs <span class="nv">zfs_vdev_scrub_max_active</span><span class="o">=</span>5
+options zfs <span class="nv">zfs_vdev_max_active</span><span class="o">=</span>20000
+
+<span class="c"># Never throttle the ARC</span>
+options zfs <span class="nv">zfs_arc_lotsfree_percent</span><span class="o">=</span>0
+
+<span class="c"># Tune L2ARC</span>
+options zfs <span class="nv">l2arc_headroom</span><span class="o">=</span>8
+options zfs <span class="nv">l2arc_write_max</span><span class="o">=</span>67108864
+options zfs <span class="nv">l2arc_noprefetch</span><span class="o">=</span>0
+</code></pre>
+										</div>
+    </div>
+									<p>And also <code class="language-plaintext highlighter-rouge">zfs_dmu_offset_next_sync</code>, which is enabled by default since OpenZFS 2.1.5, so it’s omitted from our list.</p>
+								</li>
+							</ul>
+							<p>After relocating Rsync service to our primary server (HTTP server), we broke up the existing ZFS pool and rebuilt it anew, before syncing previous repositories back from external sources. To our surprise, the restoration took only 3 days, much faster than we had anticipated. Other numbers also looked promising:</p>
+							<ul>
+								<li>
+									<p>Compression ratio: 39.5T / 37.1T (1.07x)</p>
+									<p>We’d like to point out that ZFS only provides two digits after the decimal point for compression ratio, so if you want a higher precision, you need take the raw numbers and calculate it yourself:</p>
+									<div class="language-shell highlighter-rouge">
+										<div class="highlight">
+											<pre class="highlight"><code>zfs list <span class="nt">-po</span> name,logicalused,used
+</code></pre>
+										</div>
+    </div>
+									<p>Our actual number was 1 + 6.57%, at 2.67 TB (2.43 TiB) saved, which means equivalently 9 copies of WeChat data <a href="https://image.ibugone.com/teaser/lenovo-legion-wechat-data.jpg">as advertised by Lenovo Legion</a>.</p>
+								</li>
+								<li>
+									<p>And most importantly, a much saner I/O load:</p>
+									<figure class=""><a href="https://image.ibugone.com/grafana/mirrors2-io-utilization-and-free-space-june-july-2024.png" class="image-popup" title="I/O load of server “mirrors2” before and after the rebuild
+"><img src="https://image.ibugone.com/grafana/mirrors2-io-utilization-and-free-space-june-july-2024.png" alt="I/O load of server mirrors2 before and after the rebuild"></a>
+										<figcaption>
+											I/O load of server “mirrors2” before and after the rebuild
+										</figcaption>
+									</figure>
+								</li>
+							</ul>
+							<p>We can see that, after a few days of warm-up, the I/O load has maintained at around 20%, whereas it was constantly at 90% before the rebuild.</p>
+							<h2 id="mirrors4">Rebuilding the HTTP server</h2>
+							<p>Our HTTP server was set up in late 2020 and under a different background.
+								When we were first deciding the technology stack, we were not confident in ZFS and were discouraged by the abysmal performance of our Rsync server.
+								So we opted for an entirely different stack for this server: hardware RAID, LVM (because the RAID controller didn’t allow RAID groups across two controllers), and XFS.
+								For memory caching, we relied on kernel’s page cache, and for SSD caching, we tried LVMcache, which was quite new at the moment and rather immature.</p>
+							<p>These unpracticed technologies have, without a doubt, ended up a pain.</p>
+							<ul>
+								<li>XFS cannot be shrunk, so we had to reserve free PEs at LVM VG level. We also cannot fill the FS, so there are two levels of free space reservation. Double the waste.</li>
+								<li>We initially allocated 1.5 TB of SSD cache, but given LVMcache’s recommendation of no more than 1 million chunks, we opted for just 1 TiB (1 MiB chunk size × 1 Mi chunks).</li>
+								<li>There were no options for cache eviction policy, so later we dug into the kernel source code and found that it was a 64-level LRU.</li>
+								<li>The first thing to die was GRUB2. Due to GRUB’s parsing of LVM metadata, it was unable to boot from a VG where a cached volume was present. We had to <a href="https://github.com/taoky/grub/commit/85b260baec91aa4f7db85d7592f6be92d549a0ae">patch</a> GRUB for it to handle this case.</li>
+								<li>With an incorrect understanding of chunk size and number of chunks, our SSD ran severely over its write endurance in under 2 years, and we had to replace it with a new one.</li>
+							</ul>
+							<p>Even after understanding the algorithm and still going for 128 KiB chunk size and over 8 Mi chunks, LVMcache still didn’t offer a competitive hit rate:</p>
+							<figure class=""><a href="https://image.ibugone.com/grafana/mirrors4-dmcache-may-june-2024.png" class="image-popup" title="LVMcache hit rate over May to June 2024
+"><img src="https://image.ibugone.com/grafana/mirrors4-dmcache-may-june-2024.png" alt="LVMcache hit rate over May to June 2024"></a>
+								<figcaption>
+									LVMcache hit rate over May to June 2024
+								</figcaption>
+							</figure>
+							<p>We had already been fed up with those troubles through the years, and the success with our Rsync server rebuild gave us great confidence with ZFS.
+								So in less than a month, we laid out a similar plan for our HTTP server, but trying something new:</p>
+							<ul>
+								<li>We updated the kernel to <code class="language-plaintext highlighter-rouge">6.8.8-3-pve</code>, which bundles the latest <code class="language-plaintext highlighter-rouge">zfs.ko</code> for us. This means we don’t have to waste time on DKMS.</li>
+								<li>Since the number of disks is the same (12 disks), we also went for two RAID-Z2 vdevs with 6 disks each.
+									<ul>
+										<li>As this server provides HTTP service to end users, the access pattern will have a greater hot/cold distinction than the Rsync server. So we keep <code class="language-plaintext highlighter-rouge">secondarycache=all</code> for this server (leave the default value unchanged).</li>
+										<li>This newer server has a better CPU, so we increased compression level to <code class="language-plaintext highlighter-rouge">zstd-8</code> in hope for a better compression ratio.</li>
+									</ul>
+								</li>
+								<li>Since we already have the Rsync server running ZFS with desired parameters, we have <code class="language-plaintext highlighter-rouge">zfs send -Lcp</code> available when syncing the data back. This allows us to restore 50+ TiB of data in just 36 hours.</li>
+								<li>Due to having a slightly different set of repositories, the compression ratio is slightly lower at 1 + 3.93% (2.42 TiB / 2.20 TiB saved).</li>
+							</ul>
+							<p>We put the I/O loads of both servers together for comparison:</p>
+							<figure class=""><a href="https://image.ibugone.com/grafana/mirrors2-4-io-utilization-june-july-2024.png" class="image-popup" title="I/O load of two servers from USTC Mirrors before and after rebuild
+"><img src="https://image.ibugone.com/grafana/mirrors2-4-io-utilization-june-july-2024.png" alt="I/O load of two servers from USTC Mirrors before and after rebuild"></a>
+								<figcaption>
+									I/O load of two servers from USTC Mirrors before and after rebuild
+								</figcaption>
+							</figure>
+							<p>This graph starts with the initial state. The first server was rebuilt at 1/3, and the second server was rebuilt at 2/3.</p>
+							<p>The hit rate of ZFS ARC is also quite satisfying:</p>
+							<figure class=""><a href="https://image.ibugone.com/grafana/mirrors2-4-zfs-arc-hit-rate.png" class="image-popup" title="ZFS ARC hit rate of two servers
+"><img src="https://image.ibugone.com/grafana/mirrors2-4-zfs-arc-hit-rate.png" alt="ZFS ARC hit rate of two servers"></a>
+								<figcaption>
+									ZFS ARC hit rate of two servers
+								</figcaption>
+							</figure>
+							<p>The stablized I/O load is even lower after both servers were rebuilt.</p>
+							<figure class=""><a href="https://image.ibugone.com/grafana/mirrors2-4-disk-io-after-rebuild.png" class="image-popup" title="Sustained disk I/O of two servers after rebuild
+"><img src="https://image.ibugone.com/grafana/mirrors2-4-disk-io-after-rebuild.png" alt="Sustained disk I/O of two servers after rebuild"></a>
+								<figcaption>
+									Sustained disk I/O of two servers after rebuild
+								</figcaption>
+							</figure>
+							<h2 id="misc">Misc</h2>
+							<h3 id="zfs-compression">ZFS compression</h3>
+							<p>We are slightly surprised to see that so many repositories are well-compressible:</p>
+							<table>
+								<thead>
+									<tr>
+										<th style="text-align: left">NAME</th>
+										<th style="text-align: right">LUSED</th>
+										<th style="text-align: right">USED</th>
+										<th style="text-align: right">RATIO</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td style="text-align: left">pool0/repo/crates.io-index</td>
+										<td style="text-align: right">2.19G</td>
+										<td style="text-align: right">1.65G</td>
+										<td style="text-align: right">3.01x</td>
+									</tr>
+									<tr>
+										<td style="text-align: left">pool0/repo/elpa</td>
+										<td style="text-align: right">3.35G</td>
+										<td style="text-align: right">2.32G</td>
+										<td style="text-align: right">1.67x</td>
+									</tr>
+									<tr>
+										<td style="text-align: left">pool0/repo/rfc</td>
+										<td style="text-align: right">4.37G</td>
+										<td style="text-align: right">3.01G</td>
+										<td style="text-align: right">1.56x</td>
+									</tr>
+									<tr>
+										<td style="text-align: left">pool0/repo/debian-cdimage</td>
+										<td style="text-align: right">1.58T</td>
+										<td style="text-align: right">1.04T</td>
+										<td style="text-align: right">1.54x</td>
+									</tr>
+									<tr>
+										<td style="text-align: left">pool0/repo/tldp</td>
+										<td style="text-align: right">4.89G</td>
+										<td style="text-align: right">3.78G</td>
+										<td style="text-align: right">1.48x</td>
+									</tr>
+									<tr>
+										<td style="text-align: left">pool0/repo/loongnix</td>
+										<td style="text-align: right">438G</td>
+										<td style="text-align: right">332G</td>
+										<td style="text-align: right">1.34x</td>
+									</tr>
+									<tr>
+										<td style="text-align: left">pool0/repo/rosdistro</td>
+										<td style="text-align: right">32.2M</td>
+										<td style="text-align: right">26.6M</td>
+										<td style="text-align: right">1.31x</td>
+									</tr>
+								</tbody>
+							</table>
+							<p>A few numbers (notably the first one) don’t make sense, which we attribute to <a href="https://github.com/openzfs/zfs/issues/7639"><i class="fab fa-github"></i> openzfs/zfs#7639</a>.</p>
+							<p>If we sort the table by difference, it would be:</p>
+							<table>
+								<thead>
+									<tr>
+										<th style="text-align: left">NAME</th>
+										<th style="text-align: right">LUSED</th>
+										<th style="text-align: right">USED</th>
+										<th style="text-align: right">DIFF</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td style="text-align: left">pool0/repo</td>
+										<td style="text-align: right">58.3T</td>
+										<td style="text-align: right">56.1T</td>
+										<td style="text-align: right">2.2T</td>
+									</tr>
+									<tr>
+										<td style="text-align: left">pool0/repo/debian-cdimage</td>
+										<td style="text-align: right">1.6T</td>
+										<td style="text-align: right">1.0T</td>
+										<td style="text-align: right">549.6G</td>
+									</tr>
+									<tr>
+										<td style="text-align: left">pool0/repo/opensuse</td>
+										<td style="text-align: right">2.5T</td>
+										<td style="text-align: right">2.3T</td>
+										<td style="text-align: right">279.7G</td>
+									</tr>
+									<tr>
+										<td style="text-align: left">pool0/repo/turnkeylinux</td>
+										<td style="text-align: right">1.2T</td>
+										<td style="text-align: right">1.0T</td>
+										<td style="text-align: right">155.2G</td>
+									</tr>
+									<tr>
+										<td style="text-align: left">pool0/repo/loongnix</td>
+										<td style="text-align: right">438.2G</td>
+										<td style="text-align: right">331.9G</td>
+										<td style="text-align: right">106.3G</td>
+									</tr>
+									<tr>
+										<td style="text-align: left">pool0/repo/alpine</td>
+										<td style="text-align: right">3.0T</td>
+										<td style="text-align: right">2.9T</td>
+										<td style="text-align: right">103.9G</td>
+									</tr>
+									<tr>
+										<td style="text-align: left">pool0/repo/openwrt</td>
+										<td style="text-align: right">1.8T</td>
+										<td style="text-align: right">1.7T</td>
+										<td style="text-align: right">70.0G</td>
+									</tr>
+								</tbody>
+							</table>
+							<p><code class="language-plaintext highlighter-rouge">debian-cdimage</code> alone contributes to a quarter of the saved space.</p>
+							<h3 id="grafana-for-zfs-io">Grafana for ZFS I/O</h3>
+							<p>We also fixed a Grafana panel for ZFS I/O so it’s displaying the correct numbers.
+								Because ZFS I/O statistics are exported through <code class="language-plaintext highlighter-rouge">/proc/spl/kstat/zfs/$POOL/objset-$OBJSETID_HEX</code> and is cumulative per “object set” (i.e. dataset), we need to calculate the derivative of the numbers and <em>then</em> sum by pool.
+								This means the use of subqueries is inevitable.</p>
+							<div class="language-sql highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">SELECT</span>
+  <span class="n">non_negative_derivative</span><span class="p">(</span><span class="k">sum</span><span class="p">(</span><span class="nv">"reads"</span><span class="p">),</span> <span class="mi">1</span><span class="n">s</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">"read"</span><span class="p">,</span>
+  <span class="n">non_negative_derivative</span><span class="p">(</span><span class="k">sum</span><span class="p">(</span><span class="nv">"writes"</span><span class="p">),</span> <span class="mi">1</span><span class="n">s</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">"write"</span>
+<span class="k">FROM</span> <span class="p">(</span>
+  <span class="k">SELECT</span>
+    <span class="k">first</span><span class="p">(</span><span class="nv">"reads"</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">"reads"</span><span class="p">,</span>
+    <span class="k">first</span><span class="p">(</span><span class="nv">"writes"</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">"writes"</span>
+  <span class="k">FROM</span> <span class="nv">"zfs_pool"</span>
+  <span class="k">WHERE</span> <span class="p">(</span><span class="nv">"host"</span> <span class="o">=</span> <span class="s1">'taokystrong'</span> <span class="k">AND</span> <span class="nv">"pool"</span> <span class="o">=</span> <span class="s1">'pool0'</span><span class="p">)</span> <span class="k">AND</span> <span class="err">$</span><span class="n">timeFilter</span>
+  <span class="k">GROUP</span> <span class="k">BY</span> <span class="nb">time</span><span class="p">(</span><span class="err">$</span><span class="n">interval</span><span class="p">),</span> <span class="nv">"host"</span><span class="p">::</span><span class="n">tag</span><span class="p">,</span> <span class="nv">"pool"</span><span class="p">::</span><span class="n">tag</span><span class="p">,</span> <span class="nv">"dataset"</span><span class="p">::</span><span class="n">tag</span> <span class="n">fill</span><span class="p">(</span><span class="k">null</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="k">WHERE</span> <span class="err">$</span><span class="n">timeFilter</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="nb">time</span><span class="p">(</span><span class="err">$</span><span class="n">interval</span><span class="p">),</span> <span class="nv">"pool"</span><span class="p">::</span><span class="n">tag</span> <span class="n">fill</span><span class="p">(</span><span class="n">linear</span><span class="p">)</span>
+</code></pre>
+								</div>
+							</div>
+							<p>This query is a bit slow (due to the subquery) and unfortunately there’s not much we can do about it.</p>
+							<p>To display I/O bandwidth, simply replace <code class="language-plaintext highlighter-rouge">reads</code> and <code class="language-plaintext highlighter-rouge">writes</code> with <code class="language-plaintext highlighter-rouge">nread</code> and <code class="language-plaintext highlighter-rouge">nwritten</code> in the inner query.</p>
+							<figure class=""><a href="https://image.ibugone.com/grafana/mirrors2-4-zfs-io-count.png" class="image-popup" title="ZFS I/O count and bandwidth
+"><img src="https://image.ibugone.com/grafana/mirrors2-4-zfs-io-count.png" alt="ZFS I/O count and bandwidth"></a>
+								<figcaption>
+									ZFS I/O count and bandwidth
+								</figcaption>
+							</figure>
+							<p>We are astonished to see an HDD array can sustain 15k IOPS and peaking at 50k IOPS.
+								This becomes all explained when we discovered that these numbers took ARC hits into account, and a minimal proportion were actually hitting the disks.</p>
+							<h3 id="apparmor">AppArmor</h3>
+							<p>It didn’t take long before we noticed all our sync tasks were failing.
+								We found <code class="language-plaintext highlighter-rouge">rsync</code> failing with <code class="language-plaintext highlighter-rouge">EPERM</code> for <code class="language-plaintext highlighter-rouge">socketpair(2)</code> calls, which never manifested before.
+								Interestingly, these were denied by AppArmor.
+								We traced down the cause to be Ubuntu’s addition to the kernel, <code class="language-plaintext highlighter-rouge">security/apparmor/af_unix.c</code>.
+								As Proxmox VE forks its kernel from Ubuntu, this change also made its way into our server.</p>
+							<p>We also found PVE packaging their own copy of AppArmor <code class="language-plaintext highlighter-rouge">features</code>, so we decided to adopt the same approach:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>dpkg-divert <span class="nt">--package</span> lxc-pve <span class="nt">--rename</span> <span class="nt">--divert</span> /usr/share/apparmor-features/features.stock <span class="nt">--add</span> /usr/share/apparmor-features/features
+wget <span class="nt">-O</span> /usr/share/apparmor-features/features https://github.com/proxmox/lxc/raw/master/debian/features
+</code></pre>
+								</div>
+							</div>
+							<h3 id="file-deduplication">File deduplication</h3>
+							<p>For a small set of repositories, possibly due to limitations of syncing methods, we noticed a lot of identically-looking directories.</p>
+							<figure class=""><a href="https://image.ibugone.com/server/ls-zerotier-redhat-el.png" class="image-popup" title="Some folders from ZeroTier repository
+"><img src="https://image.ibugone.com/server/ls-zerotier-redhat-el.png" alt="Some folders from ZeroTier repository"></a>
+								<figcaption>
+									Some folders from ZeroTier repository
+								</figcaption>
+							</figure>
+							<p>ZFS deduplication immediately came to our mind, so we made a preliminary test on ZT:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>zfs create <span class="nt">-o</span> <span class="nv">dedup</span><span class="o">=</span>on pool0/repo/zerotier
+<span class="c"># dump content into it</span>
+</code></pre>
+								</div>
+							</div>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zdb <span class="nt">-DDD</span> pool0
+<span class="go">dedup = 4.93, compress = 1.23, copies = 1.00, dedup * compress / copies = 6.04
+</span></code></pre>
+								</div>
+							</div>
+							<p>The results look promising, but we are still hesitant to enable deduplication due to the potential performance impact even on these selected datasets.</p>
+							<p>Guess what we ended up with?</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="c"># post-sync.sh</span>
+<span class="c"># Do file-level deduplication for select repos</span>
+<span class="k">case</span> <span class="s2">"</span><span class="nv">$NAME</span><span class="s2">"</span> <span class="k">in
+  </span>docker-ce|influxdata|nginx|openresty|proxmox|salt|tailscale|zerotier<span class="p">)</span>
+    jdupes <span class="nt">-L</span> <span class="nt">-Q</span> <span class="nt">-r</span> <span class="nt">-q</span> <span class="s2">"</span><span class="nv">$DIR</span><span class="s2">"</span> <span class="p">;;</span>
+<span class="k">esac</span>
+</code></pre>
+								</div>
+							</div>
+							<p>As attractive as it looks, this userspace file deduplication tool is as good as ZFS can do, but without the performance loss.</p>
+							<table>
+								<thead>
+									<tr>
+										<th>Name</th>
+										<th>Orig</th>
+										<th>Dedup</th>
+										<th>Diff</th>
+										<th>Ratio</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td>proxmox</td>
+										<td>395.4G</td>
+										<td>162.6G</td>
+										<td>232.9G</td>
+										<td>2.43x</td>
+									</tr>
+									<tr>
+										<td>docker-ce</td>
+										<td>539.6G</td>
+										<td>318.2G</td>
+										<td>221.4G</td>
+										<td>1.70x</td>
+									</tr>
+									<tr>
+										<td>influxdata</td>
+										<td>248.4G</td>
+										<td>54.8G</td>
+										<td>193.6G</td>
+										<td>4.54x</td>
+									</tr>
+									<tr>
+										<td>salt</td>
+										<td>139.0G</td>
+										<td>87.2G</td>
+										<td>51.9G</td>
+										<td>1.59x</td>
+									</tr>
+									<tr>
+										<td>nginx</td>
+										<td>94.9G</td>
+										<td>59.7G</td>
+										<td>35.2G</td>
+										<td>1.59x</td>
+									</tr>
+									<tr>
+										<td>zerotier</td>
+										<td>29.8G</td>
+										<td>6.1G</td>
+										<td>23.7G</td>
+										<td>4.88x</td>
+									</tr>
+									<tr>
+										<td>mysql-repo</td>
+										<td>647.8G</td>
+										<td>632.5G</td>
+										<td>15.2G</td>
+										<td>1.02x</td>
+									</tr>
+									<tr>
+										<td>openresty</td>
+										<td>65.1G</td>
+										<td>53.4G</td>
+										<td>11.7G</td>
+										<td>1.22x</td>
+									</tr>
+									<tr>
+										<td>tailscale</td>
+										<td>17.9G</td>
+										<td>9.0G</td>
+										<td>9.0G</td>
+										<td>2.00x</td>
+									</tr>
+								</tbody>
+							</table>
+							<p>We decided to exclude <code class="language-plaintext highlighter-rouge">mysql-repo</code> as the deduplication ratio is too low to justify the I/O load after each sync.</p>
+							<h2 id="conclusion">Conclusion</h2>
+							<p>ZFS solved a number of problems we had with our mirror servers, and with the current setup, we are delighted to announce that ZFS is <em>the</em> best solution for mirrors.</p>
+							<p>With ZFS:</p>
+							<ul>
+								<li>We no longer need to worry about partitioning, as ZFS can grow and shrink as needed.</li>
+								<li>Our HDD array is now running faster than SSDs. Amazing!
+									<ul>
+										<li>Be the first one to no longer <strong>envy</strong> TUNA’s SSD server!</li>
+									</ul>
+								</li>
+								<li>Extra capacity at no cost, thanks to ZFS compression.
+									<ul>
+										<li>Even more so with deduplication.</li>
+									</ul>
+								</li>
+							</ul>
+							<h3 id="considerations">Considerations</h3>
+							<p>While our ZFS looks very promising, we’re aware that ZFS is not known for its long-term performance stability due to fragmentation.
+								We’ll continue to monitor our servers and see if this performance is sustainable.</p>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/linux" class="page__taxonomy-item p-category" rel="tag">linux</a><span class="sep">, </span>
+									<a href="/tag/server" class="page__taxonomy-item p-category" rel="tag">server</a><span class="sep">, </span>
+									<a href="/tag/zfs" class="page__taxonomy-item p-category" rel="tag">zfs</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2024-12-11">Dec 11, 2024</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://x.com/intent/tweet?text=Beating+%243k+SSD+with+%242k+HDD%3F%20https%3A%2F%2Fibug.io%2Fblog%2F2024%2F10%2Fustc-mirrors-zfs-rebuild%2F" class="btn btn--x" aria-label="Share on X" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on X">
+								<i class="fas fa-fw fa-share-alt" aria-hidden="true"></i><span> X</span>
+							</a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2024%2F10%2Fustc-mirrors-zfs-rebuild%2F" class="btn btn--facebook" aria-label="Share on Facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook">
+								<i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span>
+							</a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://ibug.io/blog/2024/10/ustc-mirrors-zfs-rebuild/" class="btn btn--linkedin" aria-label="Share on LinkedIn" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn">
+								<i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span>
+							</a>
+						</section>
+						<nav class="pagination">
+							<a href="/blog/2024/09/python3.12-user-packages/" class="pagination--pager" title="Make Python 3.12 install user packages without complaints
+">Previous</a>
+							<a href="/blog/2025/04/windows-10-ltsc-onedrive-explorer-sidebar-fix/" class="pagination--pager" title="Fixing OneDrive not expanding in Explorer sidebar on Windows 10 LTSC
+">Next</a>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+				<div class="page__related">
+					<h2 class="page__related-title">You may also enjoy</h2>
+					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/linux-container.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are w...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											24 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											16 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/zfs-linux.png" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2023/10/zfs-block-size/" rel="permalink">Understanding ZFS block sizes
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems ...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2023-10-30T00:00:00+00:00">Oct 30, 2023</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											9 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/ldap.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											14 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					<p>© 2025 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
+					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
+					<p>
+						Site version <a href="/status" class="version-text">G-926</a>
+					</p>
+				</div>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<script>
+			// Including InstantSearch.js library and styling
+			const loadSearch = function() {
+			  const loadCSS = function(src) {
+			    var link = document.createElement('link');
+			    link.rel = 'stylesheet';
+			    link.type = 'text/css';
+			    link.href = src;
+			    link.media = 'all';
+			    document.head.appendChild(link);
+			  };
+
+			  var script = document.createElement('script');
+			  script.setAttribute("type", "text/javascript");
+			  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
+			  script.addEventListener("load", function() {
+			    // Instantiating InstantSearch.js with Algolia credentials
+			    const search = instantsearch({
+			      appId: '14DZKASAEJ',
+			      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			      indexName: 'iBug_website',
+			      searchParameters: {
+			        restrictSearchableAttributes: ['title', 'content']
+			      }
+			    });
+
+			    const hitTemplate = function(hit) {
+			      const url = hit.url;
+			      const hightlight = hit._highlightResult;
+			      const title = hightlight.title && hightlight.title.value  || "";
+			      const content = hightlight.html && hightlight.html.value  || "";
+
+			      return `
+			        <div class="list__item">
+			          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			            <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			          </article>
+			        </div>
+			      `;
+			    }
+
+			    // Adding searchbar and results widgets
+			    search.addWidget(
+			      instantsearch.widgets.searchBox({
+			        container: '.search-searchbar',
+			        poweredBy: true,
+			        placeholder: 'Enter your search term...'
+			      })
+			    );
+			    search.addWidget(
+			      instantsearch.widgets.hits({
+			        container: '.search-hits',
+			        templates: {
+			          item: hitTemplate,
+			          empty: 'No results',
+			        }
+			      })
+			    );
+
+			    if (!search.started) {
+			      search.start();
+			    }
+			  });
+			  document.body.appendChild(script);
+
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
+			};
+
+			// Starting the search only when toggle is clicked
+			$(document).ready(function() {
+			  var scriptLoaded = false;
+
+			  $(".search__toggle").on("click", function() {
+			    if (!scriptLoaded) {
+			      loadSearch();
+			      scriptLoaded = true;
+			    }
+			  });
+			});
+		</script>
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-V93196TX91"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+
+			gtag('config', 'G-V93196TX91', { 'anonymize_ip': false});
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/blog/2024/10/ustc-mirrors-zfs-rebuild/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2024/10/ustc-mirrors-zfs-rebuild"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+		</noscript>
+	</body>
+</html>

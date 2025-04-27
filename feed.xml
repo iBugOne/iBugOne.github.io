@@ -1,407 +1,990 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.4">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2024-10-02T16:02:27+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Make Python 3.12 install user packages without complaints</title><link href="https://ibug.io/blog/2024/09/python3.12-user-packages/" rel="alternate" type="text/html" title="Make Python 3.12 install user packages without complaints" /><published>2024-09-02T00:00:00+00:00</published><updated>2024-09-03T11:59:51+00:00</updated><id>https://ibug.io/blog/2024/09/python3.12-user-packages</id><content type="html" xml:base="https://ibug.io/blog/2024/09/python3.12-user-packages/"><![CDATA[<p>I have a habit of <code class="language-plaintext highlighter-rouge">pip3 install --user</code> and then expecting these packages under <code class="language-plaintext highlighter-rouge">~/.local/lib/</code> to be available for my Python scripts whenever I need them. However, with PEP 668 landing in Python 3.12, I now have to add <code class="language-plaintext highlighter-rouge">--break-system-packages</code> even for <em>user</em> packages. This is super annoying considered that I have multiple projects sharing the same set of common packages (e.g. <a href="https://squidfunk.github.io/mkdocs-material/"><code class="language-plaintext highlighter-rouge">mkdocs-material</code></a>, a nice MkDocs theme). So time to tell <code class="language-plaintext highlighter-rouge">pip</code> to jerk off on that complaint.</p>
-			<p>Obviously, aliasing <code class="language-plaintext highlighter-rouge">pip3</code> (as per my personal habit, I always prefer <code class="language-plaintext highlighter-rouge">python3</code> and <code class="language-plaintext highlighter-rouge">pip3</code> over <code class="language-plaintext highlighter-rouge">python</code> and <code class="language-plaintext highlighter-rouge">pip</code>) to <code class="language-plaintext highlighter-rouge">pip3 --break-system-packages</code> could work, with all the limitations that any other shell alias bear.</p>
-			<p>The key here is, by examining how virtual environments work, we can trick Python into thinking that <code class="language-plaintext highlighter-rouge">~/.local</code> is one of them. This is already documented in the <a href="https://docs.python.org/3/library/site.html"><code class="language-plaintext highlighter-rouge">site</code> package</a>:</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2025-04-27T12:28:46+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Fixing OneDrive not expanding in Explorer sidebar on Windows 10 LTSC</title><link href="https://ibug.io/blog/2025/04/windows-10-ltsc-onedrive-explorer-sidebar-fix/" rel="alternate" type="text/html" title="Fixing OneDrive not expanding in Explorer sidebar on Windows 10 LTSC" /><published>2025-04-22T00:00:00+00:00</published><updated>2025-04-23T00:39:07+00:00</updated><id>https://ibug.io/blog/2025/04/windows-10-ltsc-onedrive-explorer-sidebar-fix</id><content type="html" xml:base="https://ibug.io/blog/2025/04/windows-10-ltsc-onedrive-explorer-sidebar-fix/"><![CDATA[<p>I’ve recently re-installed Windows 10 LTSC for both of my computers, and after setting up OneDrive (from Office 365 suite), I noticed that the OneDrive folder in the Explorer sidebar was not expanding when clicked, showing a static gray arrow.
+				This <em>could</em> be a known issue with Windows 10 LTSC, as it doesn’t include OneDrive integration by default, unlike consumer versions.</p>
+			<p>For readers who want to skip the details, just head to the <a href="#solution"><strong>Solution</strong></a> section.</p>
+			<h2 id="gathering-information">Gathering Information</h2>
+			<p>Looking for “Windows 10 OneDrive doesn’t expand” on Google, <a href="https://answers.microsoft.com/en-us/msoffice/forum/all/one-drive-folder-tab-not-expanding/04eac1d9-2665-4c5e-b02b-9976fbcf2c49">One drive folder tab not expanding</a> shows up first.
+				It contains no useful information other than a link to another: <a href="https://answers.microsoft.com/en-us/windows/forum/all/cannot-access-onedrive-personal-folder-through/fb21a27c-bf5a-4371-926e-9ff869070f03">Cannot access Onedrive - Personal folder through Quick Access of File Explorer</a>.</p>
+			<p>The second link is much better populated with information, notably there’s a valid workaround:</p>
 			<blockquote>
-				<p>If a file named <code class="language-plaintext highlighter-rouge">pyvenv.cfg</code> exists one directory above <code class="language-plaintext highlighter-rouge">sys.executable</code> …</p>
-			</blockquote>
-			<p>So here’s the solution, assuming <code class="language-plaintext highlighter-rouge">~/.local/bin</code> is already in your <code class="language-plaintext highlighter-rouge">$PATH</code>:</p>
-			<ol>
-				<li>Symlink <code class="language-plaintext highlighter-rouge">/usr/bin/python3</code> to <code class="language-plaintext highlighter-rouge">~/.local/bin/python3</code></li>
-				<li>Copy <code class="language-plaintext highlighter-rouge">/usr/bin/pip3</code> to <code class="language-plaintext highlighter-rouge">~/.local/bin/pip3</code>, and change the shebang line to <code class="language-plaintext highlighter-rouge">#!/home/example/.local/bin/python3</code> (you’ll have to use the absolute path here, though).</li>
-				<li>
-					<p>Create <code class="language-plaintext highlighter-rouge">~/.local/pyvenv.cfg</code> with just one line of content:</p>
-					<div class="language-ini highlighter-rouge">
-						<div class="highlight">
-							<pre class="highlight"><code> <span class="py">include-system-site-packages</span> <span class="p">=</span> <span class="s">true</span>
+				<div class="language-ini highlighter-rouge">
+					<div class="highlight">
+						<pre class="highlight"><code><span class="err">Windows</span> <span class="err">Registry</span> <span class="err">Editor</span> <span class="err">Version</span> <span class="err">5.00</span>
+
+<span class="nn">[HKEY_CLASSES_ROOT\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}\Instance\InitPropertyBag]</span>
+<span class="err">"TargetKnownFolder"=""</span>
+
+<span class="nn">[HKEY_CLASSES_ROOT\WOW6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}\Instance\InitPropertyBag]</span>
+<span class="err">"TargetKnownFolder"=""</span>
 </code></pre>
-						</div>
-    </div>
-					<p>You can, of course, add other settings for <code class="language-plaintext highlighter-rouge">venv</code>, which is completely optional and up to you.</p>
-				</li>
-			</ol>
-			<p>Now whenever you install something with <code class="language-plaintext highlighter-rouge">pip3</code>, it’ll happily install it under <code class="language-plaintext highlighter-rouge">~/.local/lib/python3.12/site-packages</code> even without the need for <code class="language-plaintext highlighter-rouge">--user</code>.</p>
-			<p>If you prefer <code class="language-plaintext highlighter-rouge">python</code> or <code class="language-plaintext highlighter-rouge">pip</code> commands, you can just change the file names in the above steps accordingly.</p>
-			<p>Noteworthy points are:</p>
-			<ol>
-				<li>This method certainly can work for the system Python installation (at <code class="language-plaintext highlighter-rouge">/usr</code>), which I wouldn’t recommend for obvious reasons. If you insist, you should at least do this under <code class="language-plaintext highlighter-rouge">/usr/local</code> instead.</li>
-				<li>
-					<s>This method (when applied to `~/.local`) is ineffective against scripts already shebanged with `#!/usr/bin/python3`. Consider developing the habit of running `python3 script.py` instead of `./script.py` like I do.</s>
-				</li>
-			</ol>
-			<h2 id="corrigenda">Corrigenda</h2>
-			<ul>
-				<li>Scripts shebanged with <code class="language-plaintext highlighter-rouge">#!/usr/bin/python3</code> <em>will</em> pick up packages under <code class="language-plaintext highlighter-rouge">~/.local/lib/</code> as this is the default user site directory, which comes in <code class="language-plaintext highlighter-rouge">sys.path</code> even before the system site directory.</li>
-			</ul>
-			]]></content><author><name>iBug</name></author><category term="linux" /><category term="python" /><summary type="html"><![CDATA[I have a habit of pip3 install --user and then expecting these packages under ~/.local/lib/ to be available for my Python scripts whenever I need them. However, with PEP 668 landing in Python 3.12, I now have to add --break-system-packages even for user packages. This is super annoying considered that I have multiple projects sharing the same set of common packages (e.g. mkdocs-material, a nice MkDocs theme). So time to tell pip to jerk off on that complaint.]]></summary></entry><entry><title type="html">镜像站 ZFS 调优实践</title><link href="https://ibug.io/blog/2024/08/nju-talk/" rel="alternate" type="text/html" title="镜像站 ZFS 调优实践" /><published>2024-08-17T00:00:00+00:00</published><updated>2024-10-03T00:01:10+00:00</updated><id>https://ibug.io/blog/2024/08/nju-talk</id><content type="html" xml:base="https://ibug.io/blog/2024/08/nju-talk/"><![CDATA[<section id="title">
-			<h1 class="title">2000 元的机械硬盘 &gt; 3000 元的固态硬盘？</h1>
-			<h2 style="font-weight: normal;">A.K.A. 镜像站 ZFS 调优实践</h2>
-			<hr />
-			<p class="date">iBug @ USTC</p>
-			<p class="date">2024 年 8 月 17 日<br />
-				南京大学 开源软件论坛</p>
-		</section>
-		<section>
-			<section id="background">
-				<h2>USTC Mirrors</h2>
-				<ul>
-					<li>日均服务量：（2024-05 ~ 2024-06）
-						<ul>
-							<li>出流量 ~36&nbsp;TiB</li>
-							<li>HTTP 请求数 17M，响应流量 19&nbsp;TiB</li>
-							<li>Rsync 请求数 147.8K（21.8K），输出流量 10.3&nbsp;TiB</li>
-						</ul>
-					</li>
-					<li>极限情况的仓库容量：
-						<ul>
-							<li>HTTP 服务器（XFS）：63.3&nbsp;TiB / 66.0&nbsp;TiB (96%, 2023-12-18)</li>
-							<li>Rsync 服务器（ZFS）：42.4&nbsp;TiB / 43.2&nbsp;TiB (98%, 2023-11-21)</li>
-						</ul>
-					</li>
-				</ul>
-			</section>
-			<section id="background-2">
-				<h2>背景</h2>
-				<ul>
-					<li>HTTP 服务器：
-						<ul>
-							<li>2020 年下半年搭建</li>
-							<li>10&nbsp;TB <i class="fas fa-compact-disc fa-spin"></i> &times; 12</li>
-							<li>2&nbsp;TB <i class="fas fa-floppy-disk"></i> &times; 1</li>
-							<li>XFS on LVM on HW RAID</li>
-							<li>考虑到 XFS 不能缩，VG 留了 free PE</li>
-						</ul>
-					</li>
-					<li>Rsync 服务器：
-						<ul>
-							<li>2016 年下半年搭建</li>
-							<li>6&nbsp;TB <i class="fas fa-compact-disc fa-spin"></i> &times; 12</li>
-							<li>240&nbsp;GB <i class="fas fa-floppy-disk"></i> &times; 2 + 480&nbsp;GB <i class="fas fa-floppy-disk"></i> &times; 1 (Optane 900p)</li>
-							<li>RAID-Z3（8 data + 3 parity + 1 hot spare）</li>
-							<li>全默认参数（除了 <code>zfs_arc_max</code>）</li>
-						</ul>
-					</li>
-				</ul>
-				<p>硬盘 I/O 日常 &gt; 90%，校内下载 iso 不足 50&nbsp;MB/s</p>
-			</section>
-			<section id="background-2-image">
-				<div class="img-container">
-					<img src="https://image.ibugone.com/grafana/mirrors-io-utilization-may-2024.png" />
-					<p>USTC 镜像站两台服务器在 2024 年 5 月期间的磁盘负载</p>
+					</div>
+  </div>
+				<p>Save them as a .reg file, run it each time you log on (and after One Drive running)</p>
+			</blockquote>
+			<p>Note how this needs to be applied every time OneDrive starts, which is something to further investigate.</p>
+			<p>With a bit more trying and Googling, it turns out OneDrive sets these keys to <code class="language-plaintext highlighter-rouge">{a52bba46-e9e1-435f-b3d9-28daa648c0f6}</code>, which is the KnownFolderID for the OneDrive folder, and is missing from the registry.</p>
+			<p>From the two <code class="language-plaintext highlighter-rouge">bbs.pcbeta.com</code> links (Chinese: 远景论坛, <a href="https://bbs.pcbeta.com/viewthread-1933367-2-2.html">1</a> #32, <a href="https://bbs.pcbeta.com/viewthread-1936542-1-2.html">2</a> #17) mentioned in the thread, adding back the missing registry keys for <code class="language-plaintext highlighter-rouge">{a52bba46-e9e1-435f-b3d9-28daa648c0f6}</code> should fix the issue.</p>
+			<h2 id="solution">Solution</h2>
+			<p>Just import the missing registry keys for OneDrive.
+				These registry keys are exported from a working Windows 10 Enterprise installation.</p>
+			<div class="language-ini highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="err">Windows</span> <span class="err">Registry</span> <span class="err">Editor</span> <span class="err">Version</span> <span class="err">5.00</span>
+
+<span class="nn">[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{A52BBA46-E9E1-435f-B3D9-28DAA648C0F6}]</span>
+<span class="err">"Attributes"=dword:00000001</span>
+<span class="err">"Category"=dword:00000004</span>
+<span class="err">"DefinitionFlags"=dword:00000040</span>
+<span class="err">"Icon"=hex(2):25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,6f,00,6f,00,74,</span><span class="se">\
+</span>  <span class="err">00,25,00,5c,00,73,00,79,00,73,00,74,00,65,00,6d,00,33,00,32,00,5c,00,69,00,</span><span class="se">\
+</span>  <span class="err">6d,00,61,00,67,00,65,00,72,00,65,00,73,00,2e,00,64,00,6c,00,6c,00,2c,00,2d,</span><span class="se">\
+</span>  <span class="err">00,31,00,30,00,34,00,30,00,00,00</span>
+<span class="err">"LocalizedName"=hex(2):40,00,25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,</span><span class="se">\
+</span>  <span class="err">6f,00,6f,00,74,00,25,00,5c,00,53,00,79,00,73,00,74,00,65,00,6d,00,33,00,32,</span><span class="se">\
+</span>  <span class="err">00,5c,00,53,00,65,00,74,00,74,00,69,00,6e,00,67,00,53,00,79,00,6e,00,63,00,</span><span class="se">\
+</span>  <span class="err">43,00,6f,00,72,00,65,00,2e,00,64,00,6c,00,6c,00,2c,00,2d,00,31,00,30,00,32,</span><span class="se">\
+</span>  <span class="err">00,34,00,00,00</span>
+<span class="err">"LocalRedirectOnly"=dword:00000001</span>
+<span class="err">"Name"="OneDrive"</span>
+<span class="err">"ParentFolder"="{5E6C858F-0E22-4760-9AFE-EA3317B67173}"</span>
+<span class="err">"ParsingName"="shell:::{018D5C66-4533-4307-9B53-224DE2ED1FE6}"</span>
+<span class="err">"RelativePath"="OneDrive"</span>
+
+<span class="nn">[HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{A52BBA46-E9E1-435f-B3D9-28DAA648C0F6}]</span>
+<span class="err">"Attributes"=dword:00000001</span>
+<span class="err">"Category"=dword:00000004</span>
+<span class="err">"DefinitionFlags"=dword:00000040</span>
+<span class="err">"Icon"=hex(2):25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,6f,00,6f,00,74,</span><span class="se">\
+</span>  <span class="err">00,25,00,5c,00,73,00,79,00,73,00,74,00,65,00,6d,00,33,00,32,00,5c,00,69,00,</span><span class="se">\
+</span>  <span class="err">00,31,00,30,00,34,00,30,00,00,00</span>
+<span class="err">"LocalizedName"=hex(2):40,00,25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,</span><span class="se">\
+</span>  <span class="err">6f,00,6f,00,74,00,25,00,5c,00,53,00,79,00,73,00,74,00,65,00,6d,00,33,00,32,</span><span class="se">\
+</span>  <span class="err">00,5c,00,53,00,65,00,74,00,74,00,69,00,6e,00,67,00,53,00,79,00,6e,00,63,00,</span><span class="se">\
+</span>  <span class="err">43,00,6f,00,72,00,65,00,2e,00,64,00,6c,00,6c,00,2c,00,2d,00,31,00,30,00,32,</span><span class="se">\
+</span>  <span class="err">00,34,00,00,00</span>
+<span class="err">"LocalRedirectOnly"=dword:00000001</span>
+<span class="err">"Name"="OneDrive"</span>
+<span class="err">"ParentFolder"="{5E6C858F-0E22-4760-9AFE-EA3317B67173}"</span>
+<span class="err">"ParsingName"="shell:::{018D5C66-4533-4307-9B53-224DE2ED1FE6}"</span>
+<span class="err">"RelativePath"="OneDrive"</span>
+</code></pre>
 				</div>
-			</section>
-		</section>
-		<section>
-			<section id="zfs">
-				<h2>ZFS</h2>
+			</div>
+			<p>Note that this article happens to reproduce <a href="https://lolicp.com/windows/202309626.html">this blog</a> from lolicp.com, which may be of Chinese readers’ interest.</p>
+			]]></content><author><name>iBug</name></author><category term="windows" /><summary type="html"><![CDATA[I’ve recently re-installed Windows 10 LTSC for both of my computers, and after setting up OneDrive (from Office 365 suite), I noticed that the OneDrive folder in the Explorer sidebar was not expanding when clicked, showing a static gray arrow. This could be a known issue with Windows 10 LTSC, as it doesn’t include OneDrive integration by default, unlike consumer versions.]]></summary></entry><entry><title type="html">Beating $3k SSD with $2k HDD?</title><link href="https://ibug.io/blog/2024/10/ustc-mirrors-zfs-rebuild/" rel="alternate" type="text/html" title="Beating $3k SSD with $2k HDD?" /><published>2024-10-27T00:00:00+00:00</published><updated>2024-12-11T18:19:07+00:00</updated><id>https://ibug.io/blog/2024/10/ustc-mirrors-zfs-rebuild</id><content type="html" xml:base="https://ibug.io/blog/2024/10/ustc-mirrors-zfs-rebuild/"><![CDATA[<p>A.K.A. Practical ZFS application on USTC Mirrors. A writeup of the talk I gave at Nanjing University this August.</p>
+		<h2 id="background">Background</h2>
+		<p><a href="https://mirrors.ustc.edu.cn/">USTC Open-Source Software Mirrors</a> is one of the largest public mirror sites in China. In the two months of May and June 2024, we served an average daily egress traffic of some 36&nbsp;TiB, which breaks down as follows:</p>
+		<ul>
+			<li>19&nbsp;TiB from HTTP/HTTPS, among 17M requests</li>
+			<li>10.3&nbsp;TiB from rsync, among 21.8k requests (if we count one absurd client in, the number of requests goes to 147.8k)</li>
+		</ul>
+		<p>Over the years, as mirror repositories have grown and new repositories have been added, we have been running tight on disk space. For our two servers responsible for the mirror service, we have reached unhealthy levels of disk usage:</p>
+		<ul>
+			<li>HTTP server (XFS): 63.3&nbsp;TiB used out of 66.0&nbsp;TiB (96%, achieved on December 18, 2023)</li>
+			<li>Rsync server (ZFS): 42.4&nbsp;TiB used out of 43.2&nbsp;TiB (98%, achieved on November 21, 2023)</li>
+		</ul>
+		<p>The servers have the following configurations:</p>
+		<dl>
+			<dt>HTTP server</dt>
+			<dd>
 				<ul>
-					<li>单机存储的终极解决方案</li>
-					<li>集 RAID、LVM、FS 于一体</li>
-					<li>所有数据都有 checksum</li>
-					<li><s>Fire and forget</s></li>
-					<li>好多参数啊</li>
+					<li>Set up in Fall 2020</li>
+					<li>Intel Cascade Lake CPU, 256&nbsp;GB DDR4 RAM</li>
+					<li>Twelve 10&nbsp;TB HDDs + One 2&nbsp;TB SSD</li>
+					<li>XFS on LVM on hardware RAID</li>
+					<li>Reserved free PEs on LVM VG level as XFS cannot be shrunk</li>
 				</ul>
-			</section>
-			<section id="zfs-learning">
-				<h3>前期学习与实验</h3>
+			</dd>
+			<dt>Rsync server</dt>
+			<dd>
 				<ul>
-					<li><s>从（另一个）老师那嫖了点盘</s>装上了 ZFS，用于 研&ensp;究&ensp;学&ensp;习</li>
-					<li>I/O 负载来源？<s>上 PT 站</s></li>
-					<li>练习时长两年半的成果：<i class="fas fa-arrow-up"></i> 1.20&nbsp;PiB, <i class="fas fa-arrow-down"></i> 1.83&nbsp;TiB</li>
+					<li>Set up in Winter 2016</li>
+					<li>Intel Broadwell CPU, 256&nbsp;GB DDR4 RAM</li>
+					<li>Twelve 6&nbsp;TB HDDs + some smaller SSDs for OS and cache</li>
+					<li>RAID-Z3 on ZFS, 8 data disks + 3 parity disks + 1 hot spare</li>
+					<li>All default parameters (except <code class="language-plaintext highlighter-rouge">zfs_arc_max</code>)</li>
 				</ul>
-				<hr />
-				<p>重要学习资料：</p>
+			</dd>
+		</dl>
+		<p>These servers are constantly running at an I/O utilization of over 90%, which results in less than 50&nbsp;MB/s download speed even from within USTC campus. Clearly this is not the ideal performance for this kind of dedicated storage servers.</p>
+		<figure class=""><a href="https://image.ibugone.com/grafana/mirrors-io-utilization-may-2024.png" class="image-popup" title="I/O load of two servers from USTC Mirrors in May 2024
+"><img src="https://image.ibugone.com/grafana/mirrors-io-utilization-may-2024.png" alt="I/O load of two servers from USTC Mirrors in May 2024" /></a>
+			<figcaption>
+				I/O load of two servers from USTC Mirrors in May 2024
+			</figcaption>
+		</figure>
+		<h2 id="zfs">ZFS</h2>
+		<p>ZFS is usually known for being the ultimate single-node storage solution. It combines RAID, volume management, and filesystem in one, and provides advanced features like snapshots, clones and send/receive. Everything in ZFS is checksummed, ensuring data integrity. For servers dedicated to storage, ZFS appears to be a “fire and forget” solution, which is easily challenged by its tremendous amount of tunables and parameters.</p>
+		<p>As preliminary learning and experiments, I sourced some drives for my own workstation and set up two ZFS pools on them. Then I signed up for some private tracker (PT) sites for I/O load to tune for. The results were quite satisfying: In two years and a half, my single-node PT station has generated 1.20&nbsp;PiB of uploads.</p>
+		<p>Over the years, I have gathered some of my most important sources for learning ZFS:</p>
+		<ul>
+			<li>Chris’s Wiki: <a href="https://utcc.utoronto.ca/~cks/space/blog/">https://utcc.utoronto.ca/~cks/space/blog/</a></li>
+			<li>OpenZFS Documentation: <a href="https://openzfs.github.io/openzfs-docs/">https://openzfs.github.io/openzfs-docs/</a></li>
+			<li>My own blog: <a href="/p/62">Understanding ZFS block sizes</a>
 				<ul>
-					<li><a href="https://utcc.utoronto.ca/~cks/space/blog/">Chris Siebenmann's blog</a></li>
-					<li><a href="https://openzfs.github.io/openzfs-docs/">OpenZFS Documentation</a></li>
-					<li>iBug's blog: <a href="/p/62">Understanding ZFS block sizes</a> (<a href="/p/62">ibug.io/p/62</a>)
+					<li>Plus all references in the article</li>
+				</ul>
+			</li>
+		</ul>
+		<figure class=""><a href="https://image.ibugone.com/grafana/qb/2024-06-05.png" class="image-popup" title="A byproduct of my ZFS learning: A Grafana dashboard for qBittorrent (lol…)
+"><img src="https://image.ibugone.com/grafana/qb/2024-06-05.png" alt="A Grafana dashboard for qBittorrent" /></a>
+			<figcaption>
+				A byproduct of my ZFS learning: A Grafana dashboard for qBittorrent (lol…)
+			</figcaption>
+		</figure>
+		<p>After these years of learning ZFS, I realized that there’s a substantial room for improvement in our mirror servers, by embracing ZFS and tuning it properly.</p>
+		<h2 id="mirrors">Mirrors</h2>
+		<p>Before we move on to rebuilding the ZFS pool, we need to understand our I/O workload. In essence, a mirror site:</p>
+		<ul>
+			<li>Provides file downloads</li>
+			<li>Also (begrudgingly) serves as speed tests</li>
+			<li>Mostly reads, and almost all reads are whole-file sequential reads</li>
+			<li>Can withstand minimal data loss as mirror contents can be easily re-synced</li>
+		</ul>
+		<figure class=""><a href="https://image.ibugone.com/server/mirrors-file-size-distribution-2024-08.png" class="image-popup" title="File size distribution of USTC Mirrors in August 2024
+"><img src="https://image.ibugone.com/server/mirrors-file-size-distribution-2024-08.png" alt="File size distribution of USTC Mirrors in August 2024" /></a>
+			<figcaption>
+				File size distribution of USTC Mirrors in August 2024
+			</figcaption>
+		</figure>
+		<p>With those in mind, we analyzed our mirror content. As can be seen from the graph above, half of the 40M files are less than 10&nbsp;KiB in size, and 90% of the files are less than 1&nbsp;MiB. Still, the files are averaged at 1.6&nbsp;MiB.</p>
+		<h2 id="mirrors2">Rebuilding the Rsync server</h2>
+		<p>In June, we set out to rebuild the Rsync server as it had a lower service traffic and importance, yet a disproportionately higher disk usage. We laid out the following plan:</p>
+		<ul>
+			<li>First, the RAID overhead of RAID-Z3 was too high (reiterating: half of the files are less than 10&nbsp;KiB, and the disks have 4&nbsp;KiB sectors), so we decided to switch to RAID-Z2 as well as split the RAID group into two. Two RAIDZ vdevs also implies double the IOPS, as each “block” (in ZFS parlance) is stored on only one vdev.</li>
+			<li>We then carefully select dataset properties to optimize for our workload:
+				<ul>
+					<li><code class="language-plaintext highlighter-rouge">recordsize=1M</code> to maximize sequential throughput and minimize fragmentation</li>
+					<li><code class="language-plaintext highlighter-rouge">compression=zstd</code> to (try to) save some disk space
 						<ul>
-							<li>以及这篇 blog 底下的众多参考文献</li>
-						</ul>
-					</li>
-				</ul>
-			</section>
-			<section id="zfs-image">
-				<div class="img-container">
-					<img src="https://image.ibugone.com/grafana/qb/2024-06-05.png" />
-					<p>好像给什么奇怪的东西加入了 Grafana</p>
-				</div>
-			</section>
-		</section>
-		<section>
-			<section id="mirrors">
-				<h2>镜像站</h2>
-				<ul>
-					<li>提供文件下载服务</li>
-					<li><s>也提供「家庭宽带上下行流量比例平衡」服务</s></li>
-					<li>读多写少，并且几乎所有操作都是整个文件顺序读写</li>
-					<li>少量的数据损坏没啥不良后果</li>
-				</ul>
-			</section>
-			<section id="mirrors-file-distrib">
-				<div class="img-container">
-					<img src="https://image.ibugone.com/server/mirrors-file-size-distribution-2024-08.png" />
-					<p>2024 年 8 月 USTC 镜像仓库内的文件大小分布
-						<br>
-						其中中位数为 9.83&nbsp;KiB，平均大小为 1.60&nbsp;MiB</p>
-				</div>
-			</section>
-			<section id="mirrors2">
-				<h3>重建 Rsync 服务器</h3>
-				<ul>
-					<li>RAID-Z3 的 overhead 较高，而且拆成两组 RAID-Z2 = 两倍的 IOPS</li>
-					<li>镜像站调优计划：
-						<ul>
-							<li><code>recordsize=1M</code>：反正都是全文件顺序读</li>
-							<li><code>compression=zstd</code>：至少可以压掉 &gt; 1M 文件的 padding
-								<ul>
-									<li>OpenZFS 2.2 将 early abort 机制推广到了 Zstd 3+，不必担心性能问题</li>
-								</ul>
+							<li>
+								<p>Since OpenZFS 2.2, a mechanism called “early-abort” has been extended to Zstd compression (level 3+), which saves CPU cycles by testing data compressibility with LZ4 then Zstd 1, before actually trying to compress with Zstd.</p>
+								<p>We know that most of our mirror content is already compressed (like software packages and ISOs), so early-abort is urging us to use Zstd.</p>
 							</li>
-							<li><code>xattr=off</code>：谁家镜像需要 xattr？</li>
-							<li><code>atime=off</code>, <code>setuid=off</code>, <code>exec=off</code>, <code>devices=off</code>：开着干啥？</li>
-							<li><code>secondarycache=metadata</code>：Rsync 就别来消耗固态寿命了</li>
 						</ul>
 					</li>
-					<li>Danger Zone：
-						<ul>
-							<li><code>sync=disabled</code>：囤到 <code>zfs_txg_timeout</code> 再写盘</li>
-							<li><code>redundant_metadata=some</code>：偶尔坏个文件也没事</li>
-						</ul>
-					</li>
-					<li>Full version: <a href="https://docs.ustclug.org/services/mirrors/zfs/#setup">LUG @ USTC Documentation</a></li>
+					<li><code class="language-plaintext highlighter-rouge">xattr=off</code> as we don’t need extended attributes for mirror content.</li>
+					<li><code class="language-plaintext highlighter-rouge">atime=off</code> as we don’t need access time. Also cuts off a lot of writes.</li>
+					<li><code class="language-plaintext highlighter-rouge">setuid=off</code>, <code class="language-plaintext highlighter-rouge">exec=off</code>, <code class="language-plaintext highlighter-rouge">devices=off</code> to disable what we don’t need.</li>
+					<li><code class="language-plaintext highlighter-rouge">secondarycache=metadata</code> to cache metadata only, as this Rsync server has a much more uniform access pattern than the HTTP server. We would like to save our SSDs from unnecessary writes.</li>
 				</ul>
-			</section>
-			<section id="zfs-parameters">
-				<h3>ZFS 参数</h3>
+			</li>
+			<li>Some slightly dangerous properties:
 				<ul>
-					<li>290+ 参数不能个个都学习嘛（感谢 Aron Xu @ BFSU）</li>
-					<li>ARC 容量：
-						<pre><code class="language-sh" data-trim>
+					<li><code class="language-plaintext highlighter-rouge">sync=disabled</code> to disable synchronous writes. This allows ZFS to buffer writes up to <code class="language-plaintext highlighter-rouge">zfs_txg_timeout</code> seconds and make better allocation decisions.</li>
+					<li><code class="language-plaintext highlighter-rouge">redundant_metadata=some</code> to trade some metadata redundancy for better write performance.</li>
+				</ul>
+				<p>We believe these changes are in alignment with our evaluation of data safety and loss tolerance.</p>
+			</li>
+			<li>
+				<p>For ZFS module parameters, the sheer number of 290+ tunables is overwhelming. Thanks to @happyaron, the current ZFS maintainer in Debian and administrator of BFSU Mirror, we selected a handful of them:</p>
+				<div class="language-shell highlighter-rouge">
+					<div class="highlight">
+						<pre class="highlight"><code><span class="c"># Set ARC size to 160-200&nbsp;GiB, keep 16&nbsp;GiB free for OS</span>
+options zfs <span class="nv">zfs_arc_max</span><span class="o">=</span>214748364800
+options zfs <span class="nv">zfs_arc_min</span><span class="o">=</span>171798691840
+options zfs <span class="nv">zfs_arc_sys_free</span><span class="o">=</span>17179869184
+
+<span class="c"># Favor metadata to data by 20x (OpenZFS 2.2+)</span>
+options zfs <span class="nv">zfs_arc_meta_balance</span><span class="o">=</span>2000
+
+<span class="c"># Allow up to 80% of ARC to be used for dnodes</span>
+options zfs <span class="nv">zfs_arc_dnode_limit_percent</span><span class="o">=</span>80
+
+<span class="c"># See man page section "ZFS I/O Scheduler"</span>
+options zfs <span class="nv">zfs_vdev_async_read_max_active</span><span class="o">=</span>8
+options zfs <span class="nv">zfs_vdev_async_read_min_active</span><span class="o">=</span>2
+options zfs <span class="nv">zfs_vdev_scrub_max_active</span><span class="o">=</span>5
+options zfs <span class="nv">zfs_vdev_max_active</span><span class="o">=</span>20000
+
+<span class="c"># Never throttle the ARC</span>
+options zfs <span class="nv">zfs_arc_lotsfree_percent</span><span class="o">=</span>0
+
+<span class="c"># Tune L2ARC</span>
+options zfs <span class="nv">l2arc_headroom</span><span class="o">=</span>8
+options zfs <span class="nv">l2arc_write_max</span><span class="o">=</span>67108864
+options zfs <span class="nv">l2arc_noprefetch</span><span class="o">=</span>0
+</code></pre>
+					</div>
+    </div>
+				<p>And also <code class="language-plaintext highlighter-rouge">zfs_dmu_offset_next_sync</code>, which is enabled by default since OpenZFS 2.1.5, so it’s omitted from our list.</p>
+			</li>
+		</ul>
+		<p>After relocating Rsync service to our primary server (HTTP server), we broke up the existing ZFS pool and rebuilt it anew, before syncing previous repositories back from external sources. To our surprise, the restoration took only 3 days, much faster than we had anticipated. Other numbers also looked promising:</p>
+		<ul>
+			<li>
+				<p>Compression ratio: 39.5T / 37.1T (1.07x)</p>
+				<p>We’d like to point out that ZFS only provides two digits after the decimal point for compression ratio, so if you want a higher precision, you need take the raw numbers and calculate it yourself:</p>
+				<div class="language-shell highlighter-rouge">
+					<div class="highlight">
+						<pre class="highlight"><code>zfs list <span class="nt">-po</span> name,logicalused,used
+</code></pre>
+					</div>
+    </div>
+				<p>Our actual number was 1 + 6.57%, at 2.67&nbsp;TB (2.43&nbsp;TiB) saved, which means equivalently 9 copies of WeChat data <a href="https://image.ibugone.com/teaser/lenovo-legion-wechat-data.jpg">as advertised by Lenovo Legion</a>.</p>
+			</li>
+			<li>
+				<p>And most importantly, a much saner I/O load:</p>
+				<figure class=""><a href="https://image.ibugone.com/grafana/mirrors2-io-utilization-and-free-space-june-july-2024.png" class="image-popup" title="I/O load of server “mirrors2” before and after the rebuild
+"><img src="https://image.ibugone.com/grafana/mirrors2-io-utilization-and-free-space-june-july-2024.png" alt="I/O load of server mirrors2 before and after the rebuild" /></a>
+					<figcaption>
+						I/O load of server “mirrors2” before and after the rebuild
+					</figcaption>
+				</figure>
+			</li>
+		</ul>
+		<p>We can see that, after a few days of warm-up, the I/O load has maintained at around 20%, whereas it was constantly at 90% before the rebuild.</p>
+		<h2 id="mirrors4">Rebuilding the HTTP server</h2>
+		<p>Our HTTP server was set up in late 2020 and under a different background.
+			When we were first deciding the technology stack, we were not confident in ZFS and were discouraged by the abysmal performance of our Rsync server.
+			So we opted for an entirely different stack for this server: hardware RAID, LVM (because the RAID controller didn’t allow RAID groups across two controllers), and XFS.
+			For memory caching, we relied on kernel’s page cache, and for SSD caching, we tried LVMcache, which was quite new at the moment and rather immature.</p>
+		<p>These unpracticed technologies have, without a doubt, ended up a pain.</p>
+		<ul>
+			<li>XFS cannot be shrunk, so we had to reserve free PEs at LVM VG level. We also cannot fill the FS, so there are two levels of free space reservation. Double the waste.</li>
+			<li>We initially allocated 1.5&nbsp;TB of SSD cache, but given LVMcache’s recommendation of no more than 1 million chunks, we opted for just 1&nbsp;TiB (1&nbsp;MiB chunk size × 1 Mi chunks).</li>
+			<li>There were no options for cache eviction policy, so later we dug into the kernel source code and found that it was a 64-level LRU.</li>
+			<li>The first thing to die was GRUB2. Due to GRUB’s parsing of LVM metadata, it was unable to boot from a VG where a cached volume was present. We had to <a href="https://github.com/taoky/grub/commit/85b260baec91aa4f7db85d7592f6be92d549a0ae">patch</a> GRUB for it to handle this case.</li>
+			<li>With an incorrect understanding of chunk size and number of chunks, our SSD ran severely over its write endurance in under 2 years, and we had to replace it with a new one.</li>
+		</ul>
+		<p>Even after understanding the algorithm and still going for 128&nbsp;KiB chunk size and over 8 Mi chunks, LVMcache still didn’t offer a competitive hit rate:</p>
+		<figure class=""><a href="https://image.ibugone.com/grafana/mirrors4-dmcache-may-june-2024.png" class="image-popup" title="LVMcache hit rate over May to June 2024
+"><img src="https://image.ibugone.com/grafana/mirrors4-dmcache-may-june-2024.png" alt="LVMcache hit rate over May to June 2024" /></a>
+			<figcaption>
+				LVMcache hit rate over May to June 2024
+			</figcaption>
+		</figure>
+		<p>We had already been fed up with those troubles through the years, and the success with our Rsync server rebuild gave us great confidence with ZFS.
+			So in less than a month, we laid out a similar plan for our HTTP server, but trying something new:</p>
+		<ul>
+			<li>We updated the kernel to <code class="language-plaintext highlighter-rouge">6.8.8-3-pve</code>, which bundles the latest <code class="language-plaintext highlighter-rouge">zfs.ko</code> for us. This means we don’t have to waste time on DKMS.</li>
+			<li>Since the number of disks is the same (12 disks), we also went for two RAID-Z2 vdevs with 6 disks each.
+				<ul>
+					<li>As this server provides HTTP service to end users, the access pattern will have a greater hot/cold distinction than the Rsync server. So we keep <code class="language-plaintext highlighter-rouge">secondarycache=all</code> for this server (leave the default value unchanged).</li>
+					<li>This newer server has a better CPU, so we increased compression level to <code class="language-plaintext highlighter-rouge">zstd-8</code> in hope for a better compression ratio.</li>
+				</ul>
+			</li>
+			<li>Since we already have the Rsync server running ZFS with desired parameters, we have <code class="language-plaintext highlighter-rouge">zfs send -Lcp</code> available when syncing the data back. This allows us to restore 50+ TiB of data in just 36 hours.</li>
+			<li>Due to having a slightly different set of repositories, the compression ratio is slightly lower at 1 + 3.93% (2.42&nbsp;TiB / 2.20&nbsp;TiB saved).</li>
+		</ul>
+		<p>We put the I/O loads of both servers together for comparison:</p>
+		<figure class=""><a href="https://image.ibugone.com/grafana/mirrors2-4-io-utilization-june-july-2024.png" class="image-popup" title="I/O load of two servers from USTC Mirrors before and after rebuild
+"><img src="https://image.ibugone.com/grafana/mirrors2-4-io-utilization-june-july-2024.png" alt="I/O load of two servers from USTC Mirrors before and after rebuild" /></a>
+			<figcaption>
+				I/O load of two servers from USTC Mirrors before and after rebuild
+			</figcaption>
+		</figure>
+		<p>This graph starts with the initial state. The first server was rebuilt at 1/3, and the second server was rebuilt at 2/3.</p>
+		<p>The hit rate of ZFS ARC is also quite satisfying:</p>
+		<figure class=""><a href="https://image.ibugone.com/grafana/mirrors2-4-zfs-arc-hit-rate.png" class="image-popup" title="ZFS ARC hit rate of two servers
+"><img src="https://image.ibugone.com/grafana/mirrors2-4-zfs-arc-hit-rate.png" alt="ZFS ARC hit rate of two servers" /></a>
+			<figcaption>
+				ZFS ARC hit rate of two servers
+			</figcaption>
+		</figure>
+		<p>The stablized I/O load is even lower after both servers were rebuilt.</p>
+		<figure class=""><a href="https://image.ibugone.com/grafana/mirrors2-4-disk-io-after-rebuild.png" class="image-popup" title="Sustained disk I/O of two servers after rebuild
+"><img src="https://image.ibugone.com/grafana/mirrors2-4-disk-io-after-rebuild.png" alt="Sustained disk I/O of two servers after rebuild" /></a>
+			<figcaption>
+				Sustained disk I/O of two servers after rebuild
+			</figcaption>
+		</figure>
+		<h2 id="misc">Misc</h2>
+		<h3 id="zfs-compression">ZFS compression</h3>
+		<p>We are slightly surprised to see that so many repositories are well-compressible:</p>
+		<table>
+			<thead>
+				<tr>
+					<th style="text-align: left">NAME</th>
+					<th style="text-align: right">LUSED</th>
+					<th style="text-align: right">USED</th>
+					<th style="text-align: right">RATIO</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td style="text-align: left">pool0/repo/crates.io-index</td>
+					<td style="text-align: right">2.19G</td>
+					<td style="text-align: right">1.65G</td>
+					<td style="text-align: right">3.01x</td>
+				</tr>
+				<tr>
+					<td style="text-align: left">pool0/repo/elpa</td>
+					<td style="text-align: right">3.35G</td>
+					<td style="text-align: right">2.32G</td>
+					<td style="text-align: right">1.67x</td>
+				</tr>
+				<tr>
+					<td style="text-align: left">pool0/repo/rfc</td>
+					<td style="text-align: right">4.37G</td>
+					<td style="text-align: right">3.01G</td>
+					<td style="text-align: right">1.56x</td>
+				</tr>
+				<tr>
+					<td style="text-align: left">pool0/repo/debian-cdimage</td>
+					<td style="text-align: right">1.58T</td>
+					<td style="text-align: right">1.04T</td>
+					<td style="text-align: right">1.54x</td>
+				</tr>
+				<tr>
+					<td style="text-align: left">pool0/repo/tldp</td>
+					<td style="text-align: right">4.89G</td>
+					<td style="text-align: right">3.78G</td>
+					<td style="text-align: right">1.48x</td>
+				</tr>
+				<tr>
+					<td style="text-align: left">pool0/repo/loongnix</td>
+					<td style="text-align: right">438G</td>
+					<td style="text-align: right">332G</td>
+					<td style="text-align: right">1.34x</td>
+				</tr>
+				<tr>
+					<td style="text-align: left">pool0/repo/rosdistro</td>
+					<td style="text-align: right">32.2M</td>
+					<td style="text-align: right">26.6M</td>
+					<td style="text-align: right">1.31x</td>
+				</tr>
+			</tbody>
+		</table>
+		<p>A few numbers (notably the first one) don’t make sense, which we attribute to <a href="https://github.com/openzfs/zfs/issues/7639"><i class="fab fa-github"></i> openzfs/zfs#7639</a>.</p>
+		<p>If we sort the table by difference, it would be:</p>
+		<table>
+			<thead>
+				<tr>
+					<th style="text-align: left">NAME</th>
+					<th style="text-align: right">LUSED</th>
+					<th style="text-align: right">USED</th>
+					<th style="text-align: right">DIFF</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td style="text-align: left">pool0/repo</td>
+					<td style="text-align: right">58.3T</td>
+					<td style="text-align: right">56.1T</td>
+					<td style="text-align: right">2.2T</td>
+				</tr>
+				<tr>
+					<td style="text-align: left">pool0/repo/debian-cdimage</td>
+					<td style="text-align: right">1.6T</td>
+					<td style="text-align: right">1.0T</td>
+					<td style="text-align: right">549.6G</td>
+				</tr>
+				<tr>
+					<td style="text-align: left">pool0/repo/opensuse</td>
+					<td style="text-align: right">2.5T</td>
+					<td style="text-align: right">2.3T</td>
+					<td style="text-align: right">279.7G</td>
+				</tr>
+				<tr>
+					<td style="text-align: left">pool0/repo/turnkeylinux</td>
+					<td style="text-align: right">1.2T</td>
+					<td style="text-align: right">1.0T</td>
+					<td style="text-align: right">155.2G</td>
+				</tr>
+				<tr>
+					<td style="text-align: left">pool0/repo/loongnix</td>
+					<td style="text-align: right">438.2G</td>
+					<td style="text-align: right">331.9G</td>
+					<td style="text-align: right">106.3G</td>
+				</tr>
+				<tr>
+					<td style="text-align: left">pool0/repo/alpine</td>
+					<td style="text-align: right">3.0T</td>
+					<td style="text-align: right">2.9T</td>
+					<td style="text-align: right">103.9G</td>
+				</tr>
+				<tr>
+					<td style="text-align: left">pool0/repo/openwrt</td>
+					<td style="text-align: right">1.8T</td>
+					<td style="text-align: right">1.7T</td>
+					<td style="text-align: right">70.0G</td>
+				</tr>
+			</tbody>
+		</table>
+		<p><code class="language-plaintext highlighter-rouge">debian-cdimage</code> alone contributes to a quarter of the saved space.</p>
+		<h3 id="grafana-for-zfs-io">Grafana for ZFS I/O</h3>
+		<p>We also fixed a Grafana panel for ZFS I/O so it’s displaying the correct numbers.
+			Because ZFS I/O statistics are exported through <code class="language-plaintext highlighter-rouge">/proc/spl/kstat/zfs/$POOL/objset-$OBJSETID_HEX</code> and is cumulative per “object set” (i.e. dataset), we need to calculate the derivative of the numbers and <em>then</em> sum by pool.
+			This means the use of subqueries is inevitable.</p>
+		<div class="language-sql highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">SELECT</span>
+  <span class="n">non_negative_derivative</span><span class="p">(</span><span class="k">sum</span><span class="p">(</span><span class="nv">"reads"</span><span class="p">),</span> <span class="mi">1</span><span class="n">s</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">"read"</span><span class="p">,</span>
+  <span class="n">non_negative_derivative</span><span class="p">(</span><span class="k">sum</span><span class="p">(</span><span class="nv">"writes"</span><span class="p">),</span> <span class="mi">1</span><span class="n">s</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">"write"</span>
+<span class="k">FROM</span> <span class="p">(</span>
+  <span class="k">SELECT</span>
+    <span class="k">first</span><span class="p">(</span><span class="nv">"reads"</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">"reads"</span><span class="p">,</span>
+    <span class="k">first</span><span class="p">(</span><span class="nv">"writes"</span><span class="p">)</span> <span class="k">AS</span> <span class="nv">"writes"</span>
+  <span class="k">FROM</span> <span class="nv">"zfs_pool"</span>
+  <span class="k">WHERE</span> <span class="p">(</span><span class="nv">"host"</span> <span class="o">=</span> <span class="s1">'taokystrong'</span> <span class="k">AND</span> <span class="nv">"pool"</span> <span class="o">=</span> <span class="s1">'pool0'</span><span class="p">)</span> <span class="k">AND</span> <span class="err">$</span><span class="n">timeFilter</span>
+  <span class="k">GROUP</span> <span class="k">BY</span> <span class="nb">time</span><span class="p">(</span><span class="err">$</span><span class="n">interval</span><span class="p">),</span> <span class="nv">"host"</span><span class="p">::</span><span class="n">tag</span><span class="p">,</span> <span class="nv">"pool"</span><span class="p">::</span><span class="n">tag</span><span class="p">,</span> <span class="nv">"dataset"</span><span class="p">::</span><span class="n">tag</span> <span class="n">fill</span><span class="p">(</span><span class="k">null</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="k">WHERE</span> <span class="err">$</span><span class="n">timeFilter</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="nb">time</span><span class="p">(</span><span class="err">$</span><span class="n">interval</span><span class="p">),</span> <span class="nv">"pool"</span><span class="p">::</span><span class="n">tag</span> <span class="n">fill</span><span class="p">(</span><span class="n">linear</span><span class="p">)</span>
+</code></pre>
+			</div>
+		</div>
+		<p>This query is a bit slow (due to the subquery) and unfortunately there’s not much we can do about it.</p>
+		<p>To display I/O bandwidth, simply replace <code class="language-plaintext highlighter-rouge">reads</code> and <code class="language-plaintext highlighter-rouge">writes</code> with <code class="language-plaintext highlighter-rouge">nread</code> and <code class="language-plaintext highlighter-rouge">nwritten</code> in the inner query.</p>
+		<figure class=""><a href="https://image.ibugone.com/grafana/mirrors2-4-zfs-io-count.png" class="image-popup" title="ZFS I/O count and bandwidth
+"><img src="https://image.ibugone.com/grafana/mirrors2-4-zfs-io-count.png" alt="ZFS I/O count and bandwidth" /></a>
+			<figcaption>
+				ZFS I/O count and bandwidth
+			</figcaption>
+		</figure>
+		<p>We are astonished to see an HDD array can sustain 15k IOPS and peaking at 50k IOPS.
+			This becomes all explained when we discovered that these numbers took ARC hits into account, and a minimal proportion were actually hitting the disks.</p>
+		<h3 id="apparmor">AppArmor</h3>
+		<p>It didn’t take long before we noticed all our sync tasks were failing.
+			We found <code class="language-plaintext highlighter-rouge">rsync</code> failing with <code class="language-plaintext highlighter-rouge">EPERM</code> for <code class="language-plaintext highlighter-rouge">socketpair(2)</code> calls, which never manifested before.
+			Interestingly, these were denied by AppArmor.
+			We traced down the cause to be Ubuntu’s addition to the kernel, <code class="language-plaintext highlighter-rouge">security/apparmor/af_unix.c</code>.
+			As Proxmox VE forks its kernel from Ubuntu, this change also made its way into our server.</p>
+		<p>We also found PVE packaging their own copy of AppArmor <code class="language-plaintext highlighter-rouge">features</code>, so we decided to adopt the same approach:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>dpkg-divert <span class="nt">--package</span> lxc-pve <span class="nt">--rename</span> <span class="nt">--divert</span> /usr/share/apparmor-features/features.stock <span class="nt">--add</span> /usr/share/apparmor-features/features
+wget <span class="nt">-O</span> /usr/share/apparmor-features/features https://github.com/proxmox/lxc/raw/master/debian/features
+</code></pre>
+			</div>
+		</div>
+		<h3 id="file-deduplication">File deduplication</h3>
+		<p>For a small set of repositories, possibly due to limitations of syncing methods, we noticed a lot of identically-looking directories.</p>
+		<figure class=""><a href="https://image.ibugone.com/server/ls-zerotier-redhat-el.png" class="image-popup" title="Some folders from ZeroTier repository
+"><img src="https://image.ibugone.com/server/ls-zerotier-redhat-el.png" alt="Some folders from ZeroTier repository" /></a>
+			<figcaption>
+				Some folders from ZeroTier repository
+			</figcaption>
+		</figure>
+		<p>ZFS deduplication immediately came to our mind, so we made a preliminary test on ZT:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code>zfs create <span class="nt">-o</span> <span class="nv">dedup</span><span class="o">=</span>on pool0/repo/zerotier
+<span class="c"># dump content into it</span>
+</code></pre>
+			</div>
+		</div>
+		<div class="language-console highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>zdb <span class="nt">-DDD</span> pool0
+<span class="go">dedup = 4.93, compress = 1.23, copies = 1.00, dedup * compress / copies = 6.04
+</span></code></pre>
+			</div>
+		</div>
+		<p>The results look promising, but we are still hesitant to enable deduplication due to the potential performance impact even on these selected datasets.</p>
+		<p>Guess what we ended up with?</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="c"># post-sync.sh</span>
+<span class="c"># Do file-level deduplication for select repos</span>
+<span class="k">case</span> <span class="s2">"</span><span class="nv">$NAME</span><span class="s2">"</span> <span class="k">in
+  </span>docker-ce|influxdata|nginx|openresty|proxmox|salt|tailscale|zerotier<span class="p">)</span>
+    jdupes <span class="nt">-L</span> <span class="nt">-Q</span> <span class="nt">-r</span> <span class="nt">-q</span> <span class="s2">"</span><span class="nv">$DIR</span><span class="s2">"</span> <span class="p">;;</span>
+<span class="k">esac</span>
+</code></pre>
+			</div>
+		</div>
+		<p>As attractive as it looks, this userspace file deduplication tool is as good as ZFS can do, but without the performance loss.</p>
+		<table>
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Orig</th>
+					<th>Dedup</th>
+					<th>Diff</th>
+					<th>Ratio</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>proxmox</td>
+					<td>395.4G</td>
+					<td>162.6G</td>
+					<td>232.9G</td>
+					<td>2.43x</td>
+				</tr>
+				<tr>
+					<td>docker-ce</td>
+					<td>539.6G</td>
+					<td>318.2G</td>
+					<td>221.4G</td>
+					<td>1.70x</td>
+				</tr>
+				<tr>
+					<td>influxdata</td>
+					<td>248.4G</td>
+					<td>54.8G</td>
+					<td>193.6G</td>
+					<td>4.54x</td>
+				</tr>
+				<tr>
+					<td>salt</td>
+					<td>139.0G</td>
+					<td>87.2G</td>
+					<td>51.9G</td>
+					<td>1.59x</td>
+				</tr>
+				<tr>
+					<td>nginx</td>
+					<td>94.9G</td>
+					<td>59.7G</td>
+					<td>35.2G</td>
+					<td>1.59x</td>
+				</tr>
+				<tr>
+					<td>zerotier</td>
+					<td>29.8G</td>
+					<td>6.1G</td>
+					<td>23.7G</td>
+					<td>4.88x</td>
+				</tr>
+				<tr>
+					<td>mysql-repo</td>
+					<td>647.8G</td>
+					<td>632.5G</td>
+					<td>15.2G</td>
+					<td>1.02x</td>
+				</tr>
+				<tr>
+					<td>openresty</td>
+					<td>65.1G</td>
+					<td>53.4G</td>
+					<td>11.7G</td>
+					<td>1.22x</td>
+				</tr>
+				<tr>
+					<td>tailscale</td>
+					<td>17.9G</td>
+					<td>9.0G</td>
+					<td>9.0G</td>
+					<td>2.00x</td>
+				</tr>
+			</tbody>
+		</table>
+		<p>We decided to exclude <code class="language-plaintext highlighter-rouge">mysql-repo</code> as the deduplication ratio is too low to justify the I/O load after each sync.</p>
+		<h2 id="conclusion">Conclusion</h2>
+		<p>ZFS solved a number of problems we had with our mirror servers, and with the current setup, we are delighted to announce that ZFS is <em>the</em> best solution for mirrors.</p>
+		<p>With ZFS:</p>
+		<ul>
+			<li>We no longer need to worry about partitioning, as ZFS can grow and shrink as needed.</li>
+			<li>Our HDD array is now running faster than SSDs. Amazing!
+				<ul>
+					<li>Be the first one to no longer <strong>envy</strong> TUNA’s SSD server!</li>
+				</ul>
+			</li>
+			<li>Extra capacity at no cost, thanks to ZFS compression.
+				<ul>
+					<li>Even more so with deduplication.</li>
+				</ul>
+			</li>
+		</ul>
+		<h3 id="considerations">Considerations</h3>
+		<p>While our ZFS looks very promising, we’re aware that ZFS is not known for its long-term performance stability due to fragmentation.
+			We’ll continue to monitor our servers and see if this performance is sustainable.</p>
+		]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><category term="zfs" /><summary type="html"><![CDATA[A.K.A. Practical ZFS application on USTC Mirrors. A writeup of the talk I gave at Nanjing University this August.]]></summary></entry><entry><title type="html">Make Python 3.12 install user packages without complaints</title><link href="https://ibug.io/blog/2024/09/python3.12-user-packages/" rel="alternate" type="text/html" title="Make Python 3.12 install user packages without complaints" /><published>2024-09-02T00:00:00+00:00</published><updated>2024-09-03T11:59:51+00:00</updated><id>https://ibug.io/blog/2024/09/python3.12-user-packages</id><content type="html" xml:base="https://ibug.io/blog/2024/09/python3.12-user-packages/"><![CDATA[<p>I have a habit of <code class="language-plaintext highlighter-rouge">pip3 install --user</code> and then expecting these packages under <code class="language-plaintext highlighter-rouge">~/.local/lib/</code> to be available for my Python scripts whenever I need them. However, with PEP 668 landing in Python 3.12, I now have to add <code class="language-plaintext highlighter-rouge">--break-system-packages</code> even for <em>user</em> packages. This is super annoying considered that I have multiple projects sharing the same set of common packages (e.g. <a href="https://squidfunk.github.io/mkdocs-material/"><code class="language-plaintext highlighter-rouge">mkdocs-material</code></a>, a nice MkDocs theme). So time to tell <code class="language-plaintext highlighter-rouge">pip</code> to jerk off on that complaint.</p>
+	<p>Obviously, aliasing <code class="language-plaintext highlighter-rouge">pip3</code> (as per my personal habit, I always prefer <code class="language-plaintext highlighter-rouge">python3</code> and <code class="language-plaintext highlighter-rouge">pip3</code> over <code class="language-plaintext highlighter-rouge">python</code> and <code class="language-plaintext highlighter-rouge">pip</code>) to <code class="language-plaintext highlighter-rouge">pip3 --break-system-packages</code> could work, with all the limitations that any other shell alias bear.</p>
+	<p>The key here is, by examining how virtual environments work, we can trick Python into thinking that <code class="language-plaintext highlighter-rouge">~/.local</code> is one of them. This is already documented in the <a href="https://docs.python.org/3/library/site.html"><code class="language-plaintext highlighter-rouge">site</code> package</a>:</p>
+	<blockquote>
+		<p>If a file named <code class="language-plaintext highlighter-rouge">pyvenv.cfg</code> exists one directory above <code class="language-plaintext highlighter-rouge">sys.executable</code> …</p>
+	</blockquote>
+	<p>So here’s the solution, assuming <code class="language-plaintext highlighter-rouge">~/.local/bin</code> is already in your <code class="language-plaintext highlighter-rouge">$PATH</code>:</p>
+	<ol>
+		<li>Symlink <code class="language-plaintext highlighter-rouge">/usr/bin/python3</code> to <code class="language-plaintext highlighter-rouge">~/.local/bin/python3</code></li>
+		<li>Copy <code class="language-plaintext highlighter-rouge">/usr/bin/pip3</code> to <code class="language-plaintext highlighter-rouge">~/.local/bin/pip3</code>, and change the shebang line to <code class="language-plaintext highlighter-rouge">#!/home/example/.local/bin/python3</code> (you’ll have to use the absolute path here, though).</li>
+		<li>
+			<p>Create <code class="language-plaintext highlighter-rouge">~/.local/pyvenv.cfg</code> with just one line of content:</p>
+			<div class="language-ini highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code> <span class="py">include-system-site-packages</span> <span class="p">=</span> <span class="s">true</span>
+</code></pre>
+				</div>
+    </div>
+			<p>You can, of course, add other settings for <code class="language-plaintext highlighter-rouge">venv</code>, which is completely optional and up to you.</p>
+		</li>
+	</ol>
+	<p>Now whenever you install something with <code class="language-plaintext highlighter-rouge">pip3</code>, it’ll happily install it under <code class="language-plaintext highlighter-rouge">~/.local/lib/python3.12/site-packages</code> even without the need for <code class="language-plaintext highlighter-rouge">--user</code>.</p>
+	<p>If you prefer <code class="language-plaintext highlighter-rouge">python</code> or <code class="language-plaintext highlighter-rouge">pip</code> commands, you can just change the file names in the above steps accordingly.</p>
+	<p>Noteworthy points are:</p>
+	<ol>
+		<li>This method certainly can work for the system Python installation (at <code class="language-plaintext highlighter-rouge">/usr</code>), which I wouldn’t recommend for obvious reasons. If you insist, you should at least do this under <code class="language-plaintext highlighter-rouge">/usr/local</code> instead.</li>
+		<li>
+			<s>This method (when applied to `~/.local`) is ineffective against scripts already shebanged with `#!/usr/bin/python3`. Consider developing the habit of running `python3 script.py` instead of `./script.py` like I do.</s>
+		</li>
+	</ol>
+	<h2 id="corrigenda">Corrigenda</h2>
+	<ul>
+		<li>Scripts shebanged with <code class="language-plaintext highlighter-rouge">#!/usr/bin/python3</code> <em>will</em> pick up packages under <code class="language-plaintext highlighter-rouge">~/.local/lib/</code> as this is the default user site directory, which comes in <code class="language-plaintext highlighter-rouge">sys.path</code> even before the system site directory.</li>
+	</ul>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="python" /><summary type="html"><![CDATA[I have a habit of pip3 install --user and then expecting these packages under ~/.local/lib/ to be available for my Python scripts whenever I need them. However, with PEP 668 landing in Python 3.12, I now have to add --break-system-packages even for user packages. This is super annoying considered that I have multiple projects sharing the same set of common packages (e.g. mkdocs-material, a nice MkDocs theme). So time to tell pip to jerk off on that complaint.]]></summary></entry><entry><title type="html">镜像站 ZFS 调优实践</title><link href="https://ibug.io/blog/2024/08/nju-talk/" rel="alternate" type="text/html" title="镜像站 ZFS 调优实践" /><published>2024-08-17T00:00:00+00:00</published><updated>2024-10-03T00:01:10+00:00</updated><id>https://ibug.io/blog/2024/08/nju-talk</id><content type="html" xml:base="https://ibug.io/blog/2024/08/nju-talk/"><![CDATA[<section id="title">
+		<h1 class="title">2000 元的机械硬盘 &gt; 3000 元的固态硬盘？</h1>
+		<h2 style="font-weight: normal;">A.K.A. 镜像站 ZFS 调优实践</h2>
+		<hr />
+		<p class="date">iBug @ USTC</p>
+		<p class="date">2024 年 8 月 17 日<br />
+			南京大学 开源软件论坛</p>
+	</section>
+	<section>
+		<section id="background">
+			<h2>USTC Mirrors</h2>
+			<ul>
+				<li>日均服务量：（2024-05 ~ 2024-06）
+					<ul>
+						<li>出流量 ~36&nbsp;TiB</li>
+						<li>HTTP 请求数 17M，响应流量 19&nbsp;TiB</li>
+						<li>Rsync 请求数 147.8K（21.8K），输出流量 10.3&nbsp;TiB</li>
+					</ul>
+				</li>
+				<li>极限情况的仓库容量：
+					<ul>
+						<li>HTTP 服务器（XFS）：63.3&nbsp;TiB / 66.0&nbsp;TiB (96%, 2023-12-18)</li>
+						<li>Rsync 服务器（ZFS）：42.4&nbsp;TiB / 43.2&nbsp;TiB (98%, 2023-11-21)</li>
+					</ul>
+				</li>
+			</ul>
+		</section>
+		<section id="background-2">
+			<h2>背景</h2>
+			<ul>
+				<li>HTTP 服务器：
+					<ul>
+						<li>2020 年下半年搭建</li>
+						<li>10&nbsp;TB <i class="fas fa-compact-disc fa-spin"></i> &times; 12</li>
+						<li>2&nbsp;TB <i class="fas fa-floppy-disk"></i> &times; 1</li>
+						<li>XFS on LVM on HW RAID</li>
+						<li>考虑到 XFS 不能缩，VG 留了 free PE</li>
+					</ul>
+				</li>
+				<li>Rsync 服务器：
+					<ul>
+						<li>2016 年下半年搭建</li>
+						<li>6&nbsp;TB <i class="fas fa-compact-disc fa-spin"></i> &times; 12</li>
+						<li>240&nbsp;GB <i class="fas fa-floppy-disk"></i> &times; 2 + 480&nbsp;GB <i class="fas fa-floppy-disk"></i> &times; 1 (Optane 900p)</li>
+						<li>RAID-Z3（8 data + 3 parity + 1 hot spare）</li>
+						<li>全默认参数（除了 <code>zfs_arc_max</code>）</li>
+					</ul>
+				</li>
+			</ul>
+			<p>硬盘 I/O 日常 &gt; 90%，校内下载 iso 不足 50&nbsp;MB/s</p>
+		</section>
+		<section id="background-2-image">
+			<div class="img-container">
+				<img src="https://image.ibugone.com/grafana/mirrors-io-utilization-may-2024.png" />
+				<p>USTC 镜像站两台服务器在 2024 年 5 月期间的磁盘负载</p>
+			</div>
+		</section>
+	</section>
+	<section>
+		<section id="zfs">
+			<h2>ZFS</h2>
+			<ul>
+				<li>单机存储的终极解决方案</li>
+				<li>集 RAID、LVM、FS 于一体</li>
+				<li>所有数据都有 checksum</li>
+				<li><s>Fire and forget</s></li>
+				<li>好多参数啊</li>
+			</ul>
+		</section>
+		<section id="zfs-learning">
+			<h3>前期学习与实验</h3>
+			<ul>
+				<li><s>从（另一个）老师那嫖了点盘</s>装上了 ZFS，用于 研&ensp;究&ensp;学&ensp;习</li>
+				<li>I/O 负载来源？<s>上 PT 站</s></li>
+				<li>练习时长两年半的成果：<i class="fas fa-arrow-up"></i> 1.20&nbsp;PiB, <i class="fas fa-arrow-down"></i> 1.83&nbsp;TiB</li>
+			</ul>
+			<hr />
+			<p>重要学习资料：</p>
+			<ul>
+				<li><a href="https://utcc.utoronto.ca/~cks/space/blog/">Chris Siebenmann's blog</a></li>
+				<li><a href="https://openzfs.github.io/openzfs-docs/">OpenZFS Documentation</a></li>
+				<li>iBug's blog: <a href="/p/62">Understanding ZFS block sizes</a> (<a href="/p/62">ibug.io/p/62</a>)
+					<ul>
+						<li>以及这篇 blog 底下的众多参考文献</li>
+					</ul>
+				</li>
+			</ul>
+		</section>
+		<section id="zfs-image">
+			<div class="img-container">
+				<img src="https://image.ibugone.com/grafana/qb/2024-06-05.png" />
+				<p>好像给什么奇怪的东西加入了 Grafana</p>
+			</div>
+		</section>
+	</section>
+	<section>
+		<section id="mirrors">
+			<h2>镜像站</h2>
+			<ul>
+				<li>提供文件下载服务</li>
+				<li><s>也提供「家庭宽带上下行流量比例平衡」服务</s></li>
+				<li>读多写少，并且几乎所有操作都是整个文件顺序读写</li>
+				<li>少量的数据损坏没啥不良后果</li>
+			</ul>
+		</section>
+		<section id="mirrors-file-distrib">
+			<div class="img-container">
+				<img src="https://image.ibugone.com/server/mirrors-file-size-distribution-2024-08.png" />
+				<p>2024 年 8 月 USTC 镜像仓库内的文件大小分布
+					<br>
+					其中中位数为 9.83&nbsp;KiB，平均大小为 1.60&nbsp;MiB</p>
+			</div>
+		</section>
+		<section id="mirrors2">
+			<h3>重建 Rsync 服务器</h3>
+			<ul>
+				<li>RAID-Z3 的 overhead 较高，而且拆成两组 RAID-Z2 = 两倍的 IOPS</li>
+				<li>镜像站调优计划：
+					<ul>
+						<li><code>recordsize=1M</code>：反正都是全文件顺序读</li>
+						<li><code>compression=zstd</code>：至少可以压掉 &gt; 1M 文件的 padding
+							<ul>
+								<li>OpenZFS 2.2 将 early abort 机制推广到了 Zstd 3+，不必担心性能问题</li>
+							</ul>
+						</li>
+						<li><code>xattr=off</code>：谁家镜像需要 xattr？</li>
+						<li><code>atime=off</code>, <code>setuid=off</code>, <code>exec=off</code>, <code>devices=off</code>：开着干啥？</li>
+						<li><code>secondarycache=metadata</code>：Rsync 就别来消耗固态寿命了</li>
+					</ul>
+				</li>
+				<li>Danger Zone：
+					<ul>
+						<li><code>sync=disabled</code>：囤到 <code>zfs_txg_timeout</code> 再写盘</li>
+						<li><code>redundant_metadata=some</code>：偶尔坏个文件也没事</li>
+					</ul>
+				</li>
+				<li>Full version: <a href="https://docs.ustclug.org/services/mirrors/zfs/#setup">LUG @ USTC Documentation</a></li>
+			</ul>
+		</section>
+		<section id="zfs-parameters">
+			<h3>ZFS 参数</h3>
+			<ul>
+				<li>290+ 参数不能个个都学习嘛（感谢 Aron Xu @ BFSU）</li>
+				<li>ARC 容量：
+					<pre><code class="language-sh" data-trim>
 # Set ARC size to 160-200&nbsp;GiB, keep 16&nbsp;GiB free for OS
 options zfs zfs_arc_max=214748364800
 options zfs zfs_arc_min=171798691840
 options zfs zfs_arc_sys_free=17179869184
         </code></pre>
-					</li>
-					<li>ARC 内容：
-						<pre><code class="language-sh" data-trim>
+				</li>
+				<li>ARC 内容：
+					<pre><code class="language-sh" data-trim>
 # Favor metadata to data by 20x (OpenZFS 2.2+)
 options zfs zfs_arc_meta_balance=2000
 
 # Allow up to 80% of ARC to be used for dnodes
 options zfs zfs_arc_dnode_limit_percent=80
         </code></pre>
-					</li>
-					<li>I/O 队列深度：
-						<pre><code class="language-sh" data-trim>
+				</li>
+				<li>I/O 队列深度：
+					<pre><code class="language-sh" data-trim>
 # See man page section "ZFS I/O Scheduler"
 options zfs zfs_vdev_async_read_max_active=8
 options zfs zfs_vdev_async_read_min_active=2
 options zfs zfs_vdev_scrub_max_active=5
 options zfs zfs_vdev_max_active=20000
         </code></pre>
-					</li>
-					<li>Full version: <a href="https://docs.ustclug.org/services/mirrors/zfs/#zfs-kernel-module">LUG @ USTC Documentation</a></li>
-				</ul>
-			</section>
-			<section id="mirrors2-rebuild-results">
-				<h3>重建成果</h3>
-				<ul>
-					<li>略感惊喜的压缩率：39.5T / 37.1T = 1.07x
-						<ul>
-							<li>正确用法：<code>zfs list -po name,logicalused,used</code></li>
-							<li>实际压缩率：1 + 6.57%（-2.67&nbsp;TB / -2.43&nbsp;TiB）</li>
-							<li><s>等于删了 <a href="https://image.ibugone.com/teaser/lenovo-legion-wechat-data.jpg">9 份微信数据</a></s></li>
-						</ul>
-					</li>
-					<li>合理的磁盘 I/O</li>
-				</ul>
-			</section>
-			<section id="mirrors2-io-image">
-				<div class="img-container">
-					<img src="https://image.ibugone.com/grafana/mirrors2-io-utilization-and-free-space-june-july-2024.png" />
-					<p>重建前后 Rsync 服务器的磁盘负载与空闲空间比较</p>
-				</div>
-			</section>
+				</li>
+				<li>Full version: <a href="https://docs.ustclug.org/services/mirrors/zfs/#zfs-kernel-module">LUG @ USTC Documentation</a></li>
+			</ul>
 		</section>
-		<section>
-			<section id="mirrors4">
-				<h2>HTTP 服务器</h2>
-				<ul>
-					<li>硬件 RAID + LVM + XFS + Kernel page cache（开箱即用？）</li>
-					<li>SSD？LVMCache！
-						<ul>
-							<li>1M extents? Block size? Algorithm?</li>
-							<li><i class="fas fa-skull"></i> GRUB2</li>
-							<li><i class="fas fa-skull"></i> "oldssd"</li>
-						</ul>
-					</li>
-					<li>XFS 不能缩，所以 VG 和 FS 两层都要留空间备用</li>
-				</ul>
-			</section>
-			<section id="mirrors4-dmcache-image">
-				<div class="img-container">
-					<img src="https://image.ibugone.com/grafana/mirrors4-dmcache-may-june-2024.png" />
-					<p>重建前 HTTP 服务器采用的 LVMcache 方案的命中率</p>
-				</div>
-			</section>
-			<section id="mirrors4-rebuild">
-				<h2>如法炮制</h2>
-				<ul>
-					<li>体验一下更加先进的 kernel：<code>6.8.8-3-pve</code>（无需 DKMS 哦）</li>
-					<li>重建为两组 RAID-Z2，开压缩
-						<ul>
-							<li>面向 HTTP 用户的服务器，所以 <code>secondarycache=all</code>（放着不动）</li>
-							<li>更好的 CPU，所以 <code>compression=zstd-8</code></li>
-						</ul>
-					</li>
-					<li>更快的 <code>zfs send -Lcp</code>：36 小时倒完 50+ TiB 仓库</li>
-					<li>压缩率：1 + 3.93%（-2.42&nbsp;TB / -2.20&nbsp;TiB）</li>
-				</ul>
-			</section>
-			<section id="mirrors2-4-io-image">
-				<div class="img-container">
-					<img src="https://image.ibugone.com/grafana/mirrors2-4-io-utilization-june-july-2024.png" />
-					<p>重建前后两台服务器的磁盘负载比较
-						<br>
-						左边为重建前，中间为仅 Rsync 服务器重建后，右边为两台服务器均重建后的负载</p>
-				</div>
-			</section>
-			<section id="mirrors2-4-zfs-arc-image">
-				<div class="img-container">
-					<img src="https://image.ibugone.com/grafana/mirrors2-4-zfs-arc-hit-rate.png" />
-					<p>两台服务器的 ZFS ARC 命中率</p>
-				</div>
-			</section>
-			<section id="mirrors2-4-recent-io-image">
-				<div class="img-container">
-					<img src="https://image.ibugone.com/grafana/mirrors2-4-disk-io-after-rebuild.png" />
-					<p>两台服务器重建后稳定的磁盘利用率</p>
-				</div>
-			</section>
+		<section id="mirrors2-rebuild-results">
+			<h3>重建成果</h3>
+			<ul>
+				<li>略感惊喜的压缩率：39.5T / 37.1T = 1.07x
+					<ul>
+						<li>正确用法：<code>zfs list -po name,logicalused,used</code></li>
+						<li>实际压缩率：1 + 6.57%（-2.67&nbsp;TB / -2.43&nbsp;TiB）</li>
+						<li><s>等于删了 <a href="https://image.ibugone.com/teaser/lenovo-legion-wechat-data.jpg">9 份微信数据</a></s></li>
+					</ul>
+				</li>
+				<li>合理的磁盘 I/O</li>
+			</ul>
 		</section>
-		<section>
-			<section id="misc">
-				<h2>杂项</h2>
-			</section>
-			<section id="zfs-compressratio">
-				<h3>ZFS 压缩率</h3>
-				<table>
-					<thead>
-						<tr>
-							<th>NAME</th>
-							<th>LUSED</th>
-							<th>USED</th>
-							<th>RATIO</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>pool0/repo/crates.io-index</td>
-							<td>2.19G</td>
-							<td>1.65G</td>
-							<td>3.01x</td>
-						</tr>
-						<tr>
-							<td>pool0/repo/elpa</td>
-							<td>3.35G</td>
-							<td>2.32G</td>
-							<td>1.67x</td>
-						</tr>
-						<tr>
-							<td>pool0/repo/rfc</td>
-							<td>4.37G</td>
-							<td>3.01G</td>
-							<td>1.56x</td>
-						</tr>
-						<tr>
-							<td>pool0/repo/debian-cdimage</td>
-							<td>1.58T</td>
-							<td>1.04T</td>
-							<td>1.54x</td>
-						</tr>
-						<tr>
-							<td>pool0/repo/tldp</td>
-							<td>4.89G</td>
-							<td>3.78G</td>
-							<td>1.48x</td>
-						</tr>
+		<section id="mirrors2-io-image">
+			<div class="img-container">
+				<img src="https://image.ibugone.com/grafana/mirrors2-io-utilization-and-free-space-june-july-2024.png" />
+				<p>重建前后 Rsync 服务器的磁盘负载与空闲空间比较</p>
+			</div>
+		</section>
+	</section>
+	<section>
+		<section id="mirrors4">
+			<h2>HTTP 服务器</h2>
+			<ul>
+				<li>硬件 RAID + LVM + XFS + Kernel page cache（开箱即用？）</li>
+				<li>SSD？LVMCache！
+					<ul>
+						<li>1M extents? Block size? Algorithm?</li>
+						<li><i class="fas fa-skull"></i> GRUB2</li>
+						<li><i class="fas fa-skull"></i> "oldssd"</li>
+					</ul>
+				</li>
+				<li>XFS 不能缩，所以 VG 和 FS 两层都要留空间备用</li>
+			</ul>
+		</section>
+		<section id="mirrors4-dmcache-image">
+			<div class="img-container">
+				<img src="https://image.ibugone.com/grafana/mirrors4-dmcache-may-june-2024.png" />
+				<p>重建前 HTTP 服务器采用的 LVMcache 方案的命中率</p>
+			</div>
+		</section>
+		<section id="mirrors4-rebuild">
+			<h2>如法炮制</h2>
+			<ul>
+				<li>体验一下更加先进的 kernel：<code>6.8.8-3-pve</code>（无需 DKMS 哦）</li>
+				<li>重建为两组 RAID-Z2，开压缩
+					<ul>
+						<li>面向 HTTP 用户的服务器，所以 <code>secondarycache=all</code>（放着不动）</li>
+						<li>更好的 CPU，所以 <code>compression=zstd-8</code></li>
+					</ul>
+				</li>
+				<li>更快的 <code>zfs send -Lcp</code>：36 小时倒完 50+ TiB 仓库</li>
+				<li>压缩率：1 + 3.93%（-2.42&nbsp;TB / -2.20&nbsp;TiB）</li>
+			</ul>
+		</section>
+		<section id="mirrors2-4-io-image">
+			<div class="img-container">
+				<img src="https://image.ibugone.com/grafana/mirrors2-4-io-utilization-june-july-2024.png" />
+				<p>重建前后两台服务器的磁盘负载比较
+					<br>
+					左边为重建前，中间为仅 Rsync 服务器重建后，右边为两台服务器均重建后的负载</p>
+			</div>
+		</section>
+		<section id="mirrors2-4-zfs-arc-image">
+			<div class="img-container">
+				<img src="https://image.ibugone.com/grafana/mirrors2-4-zfs-arc-hit-rate.png" />
+				<p>两台服务器的 ZFS ARC 命中率</p>
+			</div>
+		</section>
+		<section id="mirrors2-4-recent-io-image">
+			<div class="img-container">
+				<img src="https://image.ibugone.com/grafana/mirrors2-4-disk-io-after-rebuild.png" />
+				<p>两台服务器重建后稳定的磁盘利用率</p>
+			</div>
+		</section>
+	</section>
+	<section>
+		<section id="misc">
+			<h2>杂项</h2>
+		</section>
+		<section id="zfs-compressratio">
+			<h3>ZFS 压缩率</h3>
+			<table>
+				<thead>
+					<tr>
+						<th>NAME</th>
+						<th>LUSED</th>
+						<th>USED</th>
+						<th>RATIO</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>pool0/repo/crates.io-index</td>
+						<td>2.19G</td>
+						<td>1.65G</td>
+						<td>3.01x</td>
+					</tr>
+					<tr>
+						<td>pool0/repo/elpa</td>
+						<td>3.35G</td>
+						<td>2.32G</td>
+						<td>1.67x</td>
+					</tr>
+					<tr>
+						<td>pool0/repo/rfc</td>
+						<td>4.37G</td>
+						<td>3.01G</td>
+						<td>1.56x</td>
+					</tr>
+					<tr>
+						<td>pool0/repo/debian-cdimage</td>
+						<td>1.58T</td>
+						<td>1.04T</td>
+						<td>1.54x</td>
+					</tr>
+					<tr>
+						<td>pool0/repo/tldp</td>
+						<td>4.89G</td>
+						<td>3.78G</td>
+						<td>1.48x</td>
+					</tr>
+					<td>pool0/repo/loongnix</td>
+					<td>438G</td>
+					<td>332G</td>
+					<td>1.34x</td>
+				</tr>
+				<tr>
+					<td>pool0/repo/rosdistro</td>
+					<td>32.2M</td>
+					<td>26.6M</td>
+					<td>1.31x</td>
+				</tr>
+				<tr>
+				</tbody>
+			</table>
+			<p>我数学不好：<a href="https://github.com/openzfs/zfs/issues/7639"><i class="fab fa-github"></i> openzfs/zfs#7639</a></p>
+		</section>
+		<section id="zfs-compressratio-diff">
+			<h3>ZFS 压缩量</h3>
+			<table>
+				<thead>
+					<tr>
+						<th>NAME</th>
+						<th>LUSED</th>
+						<th>USED</th>
+						<th>DIFF</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>pool0/repo</td>
+						<td>58.3T</td>
+						<td>56.1T</td>
+						<td>2.2T</td>
+					</tr>
+					<tr>
+						<td>pool0/repo/debian-cdimage</td>
+						<td>1.6T</td>
+						<td>1.0T</td>
+						<td>549.6G</td>
+					</tr>
+					<tr>
+						<td>pool0/repo/opensuse</td>
+						<td>2.5T</td>
+						<td>2.3T</td>
+						<td>279.7G</td>
+					</tr>
+					<tr>
+						<td>pool0/repo/turnkeylinux</td>
+						<td>1.2T</td>
+						<td>1.0T</td>
+						<td>155.2G</td>
+					</tr>
+					<tr>
 						<td>pool0/repo/loongnix</td>
-						<td>438G</td>
-						<td>332G</td>
-						<td>1.34x</td>
+						<td>438.2G</td>
+						<td>331.9G</td>
+						<td>106.3G</td>
 					</tr>
 					<tr>
-						<td>pool0/repo/rosdistro</td>
-						<td>32.2M</td>
-						<td>26.6M</td>
-						<td>1.31x</td>
+						<td>pool0/repo/alpine</td>
+						<td>3.0T</td>
+						<td>2.9T</td>
+						<td>103.9G</td>
 					</tr>
 					<tr>
-					</tbody>
-				</table>
-				<p>我数学不好：<a href="https://github.com/openzfs/zfs/issues/7639"><i class="fab fa-github"></i> openzfs/zfs#7639</a></p>
-			</section>
-			<section id="zfs-compressratio-diff">
-				<h3>ZFS 压缩量</h3>
-				<table>
-					<thead>
-						<tr>
-							<th>NAME</th>
-							<th>LUSED</th>
-							<th>USED</th>
-							<th>DIFF</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>pool0/repo</td>
-							<td>58.3T</td>
-							<td>56.1T</td>
-							<td>2.2T</td>
-						</tr>
-						<tr>
-							<td>pool0/repo/debian-cdimage</td>
-							<td>1.6T</td>
-							<td>1.0T</td>
-							<td>549.6G</td>
-						</tr>
-						<tr>
-							<td>pool0/repo/opensuse</td>
-							<td>2.5T</td>
-							<td>2.3T</td>
-							<td>279.7G</td>
-						</tr>
-						<tr>
-							<td>pool0/repo/turnkeylinux</td>
-							<td>1.2T</td>
-							<td>1.0T</td>
-							<td>155.2G</td>
-						</tr>
-						<tr>
-							<td>pool0/repo/loongnix</td>
-							<td>438.2G</td>
-							<td>331.9G</td>
-							<td>106.3G</td>
-						</tr>
-						<tr>
-							<td>pool0/repo/alpine</td>
-							<td>3.0T</td>
-							<td>2.9T</td>
-							<td>103.9G</td>
-						</tr>
-						<tr>
-							<td>pool0/repo/openwrt</td>
-							<td>1.8T</td>
-							<td>1.7T</td>
-							<td>70.0G</td>
-						</tr>
-					</tbody>
-				</table>
-			</section>
-			<section id="grafana-zfs-io">
-				<h3>Grafana I/O 统计</h3>
-				<pre><code data-trim>
+						<td>pool0/repo/openwrt</td>
+						<td>1.8T</td>
+						<td>1.7T</td>
+						<td>70.0G</td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+		<section id="grafana-zfs-io">
+			<h3>Grafana I/O 统计</h3>
+			<pre><code data-trim>
 SELECT
   non_negative_derivative(sum("reads"), 1s) AS "read",
   non_negative_derivative(sum("writes"), 1s) AS "write"
@@ -416,55 +999,55 @@ FROM (
 WHERE $timeFilter
 GROUP BY time($interval), "pool"::tag fill(linear)
 </code></pre>
-				<p>跑得有点慢（毕竟要先 <code>GROUP BY</code> 每个 ZFS dataset 再一起 <code>sum</code>）</p>
-				<p>I/O 带宽：把里层的 <code>reads</code> 和 <code>writes</code> 换成 <code>nread</code> 和 <code>nwritten</code> 即可</p>
-			</section>
-			<section id="grafana-zfs-io-image">
-				<div class="img-container">
-					<img src="https://image.ibugone.com/grafana/mirrors2-4-zfs-io-count.png" />
-				</div>
-				<p></p>
-				<ul>
-					<li>如何用机械盘跑出平均 15K、最高 50K 的 IOPS？</li>
-					<li><s>把 ARC hit 算进去</s></li>
-				</ul>
-			</section>
+			<p>跑得有点慢（毕竟要先 <code>GROUP BY</code> 每个 ZFS dataset 再一起 <code>sum</code>）</p>
+			<p>I/O 带宽：把里层的 <code>reads</code> 和 <code>writes</code> 换成 <code>nread</code> 和 <code>nwritten</code> 即可</p>
 		</section>
-		<section>
-			<section id="hearse">
-				<h2>灵车时间</h2>
-			</section>
-			<section id="pve-kernel">
-				<h2>Proxmox Kernel</h2>
-				<ul>
-					<li>≈ Ubuntu Kernel</li>
-					<li><i class="fas fa-skull"></i> Rsync 容器</li>
-					<li><code>security/apparmor/af_unix.c</code>???</li>
-					<li><a href="https://docs.ustclug.org/faq/apparmor/">LUG Documentation: AppArmor</a></li>
-				</ul>
-				<pre><code class="language-sh" data-trim>
+		<section id="grafana-zfs-io-image">
+			<div class="img-container">
+				<img src="https://image.ibugone.com/grafana/mirrors2-4-zfs-io-count.png" />
+			</div>
+			<p></p>
+			<ul>
+				<li>如何用机械盘跑出平均 15K、最高 50K 的 IOPS？</li>
+				<li><s>把 ARC hit 算进去</s></li>
+			</ul>
+		</section>
+	</section>
+	<section>
+		<section id="hearse">
+			<h2>灵车时间</h2>
+		</section>
+		<section id="pve-kernel">
+			<h2>Proxmox Kernel</h2>
+			<ul>
+				<li>≈ Ubuntu Kernel</li>
+				<li><i class="fas fa-skull"></i> Rsync 容器</li>
+				<li><code>security/apparmor/af_unix.c</code>???</li>
+				<li><a href="https://docs.ustclug.org/faq/apparmor/">LUG Documentation: AppArmor</a></li>
+			</ul>
+			<pre><code class="language-sh" data-trim>
 dpkg-divert --package lxc-pve --rename --divert /usr/share/apparmor-features/features.stock --add /usr/share/apparmor-features/features
 wget -O /usr/share/apparmor-features/features https://github.com/proxmox/lxc/raw/master/debian/features
     </code></pre>
-			</section>
-			<section id="zerotier-data">
-				<div class="img-container">
-					<img src="https://image.ibugone.com/server/ls-zerotier-redhar-el.png" />
-					<p>ZeroTier 仓库中一眼重复的内容</p>
-				</div>
-			</section>
-			<section id="dedup">
-				<h3>Dedup!</h3>
-				<pre><code class="language-sh">zfs create -o dedup=on pool0/repo/zerotier</code></pre>
-				<pre><code class="language-sh" data-trim>
+		</section>
+		<section id="zerotier-data">
+			<div class="img-container">
+				<img src="https://image.ibugone.com/server/ls-zerotier-redhar-el.png" />
+				<p>ZeroTier 仓库中一眼重复的内容</p>
+			</div>
+		</section>
+		<section id="dedup">
+			<h3>Dedup!</h3>
+			<pre><code class="language-sh">zfs create -o dedup=on pool0/repo/zerotier</code></pre>
+			<pre><code class="language-sh" data-trim>
 # zdb -DDD pool0
 dedup = 4.93, compress = 1.23, copies = 1.00, dedup * compress / copies = 6.04
     </code></pre>
-				<p>效果倒是不错，但是不想像 ZFS dedup 这么灵怎么办？</p>
-			</section>
-			<section id="jdupes">
-				<h3>jdupes</h3>
-				<pre><code class="language-sh" data-trim>
+			<p>效果倒是不错，但是不想像 ZFS dedup 这么灵怎么办？</p>
+		</section>
+		<section id="jdupes">
+			<h3>jdupes</h3>
+			<pre><code class="language-sh" data-trim>
 # post-sync.sh
 # Do file-level deduplication for select repos
 case "$NAME" in
@@ -472,109 +1055,109 @@ case "$NAME" in
     jdupes -L -Q -r -q "$DIR" ;;
 esac
     </code></pre>
-			</section>
-			<section id="jdupes-table">
-				<h3>jdupes 效果</h3>
-				<table>
-					<thead>
-						<tr>
-							<th>Name</th>
-							<th>Orig</th>
-							<th>Dedup</th>
-							<th>Diff</th>
-							<th>Ratio</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>proxmox</td>
-							<td>395.4G</td>
-							<td>162.6G</td>
-							<td>232.9G</td>
-							<td>2.43x</td>
-						</tr>
-						<tr>
-							<td>docker-ce</td>
-							<td>539.6G</td>
-							<td>318.2G</td>
-							<td>221.4G</td>
-							<td>1.70x</td>
-						</tr>
-						<tr>
-							<td>influxdata</td>
-							<td>248.4G</td>
-							<td>54.8G</td>
-							<td>193.6G</td>
-							<td>4.54x</td>
-						</tr>
-						<tr>
-							<td>salt</td>
-							<td>139.0G</td>
-							<td>87.2G</td>
-							<td>51.9G</td>
-							<td>1.59x</td>
-						</tr>
-						<tr>
-							<td>nginx</td>
-							<td>94.9G</td>
-							<td>59.7G</td>
-							<td>35.2G</td>
-							<td>1.59x</td>
-						</tr>
-						<tr>
-							<td>zerotier</td>
-							<td>29.8G</td>
-							<td>6.1G</td>
-							<td>23.7G</td>
-							<td>4.88x</td>
-						</tr>
-						<tr>
-							<td>mysql-repo</td>
-							<td>647.8G</td>
-							<td>632.5G</td>
-							<td>15.2G</td>
-							<td>1.02x</td>
-						</tr>
-						<tr>
-							<td>openresty</td>
-							<td>65.1G</td>
-							<td>53.4G</td>
-							<td>11.7G</td>
-							<td>1.22x</td>
-						</tr>
-						<tr>
-							<td>tailscale</td>
-							<td>17.9G</td>
-							<td>9.0G</td>
-							<td>9.0G</td>
-							<td>2.00x</td>
-						</tr>
-					</tbody>
-				</table>
-			</section>
 		</section>
-		<section id="conclusion">
-			<h2>只要 ZFS 用得好</h2>
-			<ul>
-				<li>妈妈再也不用担心我的硬盘分区</li>
-				<li>机械硬盘 <s>比西方的固态硬盘跑得还快</s></li>
-				<li>成为第一个不再<b>羡慕</b> TUNA 全闪的镜像站</li>
-				<li>免费的额外容量
-					<ul>
-						<li>Dedup 会员红包</li>
-					</ul>
-				</li>
-				<li>碎片率？</li>
-			</ul>
+		<section id="jdupes-table">
+			<h3>jdupes 效果</h3>
+			<table>
+				<thead>
+					<tr>
+						<th>Name</th>
+						<th>Orig</th>
+						<th>Dedup</th>
+						<th>Diff</th>
+						<th>Ratio</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>proxmox</td>
+						<td>395.4G</td>
+						<td>162.6G</td>
+						<td>232.9G</td>
+						<td>2.43x</td>
+					</tr>
+					<tr>
+						<td>docker-ce</td>
+						<td>539.6G</td>
+						<td>318.2G</td>
+						<td>221.4G</td>
+						<td>1.70x</td>
+					</tr>
+					<tr>
+						<td>influxdata</td>
+						<td>248.4G</td>
+						<td>54.8G</td>
+						<td>193.6G</td>
+						<td>4.54x</td>
+					</tr>
+					<tr>
+						<td>salt</td>
+						<td>139.0G</td>
+						<td>87.2G</td>
+						<td>51.9G</td>
+						<td>1.59x</td>
+					</tr>
+					<tr>
+						<td>nginx</td>
+						<td>94.9G</td>
+						<td>59.7G</td>
+						<td>35.2G</td>
+						<td>1.59x</td>
+					</tr>
+					<tr>
+						<td>zerotier</td>
+						<td>29.8G</td>
+						<td>6.1G</td>
+						<td>23.7G</td>
+						<td>4.88x</td>
+					</tr>
+					<tr>
+						<td>mysql-repo</td>
+						<td>647.8G</td>
+						<td>632.5G</td>
+						<td>15.2G</td>
+						<td>1.02x</td>
+					</tr>
+					<tr>
+						<td>openresty</td>
+						<td>65.1G</td>
+						<td>53.4G</td>
+						<td>11.7G</td>
+						<td>1.22x</td>
+					</tr>
+					<tr>
+						<td>tailscale</td>
+						<td>17.9G</td>
+						<td>9.0G</td>
+						<td>9.0G</td>
+						<td>2.00x</td>
+					</tr>
+				</tbody>
+			</table>
 		</section>
-		<section id="outro">
-			<h1>谢谢！</h1>
-			<small>
-				<p>本页面的链接：<a href="/p/72"><i class="fas fa-fw fa-link"></i> ibug.io/p/72</a></p>
-				<p>友情链接：2023 年南京大学报告：<a href="/p/59"><i class="fas fa-fw fa-link"></i> ibug.io/p/59</a></p>
-			</small>
-		</section>
-		]]></content><author><name>iBug</name></author></entry><entry><title type="html">Why my IPv4 gets stuck? - Debugging network issues with bpftrace</title><link href="https://ibug.io/blog/2024/08/first-touch-bpftrace/" rel="alternate" type="text/html" title="Why my IPv4 gets stuck? - Debugging network issues with bpftrace" /><published>2024-08-03T00:00:00+00:00</published><updated>2024-08-03T03:22:32+00:00</updated><id>https://ibug.io/blog/2024/08/first-touch-bpftrace</id><content type="html" xml:base="https://ibug.io/blog/2024/08/first-touch-bpftrace/"><![CDATA[<p>I run a Debian-based software router on my home network. It’s connected to multiple ISPs, so I have some policy routing rules to balance the traffic between them. Some time ago, I noticed that the IPv4 connectivity got stuck intermittently when it didn’t use to, while IPv6 was working fine. It’s also interesting that the issue only happened with one specific ISP, in the egress direction, and only a few specific devices were affected.</p>
+	</section>
+	<section id="conclusion">
+		<h2>只要 ZFS 用得好</h2>
+		<ul>
+			<li>妈妈再也不用担心我的硬盘分区</li>
+			<li>机械硬盘 <s>比西方的固态硬盘跑得还快</s></li>
+			<li>成为第一个不再<b>羡慕</b> TUNA 全闪的镜像站</li>
+			<li>免费的额外容量
+				<ul>
+					<li>Dedup 会员红包</li>
+				</ul>
+			</li>
+			<li>碎片率？</li>
+		</ul>
+	</section>
+	<section id="outro">
+		<h1>谢谢！</h1>
+		<small>
+			<p>本页面的链接：<a href="/p/72"><i class="fas fa-fw fa-link"></i> ibug.io/p/72</a></p>
+			<p>友情链接：2023 年南京大学报告：<a href="/p/59"><i class="fas fa-fw fa-link"></i> ibug.io/p/59</a></p>
+		</small>
+	</section>
+	]]></content><author><name>iBug</name></author></entry><entry><title type="html">Why my IPv4 gets stuck? - Debugging network issues with bpftrace</title><link href="https://ibug.io/blog/2024/08/first-touch-bpftrace/" rel="alternate" type="text/html" title="Why my IPv4 gets stuck? - Debugging network issues with bpftrace" /><published>2024-08-03T00:00:00+00:00</published><updated>2024-08-03T03:22:32+00:00</updated><id>https://ibug.io/blog/2024/08/first-touch-bpftrace</id><content type="html" xml:base="https://ibug.io/blog/2024/08/first-touch-bpftrace/"><![CDATA[<p>I run a Debian-based software router on my home network. It’s connected to multiple ISPs, so I have some policy routing rules to balance the traffic between them. Some time ago, I noticed that the IPv4 connectivity got stuck intermittently when it didn’t use to, while IPv6 was working fine. It’s also interesting that the issue only happened with one specific ISP, in the egress direction, and only a few specific devices were affected.</p>
 	<p>At first I suspected the ISP’s equipment, but a clue quickly dismissed that suspicion: Connection to the same ISP worked fine when initiated from the router itself, as well as many other unaffected devices. So the issue must be within the router.</p>
 	<p>As usual, every network debugging begins with a packet capture. I start <code class="language-plaintext highlighter-rouge">tcpdump</code> on both the LAN interface and the problematic WAN interface, then try <code class="language-plaintext highlighter-rouge">curl</code>-ing something from an affected device. Packet capture shows a few back-and-forth packets, then the device keeps sending packets but the router doesn’t forward them to the WAN interface anymore. Time for a closer look.</p>
 	<h2 id="identifying-the-issue">Identifying the issue</h2>
@@ -1415,268 +1998,4 @@ Mar 31 19:20:12 hostname systemd[1]: Reloaded Postfix Mail Transport Agent.
 	<p>To determine the presence of the associated SSH session, the scripts finds the PID of the “session manager process”. The “parent PID” is read twice because <code class="language-plaintext highlighter-rouge">sshd</code> double-forks. The client address is conveniently provided in the environment variable, so putting all these together yields precisely what I need.</p>
 	<p>The only caveat is the use of <code class="language-plaintext highlighter-rouge">sudo</code>, as <code class="language-plaintext highlighter-rouge">ipset</code> requires <code class="language-plaintext highlighter-rouge">CAP_NET_ADMIN</code> for interacting with the kernel network stack. It’s certainly possible to write an SUID binary as a wrapper, but for me configuring passwordless sudo for the <code class="language-plaintext highlighter-rouge">ipset</code> command satisfies my demands.</p>
 	<p>So now whenever I need to RDP to my computer through this forwarded port on the public internet, I can just SSH into the gateway and it’ll automatically grant me 5 minutes of RDP access from this specific network. All traffic forwarding is done in the kernel with no extra encapsulation or encryption, ensuring the best possible performance for both the endpoints and the gateway router itself.</p>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="windows" /><category term="networking" /><summary type="html"><![CDATA[Today I stumbled upon this V2EX post (Simplified Chinese) where the OP shared their PowerShell implementation of a “makeshift fail2ban” for RDP (their GitHub repository). Their script looked very clean and robust, but needless to say, it is unnecessarily difficult on Windows. So on this rare (maybe?) occasion I decide to share my firewall for securing RDP access to my Windows hosts.]]></summary></entry><entry><title type="html">Request limiting in Nginx</title><link href="https://ibug.io/blog/2024/01/nginx-limit-req/" rel="alternate" type="text/html" title="Request limiting in Nginx" /><published>2024-01-23T00:00:00+00:00</published><updated>2024-01-23T06:15:20+00:00</updated><id>https://ibug.io/blog/2024/01/nginx-limit-req</id><content type="html" xml:base="https://ibug.io/blog/2024/01/nginx-limit-req/"><![CDATA[<p>Nginx has a built-in module <code class="language-plaintext highlighter-rouge">limit_req</code> for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.</p>
-	<p>As always, everything begins with <a href="https://nginx.org/en/docs/http/ngx_http_limit_req_module.html">the documentation</a>. A quick-start example is given:</p>
-	<div class="language-nginx highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">http</span> <span class="p">{</span>
-    <span class="kn">limit_req_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=one:10m</span> <span class="s">rate=1r/s</span><span class="p">;</span>
-    <span class="kn">...</span>
-    <span class="s">server</span> <span class="p">{</span>
-        <span class="kn">...</span>
-        <span class="s">location</span> <span class="n">/search/</span> <span class="p">{</span>
-            <span class="kn">limit_req</span> <span class="s">zone=one</span> <span class="s">burst=5</span><span class="p">;</span>
-        <span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>The basis is the <code class="language-plaintext highlighter-rouge">limit_req_zone</code> directive, which defines a shared memory zone for storing the states of the rate-limiting. Its arguments include the key, the size and the name of the zone, followed by the average or sustained rate limit. The rate limit has two possible units: <code class="language-plaintext highlighter-rouge">r/s</code> or <code class="language-plaintext highlighter-rouge">r/m</code>. It also says</p>
-	<blockquote>
-		<p>The limitation is done using the “<a href="https://en.wikipedia.org/wiki/Leaky_bucket">leaky bucket</a>” method.</p>
-	</blockquote>
-	<p>So far so good, except the burst limit is … specified on where it’s used? Moving on for now.</p>
-	<p>The <code class="language-plaintext highlighter-rouge">limit_req</code> directive specifies when the requests should be limited.</p>
-	<blockquote>
-		<p>If the requests rate exceeds the rate configured for a zone, their processing is delayed such that requests are processed at a defined rate.</p>
-	</blockquote>
-	<p>Seems pretty clear but slightly counter-intuitive. By default, burst requests are queued up and delayed until the rate is below the limit, whereas most common rate-limiting implementations would simply serve them.</p>
-	<p>I find it easier to understand this model with a queue. Each key defines a queue where items are popped at the specified rate (e.g. <code class="language-plaintext highlighter-rouge">1r/s</code>). Incoming requests are added to the queue, and are only served <em>upon exiting</em> the queue. The queue size is defined by the burst limit, and excess requests are dropped when the queue is full.</p>
-	<p><img src="/image/server/nginx-limit-req.png" alt="Default queue behavior" /></p>
-	<p>The more common behavior, however, requires an extra option:</p>
-	<blockquote>
-		<p>If delaying of excessive requests while requests are being limited is not desired, the parameter <code class="language-plaintext highlighter-rouge">nodelay</code> should be used:</p>
-		<div class="language-nginx highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">limit_req</span> <span class="s">zone=one</span> <span class="s">burst=5</span> <span class="s">nodelay</span><span class="p">;</span>
-</code></pre>
-			</div>
-  </div>
-	</blockquote>
-	<p>With <code class="language-plaintext highlighter-rouge">nodelay</code>, requests are served as soon as they <em>enter the queue</em>:</p>
-	<p><img src="/image/server/nginx-limit-req-nodelay.png" alt="nodelay queue behavior" /></p>
-	<p>The next confusing option, conflicting with <code class="language-plaintext highlighter-rouge">nodelay</code>, is <code class="language-plaintext highlighter-rouge">delay</code>:</p>
-	<blockquote>
-		<p>The <code class="language-plaintext highlighter-rouge">delay</code> parameter specifies a limit at which excessive requests become delayed. Default value is zero, i.e. all excessive requests are delayed.</p>
-	</blockquote>
-	<p>After a bit of fiddling, I realized the model is now like this:</p>
-	<p><img src="/image/server/nginx-limit-req-delay.png" alt="delay queue behavior" /></p>
-	<p>So what <code class="language-plaintext highlighter-rouge">delay</code> actually means is to delay requests after this “delay limit” is reached. In other words, requests are served as soon as they arrive at the n-th position in the front of the queue.</p>
-	<p>During all these testing, I wasn’t happy with existing tools for testing, so I wrote my own one, despite its simplicity: <a href="https://gist.github.com/iBug/351b458633ff89fea0fc9f0edd07fc28">GitHub Gist</a>.</p>
-	<p>With this new tool, I can now (textually) visualize the behavior of different options. Under the <code class="language-plaintext highlighter-rouge">burst=5</code> and <code class="language-plaintext highlighter-rouge">delay=1</code> setup, the output is like this:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/test
-<span class="go">[1] Done [0s] [200 in 2ms]
-[2] Done [10ms] [200 in 1ms]
-[3] Done [21ms] [200 in 981ms]
-[4] Done [31ms] [200 in 1.972s]
-[5] Done [42ms] [200 in 2.962s]
-[6] Done [53ms] [200 in 3.948s]
-[7] Done [64ms] [503 in 0s]
-[8] Done [75ms] [503 in 1ms]
-[9] Done [85ms] [503 in 0s]
-[10] Done [95ms] [503 in 0s]
-</span></code></pre>
-		</div>
-	</div>
-	<p>If you try the tool yourself, the HTTP status codes are colored for even better prominence.</p>
-	<p>In the above example, the first request is served immediately as it also exits the queue immediately. The second request is queued at the front, and because <code class="language-plaintext highlighter-rouge">delay=1</code>, it’s also served immediately. Subsequent requests are queued up until the sixth when the queue becomes full. The seventh and thereafter are dropped.</p>
-	<p>If we change <code class="language-plaintext highlighter-rouge">delay=0</code>, the output becomes:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/test
-<span class="go">[1] Done [0s] [200 in 2ms]
-[2] Done [10ms] [200 in 993ms]
-[3] Done [21ms] [200 in 1.982s]
-[4] Done [32ms] [200 in 2.973s]
-[5] Done [43ms] [200 in 3.959s]
-[6] Done [54ms] [200 in 4.949s]
-[7] Done [65ms] [503 in 1ms]
-[8] Done [75ms] [503 in 1ms]
-[9] Done [85ms] [503 in 2ms]
-[10] Done [96ms] [503 in 1ms]
-</span></code></pre>
-		</div>
-	</div>
-	<p>Still only the first 6 requests are served, but the 2nd to the 6th are delayed by an additional second due to the removal of <code class="language-plaintext highlighter-rouge">delay=1</code>.</p>
-	<p>Under this model, the <code class="language-plaintext highlighter-rouge">nodelay</code> option can be understood as <code class="language-plaintext highlighter-rouge">delay=infinity</code>, while still respecting the <code class="language-plaintext highlighter-rouge">burst</code> limit.</p>
-	<h2 id="one-more-question">One more question</h2>
-	<p>Why is the burst limit specified at use time, instead of at zone definition? Only experiments can find out:</p>
-	<div class="language-nginx highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">location</span> <span class="n">/a</span> <span class="p">{</span>
-    <span class="kn">limit_req</span> <span class="s">zone=test</span> <span class="s">burst=1</span><span class="p">;</span>
-<span class="p">}</span>
-<span class="k">location</span> <span class="n">/b</span> <span class="p">{</span>
-    <span class="kn">limit_req</span> <span class="s">zone=test</span> <span class="s">burst=5</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>Then I fire up two simultaneous batches of 10 requests each to <code class="language-plaintext highlighter-rouge">/a</code> and <code class="language-plaintext highlighter-rouge">/b</code> respectively:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/a
-<span class="go">[1] Done [0s] [200 in 2ms]
-[2] Done [10ms] [200 in 992ms]
-[3] Done [21ms] [503 in 0s]
-[4] Done [32ms] [503 in 0s]
-[5] Done [42ms] [503 in 0s]
-[6] Done [53ms] [503 in 0s]
-[7] Done [63ms] [503 in 0s]
-[8] Done [73ms] [503 in 0s]
-[9] Done [83ms] [503 in 0s]
-[10] Done [94ms] [503 in 0s]
-</span></code></pre>
-		</div>
-	</div>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/b
-<span class="go">[1] Done [0s] [200 in 1.862s]
-[2] Done [11ms] [200 in 2.852s]
-[3] Done [21ms] [200 in 3.842s]
-[4] Done [32ms] [200 in 4.832s]
-[5] Done [43ms] [503 in 1ms]
-[6] Done [54ms] [503 in 0s]
-[7] Done [64ms] [503 in 0s]
-[8] Done [75ms] [503 in 1ms]
-[9] Done [85ms] [503 in 0s]
-[10] Done [95ms] [503 in 1ms]
-</span></code></pre>
-		</div>
-	</div>
-	<p>As can be seen from the output, the batch to <code class="language-plaintext highlighter-rouge">/a</code> is served as usual, but the batch to <code class="language-plaintext highlighter-rouge">/b</code> is significantly delayed, and two fewer requests are served.</p>
-	<p>If I reverse the order of sending the batches, the result is different again:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/b
-<span class="go">[1] Done [0s] [200 in 2ms]
-[2] Done [10ms] [200 in 993ms]
-[3] Done [20ms] [200 in 1.982s]
-[4] Done [31ms] [200 in 2.974s]
-[5] Done [42ms] [200 in 3.963s]
-[6] Done [52ms] [200 in 4.955s]
-[7] Done [63ms] [503 in 0s]
-[8] Done [74ms] [503 in 0s]
-[9] Done [84ms] [503 in 0s]
-[10] Done [95ms] [503 in 0s]
-</span></code></pre>
-		</div>
-	</div>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">$</span><span class="w"> </span>go run main.go <span class="nt">-i</span> 10ms <span class="nt">-c</span> 10 http://localhost/a
-<span class="go">[1] Done [0s] [503 in 1ms]
-[2] Done [10ms] [503 in 1ms]
-[3] Done [20ms] [503 in 0s]
-[4] Done [31ms] [503 in 0s]
-[5] Done [42ms] [503 in 0s]
-[6] Done [52ms] [503 in 0s]
-[7] Done [63ms] [503 in 1ms]
-[8] Done [73ms] [503 in 0s]
-[9] Done [83ms] [503 in 0s]
-[10] Done [93ms] [503 in 0s]
-</span></code></pre>
-		</div>
-	</div>
-	<p>This time the batch to <code class="language-plaintext highlighter-rouge">/b</code> is served as usual, but the entire batch to <code class="language-plaintext highlighter-rouge">/a</code> is rejected.</p>
-	<p>I am now convinced that the queue itself is shared between <code class="language-plaintext highlighter-rouge">/a</code> and <code class="language-plaintext highlighter-rouge">/b</code>, and each <code class="language-plaintext highlighter-rouge">limit_req</code> directive decides for itself whether and when to serve the requests. So when <code class="language-plaintext highlighter-rouge">/a</code> is served first, the queue holds one burst request, and <code class="language-plaintext highlighter-rouge">/b</code> fills the queue up to 5 requests. When <code class="language-plaintext highlighter-rouge">/b</code> is served first, the queue is already holding 5 requests and leaves no room for <code class="language-plaintext highlighter-rouge">/a</code>. Similarly, with the <code class="language-plaintext highlighter-rouge">delay</code> option, each <code class="language-plaintext highlighter-rouge">limit_req</code> directive can still decide when the request is ready to serve.</p>
-	<p>This is probably not the most straightforward design, and I can’t come up with a use case for this behavior. But at least now I understand how it works.</p>
-	<h2 id="one-last-thing">One last thing</h2>
-	<p>I originally wanted to set up a 403 page for banned clients, and wanted to limit the rate of log writing in case of an influx of requests. The limit_req module does provide a <code class="language-plaintext highlighter-rouge">$limit_req_status</code> variable which appears to be useful. This is what I ended up with:</p>
-	<div class="language-nginx highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="k">limit_req_zone</span> <span class="nv">$binary_remote_addr</span> <span class="s">zone=403:64k</span> <span class="s">rate=1r/s</span><span class="p">;</span>
-
-<span class="k">map</span> <span class="nv">$limit_req_status</span> <span class="nv">$loggable_403</span> <span class="p">{</span>
-    <span class="kn">default</span> <span class="mi">0</span><span class="p">;</span>
-    <span class="kn">PASSED</span> <span class="mi">1</span><span class="p">;</span>
-    <span class="kn">DELAYED</span> <span class="mi">1</span><span class="p">;</span>
-    <span class="kn">DELAYED_DRY_RUN</span> <span class="mi">1</span><span class="p">;</span>
-<span class="p">}</span>
-
-<span class="k">server</span> <span class="p">{</span>
-    <span class="kn">access_log</span> <span class="n">/var/log/nginx/403/access.log</span> <span class="s">main</span> <span class="s">if=</span><span class="nv">$loggable_403</span><span class="p">;</span>
-    <span class="kn">error_log</span> <span class="n">/var/log/nginx/403/error.log</span> <span class="s">warn</span><span class="p">;</span>
-    <span class="kn">error_page</span> <span class="mi">403</span> <span class="n">/403.html</span><span class="p">;</span>
-    <span class="kn">error_page</span> <span class="mi">404</span> <span class="p">=</span><span class="mi">403</span> <span class="n">/403.html</span><span class="p">;</span>
-    <span class="kn">limit_req</span> <span class="s">zone=403</span><span class="p">;</span>
-    <span class="kn">limit_req_status</span> <span class="mi">403</span><span class="p">;</span>
-    <span class="kn">limit_req_log_level</span> <span class="s">info</span><span class="p">;</span>
-
-    <span class="kn">location</span> <span class="n">/</span> <span class="p">{</span>
-        <span class="kn">return</span> <span class="mi">403</span><span class="p">;</span>
-    <span class="p">}</span>
-    <span class="kn">location</span> <span class="p">=</span> <span class="n">/403.html</span> <span class="p">{</span>
-        <span class="kn">internal</span><span class="p">;</span>
-        <span class="kn">root</span> <span class="n">/srv/nginx</span><span class="p">;</span>
-        <span class="kn">sub_filter</span> <span class="s">"%remote_addr%"</span> <span class="s">"</span><span class="nv">$remote_addr</span><span class="s">"</span><span class="p">;</span>
-        <span class="kn">sub_filter_once</span> <span class="no">off</span><span class="p">;</span>
-    <span class="p">}</span>
-<span class="p">}</span>
-</code></pre>
-		</div>
-	</div>
-	<p>With this setup, excessive requests are rejected by <code class="language-plaintext highlighter-rouge">limit_req</code> with a 403 status. Only <code class="language-plaintext highlighter-rouge">1r/s</code> passes through the rate limiting, which will carry the <code class="language-plaintext highlighter-rouge">PASSED</code> status and be logged, albeit still seeing the 403 page from the <code class="language-plaintext highlighter-rouge">return 403</code> rule. This does exactly what I want, so time to call it a day.</p>
-	]]></content><author><name>iBug</name></author><category term="server" /><category term="nginx" /><summary type="html"><![CDATA[Nginx has a built-in module limit_req for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happen to have a specific need for this feature so I examined it a bit.]]></summary></entry><entry><title type="html">Visualizing Weather Forecast with Grafana</title><link href="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/" rel="alternate" type="text/html" title="Visualizing Weather Forecast with Grafana" /><published>2024-01-08T00:00:00+00:00</published><updated>2024-01-08T04:40:54+00:00</updated><id>https://ibug.io/blog/2024/01/weather-forecast-with-grafana</id><content type="html" xml:base="https://ibug.io/blog/2024/01/weather-forecast-with-grafana/"><![CDATA[<p>Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get it to work as a weather forecast dashboard, instead of any historical time-series data.</p>
-	<p>I choose <a href="https://open.caiyunapp.com/%E5%BD%A9%E4%BA%91%E5%A4%A9%E6%B0%94_API_%E4%B8%80%E8%A7%88%E8%A1%A8">CaiYun Weather (彩云天气) API</a> for having previous experience with it, as well as its unlimited free tier. I must admit that I initially came up with this idea for having seen the presence of <a href="https://grafana.com/grafana/plugins/marcusolsson-json-datasource/">JSON API datasource plugin</a> for Grafana, which reminds me of CaiYun’s JSON API being a perfect fit.</p>
-	<h2 id="json-api-datasource">JSON API Datasource</h2>
-	<p>Configuring the datasource seems easy at first, like just inserting the URL and configure HTTP headers as needed. Since CY’s API puts the API key in the URL path, there’s no headers to configure. So I can just put a single URL and save it.</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>https://api.caiyunapp.com/v2.5/TAkhjf8d1nlSlspN/121.6544,25.1552/hourly.json
-</code></pre>
-		</div>
-	</div>
-	<p>I choose the hourly API so I can have forecast for the upcoming 48 hours.</p>
-	<p>So far this is a readily available datasource that I can query. But after reviewing the <a href="https://grafana.github.io/grafana-json-datasource/query-editor">JSON query editor</a>, I decided to chop off the last segments of the URL and leave just the part up to the API key:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>https://api.caiyunapp.com/v2.5/TAkhjf8d1nlSlspN/
-</code></pre>
-		</div>
-	</div>
-	<p>The point here is, the query editor allows specifying an extra Path, which appears to be concatenated with this URL in the datasource configuration. Notably, I can then put the coordinates in a variable, use it in the query, and build a single dashboard for many cities.</p>
-	<h2 id="dashboard-variables">Dashboard variables</h2>
-	<p>Now that I have the query format planned, I can add a dashboard variable for selecting cities.</p>
-	<p>First things first, since I’m going to use the same datasource for all panels, I first add a variable for the datasource and restrict it to “CaiYun Weather”:</p>
-	<p><img src="/image/grafana/dashboard-variable-datasource.png" alt="Datasource variable" /></p>
-	<p>Then I add a variable <code class="language-plaintext highlighter-rouge">$location</code> for the city name, and provide it with a list of cities I want to show. The variable type would be “Custom” since this is just a human-maintained list. There certainly are better ways like using a relational database or an external API, making it easier to update, but for now I’d like to keep it simple.</p>
-	<div class="language-text highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>Beijing : 116.4074\,39.9042,Shanghai : 121.4691\,31.2243,Guangzhou : 113.2644\,23.1291,Shenzhen : 114.0596\,22.5429
-</code></pre>
-		</div>
-	</div>
-	<h2 id="panels">Panels</h2>
-	<p>First and foremost, the most intuitive metric to show is temperature. I add a time series panel and configure it to graph the temperature. Start by building the query:</p>
-	<ul>
-		<li>Datasource: Select <code class="language-plaintext highlighter-rouge">${datasource}</code></li>
-		<li>Query A:
-			<ul>
-				<li>Path: <code class="language-plaintext highlighter-rouge">/${location}/hourly.json</code></li>
-				<li>Fields:
-					<ul>
-						<li>JSONPath: <code class="language-plaintext highlighter-rouge">$.result.hourly.temperature[*].value</code>, Type: <code class="language-plaintext highlighter-rouge">Number</code>, Alias: <code class="language-plaintext highlighter-rouge">${location:text}</code></li>
-						<li>JSONPath: <code class="language-plaintext highlighter-rouge">$.result.hourly.temperature[*].datetime</code>, Type: <code class="language-plaintext highlighter-rouge">Time</code></li>
-					</ul>
-				</li>
-			</ul>
-		</li>
-	</ul>
-	<p>I stumbled on getting the <em>time</em> series to display correctly. It wasn’t anywhere obvious in the documentation for the JSON API plugin, but a series with Type = Time is required. Fortunately, CY’s API returns the time in ISO 8601 format in the <code class="language-plaintext highlighter-rouge">datetime</code> field, so I can feed it directly to Grafana.</p>
-	<p>So far so good, except Grafana shows “No data”. I realized Grafana is trying to show past data, but apparently a weather forecast provides <em>future</em> data. I need to change the time range to “now” and “now + 48h”. Ideally, this time range is fixed and not affected by the time range selector, since after all it’s limited by the API.</p>
-	<p>This is another place where I spent half an hour on Google. The answer is “Relative time” in “Query options”. Its format, however, is again unintuitive. While <a href="https://community.grafana.com/t/how-to-give-different-time-ranges-for-grafana-panels-i-am-using-azure-monitor-as-data-source/80300">community posts</a> shows <code class="language-plaintext highlighter-rouge">1d</code> for “last 1 day” and the <a href="https://grafana.com/docs/grafana/latest/panels-visualizations/query-transform-data/">official docs</a> gives several examples on using <code class="language-plaintext highlighter-rouge">now</code>, none of them told me how to indicate “next 48 hours”. The answer is just <code class="language-plaintext highlighter-rouge">+48h</code> or <code class="language-plaintext highlighter-rouge">+2d</code>. Notably, entering <code class="language-plaintext highlighter-rouge">now+48h</code> would result in an error.</p>
-	<p>To make the graph look nicer, I set the unit to “°C”, limit decimals to 1, and set the Y-axis range to 0-40, and add a series of thresholds with colors to indicate the temperature range. Also worth mentioning is to make the graph change its color according to the temperature, so I set “Graph style → Gradient mode” to “Scheme” and “Standard options → Color scheme” to “From thresholds (by value)”.</p>
-	<p>Now this panel looks stunning.</p>
-	<p><img src="/image/grafana/caiyun-temperature-panel.png" alt="Temperature panel" /></p>
-	<h3 id="more-panels">More panels</h3>
-	<p>CY’s API offers a variety of weather data, so with little effort I can add more panels for humidity, precipitation and more, by duplicating the temperature panel and changing the query. I also need to change the unit and thresholds accordingly but that goes without saying.</p>
-	<p>There’s also a small piece worth displaying: A <code class="language-plaintext highlighter-rouge">description</code> text. It’s easy to put it in a “Stat” panel and display as “String” (instead of “Number”). And better yet, CY provides two descriptions: One for the next two hours, and one for the next two days. Two panels for two pieces of text, yeah.</p>
-	<p>One last thing I decided to leave out for now: The <code class="language-plaintext highlighter-rouge">skycon</code> field that describes the weather condition, like “CLEAR_DAY” or “RAIN”. It’d be comparably easy to add a panel for it, using “Value mapping” to change the text to something more human-readable, but I’m not at the high mood for it right now, so maybe I’ll pick it up later.</p>
-	<h2 id="results">Results</h2>
-	<p>Now I have a nice dashboard for viewing weather forecast for multiple cities:</p>
-	<p><img src="/image/grafana/caiyun-forecast-example.png" alt="Dashboard" /></p>
-	<p>If you’d like to try it yourself, I’ve published the dashboard on Grafana.com: <a href="https://grafana.com/grafana/dashboards/20259-weather-forecast/">Weather Forecast</a>. Just add the same datasource with your API key, and you can import my dashboard and start getting weather forecast for yourself.</p>
-	]]></content><author><name>iBug</name></author><category term="software" /><summary type="html"><![CDATA[Grafana is a great piece of software for visualizing data and monitoring. It’s outstanding at what it does when paired with a time-series database like InfluxDB, except this time I’m trying to get it to work as a weather forecast dashboard, instead of any historical time-series data.]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="windows" /><category term="networking" /><summary type="html"><![CDATA[Today I stumbled upon this V2EX post (Simplified Chinese) where the OP shared their PowerShell implementation of a “makeshift fail2ban” for RDP (their GitHub repository). Their script looked very clean and robust, but needless to say, it is unnecessarily difficult on Windows. So on this rare (maybe?) occasion I decide to share my firewall for securing RDP access to my Windows hosts.]]></summary></entry></feed>

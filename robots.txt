@@ -1,1 +1,3 @@
+User-Agent: *
+Allow: /
 Sitemap: https://ibug.io/sitemap.xml

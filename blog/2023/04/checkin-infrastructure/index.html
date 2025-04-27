@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
-  Minimal Mistakes Jekyll Theme 4.26.2 by Michael Rose
-  Copyright 2013-2024 Michael Rose - mademistakes.com | @mmistakes
+  Minimal Mistakes Jekyll Theme 4.27.0 by Michael Rose
+  Copyright 2013-2025 Michael Rose - mademistakes.com | @mmistakes
   Free for personal and commercial use under the MIT license
   https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
 -->
@@ -31,7 +31,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=ab4f329">
+		<link rel="stylesheet" href="/assets/css/main.css?v=2d8ebcb">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -40,7 +40,7 @@
 			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
 		</script>
 	</head>
-	<body class="layout--single">
+	<body class="layout--single" dir="ltr">
 		<nav class="skip-links">
 			<ul>
 				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
@@ -249,7 +249,7 @@
 							<p>Alternatively, I could have my Telegram bot accept the images and forward them to the server. This would be more convenient in terms of using, but much less in coding as I didn’t have any existing code in my Telegram bot that handles images. Meanwhile, I already had Samba running on my server so I in fact did not set it up anew.</p>
 							<h2 id="security">Securing the server</h2>
 							<p>At this point everything is operational, with one detail missing: The SMB protocol is not known for being secure. Exposing the SMB port to the Internet is prone to troubles and connecting to a VPN every time is not convenient. Luckily I have Clash for Android running on my phone 24/7 that I can use to proxy Root Explorer. I set up a shadowsocks-libev server and configured Clash to route traffic targeting my server through it, and then closed the SMB port in my server firewall.</p>
-							<p>There’s a noteworthy thing about Clash: It’s a rule-based proxy software that reads configurations. My airport<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> service provides their configuration through a subscription URL, but Clash for Android doesn’t support editing subscribed config. Another background story comes up here: I have another Lambda function serving as my own Clash config subscription. It fetches the airport config and modifies it to my preferences, and then serves it to Clash. It also makes updating the config easier, as I can just update the Lambda function code and the changes will be reflected in Clash.</p>
+							<p>There’s a noteworthy thing about Clash: It’s a rule-based proxy software that reads configurations. My airport<sup id="fnref:1"><a href="#fn:1" class="footnote" rel="footnote" role="doc-noteref">1</a></sup> service provides their configuration through a subscription URL, but Clash for Android doesn’t support editing subscribed config. Another background story comes up here: I have another Lambda function serving as my own Clash config subscription. It fetches the airport config and modifies it to my preferences, and then serves it to Clash. It also makes updating the config easier, as I can just update the Lambda function code and the changes will be reflected in Clash.</p>
 							<p>Fun fact: My custom subscription is also used with Clash for Windows on my computer, which helped me completely bypass two RCE vulnerabilities (<a href="https://github.com/Fndroid/clash_for_windows_pkg/issues/2710">1</a>, <a href="https://github.com/advisories/GHSA-rq24-vhfq-6v9x">2</a>).</p>
 							<h2 id="conclusion">Conclusion</h2>
 							<p>After all this complexity, here’s what I’ve got:</p>
@@ -263,7 +263,7 @@
 							</div>
 							<div class="footnotes" role="doc-endnotes">
 								<ol>
-									<li id="fn:1" role="doc-endnote">
+									<li id="fn:1">
 										<p>Shadowsocks service providers are commonly called “airports” because the icon of Shadowsocks is a paper plane, and every provider has multiple “plane servers” that you can use. <a href="#fnref:1" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
 									</li>
 								</ol>
@@ -288,9 +288,15 @@
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
-							<a href="https://twitter.com/intent/tweet?text=My+automated+Daily+Health+Report+infrastructure%20https%3A%2F%2Fibug.io%2Fblog%2F2023%2F04%2Fcheckin-infrastructure%2F" class="btn btn--twitter" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Twitter"><i class="fab fa-fw fa-twitter" aria-hidden="true"></i><span> Twitter</span></a>
-							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2023%2F04%2Fcheckin-infrastructure%2F" class="btn btn--facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook"><i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span></a>
-							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https://ibug.io/blog/2023/04/checkin-infrastructure/" class="btn btn--linkedin" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn"><i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span></a>
+							<a href="https://x.com/intent/tweet?text=My+automated+Daily+Health+Report+infrastructure%20https%3A%2F%2Fibug.io%2Fblog%2F2023%2F04%2Fcheckin-infrastructure%2F" class="btn btn--x" aria-label="Share on X" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on X">
+								<i class="fas fa-fw fa-share-alt" aria-hidden="true"></i><span> X</span>
+							</a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2023%2F04%2Fcheckin-infrastructure%2F" class="btn btn--facebook" aria-label="Share on Facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook">
+								<i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span>
+							</a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https://ibug.io/blog/2023/04/checkin-infrastructure/" class="btn btn--linkedin" aria-label="Share on LinkedIn" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn">
+								<i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span>
+							</a>
 						</section>
 						<nav class="pagination">
 							<a href="/blog/2023/01/overengineering-adventofcode/" class="pagination--pager" title="Overengineering Advent of Code 2022
@@ -427,11 +433,11 @@
 					</ul>
 				</div>
 				<div class="page__footer-copyright">
-					<p>&copy; 2024 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>&copy; 2025 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-904</a>
+						Site version <a href="/status" class="version-text">G-926</a>
 					</p>
 				</div>
 			</footer>

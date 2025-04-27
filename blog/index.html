@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
-  Minimal Mistakes Jekyll Theme 4.26.2 by Michael Rose
-  Copyright 2013-2024 Michael Rose - mademistakes.com | @mmistakes
+  Minimal Mistakes Jekyll Theme 4.27.0 by Michael Rose
+  Copyright 2013-2025 Michael Rose - mademistakes.com | @mmistakes
   Free for personal and commercial use under the MIT license
   https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
 -->
@@ -29,7 +29,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=ab4f329">
+		<link rel="stylesheet" href="/assets/css/main.css?v=2d8ebcb">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -38,7 +38,7 @@
 			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
 		</script>
 	</head>
-	<body class="layout--home">
+	<body class="layout--home" dir="ltr">
 		<nav class="skip-links">
 			<ul>
 				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
@@ -179,6 +179,51 @@
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<div class="archive__item-text">
 									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2025/04/windows-10-ltsc-onedrive-explorer-sidebar-fix/" rel="permalink">Fixing OneDrive not expanding in Explorer sidebar on Windows 10 LTSC
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">I’ve recently re-installed Windows 10 LTSC for both of my computers, and after setting up OneDrive (from Office 365 suite), I noticed that the OneDrive folder in the Explorer sidebar was not expand...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2025-04-22T00:00:00+00:00">Apr 22, 2025</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-clock" aria-hidden="true"></i>
+											1 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="list__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2024/10/ustc-mirrors-zfs-rebuild/" rel="permalink">Beating $3k SSD with $2k HDD?
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">A.K.A. Practical ZFS application on USTC Mirrors. A writeup of the talk I gave at Nanjing University this August.
+									</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2024-10-27T00:00:00+00:00">Oct 27, 2024</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-clock" aria-hidden="true"></i>
+											12 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="list__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
 										<a href="/blog/2024/09/python3.12-user-packages/" rel="permalink">Make Python 3.12 install user packages without complaints
 										</a>
 									</h2>
@@ -313,53 +358,6 @@
 								</div>
 							</article>
 						</div>
-						<div class="list__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2024/02/linux-firewall-for-rdp/" rel="permalink">My firewall solution for RDP
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">Today I stumbled upon this V2EX post (Simplified Chinese) where the OP shared their PowerShell implementation of a “makeshift fail2ban” for RDP (their GitHub repository). Their script looked very c...</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2024-02-28T00:00:00+00:00">Feb 28, 2024</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-clock" aria-hidden="true"></i>
-											2 minute read
-										</span>
-									</p>
-								</div>
-							</article>
-						</div>
-						<div class="list__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-teaser">
-									<img src="/image/teaser/nginx.jpg" alt="">
-								</div>
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2024/01/nginx-limit-req/" rel="permalink">Request limiting in Nginx
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">Nginx has a built-in module limit_req for rate-limiting requests, which does a decent job, except its documentation is not known for its conciseness, plus a few questionable design choices. I happe...</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2024-01-23T00:00:00+00:00">Jan 23, 2024</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-clock" aria-hidden="true"></i>
-											6 minute read
-										</span>
-									</p>
-								</div>
-							</article>
-						</div>
 					</div>
 					<nav class="pagination">
 						<ul>
@@ -396,11 +394,11 @@
 					</ul>
 				</div>
 				<div class="page__footer-copyright">
-					<p>&copy; 2024 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>&copy; 2025 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-904</a>
+						Site version <a href="/status" class="version-text">G-926</a>
 					</p>
 				</div>
 			</footer>

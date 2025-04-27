@@ -38,7 +38,7 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/cn/2022/12/telegram-english-win10-font/</loc>
-			<lastmod>2024-05-03T16:37:52+00:00</lastmod>
+			<lastmod>2024-12-12T00:01:03+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/cn/2024/07/huorong-rules-5to6/</loc>
@@ -54,11 +54,11 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/about/</loc>
-			<lastmod>2024-09-02T13:05:16+00:00</lastmod>
+			<lastmod>2024-11-29T04:10:00+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/bookmarks/</loc>
-			<lastmod>2023-11-13T02:56:14+00:00</lastmod>
+			<lastmod>2025-01-06T02:40:01+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/cv/</loc>
@@ -70,7 +70,7 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/entertainment/</loc>
-			<lastmod>2024-06-23T03:11:56+00:00</lastmod>
+			<lastmod>2024-12-25T15:02:07+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/friends/</loc>
@@ -278,7 +278,7 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2022/03/install-proxmox-ve-emmc/</loc>
-			<lastmod>2023-09-19T02:05:53+00:00</lastmod>
+			<lastmod>2024-11-06T21:18:46+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2022/03/linux-openldap-server/</loc>
@@ -286,7 +286,7 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2022/05/programming-24-game/</loc>
-			<lastmod>2022-06-02T00:13:13+00:00</lastmod>
+			<lastmod>2024-12-23T18:45:08+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/2022/06/lvm-metadata-full/</loc>
@@ -373,6 +373,14 @@
 			<lastmod>2024-09-03T11:59:51+00:00</lastmod>
 		</url>
 		<url>
+			<loc>https://ibug.io/blog/2024/10/ustc-mirrors-zfs-rebuild/</loc>
+			<lastmod>2024-12-11T18:19:07+00:00</lastmod>
+		</url>
+		<url>
+			<loc>https://ibug.io/blog/2025/04/windows-10-ltsc-onedrive-explorer-sidebar-fix/</loc>
+			<lastmod>2025-04-23T00:39:07+00:00</lastmod>
+		</url>
+		<url>
 			<loc>https://ibug.io/project/OJSandbox/</loc>
 			<lastmod>2021-12-21T04:11:24+00:00</lastmod>
 		</url>
@@ -398,7 +406,7 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/project/vlab/</loc>
-			<lastmod>2023-10-13T05:27:31+00:00</lastmod>
+			<lastmod>2024-11-29T04:10:00+00:00</lastmod>
 		</url>
 		<url>
 			<loc>https://ibug.io/share/jekyll-themes/</loc>
@@ -450,6 +458,9 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/year/2024/</loc>
+		</url>
+		<url>
+			<loc>https://ibug.io/year/2025/</loc>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/</loc>
@@ -672,6 +683,9 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/collection/posts/8/</loc>
+		</url>
+		<url>
+			<loc>https://ibug.io/collection/posts/9/</loc>
 		</url>
 		<url>
 			<loc>https://ibug.io/collection/home/</loc>
