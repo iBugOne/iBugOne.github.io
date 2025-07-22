@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Minimal Mistakes Jekyll Theme 4.27.1 by Michael Rose
+  Minimal Mistakes Jekyll Theme 4.27.2 by Michael Rose
   Copyright 2013-2025 Michael Rose - mademistakes.com | @mmistakes
   Free for personal and commercial use under the MIT license
   https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
@@ -31,7 +31,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=fbbac24">
+		<link rel="stylesheet" href="/assets/css/main.css?v=15c9e2e">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -222,7 +222,7 @@
 							<h2 id="background">Background</h2>
 							<p>MMAP is a POSIX system call that transparently maps file content to process memory (the virtual address space of a process). This allows programmers to simplify the logical structure of program by leveraging the OS page cache as a replacement for a manually-maintained buffer pool.</p>
 							<p>A typical MMAP procedure goes as follows:</p>
-							<figure class=""><img src="/image/papers/mmap-procedure.png" alt="A typical MMAP procedure" />
+							<figure class=""><img src="/image/papers/mmap-procedure.png" alt="A typical MMAP procedure" loading="lazy" />
 								<figcaption>
 									A typical MMAP procedure
 								</figcaption>
@@ -298,23 +298,23 @@
 								<p>The FIO test uses the <code class="language-plaintext highlighter-rouge">O_DIRECT</code> flag to bypass the OS page cache. For a more detailed explanation, see <a href="https://stackoverflow.com/q/5055859/5958455">this Stack Overflow question</a>.</p>
 							</div>
 							<p>The paper presents two kinds of tasks: Random reading and sequential reading, to represent two typical kinds of database workload: <a href="https://www.ibm.com/cloud/blog/olap-vs-oltp">OLTP and OLAP</a>.</p>
-							<figure class=""><img src="/image/papers/crotty-randread-iops.png" alt="IOPS by time for random read" />
+							<figure class=""><img src="/image/papers/crotty-randread-iops.png" alt="IOPS by time for random read" loading="lazy" />
 								<figcaption>
 									Random read - IOPS
 								</figcaption>
 							</figure>
-							<figure class=""><img src="/image/papers/crotty-randread-tlbshootdowns.png" alt="TLB shootdowns by time for random read" />
+							<figure class=""><img src="/image/papers/crotty-randread-tlbshootdowns.png" alt="TLB shootdowns by time for random read" loading="lazy" />
 								<figcaption>
 									Random read - TLBshootdowns
 								</figcaption>
 							</figure>
 							<p>It is apparent that it doesn’t take long before MMAP can’t sustain its performance, which is due to the page cache filling up. The OS must work hard on evicting pages, which worsens the situation.</p>
-							<figure class=""><img src="/image/papers/crotty-seqread-1ssd.png" alt="Bandwidth by time for single-SSD sequential read" />
+							<figure class=""><img src="/image/papers/crotty-seqread-1ssd.png" alt="Bandwidth by time for single-SSD sequential read" loading="lazy" />
 								<figcaption>
 									Sequential read - 1 SSD
 								</figcaption>
 							</figure>
-							<figure class=""><img src="/image/papers/crotty-seqread-10ssds.png" alt="Bandwidth by time for 10-SSD sequential read" />
+							<figure class=""><img src="/image/papers/crotty-seqread-10ssds.png" alt="Bandwidth by time for 10-SSD sequential read" loading="lazy" />
 								<figcaption>
 									Sequential read - 10 SSDs
 								</figcaption>
@@ -490,7 +490,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-937</a>
+						Site version <a href="/status" class="version-text">G-940</a>
 					</p>
 				</div>
 			</footer>

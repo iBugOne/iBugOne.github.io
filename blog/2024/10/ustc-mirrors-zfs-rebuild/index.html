@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Minimal Mistakes Jekyll Theme 4.27.1 by Michael Rose
+  Minimal Mistakes Jekyll Theme 4.27.2 by Michael Rose
   Copyright 2013-2025 Michael Rose - mademistakes.com | @mmistakes
   Free for personal and commercial use under the MIT license
   https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
@@ -31,7 +31,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=fbbac24">
+		<link rel="stylesheet" href="/assets/css/main.css?v=15c9e2e">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -241,7 +241,7 @@
 							</dl>
 							<p>These servers are constantly running at an I/O utilization of over 90%, which results in less than 50 MB/s download speed even from within USTC campus. Clearly this is not the ideal performance for this kind of dedicated storage servers.</p>
 							<figure class=""><a href="https://image.ibugone.com/grafana/mirrors-io-utilization-may-2024.png" class="image-popup" title="I/O load of two servers from USTC Mirrors in May 2024
-"><img src="https://image.ibugone.com/grafana/mirrors-io-utilization-may-2024.png" alt="I/O load of two servers from USTC Mirrors in May 2024"></a>
+"><img src="https://image.ibugone.com/grafana/mirrors-io-utilization-may-2024.png" alt="I/O load of two servers from USTC Mirrors in May 2024" loading="lazy"></a>
 								<figcaption>
 									I/O load of two servers from USTC Mirrors in May 2024
 								</figcaption>
@@ -262,7 +262,7 @@
 								</li>
 							</ul>
 							<figure class=""><a href="https://image.ibugone.com/grafana/qb/2024-06-05.png" class="image-popup" title="A byproduct of my ZFS learning: A Grafana dashboard for qBittorrent (lol…)
-"><img src="https://image.ibugone.com/grafana/qb/2024-06-05.png" alt="A Grafana dashboard for qBittorrent"></a>
+"><img src="https://image.ibugone.com/grafana/qb/2024-06-05.png" alt="A Grafana dashboard for qBittorrent" loading="lazy"></a>
 								<figcaption>
 									A byproduct of my ZFS learning: A Grafana dashboard for qBittorrent (lol…)
 								</figcaption>
@@ -277,7 +277,7 @@
 								<li>Can withstand minimal data loss as mirror contents can be easily re-synced</li>
 							</ul>
 							<figure class=""><a href="https://image.ibugone.com/server/mirrors-file-size-distribution-2024-08.png" class="image-popup" title="File size distribution of USTC Mirrors in August 2024
-"><img src="https://image.ibugone.com/server/mirrors-file-size-distribution-2024-08.png" alt="File size distribution of USTC Mirrors in August 2024"></a>
+"><img src="https://image.ibugone.com/server/mirrors-file-size-distribution-2024-08.png" alt="File size distribution of USTC Mirrors in August 2024" loading="lazy"></a>
 								<figcaption>
 									File size distribution of USTC Mirrors in August 2024
 								</figcaption>
@@ -369,7 +369,7 @@ options zfs <span class="nv">l2arc_noprefetch</span><span class="o">=</span>0
 								<li>
 									<p>And most importantly, a much saner I/O load:</p>
 									<figure class=""><a href="https://image.ibugone.com/grafana/mirrors2-io-utilization-and-free-space-june-july-2024.png" class="image-popup" title="I/O load of server “mirrors2” before and after the rebuild
-"><img src="https://image.ibugone.com/grafana/mirrors2-io-utilization-and-free-space-june-july-2024.png" alt="I/O load of server mirrors2 before and after the rebuild"></a>
+"><img src="https://image.ibugone.com/grafana/mirrors2-io-utilization-and-free-space-june-july-2024.png" alt="I/O load of server mirrors2 before and after the rebuild" loading="lazy"></a>
 										<figcaption>
 											I/O load of server “mirrors2” before and after the rebuild
 										</figcaption>
@@ -392,7 +392,7 @@ options zfs <span class="nv">l2arc_noprefetch</span><span class="o">=</span>0
 							</ul>
 							<p>Even after understanding the algorithm and still going for 128 KiB chunk size and over 8 Mi chunks, LVMcache still didn’t offer a competitive hit rate:</p>
 							<figure class=""><a href="https://image.ibugone.com/grafana/mirrors4-dmcache-may-june-2024.png" class="image-popup" title="LVMcache hit rate over May to June 2024
-"><img src="https://image.ibugone.com/grafana/mirrors4-dmcache-may-june-2024.png" alt="LVMcache hit rate over May to June 2024"></a>
+"><img src="https://image.ibugone.com/grafana/mirrors4-dmcache-may-june-2024.png" alt="LVMcache hit rate over May to June 2024" loading="lazy"></a>
 								<figcaption>
 									LVMcache hit rate over May to June 2024
 								</figcaption>
@@ -412,7 +412,7 @@ options zfs <span class="nv">l2arc_noprefetch</span><span class="o">=</span>0
 							</ul>
 							<p>We put the I/O loads of both servers together for comparison:</p>
 							<figure class=""><a href="https://image.ibugone.com/grafana/mirrors2-4-io-utilization-june-july-2024.png" class="image-popup" title="I/O load of two servers from USTC Mirrors before and after rebuild
-"><img src="https://image.ibugone.com/grafana/mirrors2-4-io-utilization-june-july-2024.png" alt="I/O load of two servers from USTC Mirrors before and after rebuild"></a>
+"><img src="https://image.ibugone.com/grafana/mirrors2-4-io-utilization-june-july-2024.png" alt="I/O load of two servers from USTC Mirrors before and after rebuild" loading="lazy"></a>
 								<figcaption>
 									I/O load of two servers from USTC Mirrors before and after rebuild
 								</figcaption>
@@ -420,14 +420,14 @@ options zfs <span class="nv">l2arc_noprefetch</span><span class="o">=</span>0
 							<p>This graph starts with the initial state. The first server was rebuilt at 1/3, and the second server was rebuilt at 2/3.</p>
 							<p>The hit rate of ZFS ARC is also quite satisfying:</p>
 							<figure class=""><a href="https://image.ibugone.com/grafana/mirrors2-4-zfs-arc-hit-rate.png" class="image-popup" title="ZFS ARC hit rate of two servers
-"><img src="https://image.ibugone.com/grafana/mirrors2-4-zfs-arc-hit-rate.png" alt="ZFS ARC hit rate of two servers"></a>
+"><img src="https://image.ibugone.com/grafana/mirrors2-4-zfs-arc-hit-rate.png" alt="ZFS ARC hit rate of two servers" loading="lazy"></a>
 								<figcaption>
 									ZFS ARC hit rate of two servers
 								</figcaption>
 							</figure>
 							<p>The stablized I/O load is even lower after both servers were rebuilt.</p>
 							<figure class=""><a href="https://image.ibugone.com/grafana/mirrors2-4-disk-io-after-rebuild.png" class="image-popup" title="Sustained disk I/O of two servers after rebuild
-"><img src="https://image.ibugone.com/grafana/mirrors2-4-disk-io-after-rebuild.png" alt="Sustained disk I/O of two servers after rebuild"></a>
+"><img src="https://image.ibugone.com/grafana/mirrors2-4-disk-io-after-rebuild.png" alt="Sustained disk I/O of two servers after rebuild" loading="lazy"></a>
 								<figcaption>
 									Sustained disk I/O of two servers after rebuild
 								</figcaption>
@@ -571,7 +571,7 @@ options zfs <span class="nv">l2arc_noprefetch</span><span class="o">=</span>0
 							<p>This query is a bit slow (due to the subquery) and unfortunately there’s not much we can do about it.</p>
 							<p>To display I/O bandwidth, simply replace <code class="language-plaintext highlighter-rouge">reads</code> and <code class="language-plaintext highlighter-rouge">writes</code> with <code class="language-plaintext highlighter-rouge">nread</code> and <code class="language-plaintext highlighter-rouge">nwritten</code> in the inner query.</p>
 							<figure class=""><a href="https://image.ibugone.com/grafana/mirrors2-4-zfs-io-count.png" class="image-popup" title="ZFS I/O count and bandwidth
-"><img src="https://image.ibugone.com/grafana/mirrors2-4-zfs-io-count.png" alt="ZFS I/O count and bandwidth"></a>
+"><img src="https://image.ibugone.com/grafana/mirrors2-4-zfs-io-count.png" alt="ZFS I/O count and bandwidth" loading="lazy"></a>
 								<figcaption>
 									ZFS I/O count and bandwidth
 								</figcaption>
@@ -595,7 +595,7 @@ wget <span class="nt">-O</span> /usr/share/apparmor-features/features https://gi
 							<h3 id="file-deduplication">File deduplication</h3>
 							<p>For a small set of repositories, possibly due to limitations of syncing methods, we noticed a lot of identically-looking directories.</p>
 							<figure class=""><a href="https://image.ibugone.com/server/ls-zerotier-redhat-el.png" class="image-popup" title="Some folders from ZeroTier repository
-"><img src="https://image.ibugone.com/server/ls-zerotier-redhat-el.png" alt="Some folders from ZeroTier repository"></a>
+"><img src="https://image.ibugone.com/server/ls-zerotier-redhat-el.png" alt="Some folders from ZeroTier repository" loading="lazy"></a>
 								<figcaption>
 									Some folders from ZeroTier repository
 								</figcaption>
@@ -891,7 +891,7 @@ wget <span class="nt">-O</span> /usr/share/apparmor-features/features https://gi
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-937</a>
+						Site version <a href="/status" class="version-text">G-940</a>
 					</p>
 				</div>
 			</footer>

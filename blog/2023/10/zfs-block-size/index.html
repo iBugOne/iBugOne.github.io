@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Minimal Mistakes Jekyll Theme 4.27.1 by Michael Rose
+  Minimal Mistakes Jekyll Theme 4.27.2 by Michael Rose
   Copyright 2013-2025 Michael Rose - mademistakes.com | @mmistakes
   Free for personal and commercial use under the MIT license
   https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
@@ -31,7 +31,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=fbbac24">
+		<link rel="stylesheet" href="/assets/css/main.css?v=15c9e2e">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -216,7 +216,7 @@
 							</aside>
 							<p>ZFS is about the most complex filesystem for single-node storage servers. Coming with its sophistication is its equally confusing “block size”, which is normally self-evident on common filesystems like ext4 (or more primitively, FAT). The enigma continues as ZFS bundles more optimizations, either for performance or in the name of “intuition” (which I would hardly agree). So recently I read a lot of materials on this and try to make sense of it.</p>
 							<p>We’ll begin with a slide from a ZFS talk from Lustre<sup id="fnref:dilger"><a href="#fn:dilger" class="footnote" rel="footnote" role="doc-noteref">1</a></sup> (page 5):</p>
-							<figure class=""><img src="/image/zfs/zfs-io-stack.png" alt="ZFS I/O Stack" />
+							<figure class=""><img src="/image/zfs/zfs-io-stack.png" alt="ZFS I/O Stack" loading="lazy" />
 								<figcaption>
 									Figure 1. ZFS I/O Stack
 								</figcaption>
@@ -307,7 +307,7 @@ Indirect blocks:
 							<h2 id="raidz">RAIDZ</h2>
 							<p>Up until now we’ve only talked about logical blocks, which are all on the higher layers of the ZFS hierarchy. RAIDZ is where physical blocks (disk sectors) really come into play and adds another field of confusion.</p>
 							<p>Unlike traditional RAID 5/6/7<sup class="no-select">(?)</sup> that combine disks into an array and presents a single volume for the filesystem, RAIDZ handles each <em>logical block</em> separately. I’ll cite this illustration from Delphix<sup id="fnref:delphix"><a href="#fn:delphix" class="footnote" rel="footnote" role="doc-noteref">5</a></sup> to explain:</p>
-							<figure class=""><img src="/image/zfs/raidz-block-layout.png" alt="RAID-Z block layout" />
+							<figure class=""><img src="/image/zfs/raidz-block-layout.png" alt="RAID-Z block layout" loading="lazy" />
 								<figcaption>
 									Figure 2. RAID-Z block layout
 								</figcaption>
@@ -565,7 +565,7 @@ test/v8k   refreservation  6.53G      local
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-937</a>
+						Site version <a href="/status" class="version-text">G-940</a>
 					</p>
 				</div>
 			</footer>
