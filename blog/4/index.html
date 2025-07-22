@@ -30,7 +30,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=15c9e2e">
+		<link rel="stylesheet" href="/assets/css/main.css?v=b5b984c">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -176,6 +176,31 @@
 				<div class="archive">
 					<h3 class="archive__subtitle">Recent posts</h3>
 					<div class="entries-list">
+						<div class="list__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/proxmox.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2022/03/install-proxmox-ve-emmc/" rel="permalink">Install Proxmox VE on eMMC
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Recently I bought a mini PC looking forward to setting up a home router. It started quite well except the specs were higher than I anticipated. 8 GB RAM plus 128 GB eMMC - too much waste for “just ...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2022-03-01T00:00:00+00:00">Mar 1, 2022</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-clock" aria-hidden="true"></i>
+											2 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
 						<div class="list__item">
 							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
 								<div class="archive__item-teaser">
@@ -347,29 +372,6 @@
 								</div>
 							</article>
 						</div>
-						<div class="list__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2021/02/traceroute-from-vmware/" rel="permalink">Fix traceroute not showing intermediate results in a virtual machine on Windows
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">Today when I was running some networking diagnostics from an Ubuntu inside VMware Workstation, I noticed this strange result from mtr (My Traceroute):
-									</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2021-02-04T00:00:00+00:00">Feb 4, 2021</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-clock" aria-hidden="true"></i>
-											3 minute read
-										</span>
-									</p>
-								</div>
-							</article>
-						</div>
 					</div>
 					<nav class="pagination">
 						<ul>
@@ -411,7 +413,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-940</a>
+						Site version <a href="/status" class="version-text">G-941</a>
 					</p>
 				</div>
 			</footer>
