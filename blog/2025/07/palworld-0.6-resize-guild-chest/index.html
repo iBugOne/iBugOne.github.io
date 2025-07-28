@@ -1,0 +1,629 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.27.2 by Michael Rose
+  Copyright 2013-2025 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en-US" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>Manually resize Guild Chest in Palworld 0.6 - iBug</title>
+		<meta name="description" content="The Guild Chest, first introduced in Feybreak Update, easily became the best way to move items between bases. However, it only has 54 slots and is nowhere near enough for all the items you want to store. For those who want to increase the size of the Guild Chest, especially in single player worlds, there’s a tutorial on how to do it manually: Guild chest resizer after solo play started (Manual).">
+		<meta name="author" content="iBug">
+		<meta property="article:author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="Manually resize Guild Chest in Palworld 0.6">
+		<meta property="og:url" content="https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest/">
+		<meta property="og:description" content="The Guild Chest, first introduced in Feybreak Update, easily became the best way to move items between bases. However, it only has 54 slots and is nowhere near enough for all the items you want to store. For those who want to increase the size of the Guild Chest, especially in single player worlds, there’s a tutorial on how to do it manually: Guild chest resizer after solo play started (Manual).">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2025-07-28T00:00:00+00:00">
+		<meta property="article:modified_time" content="2025-07-28T14:02:46+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest/">
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script type="text/javascript">
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=ead33b7">
+		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<meta name="theme-color" content="#EDEDED">
+		<script>
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+	</head>
+	<body class="layout--single" dir="ltr">
+		<nav class="skip-links">
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt="iBug"></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a
+                href="/about/"
+                
+                
+              >About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a
+                href="/blog/"
+                
+                
+              >Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a
+                href="/projects/"
+                
+                
+              >Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a
+                href="/friends/"
+                
+                
+              >Friends</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a
+                href="/cn/"
+                
+                
+              >中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<i class="fas fa-search"></i>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay"
+  style=" background-image: url('/image/header/mountain-1.jpg');"
+>
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						Manually resize Guild Chest in Palworld 0.6
+					</h1>
+					<p class="page__meta">
+						<span class="page__meta-date">
+							<i class="far fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2025-07-28T00:00:00+00:00">Jul 28, 2025</time>
+						</span>
+						<span class="page__meta-sep"></span>
+						<span class="page__meta-readtime">
+							<i class="far fa-clock" aria-hidden="true"></i>
+							4 minute read
+						</span>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person" class="h-card">
+						<div class="author__avatar">
+							<a href="https://ibug.io/">
+								<img src="/image/avatar.png" alt="iBug" itemprop="image" class="u-photo">
+							</a>
+						</div>
+						<div class="author__content">
+							<h3 class="author__name p-name" itemprop="name">
+								<a class="u-url" rel="me" href="https://ibug.io/" itemprop="url">iBug</a>
+							</h3>
+							<div class="author__bio p-note" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer me"><i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/iBugThought" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-telegram" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer me">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox" />
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/open-source/"><i class="fas fa-fw fa-box-open"></i> Open Source</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/bookmarks/"><i class="fas fa-fw fa-bookmark"></i> Bookmarks</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="Manually resize Guild Chest in Palworld 0.6">
+					<meta itemprop="description" content="The Guild Chest, first introduced in Feybreak Update, easily became the best way to move items between bases.However, it only has 54 slots and is nowhere near enough for all the items you want to store.For those who want to increase the size of the Guild Chest, especially in single player worlds, there’s a tutorial on how to do it manually:Guild chest resizer after solo play started (Manual).">
+					<meta itemprop="datePublished" content="2025-07-28T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2025-07-28T14:02:46+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#investigation">Investigation</a></li>
+										<li><a href="#finding-the-compression-algorithm">Finding the compression algorithm</a></li>
+										<li><a href="#patching-the-scripts">Patching the scripts</a></li>
+										<li><a href="#postface">Postface</a></li>
+									</ul>
+								</nav>
+							</aside>
+							<p>The Guild Chest, first introduced in Feybreak Update, easily became the best way to move items between bases.
+								However, it only has 54 slots and is nowhere near enough for all the items you want to store.
+								For those who want to increase the size of the Guild Chest, especially in single player worlds, there’s a tutorial on how to do it manually:
+								<a href="https://www.nexusmods.com/palworld/mods/2419">Guild chest resizer after solo play started (Manual)</a>.</p>
+							<p>A few months back, I followed this tutorial and successfully resized my Guild Chest to 270 slots.
+								But this time on my friend’s save, the script no longer worked.</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">PS D:\Downloads\GuildChestResizer&gt;</span><span class="w"> </span>python sav-to-gvas.py D:<span class="se">\D</span>ownloads<span class="se">\G</span>uildChestResizer<span class="se">\L</span>evel.sav
+<span class="go">Traceback (most recent call last):
+</span><span class="gp">  File "D:\Downloads\GuildChestResizer\sav-to-gvas.py", line 30, in &lt;module&gt;</span><span class="w">
+</span><span class="go">    main()
+  File "D:\Downloads\GuildChestResizer\sav-to-gvas.py", line 18, in main
+    uncompressed_data = zlib.decompress(data[12:])
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+zlib.error: Error -3 while decompressing data: incorrect header check
+</span><span class="gp">PS D:\Downloads\GuildChestResizer&gt;</span><span class="w">
+</span></code></pre>
+								</div>
+							</div>
+							<p>Fortunately, I had my own save file where I performed the steps, so I could investigate the issue.</p>
+							<h2 id="investigation">Investigation</h2>
+							<p>Notice how the script tries to decompress the data using zlib, with the first 12&nbsp;bytes skipped.
+								So the first thing to check is to compare the header of the save files.</p>
+							<p>My save file (that worked):</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>00000000  7d d3 67 01 c8 51 23 00  50 6c 5a 32 78 9c 64 7a  |}.g..Q#.PlZ2x.dz|
+</code></pre>
+								</div>
+							</div>
+							<p>My friend’s that no longer works:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>00000000  09 c2 8b 01 a7 f1 20 00  50 6c 4d 31 8c 0a 00 36  |...... .PlM1...6|
+</code></pre>
+								</div>
+							</div>
+							<p>According to <a href="https://stackoverflow.com/q/9050260/5958455">Stack Overflow</a>, <code class="language-plaintext highlighter-rouge">78 9c</code> indicates default compression for zlib, while <code class="language-plaintext highlighter-rouge">8c 0a</code> is not a valid zlib header.
+								After playing around with the save file, I concluded that the save file was not compressed with zlib at all, so time to look for other clues.</p>
+							<p>By examining the Python script, particularly the “convert back” one (<code class="language-plaintext highlighter-rouge">gvas-to-sav.py</code>), I figured out the header for the <code class="language-plaintext highlighter-rouge">.sav</code> file:</p>
+							<ul>
+								<li>Bytes 0-4: Size of uncompressed data (4&nbsp;bytes, little-endian)</li>
+								<li>Bytes 4-8: Size of compressed data (4&nbsp;bytes, little-endian)</li>
+								<li>Bytes 8-11: Magic number (3&nbsp;bytes, <code class="language-plaintext highlighter-rouge">PlZ</code>)</li>
+								<li>Bytes 12: Possibly type information, as the script checks for <code class="language-plaintext highlighter-rouge">0x32</code></li>
+							</ul>
+							<p>It’s easy to notice the discrepancies between the failing save file and the above structure:</p>
+							<ul>
+								<li>The magic number is <code class="language-plaintext highlighter-rouge">PlM</code> instead of <code class="language-plaintext highlighter-rouge">PlZ</code>.</li>
+								<li>The potential type information is <code class="language-plaintext highlighter-rouge">0x31</code> instead of <code class="language-plaintext highlighter-rouge">0x32</code>.</li>
+							</ul>
+							<p>The uncompressed size and compressed size fields are correct for that file itself, so most likely the new save file employs a different compression algorithm.
+								Time to identify it.</p>
+							<h2 id="finding-the-compression-algorithm">Finding the compression algorithm</h2>
+							<p>So here comes the trick: I know about this other tool called <a href="https://www.nexusmods.com/palworld/mods/104">PalEdit</a>, which is also written in Python and is <a href="https://github.com/EternalWraith/PalEdit">open-source on GitHub</a>, so it’s easy to read the code for clues and insights.</p>
+							<p>There’s a <code class="language-plaintext highlighter-rouge">SaveConverter.py</code> file that catches my attention, which refers:</p>
+							<div class="language-python highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="kn">from</span> <span class="n">palworld_save_tools.palsav</span> <span class="kn">import</span> <span class="n">compress_gvas_to_sav</span><span class="p">,</span> <span class="n">decompress_sav_to_gvas</span>
+</code></pre>
+								</div>
+							</div>
+							<p>… except there’s no <code class="language-plaintext highlighter-rouge">palworld_save_tools</code> directory anywhere in the repository.
+								Though interestingly, there <em>is</em> a <a href="https://github.com/EternalWraith/PalEdit/blob/main/palworld_save_tools.zip"><code class="language-plaintext highlighter-rouge">palworld_save_tools.zip</code> file</a> in the root of the repository.</p>
+							<p>Recalling how Python can <a href="https://docs.python.org/3/using/cmdline.html#interface-options">execute</a> a directory or a zip file if it contains a <code class="language-plaintext highlighter-rouge">__main__.py</code> script, it sure can <em>import</em> it as well if it contains a <code class="language-plaintext highlighter-rouge">__init__.py</code>, so time to unpack that ZIP archive and inspect the contents.
+								Within a few steps you’ll land at <code class="language-plaintext highlighter-rouge">compressor/__init__.py</code> which looks like this at its beginning:</p>
+							<div class="language-python highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">class</span> <span class="nc">SaveType</span><span class="p">:</span>
+    <span class="n">CNK</span> <span class="o">=</span> <span class="mh">0x30</span>  <span class="c1"># Zlib compressed on xbox
+</span>    <span class="n">PLM</span> <span class="o">=</span> <span class="mh">0x31</span>  <span class="c1"># Oodle compressed
+</span>    <span class="n">PLZ</span> <span class="o">=</span> <span class="mh">0x32</span>  <span class="c1"># Zlib compressed
+</span>
+<span class="c1"># [code omitted]...
+</span>
+<span class="k">class</span> <span class="nc">MagicBytes</span><span class="p">:</span>
+    <span class="n">CNK</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">CNK</span><span class="sh">"</span>  <span class="c1"># Zlib magic on xbox
+</span>    <span class="n">PLZ</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">PlZ</span><span class="sh">"</span>  <span class="c1"># Zlib magic
+</span>    <span class="n">PLM</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">PlM</span><span class="sh">"</span>  <span class="c1"># Oodle magic
+</span></code></pre>
+								</div>
+							</div>
+							<p>Now the details become clear:
+								The new save file contains <code class="language-plaintext highlighter-rouge">PlM</code> as its magic bytes and a matching <code class="language-plaintext highlighter-rouge">0x31</code> type information, so mystery solved and the next step is to figure out how to decompress it.</p>
+							<h2 id="patching-the-scripts">Patching the scripts</h2>
+							<p>Searching for <code class="language-plaintext highlighter-rouge">Oodle compression</code> on Google produces multiple results from Epic Games and Unreal Engine, guess that’s their latest feature maybe?
+								So I turned my focus back to PalEdit, where there’s the <code class="language-plaintext highlighter-rouge">compressor/oozlib.py</code> file with this:</p>
+							<div class="language-python highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="n">ooz</span>
+<span class="k">except</span> <span class="nb">ImportError</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="nc">ImportError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="sh">"</span><span class="s">Failed to import </span><span class="sh">'</span><span class="s">ooz</span><span class="sh">'</span><span class="s"> module. Make sure the Ooz library exists in </span><span class="si">{</span><span class="n">local_ooz_path</span><span class="si">}</span><span class="s"> or latest pyooz is installed in your Python environment. Install using </span><span class="sh">'</span><span class="s">pip install git+https://github.com/MRHRTZ/pyooz.git</span><span class="sh">'"</span>
+    <span class="p">)</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Problem solved, but I’m on Windows without a C toolchain (I no longer do Windows development), so I moved all relevant files onto my Linux server.
+								Then it’s just a matter of <code class="language-plaintext highlighter-rouge">pip install</code> command to get the requirements ready.</p>
+							<p>I also patched the decompressor script:</p>
+							<div class="language-python highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="c1">#!/usr/bin/env python3
+</span>
+<span class="kn">import</span> <span class="n">subprocess</span>
+<span class="kn">import</span> <span class="n">sys</span>
+<span class="kn">import</span> <span class="n">glob</span>
+<span class="kn">import</span> <span class="n">zlib</span>
+<span class="kn">import</span> <span class="n">ooz</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">if</span> <span class="nf">len</span><span class="p">(</span><span class="n">sys</span><span class="p">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="nf">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">sav_file</span> <span class="o">=</span> <span class="n">sys</span><span class="p">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">with</span> <span class="nf">open</span><span class="p">(</span><span class="n">sav_file</span><span class="p">,</span> <span class="sh">'</span><span class="s">rb</span><span class="sh">'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">f</span><span class="p">.</span><span class="nf">read</span><span class="p">()</span>
+        <span class="n">uncompressed_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">.</span><span class="nf">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">byteorder</span><span class="o">=</span><span class="sh">'</span><span class="s">little</span><span class="sh">'</span><span class="p">)</span>
+        <span class="n">compressed_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">.</span><span class="nf">from_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">8</span><span class="p">],</span> <span class="n">byteorder</span><span class="o">=</span><span class="sh">'</span><span class="s">little</span><span class="sh">'</span><span class="p">)</span>
+        <span class="n">magic_bytes</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">11</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">magic_bytes</span> <span class="o">==</span> <span class="sa">b</span><span class="sh">'</span><span class="s">PlM</span><span class="sh">'</span>
+        <span class="n">save_type</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">save_type</span> <span class="o">==</span> <span class="mh">0x31</span>
+        <span class="n">uncompressed_data</span> <span class="o">=</span> <span class="n">ooz</span><span class="p">.</span><span class="nf">decompress</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">12</span><span class="p">:],</span> <span class="n">uncompressed_len</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">uncompressed_len</span> <span class="o">!=</span> <span class="nf">len</span><span class="p">(</span><span class="n">uncompressed_data</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="n">gvas_file</span> <span class="o">=</span> <span class="n">sav_file</span><span class="p">.</span><span class="nf">replace</span><span class="p">(</span><span class="sh">'</span><span class="s">.sav</span><span class="sh">'</span><span class="p">,</span> <span class="sh">'</span><span class="s">.sav.gvas</span><span class="sh">'</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nf">open</span><span class="p">(</span><span class="n">gvas_file</span><span class="p">,</span> <span class="sh">'</span><span class="s">wb</span><span class="sh">'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="nf">bytes</span><span class="p">(</span><span class="n">uncompressed_data</span><span class="p">))</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="sh">"</span><span class="s">__main__</span><span class="sh">"</span><span class="p">:</span>
+    <span class="nf">main</span><span class="p">()</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Now it correctly decompresses my friend’s <code class="language-plaintext highlighter-rouge">Level.sav</code> into <code class="language-plaintext highlighter-rouge">Level.sav.gvas</code> where I can follow the rest of <a href="https://www.nexusmods.com/palworld/mods/2419">the instructions</a> manually.
+								For compressing the edited file back, I just used the provided <code class="language-plaintext highlighter-rouge">gvas-to-sav.py</code> file in the belief that the previous zlib-based compression method is still supported by the game.</p>
+							<p>After sending the edited <code class="language-plaintext highlighter-rouge">Level.sav</code> file back to the game, we’re glad to see our Guild Chest containing 270 slots, which we probably would never use up.</p>
+							<h2 id="postface">Postface</h2>
+							<p>If you’re on Windows or don’t have a C/C++ compiler for installing <code class="language-plaintext highlighter-rouge">pyooz</code> yourself, the same <code class="language-plaintext highlighter-rouge">palworld_save_tools.zip</code> provides these files that you may find useful:</p>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>lib/linux_arm64/ooz.so
+lib/linux_x86_64/ooz.so
+lib/windows/ooz.pyd
+</code></pre>
+								</div>
+							</div>
+							<p>Of course, how to utilize these files is left as an exercise for the readers.</p>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/games" class="page__taxonomy-item p-category" rel="tag">games</a><span class="sep">, </span>
+									<a href="/tag/palworld" class="page__taxonomy-item p-category" rel="tag">palworld</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2025-07-28">Jul 28, 2025</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://x.com/intent/tweet?text=Manually+resize+Guild+Chest+in+Palworld+0.6%20https%3A%2F%2Fibug.io%2Fblog%2F2025%2F07%2Fpalworld-0.6-resize-guild-chest%2F" class="btn btn--x" aria-label="Share on X" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on X">
+								<i class="fab fa-fw fa-x-twitter" aria-hidden="true"></i><span> X</span>
+							</a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2025%2F07%2Fpalworld-0.6-resize-guild-chest%2F" class="btn btn--facebook" aria-label="Share on Facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook">
+								<i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span>
+							</a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest/" class="btn btn--linkedin" aria-label="Share on LinkedIn" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn">
+								<i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span>
+							</a>
+							<a href="https://bsky.app/intent/compose?text=Manually+resize+Guild+Chest+in+Palworld+0.6%20https%3A%2F%2Fibug.io%2Fblog%2F2025%2F07%2Fpalworld-0.6-resize-guild-chest%2F" class="btn btn--bluesky" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Bluesky">
+								<i class="fab fa-fw fa-bluesky" aria-hidden="true"></i><span> Bluesky</span>
+							</a>
+						</section>
+						<nav class="pagination">
+							<a href="/blog/2025/07/japan-june-2025/" class="pagination--pager" title="A trip to Japan
+">Previous</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+				<div class="page__related">
+					<h2 class="page__related-title">You may also enjoy</h2>
+					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/linux-container.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are w...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											24 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2025/07/japan-june-2025/" rel="permalink">A trip to Japan
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">As a more meaningful way to celebrate our graduation as Master students and spend this last truly free time in a long while, I joined my friends on a trip to Japan.
+									</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2025-07-23T00:00:00+00:00">Jul 23, 2025</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											30 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/ldap.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											14 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											16 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					<p>&copy; 2025 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
+					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
+					<p>
+						Site version <a href="/status" class="version-text">G-943</a>
+					</p>
+				</div>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<script>
+			// Including InstantSearch.js library and styling
+			const loadSearch = function() {
+			  const loadCSS = function(src) {
+			    var link = document.createElement('link');
+			    link.rel = 'stylesheet';
+			    link.type = 'text/css';
+			    link.href = src;
+			    link.media = 'all';
+			    document.head.appendChild(link);
+			  };
+
+			  var script = document.createElement('script');
+			  script.setAttribute("type", "text/javascript");
+			  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
+			  script.addEventListener("load", function() {
+			    // Instantiating InstantSearch.js with Algolia credentials
+			    const search = instantsearch({
+			      appId: '14DZKASAEJ',
+			      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			      indexName: 'iBug_website',
+			      searchParameters: {
+			        restrictSearchableAttributes: ['title', 'content']
+			      }
+			    });
+
+			    const hitTemplate = function(hit) {
+			      const url = hit.url;
+			      const hightlight = hit._highlightResult;
+			      const title = hightlight.title && hightlight.title.value  || "";
+			      const content = hightlight.html && hightlight.html.value  || "";
+
+			      return `
+			        <div class="list__item">
+			          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			            <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			          </article>
+			        </div>
+			      `;
+			    }
+
+			    // Adding searchbar and results widgets
+			    search.addWidget(
+			      instantsearch.widgets.searchBox({
+			        container: '.search-searchbar',
+			        poweredBy: true,
+			        placeholder: 'Enter your search term...'
+			      })
+			    );
+			    search.addWidget(
+			      instantsearch.widgets.hits({
+			        container: '.search-hits',
+			        templates: {
+			          item: hitTemplate,
+			          empty: 'No results',
+			        }
+			      })
+			    );
+
+			    if (!search.started) {
+			      search.start();
+			    }
+			  });
+			  document.body.appendChild(script);
+
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
+			};
+
+			// Starting the search only when toggle is clicked
+			$(document).ready(function() {
+			  var scriptLoaded = false;
+
+			  $(".search__toggle").on("click", function() {
+			    if (!scriptLoaded) {
+			      loadSearch();
+			      scriptLoaded = true;
+			    }
+			  });
+			});
+		</script>
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-V93196TX91"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+
+			gtag('config', 'G-V93196TX91', { 'anonymize_ip': false});
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2025/07/palworld-0.6-resize-guild-chest"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	</body>
+</html>
