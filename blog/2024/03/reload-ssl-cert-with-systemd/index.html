@@ -31,7 +31,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=9af758e">
+		<link rel="stylesheet" href="/assets/css/main.css?v=adc3a55">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -211,8 +211,8 @@
 							<div class="language-ini highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.target
-</span><span class="nn">[Unit]</span>
-<span class="py">Description</span><span class="p">=</span><span class="s">SSL certificates reload helper</span>
+</span><span class="nn">[Unit]</span><span class="w">
+</span><span class="py">Description</span><span class="p">=</span><span class="s">SSL certificates reload helper</span>
 <span class="py">PropagatesReloadTo</span><span class="p">=</span><span class="s">nginx.service</span>
 <span class="py">PropagatesReloadTo</span><span class="p">=</span><span class="s">postfix.service</span>
 </code></pre>
@@ -222,15 +222,15 @@
 							<div class="language-ini highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.path
-</span><span class="nn">[Unit]</span>
-<span class="py">Description</span><span class="p">=</span><span class="s">SSL certificate reload helper</span>
+</span><span class="nn">[Unit]</span><span class="w">
+</span><span class="py">Description</span><span class="p">=</span><span class="s">SSL certificate reload helper</span>
 <span class="py">Wants</span><span class="p">=</span><span class="s">%N.target</span>
-
-<span class="nn">[Path]</span>
-<span class="py">PathChanged</span><span class="p">=</span><span class="s">/etc/ssl/private/%H/cert.pem</span>
-
-<span class="nn">[Install]</span>
-<span class="py">WantedBy</span><span class="p">=</span><span class="s">multi-user.target</span>
+<span class="w">
+</span><span class="nn">[Path]</span><span class="w">
+</span><span class="py">PathChanged</span><span class="p">=</span><span class="s">/etc/ssl/private/%H/cert.pem</span>
+<span class="w">
+</span><span class="nn">[Install]</span><span class="w">
+</span><span class="py">WantedBy</span><span class="p">=</span><span class="s">multi-user.target</span>
 </code></pre>
 								</div>
 							</div>
@@ -239,13 +239,13 @@
 							<div class="language-ini highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.service
-</span><span class="nn">[Unit]</span>
-<span class="py">Description</span><span class="p">=</span><span class="s">SSL certificate reload helper</span>
+</span><span class="nn">[Unit]</span><span class="w">
+</span><span class="py">Description</span><span class="p">=</span><span class="s">SSL certificate reload helper</span>
 <span class="py">StartLimitIntervalSec</span><span class="p">=</span><span class="s">5s</span>
 <span class="py">StartLimitBurst</span><span class="p">=</span><span class="s">2</span>
-
-<span class="nn">[Service]</span>
-<span class="py">Type</span><span class="p">=</span><span class="s">oneshot</span>
+<span class="w">
+</span><span class="nn">[Service]</span><span class="w">
+</span><span class="py">Type</span><span class="p">=</span><span class="s">oneshot</span>
 <span class="py">ExecStart</span><span class="p">=</span><span class="s">/bin/systemctl reload %N.target</span>
 </code></pre>
 								</div>
@@ -441,7 +441,7 @@ Mar 31 19:20:12 hostname systemd[1]: Reloaded Postfix Mail Transport Agent.
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-949</a>
+						Site version <a href="/status" class="version-text">G-950</a>
 					</p>
 				</div>
 			</footer>

@@ -31,7 +31,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=9af758e">
+		<link rel="stylesheet" href="/assets/css/main.css?v=adc3a55">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -219,10 +219,10 @@
 							<p>The instance name is surely <code class="language-plaintext highlighter-rouge">dsl-provider</code> and not <code class="language-plaintext highlighter-rouge">dsl/provider</code>, so I look more closely at the service file.</p>
 							<div class="language-ini highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="nn">[...]</span>
-<span class="py">Description</span><span class="p">=</span><span class="s">PPP connection for %I</span>
-<span class="nn">[...]</span>
-<span class="py">ExecStart</span><span class="p">=</span><span class="s">/usr/sbin/pppd up_sdnotify nolog call %I</span>
+									<pre class="highlight"><code><span class="nn">[...]</span><span class="w">
+</span><span class="py">Description</span><span class="p">=</span><span class="s">PPP connection for %I</span>
+<span class="nn">[...]</span><span class="w">
+</span><span class="py">ExecStart</span><span class="p">=</span><span class="s">/usr/sbin/pppd up_sdnotify nolog call %I</span>
 </code></pre>
 								</div>
 							</div>
@@ -255,11 +255,11 @@
 							<p>Now that <code class="language-plaintext highlighter-rouge">ppp0</code> is up, time to configure routes and routing rules with <code class="language-plaintext highlighter-rouge">systemd-networkd</code>. I created a file <code class="language-plaintext highlighter-rouge">/etc/systemd/network/10-ppp0.network</code>.</p>
 							<div class="language-ini highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="nn">[Match]</span>
-<span class="py">Name</span><span class="p">=</span><span class="s">ppp0</span>
-
-<span class="nn">[Network]</span>
-<span class="py">DHCP</span><span class="p">=</span><span class="s">yes</span>
+									<pre class="highlight"><code><span class="nn">[Match]</span><span class="w">
+</span><span class="py">Name</span><span class="p">=</span><span class="s">ppp0</span>
+<span class="w">
+</span><span class="nn">[Network]</span><span class="w">
+</span><span class="py">DHCP</span><span class="p">=</span><span class="s">yes</span>
 <span class="c"># ...
 </span></code></pre>
 								</div>
@@ -270,8 +270,8 @@
 							<div class="language-ini highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code><span class="c"># systemctl edit pppd@dsl-provider
-</span><span class="nn">[Unit]</span>
-<span class="py">Before</span><span class="p">=</span><span class="s">systemd-networkd.service</span>
+</span><span class="nn">[Unit]</span><span class="w">
+</span><span class="py">Before</span><span class="p">=</span><span class="s">systemd-networkd.service</span>
 </code></pre>
 								</div>
 							</div>
@@ -300,8 +300,8 @@ iface dsl-provider inet ppp
 							<div class="language-ini highlighter-rouge">
 								<div class="highlight">
 									<pre class="highlight"><code><span class="c"># systemctl edit pppd@dsl-provider
-</span><span class="nn">[Unit]</span>
-<span class="py">BindsTo</span><span class="p">=</span><span class="s">sys-subsystem-net-devices-enp3s0.device</span>
+</span><span class="nn">[Unit]</span><span class="w">
+</span><span class="py">BindsTo</span><span class="p">=</span><span class="s">sys-subsystem-net-devices-enp3s0.device</span>
 <span class="py">After</span><span class="p">=</span><span class="s">sys-subsystem-net-devices-enp3s0.device</span>
 </code></pre>
 								</div>
@@ -381,11 +381,11 @@ systemd-networkd[528]: enp2s0: DHCP-PD address 2001:db8:0:a01:2a0:c9ff:feee:c4c/
 									<p>For IPv6 PD, use both:</p>
 									<div class="language-ini highlighter-rouge">
 										<div class="highlight">
-											<pre class="highlight"><code><span class="nn">[DHCPv6]</span>
-<span class="py">PrefixDelegationHint</span><span class="p">=</span><span class="s">::/60</span>
-
-<span class="nn">[IPv6AcceptRA]</span>
-<span class="py">DHCPv6Client</span><span class="p">=</span><span class="s">always</span>
+											<pre class="highlight"><code><span class="nn">[DHCPv6]</span><span class="w">
+</span><span class="py">PrefixDelegationHint</span><span class="p">=</span><span class="s">::/60</span>
+<span class="w">
+</span><span class="nn">[IPv6AcceptRA]</span><span class="w">
+</span><span class="py">DHCPv6Client</span><span class="p">=</span><span class="s">always</span>
 </code></pre>
 										</div>
     </div>
@@ -556,7 +556,7 @@ systemd-networkd[528]: enp2s0: DHCP-PD address 2001:db8:0:a01:2a0:c9ff:feee:c4c/
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-949</a>
+						Site version <a href="/status" class="version-text">G-950</a>
 					</p>
 				</div>
 			</footer>

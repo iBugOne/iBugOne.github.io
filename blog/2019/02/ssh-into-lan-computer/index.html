@@ -31,7 +31,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=9af758e">
+		<link rel="stylesheet" href="/assets/css/main.css?v=adc3a55">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -225,13 +225,13 @@
 							<p>Now open the configuration file <code class="language-plaintext highlighter-rouge">frps.ini</code> with your favorite editor, Vim or Emacs, and put the following content in:</p>
 							<div class="language-ini highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="nn">[common]</span>
-<span class="py">bind_port</span> <span class="p">=</span> <span class="s">7000</span>
-<span class="py">privilege_token</span> <span class="p">=</span> <span class="s">your_token</span>
-
-<span class="py">dashboard_port</span> <span class="p">=</span> <span class="s">8080</span>
-<span class="py">dashboard_user</span> <span class="p">=</span> <span class="s">admin</span>
-<span class="py">dashboard_pwd</span> <span class="p">=</span> <span class="s">password</span>
+									<pre class="highlight"><code><span class="nn">[common]</span><span class="w">
+</span><span class="py">bind_port</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">7000</span>
+<span class="py">privilege_token</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">your_token</span>
+<span class="w">
+</span><span class="py">dashboard_port</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">8080</span>
+<span class="py">dashboard_user</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">admin</span>
+<span class="py">dashboard_pwd</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">password</span>
 </code></pre>
 								</div>
 							</div>
@@ -253,20 +253,20 @@
 							<p>Create the file <code class="language-plaintext highlighter-rouge">/etc/systemd/system/frps.service</code> with the following content:</p>
 							<div class="language-ini highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="nn">[Unit]</span>
-<span class="py">Description</span><span class="p">=</span><span class="s">FRP Server</span>
+									<pre class="highlight"><code><span class="nn">[Unit]</span><span class="w">
+</span><span class="py">Description</span><span class="p">=</span><span class="s">FRP Server</span>
 <span class="py">After</span><span class="p">=</span><span class="s">network.target</span>
 <span class="py">StartLimitIntervalSec</span><span class="p">=</span><span class="s">0</span>
-
-<span class="nn">[Service]</span>
-<span class="py">Type</span><span class="p">=</span><span class="s">simple</span>
+<span class="w">
+</span><span class="nn">[Service]</span><span class="w">
+</span><span class="py">Type</span><span class="p">=</span><span class="s">simple</span>
 <span class="py">Restart</span><span class="p">=</span><span class="s">always</span>
 <span class="py">RestartSec</span><span class="p">=</span><span class="s">1</span>
 <span class="py">User</span><span class="p">=</span><span class="s">ubuntu</span>
 <span class="py">ExecStart</span><span class="p">=</span><span class="s">/home/ubuntu/frp/frps -c /home/ubuntu/frp/frps.ini</span>
-
-<span class="nn">[Install]</span>
-<span class="py">WantedBy</span><span class="p">=</span><span class="s">multi-user.target</span>
+<span class="w">
+</span><span class="nn">[Install]</span><span class="w">
+</span><span class="py">WantedBy</span><span class="p">=</span><span class="s">multi-user.target</span>
 </code></pre>
 								</div>
 							</div>
@@ -290,17 +290,17 @@
 							<p>This time, open <code class="language-plaintext highlighter-rouge">frpc.ini</code> with your favorite editor, and put the following content in:</p>
 							<div class="language-ini highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="nn">[common]</span>
-<span class="py">server_addr</span> <span class="p">=</span> <span class="s">&lt;your server ip&gt;</span>
-<span class="py">server_port</span> <span class="p">=</span> <span class="s">7000</span>
-<span class="py">privilege_token</span> <span class="p">=</span> <span class="s">your_token</span>
-<span class="py">login_fail_exit</span> <span class="p">=</span> <span class="s">true</span>
-
-<span class="nn">[ssh]</span>
-<span class="py">type</span> <span class="p">=</span> <span class="s">tcp</span>
-<span class="py">local_ip</span> <span class="p">=</span> <span class="s">127.0.0.1</span>
-<span class="py">local_port</span> <span class="p">=</span> <span class="s">22</span>
-<span class="py">remote_port</span> <span class="p">=</span> <span class="s">8022</span>
+									<pre class="highlight"><code><span class="nn">[common]</span><span class="w">
+</span><span class="py">server_addr</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">&lt;your server ip&gt;</span>
+<span class="py">server_port</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">7000</span>
+<span class="py">privilege_token</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">your_token</span>
+<span class="py">login_fail_exit</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">true</span>
+<span class="w">
+</span><span class="nn">[ssh]</span><span class="w">
+</span><span class="py">type</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">tcp</span>
+<span class="py">local_ip</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">127.0.0.1</span>
+<span class="py">local_port</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">22</span>
+<span class="py">remote_port</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">8022</span>
 </code></pre>
 								</div>
 							</div>
@@ -308,20 +308,20 @@
 							<p>Similar to the server software, I created another systemd service for the client software. Here’s what I have in my <code class="language-plaintext highlighter-rouge">/etc/systemd/system/frpc.service</code>:</p>
 							<div class="language-ini highlighter-rouge">
 								<div class="highlight">
-									<pre class="highlight"><code><span class="nn">[Unit]</span>
-<span class="py">Description</span><span class="p">=</span><span class="s">FRP Client</span>
+									<pre class="highlight"><code><span class="nn">[Unit]</span><span class="w">
+</span><span class="py">Description</span><span class="p">=</span><span class="s">FRP Client</span>
 <span class="py">After</span><span class="p">=</span><span class="s">network.target</span>
 <span class="py">StartLimitIntervalSec</span><span class="p">=</span><span class="s">0</span>
-
-<span class="nn">[Service]</span>
-<span class="py">Type</span><span class="p">=</span><span class="s">idle</span>
+<span class="w">
+</span><span class="nn">[Service]</span><span class="w">
+</span><span class="py">Type</span><span class="p">=</span><span class="s">idle</span>
 <span class="py">Restart</span><span class="p">=</span><span class="s">always</span>
 <span class="py">RestartSec</span><span class="p">=</span><span class="s">1</span>
 <span class="py">User</span><span class="p">=</span><span class="s">pi</span>
 <span class="py">ExecStart</span><span class="p">=</span><span class="s">/home/pi/frp/frpc -c /home/pi/frp/frpc.ini</span>
-
-<span class="nn">[Install]</span>
-<span class="py">WantedBy</span><span class="p">=</span><span class="s">multi-user.target</span>
+<span class="w">
+</span><span class="nn">[Install]</span><span class="w">
+</span><span class="py">WantedBy</span><span class="p">=</span><span class="s">multi-user.target</span>
 </code></pre>
 								</div>
 							</div>
@@ -516,7 +516,7 @@
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-949</a>
+						Site version <a href="/status" class="version-text">G-950</a>
 					</p>
 				</div>
 			</footer>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2025-08-04T11:02:38+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Manually resize Guild Chest in Palworld 0.6</title><link href="https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest/" rel="alternate" type="text/html" title="Manually resize Guild Chest in Palworld 0.6" /><published>2025-07-28T00:00:00+00:00</published><updated>2025-07-28T14:02:46+00:00</updated><id>https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest</id><content type="html" xml:base="https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest/"><![CDATA[<p>The Guild Chest, first introduced in Feybreak Update, easily became the best way to move items between bases.
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2025-11-04T11:39:46+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Manually resize Guild Chest in Palworld 0.6</title><link href="https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest/" rel="alternate" type="text/html" title="Manually resize Guild Chest in Palworld 0.6" /><published>2025-07-28T00:00:00+00:00</published><updated>2025-07-28T14:02:46+00:00</updated><id>https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest</id><content type="html" xml:base="https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest/"><![CDATA[<p>The Guild Chest, first introduced in Feybreak Update, easily became the best way to move items between bases.
 				However, it only has 54 slots and is nowhere near enough for all the items you want to store.
 				For those who want to increase the size of the Guild Chest, especially in single player worlds, there’s a tutorial on how to do it manually:
 				<a href="https://www.nexusmods.com/palworld/mods/2419">Guild chest resizer after solo play started (Manual)</a>.</p>
@@ -1303,14 +1303,14 @@ lib/windows/ooz.pyd
 	<blockquote>
 		<div class="language-ini highlighter-rouge">
 			<div class="highlight">
-				<pre class="highlight"><code><span class="err">Windows</span> <span class="err">Registry</span> <span class="err">Editor</span> <span class="err">Version</span> <span class="err">5.00</span>
+				<pre class="highlight"><code><span class="na">Windows</span><span class="w"> </span><span class="na">Registry</span><span class="w"> </span><span class="na">Editor</span><span class="w"> </span><span class="na">Version</span><span class="w"> </span><span class="na">5.00</span><span class="w">
 
-<span class="nn">[HKEY_CLASSES_ROOT\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}\Instance\InitPropertyBag]</span>
-<span class="err">"TargetKnownFolder"=""</span>
+</span><span class="nn">[HKEY_CLASSES_ROOT\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}\Instance\InitPropertyBag]</span><span class="w">
+</span><span class="na">"TargetKnownFolder"=""</span><span class="w">
 
-<span class="nn">[HKEY_CLASSES_ROOT\WOW6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}\Instance\InitPropertyBag]</span>
-<span class="err">"TargetKnownFolder"=""</span>
-</code></pre>
+</span><span class="nn">[HKEY_CLASSES_ROOT\WOW6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}\Instance\InitPropertyBag]</span><span class="w">
+</span><span class="na">"TargetKnownFolder"=""</span><span class="w">
+</span></code></pre>
 			</div>
   </div>
 		<p>Save them as a .reg file, run it each time you log on (and after One Drive running)</p>
@@ -1323,45 +1323,45 @@ lib/windows/ooz.pyd
 		These registry keys are exported from a working Windows 10 Enterprise installation.</p>
 	<div class="language-ini highlighter-rouge">
 		<div class="highlight">
-			<pre class="highlight"><code><span class="err">Windows</span> <span class="err">Registry</span> <span class="err">Editor</span> <span class="err">Version</span> <span class="err">5.00</span>
+			<pre class="highlight"><code><span class="na">Windows</span><span class="w"> </span><span class="na">Registry</span><span class="w"> </span><span class="na">Editor</span><span class="w"> </span><span class="na">Version</span><span class="w"> </span><span class="na">5.00</span><span class="w">
 
-<span class="nn">[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{A52BBA46-E9E1-435f-B3D9-28DAA648C0F6}]</span>
-<span class="err">"Attributes"=dword:00000001</span>
-<span class="err">"Category"=dword:00000004</span>
-<span class="err">"DefinitionFlags"=dword:00000040</span>
-<span class="err">"Icon"=hex(2):25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,6f,00,6f,00,74,</span><span class="se">\
-</span>  <span class="err">00,25,00,5c,00,73,00,79,00,73,00,74,00,65,00,6d,00,33,00,32,00,5c,00,69,00,</span><span class="se">\
-</span>  <span class="err">6d,00,61,00,67,00,65,00,72,00,65,00,73,00,2e,00,64,00,6c,00,6c,00,2c,00,2d,</span><span class="se">\
-</span>  <span class="err">00,31,00,30,00,34,00,30,00,00,00</span>
-<span class="err">"LocalizedName"=hex(2):40,00,25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,</span><span class="se">\
-</span>  <span class="err">6f,00,6f,00,74,00,25,00,5c,00,53,00,79,00,73,00,74,00,65,00,6d,00,33,00,32,</span><span class="se">\
-</span>  <span class="err">00,5c,00,53,00,65,00,74,00,74,00,69,00,6e,00,67,00,53,00,79,00,6e,00,63,00,</span><span class="se">\
-</span>  <span class="err">43,00,6f,00,72,00,65,00,2e,00,64,00,6c,00,6c,00,2c,00,2d,00,31,00,30,00,32,</span><span class="se">\
-</span>  <span class="err">00,34,00,00,00</span>
-<span class="err">"LocalRedirectOnly"=dword:00000001</span>
-<span class="err">"Name"="OneDrive"</span>
-<span class="err">"ParentFolder"="{5E6C858F-0E22-4760-9AFE-EA3317B67173}"</span>
-<span class="err">"ParsingName"="shell:::{018D5C66-4533-4307-9B53-224DE2ED1FE6}"</span>
-<span class="err">"RelativePath"="OneDrive"</span>
+</span><span class="nn">[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{A52BBA46-E9E1-435f-B3D9-28DAA648C0F6}]</span><span class="w">
+</span><span class="na">"Attributes"=dword:00000001</span><span class="w">
+</span><span class="na">"Category"=dword:00000004</span><span class="w">
+</span><span class="na">"DefinitionFlags"=dword:00000040</span><span class="w">
+</span><span class="na">"Icon"=hex(2):25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,6f,00,6f,00,74,</span><span class="se">\
+</span><span class="w">  </span><span class="na">00,25,00,5c,00,73,00,79,00,73,00,74,00,65,00,6d,00,33,00,32,00,5c,00,69,00,</span><span class="se">\
+</span><span class="w">  </span><span class="na">6d,00,61,00,67,00,65,00,72,00,65,00,73,00,2e,00,64,00,6c,00,6c,00,2c,00,2d,</span><span class="se">\
+</span><span class="w">  </span><span class="na">00,31,00,30,00,34,00,30,00,00,00</span><span class="w">
+</span><span class="na">"LocalizedName"=hex(2):40,00,25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,</span><span class="se">\
+</span><span class="w">  </span><span class="na">6f,00,6f,00,74,00,25,00,5c,00,53,00,79,00,73,00,74,00,65,00,6d,00,33,00,32,</span><span class="se">\
+</span><span class="w">  </span><span class="na">00,5c,00,53,00,65,00,74,00,74,00,69,00,6e,00,67,00,53,00,79,00,6e,00,63,00,</span><span class="se">\
+</span><span class="w">  </span><span class="na">43,00,6f,00,72,00,65,00,2e,00,64,00,6c,00,6c,00,2c,00,2d,00,31,00,30,00,32,</span><span class="se">\
+</span><span class="w">  </span><span class="na">00,34,00,00,00</span><span class="w">
+</span><span class="na">"LocalRedirectOnly"=dword:00000001</span><span class="w">
+</span><span class="na">"Name"="OneDrive"</span><span class="w">
+</span><span class="na">"ParentFolder"="{5E6C858F-0E22-4760-9AFE-EA3317B67173}"</span><span class="w">
+</span><span class="na">"ParsingName"="shell:::{018D5C66-4533-4307-9B53-224DE2ED1FE6}"</span><span class="w">
+</span><span class="na">"RelativePath"="OneDrive"</span><span class="w">
 
-<span class="nn">[HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{A52BBA46-E9E1-435f-B3D9-28DAA648C0F6}]</span>
-<span class="err">"Attributes"=dword:00000001</span>
-<span class="err">"Category"=dword:00000004</span>
-<span class="err">"DefinitionFlags"=dword:00000040</span>
-<span class="err">"Icon"=hex(2):25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,6f,00,6f,00,74,</span><span class="se">\
-</span>  <span class="err">00,25,00,5c,00,73,00,79,00,73,00,74,00,65,00,6d,00,33,00,32,00,5c,00,69,00,</span><span class="se">\
-</span>  <span class="err">00,31,00,30,00,34,00,30,00,00,00</span>
-<span class="err">"LocalizedName"=hex(2):40,00,25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,</span><span class="se">\
-</span>  <span class="err">6f,00,6f,00,74,00,25,00,5c,00,53,00,79,00,73,00,74,00,65,00,6d,00,33,00,32,</span><span class="se">\
-</span>  <span class="err">00,5c,00,53,00,65,00,74,00,74,00,69,00,6e,00,67,00,53,00,79,00,6e,00,63,00,</span><span class="se">\
-</span>  <span class="err">43,00,6f,00,72,00,65,00,2e,00,64,00,6c,00,6c,00,2c,00,2d,00,31,00,30,00,32,</span><span class="se">\
-</span>  <span class="err">00,34,00,00,00</span>
-<span class="err">"LocalRedirectOnly"=dword:00000001</span>
-<span class="err">"Name"="OneDrive"</span>
-<span class="err">"ParentFolder"="{5E6C858F-0E22-4760-9AFE-EA3317B67173}"</span>
-<span class="err">"ParsingName"="shell:::{018D5C66-4533-4307-9B53-224DE2ED1FE6}"</span>
-<span class="err">"RelativePath"="OneDrive"</span>
-</code></pre>
+</span><span class="nn">[HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{A52BBA46-E9E1-435f-B3D9-28DAA648C0F6}]</span><span class="w">
+</span><span class="na">"Attributes"=dword:00000001</span><span class="w">
+</span><span class="na">"Category"=dword:00000004</span><span class="w">
+</span><span class="na">"DefinitionFlags"=dword:00000040</span><span class="w">
+</span><span class="na">"Icon"=hex(2):25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,6f,00,6f,00,74,</span><span class="se">\
+</span><span class="w">  </span><span class="na">00,25,00,5c,00,73,00,79,00,73,00,74,00,65,00,6d,00,33,00,32,00,5c,00,69,00,</span><span class="se">\
+</span><span class="w">  </span><span class="na">00,31,00,30,00,34,00,30,00,00,00</span><span class="w">
+</span><span class="na">"LocalizedName"=hex(2):40,00,25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,</span><span class="se">\
+</span><span class="w">  </span><span class="na">6f,00,6f,00,74,00,25,00,5c,00,53,00,79,00,73,00,74,00,65,00,6d,00,33,00,32,</span><span class="se">\
+</span><span class="w">  </span><span class="na">00,5c,00,53,00,65,00,74,00,74,00,69,00,6e,00,67,00,53,00,79,00,6e,00,63,00,</span><span class="se">\
+</span><span class="w">  </span><span class="na">43,00,6f,00,72,00,65,00,2e,00,64,00,6c,00,6c,00,2c,00,2d,00,31,00,30,00,32,</span><span class="se">\
+</span><span class="w">  </span><span class="na">00,34,00,00,00</span><span class="w">
+</span><span class="na">"LocalRedirectOnly"=dword:00000001</span><span class="w">
+</span><span class="na">"Name"="OneDrive"</span><span class="w">
+</span><span class="na">"ParentFolder"="{5E6C858F-0E22-4760-9AFE-EA3317B67173}"</span><span class="w">
+</span><span class="na">"ParsingName"="shell:::{018D5C66-4533-4307-9B53-224DE2ED1FE6}"</span><span class="w">
+</span><span class="na">"RelativePath"="OneDrive"</span><span class="w">
+</span></code></pre>
 		</div>
 	</div>
 	<p>Note that this article happens to reproduce <a href="https://lolicp.com/windows/202309626.html">this blog</a> from lolicp.com, which may be of Chinese readers’ interest.</p>
@@ -1891,7 +1891,7 @@ wget <span class="nt">-O</span> /usr/share/apparmor-features/features https://gi
 			<p>Create <code class="language-plaintext highlighter-rouge">~/.local/pyvenv.cfg</code> with just one line of content:</p>
 			<div class="language-ini highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code> <span class="py">include-system-site-packages</span> <span class="p">=</span> <span class="s">true</span>
+					<pre class="highlight"><code><span class="w"> </span><span class="py">include-system-site-packages</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">true</span>
 </code></pre>
 				</div>
     </div>
@@ -2738,10 +2738,10 @@ Conntrack destroyed (IPv4): src=172.17.0.2 sport=39456 mark=0 proto=6
 	<p>The instance name is surely <code class="language-plaintext highlighter-rouge">dsl-provider</code> and not <code class="language-plaintext highlighter-rouge">dsl/provider</code>, so I look more closely at the service file.</p>
 	<div class="language-ini highlighter-rouge">
 		<div class="highlight">
-			<pre class="highlight"><code><span class="nn">[...]</span>
-<span class="py">Description</span><span class="p">=</span><span class="s">PPP connection for %I</span>
-<span class="nn">[...]</span>
-<span class="py">ExecStart</span><span class="p">=</span><span class="s">/usr/sbin/pppd up_sdnotify nolog call %I</span>
+			<pre class="highlight"><code><span class="nn">[...]</span><span class="w">
+</span><span class="py">Description</span><span class="p">=</span><span class="s">PPP connection for %I</span>
+<span class="nn">[...]</span><span class="w">
+</span><span class="py">ExecStart</span><span class="p">=</span><span class="s">/usr/sbin/pppd up_sdnotify nolog call %I</span>
 </code></pre>
 		</div>
 	</div>
@@ -2774,11 +2774,11 @@ Conntrack destroyed (IPv4): src=172.17.0.2 sport=39456 mark=0 proto=6
 	<p>Now that <code class="language-plaintext highlighter-rouge">ppp0</code> is up, time to configure routes and routing rules with <code class="language-plaintext highlighter-rouge">systemd-networkd</code>. I created a file <code class="language-plaintext highlighter-rouge">/etc/systemd/network/10-ppp0.network</code>.</p>
 	<div class="language-ini highlighter-rouge">
 		<div class="highlight">
-			<pre class="highlight"><code><span class="nn">[Match]</span>
-<span class="py">Name</span><span class="p">=</span><span class="s">ppp0</span>
-
-<span class="nn">[Network]</span>
-<span class="py">DHCP</span><span class="p">=</span><span class="s">yes</span>
+			<pre class="highlight"><code><span class="nn">[Match]</span><span class="w">
+</span><span class="py">Name</span><span class="p">=</span><span class="s">ppp0</span>
+<span class="w">
+</span><span class="nn">[Network]</span><span class="w">
+</span><span class="py">DHCP</span><span class="p">=</span><span class="s">yes</span>
 <span class="c"># ...
 </span></code></pre>
 		</div>
@@ -2789,8 +2789,8 @@ Conntrack destroyed (IPv4): src=172.17.0.2 sport=39456 mark=0 proto=6
 	<div class="language-ini highlighter-rouge">
 		<div class="highlight">
 			<pre class="highlight"><code><span class="c"># systemctl edit pppd@dsl-provider
-</span><span class="nn">[Unit]</span>
-<span class="py">Before</span><span class="p">=</span><span class="s">systemd-networkd.service</span>
+</span><span class="nn">[Unit]</span><span class="w">
+</span><span class="py">Before</span><span class="p">=</span><span class="s">systemd-networkd.service</span>
 </code></pre>
 		</div>
 	</div>
@@ -2819,8 +2819,8 @@ iface dsl-provider inet ppp
 	<div class="language-ini highlighter-rouge">
 		<div class="highlight">
 			<pre class="highlight"><code><span class="c"># systemctl edit pppd@dsl-provider
-</span><span class="nn">[Unit]</span>
-<span class="py">BindsTo</span><span class="p">=</span><span class="s">sys-subsystem-net-devices-enp3s0.device</span>
+</span><span class="nn">[Unit]</span><span class="w">
+</span><span class="py">BindsTo</span><span class="p">=</span><span class="s">sys-subsystem-net-devices-enp3s0.device</span>
 <span class="py">After</span><span class="p">=</span><span class="s">sys-subsystem-net-devices-enp3s0.device</span>
 </code></pre>
 		</div>
@@ -2900,11 +2900,11 @@ systemd-networkd[528]: enp2s0: DHCP-PD address 2001:db8:0:a01:2a0:c9ff:feee:c4c/
 			<p>For IPv6 PD, use both:</p>
 			<div class="language-ini highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code><span class="nn">[DHCPv6]</span>
-<span class="py">PrefixDelegationHint</span><span class="p">=</span><span class="s">::/60</span>
-
-<span class="nn">[IPv6AcceptRA]</span>
-<span class="py">DHCPv6Client</span><span class="p">=</span><span class="s">always</span>
+					<pre class="highlight"><code><span class="nn">[DHCPv6]</span><span class="w">
+</span><span class="py">PrefixDelegationHint</span><span class="p">=</span><span class="s">::/60</span>
+<span class="w">
+</span><span class="nn">[IPv6AcceptRA]</span><span class="w">
+</span><span class="py">DHCPv6Client</span><span class="p">=</span><span class="s">always</span>
 </code></pre>
 				</div>
     </div>
@@ -3089,8 +3089,8 @@ done</span>
 	<div class="language-ini highlighter-rouge">
 		<div class="highlight">
 			<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.target
-</span><span class="nn">[Unit]</span>
-<span class="py">Description</span><span class="p">=</span><span class="s">SSL certificates reload helper</span>
+</span><span class="nn">[Unit]</span><span class="w">
+</span><span class="py">Description</span><span class="p">=</span><span class="s">SSL certificates reload helper</span>
 <span class="py">PropagatesReloadTo</span><span class="p">=</span><span class="s">nginx.service</span>
 <span class="py">PropagatesReloadTo</span><span class="p">=</span><span class="s">postfix.service</span>
 </code></pre>
@@ -3100,15 +3100,15 @@ done</span>
 	<div class="language-ini highlighter-rouge">
 		<div class="highlight">
 			<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.path
-</span><span class="nn">[Unit]</span>
-<span class="py">Description</span><span class="p">=</span><span class="s">SSL certificate reload helper</span>
+</span><span class="nn">[Unit]</span><span class="w">
+</span><span class="py">Description</span><span class="p">=</span><span class="s">SSL certificate reload helper</span>
 <span class="py">Wants</span><span class="p">=</span><span class="s">%N.target</span>
-
-<span class="nn">[Path]</span>
-<span class="py">PathChanged</span><span class="p">=</span><span class="s">/etc/ssl/private/%H/cert.pem</span>
-
-<span class="nn">[Install]</span>
-<span class="py">WantedBy</span><span class="p">=</span><span class="s">multi-user.target</span>
+<span class="w">
+</span><span class="nn">[Path]</span><span class="w">
+</span><span class="py">PathChanged</span><span class="p">=</span><span class="s">/etc/ssl/private/%H/cert.pem</span>
+<span class="w">
+</span><span class="nn">[Install]</span><span class="w">
+</span><span class="py">WantedBy</span><span class="p">=</span><span class="s">multi-user.target</span>
 </code></pre>
 		</div>
 	</div>
@@ -3117,13 +3117,13 @@ done</span>
 	<div class="language-ini highlighter-rouge">
 		<div class="highlight">
 			<pre class="highlight"><code><span class="c"># /etc/systemd/system/ssl-certificate.service
-</span><span class="nn">[Unit]</span>
-<span class="py">Description</span><span class="p">=</span><span class="s">SSL certificate reload helper</span>
+</span><span class="nn">[Unit]</span><span class="w">
+</span><span class="py">Description</span><span class="p">=</span><span class="s">SSL certificate reload helper</span>
 <span class="py">StartLimitIntervalSec</span><span class="p">=</span><span class="s">5s</span>
 <span class="py">StartLimitBurst</span><span class="p">=</span><span class="s">2</span>
-
-<span class="nn">[Service]</span>
-<span class="py">Type</span><span class="p">=</span><span class="s">oneshot</span>
+<span class="w">
+</span><span class="nn">[Service]</span><span class="w">
+</span><span class="py">Type</span><span class="p">=</span><span class="s">oneshot</span>
 <span class="py">ExecStart</span><span class="p">=</span><span class="s">/bin/systemctl reload %N.target</span>
 </code></pre>
 		</div>
