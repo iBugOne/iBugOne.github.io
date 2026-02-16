@@ -1,0 +1,742 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.27.3 by Michael Rose
+  Copyright 2013-2025 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en-US" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>BanD Width! It’s MyBOND!! - iBug</title>
+		<meta name="description" content="My workstation in my univerity lab has consistently generated some 600 TiB of annual upload across two PT sites. After an upgrade to the room a few months back, it received the most wanted upgrade for years: A second 1 Gbps line to the campus network. I immediately made the two NICs into one bonded 2 Gbps interface, and it has shined for many times with multiple popular torrents.">
+		<meta name="author" content="iBug">
+		<meta property="article:author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="BanD Width! It’s MyBOND!!">
+		<meta property="og:url" content="https://ibug.io/blog/2026/02/bonding-iperf3/">
+		<meta property="og:description" content="My workstation in my univerity lab has consistently generated some 600 TiB of annual upload across two PT sites. After an upgrade to the room a few months back, it received the most wanted upgrade for years: A second 1 Gbps line to the campus network. I immediately made the two NICs into one bonded 2 Gbps interface, and it has shined for many times with multiple popular torrents.">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2026-02-16T00:00:00+00:00">
+		<meta property="article:modified_time" content="2026-02-16T23:31:52+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2026/02/bonding-iperf3/">
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script type="text/javascript">
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=8b549dd">
+		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<meta name="theme-color" content="#EDEDED">
+		<script>
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+	</head>
+	<body class="layout--single" dir="ltr">
+		<nav class="skip-links">
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt="iBug"></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a href="/about/">About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/blog/">Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/projects/">Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/friends/">Friends</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a href="/cn/">中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<i class="fas fa-search"></i>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay" style=" background-image: url('/image/header/mountain-1.jpg');">
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						BanD Width! It’s MyBOND!!
+					</h1>
+					<p class="page__lead">Can bonding bring double upload?
+					</p>
+					<p class="page__meta">
+						<span class="page__meta-date">
+							<i class="far fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2026-02-16T00:00:00+00:00">Feb 16, 2026</time>
+						</span>
+						<span class="page__meta-sep"></span>
+						<span class="page__meta-readtime">
+							<i class="far fa-clock" aria-hidden="true"></i>
+							4 minute read
+						</span>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person" class="h-card">
+						<div class="author__avatar">
+							<a href="https://ibug.io/">
+								<img src="/image/avatar.png" alt="iBug" itemprop="image" class="u-photo">
+							</a>
+						</div>
+						<div class="author__content">
+							<h3 class="author__name p-name" itemprop="name">
+								<a class="u-url" rel="me" href="https://ibug.io/" itemprop="url">iBug</a>
+							</h3>
+							<div class="author__bio p-note" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer me"><i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/iBugThought" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-telegram" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer me">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox">
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug on the Web</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/open-source/"><i class="fas fa-fw fa-box-open"></i> Open Source</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/bookmarks/"><i class="fas fa-fw fa-bookmark"></i> Bookmarks</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="BanD Width! It’s MyBOND!!">
+					<meta itemprop="description" content="My workstation in my univerity lab has consistently generated some 600 TiB of annual upload across two PT sites. After an upgrade to the room a few months back, it received the most wanted upgrade for years: A second 1 Gbps line to the campus network. I immediately made the two NICs into one bonded 2 Gbps interface, and it has shined for many times with multiple popular torrents.">
+					<meta itemprop="datePublished" content="2026-02-16T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2026-02-16T23:31:52+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc">
+									<header>
+										<h4 class="nav__title">
+											<i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li>
+											<a href="#setup">Setup</a>
+											<ul>
+												<li><a href="#sender">Sender</a></li>
+												<li><a href="#receivers">Receivers</a></li>
+											</ul>
+										</li>
+										<li>
+											<a href="#analyses">Analyses</a>
+											<ul>
+												<li><a href="#single-stream">Single stream</a></li>
+												<li><a href="#parallel-streams">Parallel streams</a></li>
+											</ul>
+										</li>
+										<li><a href="#bottom-line">Bottom line</a></li>
+									</ul>
+								</nav>
+							</aside>
+							<p>My workstation in my univerity lab has consistently generated some 600 TiB of annual upload across two PT sites. After an upgrade to the room a few months back, it received the most wanted upgrade for years: A second 1 Gbps line to the campus network. I immediately made the two NICs into one bonded 2 Gbps interface, and it has shined for many times with multiple popular torrents.</p>
+							<p>Inspired by my friend <a href="https://blog.yfycloud.site/about/">@TheRainstorm</a> who managed to double his upload by load-balancing WireGuard over two lines from the same ISP (China Mobile), I figured I’d leverage this chance and make a better understanding though some more detailed experiments.</p>
+							<h2 id="setup">Setup</h2>
+							<h3 id="sender">Sender</h3>
+							<p>My workstation:</p>
+							<ul>
+								<li>Ubuntu 24.04 (Kernel 6.8)</li>
+								<li>Two Intel I210 NICs, connected to the same switch of campus network</li>
+								<li>iperf 3.16</li>
+							</ul>
+							<p>Controlled variables:</p>
+							<ul>
+								<li>Bond mode: Round-robin (<code class="language-plaintext highlighter-rouge">balance-rr</code>, 0) vs Transmit Load Balancing (<code class="language-plaintext highlighter-rouge">balance-tlb</code>, 5)
+									<ul>
+										<li>For <code class="language-plaintext highlighter-rouge">balance-tlb</code> mode, <code class="language-plaintext highlighter-rouge">xmit_hash_policy</code> is set to <code class="language-plaintext highlighter-rouge">layer3+4</code>.</li>
+									</ul>
+								</li>
+								<li>TCP congestion control (CC) algorithm: CUBIC vs BBR</li>
+								<li>Parallelism (the value to <code class="language-plaintext highlighter-rouge">-P</code> option of iperf3): 1 vs 4
+									<ul>
+										<li>Note that due to the way <code class="language-plaintext highlighter-rouge">balance-tlb</code> works, with only one connection, bonding is not going to be different than using only one NIC.
+											&lt;!–</li>
+									</ul>
+								</li>
+								<li>Whether another application is constantly generating background upload activity.
+									<ul>
+										<li>This is implemented by letting qBittorrent run in the background with upload rate limited to 1 MB/s, and is labeled <code class="language-plaintext highlighter-rouge">qB</code> during the experiment.
+											–&gt;</li>
+									</ul>
+								</li>
+							</ul>
+							<p>These variables combine into 8 different scenarios, which is enough dimensions to look at in isolation.</p>
+							<h3 id="receivers">Receivers</h3>
+							<p>I sourced three destination (receiver) hosts with &gt; 2 Gbps download bandwidth, labeled as following:</p>
+							<ul>
+								<li>
+									<strong>A</strong>. One of our usually idle lab servers.</li>
+								<li>
+									<strong>B</strong>. <a href="https://mirrors.ustc.edu.cn/">USTC Mirrors</a> server.</li>
+								<li>
+									<strong>C</strong>. Friend-sponsored home broadband in Shanghai.</li>
+							</ul>
+							<p>Typical traits of these destinations are:</p>
+							<table>
+								<thead>
+									<tr>
+										<th style="text-align: center">Destination</th>
+										<th style="text-align: center">Download BW</th>
+										<th style="text-align: center">Latency</th>
+										<th style="text-align: center">BDP*</th>
+										<th style="text-align: left">Other notes</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td style="text-align: center">A</td>
+										<td style="text-align: center">10 Gbps</td>
+										<td style="text-align: center">250 ± 30 us</td>
+										<td style="text-align: center">500 KB</td>
+										<td style="text-align: left">Mostly idle</td>
+									</tr>
+									<tr>
+										<td style="text-align: center">B</td>
+										<td style="text-align: center">10 Gbps</td>
+										<td style="text-align: center">300 ± 200 us</td>
+										<td style="text-align: center">600 KB</td>
+										<td style="text-align: left">Under constant load</td>
+									</tr>
+									<tr>
+										<td style="text-align: center">C</td>
+										<td style="text-align: center">~2.2 Gbps</td>
+										<td style="text-align: center">28 ± 0.2 ms</td>
+										<td style="text-align: center">56 MB</td>
+										<td style="text-align: left">Mostly idle</td>
+									</tr>
+								</tbody>
+							</table>
+							<p>* Because my workstation can only generate upload at a theoretical maximum speed of 2 Gbps, BDP is calculated at this speed.</p>
+							<h2 id="analyses">Analyses</h2>
+							<p>iperf3 provides three indicators: Transmission bitrate, number of retransmissions and the congestion window size.</p>
+							<p>We cannot attach too much importance to the bond mode when testing bonding performance, so let’s get straight to it.</p>
+							<h3 id="single-stream">Single stream</h3>
+							<table>
+								<thead>
+									<tr>
+										<th style="text-align: center">Dest</th>
+										<th style="text-align: center">P</th>
+										<th style="text-align: center">CC</th>
+										<th style="text-align: right">Bitrate (RR)</th>
+										<th style="text-align: right">Bitrate (TLB)</th>
+										<th style="text-align: right">Retr (RR)</th>
+										<th style="text-align: right">Retr (TLB)</th>
+										<th style="text-align: right">Cwnd (RR)</th>
+										<th style="text-align: right">Cwnd (TLB)</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td style="text-align: center">A</td>
+										<td style="text-align: center">1</td>
+										<td style="text-align: center">BBR</td>
+										<td style="text-align: right">1.78 Gbps</td>
+										<td style="text-align: right">940 Mbps</td>
+										<td style="text-align: right">20079</td>
+										<td style="text-align: right">20</td>
+										<td style="text-align: right">331 KB</td>
+										<td style="text-align: right">233 KB</td>
+									</tr>
+									<tr>
+										<td style="text-align: center">A</td>
+										<td style="text-align: center">1</td>
+										<td style="text-align: center">CUBIC</td>
+										<td style="text-align: right">1.19 Gbps</td>
+										<td style="text-align: right">936 Mbps</td>
+										<td style="text-align: right">7258</td>
+										<td style="text-align: right">110</td>
+										<td style="text-align: right">103 KB</td>
+										<td style="text-align: right">385 KB</td>
+									</tr>
+									<tr>
+										<td style="text-align: center">B</td>
+										<td style="text-align: center">1</td>
+										<td style="text-align: center">BBR</td>
+										<td style="text-align: right">1.62 Gbps</td>
+										<td style="text-align: right">944 Mbps</td>
+										<td style="text-align: right">37018</td>
+										<td style="text-align: right">51</td>
+										<td style="text-align: right">343 KB</td>
+										<td style="text-align: right">241 KB</td>
+									</tr>
+									<tr>
+										<td style="text-align: center">B</td>
+										<td style="text-align: center">1</td>
+										<td style="text-align: center">CUBIC</td>
+										<td style="text-align: right">1.19 Gbps</td>
+										<td style="text-align: right">941 Mbps</td>
+										<td style="text-align: right">6914</td>
+										<td style="text-align: right">72</td>
+										<td style="text-align: right">98 KB</td>
+										<td style="text-align: right">338 KB</td>
+									</tr>
+									<tr>
+										<td style="text-align: center">C</td>
+										<td style="text-align: center">1</td>
+										<td style="text-align: center">BBR</td>
+										<td style="text-align: right">1.11 Gbps</td>
+										<td style="text-align: right">935 Mbps</td>
+										<td style="text-align: right">0</td>
+										<td style="text-align: right">0</td>
+										<td style="text-align: right">8.87 MB</td>
+										<td style="text-align: right">7.67 MB</td>
+									</tr>
+									<tr>
+										<td style="text-align: center">C</td>
+										<td style="text-align: center">1</td>
+										<td style="text-align: center">CUBIC</td>
+										<td style="text-align: right">1.16 Gbps</td>
+										<td style="text-align: right">931 Mbps</td>
+										<td style="text-align: right">0</td>
+										<td style="text-align: right">0</td>
+										<td style="text-align: right">6.44 MB</td>
+										<td style="text-align: right">4.20 MB</td>
+									</tr>
+								</tbody>
+							</table>
+							<p>We first look at <code class="language-plaintext highlighter-rouge">balance-tlb</code> mode.
+								As expected, with one single stream, it runs on only one slave interface (confirmed by watching <code class="language-plaintext highlighter-rouge">bmon -p eth0,eth1,bond0</code> during execution).
+								And with the entire route being able to carry nearly 1.8 Gbps, there’s no surprise that different congestion algorithms don’t affect single-stream performance in all scenarios.</p>
+							<p>We then note the huge difference between the BBR and CUBIC algorithms.
+								Because destinations A and B both have a very low BDP, any fluctuation in latency hits hard on CUBIC in forms of out-of-order packet deliveries, which reflects clearly in the difference of retransmitted packets and the Cwnd size.
+								In TLB mode, with only one active NIC, retransmission is kept low, but in RR mode it skyrocketed.</p>
+							<p>For destination C however, that’s an entirely different case (zero retransmission) with its own reason:
+								There’s enough BDP for the sender to raise Cwnd up to 8 MiB, but the receiver reports a window of only 4 MiB, so the entire transmission is limited by the receiver, not congestion or link load.</p>
+							<h3 id="parallel-streams">Parallel streams</h3>
+							<p>During the experiment, I found it very often that all 4 streams gets load-balanced onto one NIC in <code class="language-plaintext highlighter-rouge">balance-tlb</code> mode, so I had to re-run the tests multiple times to obtain the result where 4 streams are equally balanced onto both NICs.
+								Results from imbalanced stream distributions are discarded during retry.</p>
+							<p>For 4 parallel streams, the result looks much better:</p>
+							<table>
+								<thead>
+									<tr>
+										<th style="text-align: center">Dest</th>
+										<th style="text-align: center">P</th>
+										<th style="text-align: center">CC</th>
+										<th style="text-align: right">Bitrate (RR)</th>
+										<th style="text-align: right">Bitrate (TLB)</th>
+										<th style="text-align: right">Retr (RR)</th>
+										<th style="text-align: right">Retr (TLB)</th>
+										<th style="text-align: right">Cwnd (RR)</th>
+										<th style="text-align: right">Cwnd (TLB)</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td style="text-align: center">A</td>
+										<td style="text-align: center">4</td>
+										<td style="text-align: center">BBR</td>
+										<td style="text-align: right">1.79 Gbps</td>
+										<td style="text-align: right">1.77 Gbps</td>
+										<td style="text-align: right">41357</td>
+										<td style="text-align: right">18</td>
+										<td style="text-align: right">222 KB</td>
+										<td style="text-align: right">178 KB</td>
+									</tr>
+									<tr>
+										<td style="text-align: center">A</td>
+										<td style="text-align: center">4</td>
+										<td style="text-align: center">CUBIC</td>
+										<td style="text-align: right">1.80 Gbps</td>
+										<td style="text-align: right">1.77 Gbps</td>
+										<td style="text-align: right">13254</td>
+										<td style="text-align: right">82</td>
+										<td style="text-align: right">48 KB</td>
+										<td style="text-align: right">306 KB</td>
+									</tr>
+									<tr>
+										<td style="text-align: center">B</td>
+										<td style="text-align: center">4</td>
+										<td style="text-align: center">BBR</td>
+										<td style="text-align: right">1.79 Gbps</td>
+										<td style="text-align: right">1.72 Gbps</td>
+										<td style="text-align: right">61810</td>
+										<td style="text-align: right">9368</td>
+										<td style="text-align: right">237 KB</td>
+										<td style="text-align: right">236 KB</td>
+									</tr>
+									<tr>
+										<td style="text-align: center">B</td>
+										<td style="text-align: center">4</td>
+										<td style="text-align: center">CUBIC</td>
+										<td style="text-align: right">1.77 Gbps</td>
+										<td style="text-align: right">1.74 Gbps</td>
+										<td style="text-align: right">15549</td>
+										<td style="text-align: right">4243</td>
+										<td style="text-align: right">31 KB</td>
+										<td style="text-align: right">174 KB</td>
+									</tr>
+									<tr>
+										<td style="text-align: center">C</td>
+										<td style="text-align: center">4</td>
+										<td style="text-align: center">BBR</td>
+										<td style="text-align: right">1.70 Gbps</td>
+										<td style="text-align: right">1.82 Gbps</td>
+										<td style="text-align: right">185</td>
+										<td style="text-align: right">0</td>
+										<td style="text-align: right">4.04 MB</td>
+										<td style="text-align: right">3.84 MB</td>
+									</tr>
+									<tr>
+										<td style="text-align: center">C</td>
+										<td style="text-align: center">4</td>
+										<td style="text-align: center">CUBIC</td>
+										<td style="text-align: right">1.74 Gbps</td>
+										<td style="text-align: right">1.82 Gbps</td>
+										<td style="text-align: right">20</td>
+										<td style="text-align: right">17</td>
+										<td style="text-align: right">2.91 MB</td>
+										<td style="text-align: right">2.89 MB</td>
+									</tr>
+								</tbody>
+							</table>
+							<p>The gap between RR and TLB no longer exists, and differences in retransmissions and Cwnd size can be attributed entirely to the CC algorithms themselves.
+								In particular, due to Cwnd falling under 4 MiB, or possibly just random network fluctuation, retransmission to destination C is observed for the first time.
+								It’s also interesting to note that the difference in Cwnd size between BBR and CUBIC increased to 5x, compared to some 3 ~ 3.5x in single-stream case.</p>
+							<h2 id="bottom-line">Bottom line</h2>
+							<p>I did a set of rudimentary experiments in this article, and TCP upload is only a very generic use case.
+								For example, <a href="https://github.com/TheRainstorm" class="user-mention">@TheRainstorm</a> is running Sunshine streaming inside load-balanced WireGuard tunnel, and turning up forward error correction (FEC) level is one way to offset fluctuation and packet loss.
+								I’ve been running qBittorrent uploads under <code class="language-plaintext highlighter-rouge">balance-tlb</code> mode for months, and it’s been very stable because qBittorrent uploads torrent content over many connections.</p>
+							<p>If anyone wants a more reliable multi-NIC bonding setup, I’d definitely recommend getting a capable switch and doing bonding in <code class="language-plaintext highlighter-rouge">802.3ad</code> (LACP) mode.
+								But for a small homelab, <code class="language-plaintext highlighter-rouge">balance-rr</code> + BBR would probably suffice for optimizing single-stream transmission speed, at the cost of some overhead on bandwidth.</p>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/linux" class="page__taxonomy-item p-category" rel="tag">linux</a><span class="sep">, </span>
+									<a href="/tag/networking" class="page__taxonomy-item p-category" rel="tag">networking</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2026-02-16">Feb 16, 2026</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://x.com/intent/tweet?text=BanD+Width%21+It%27s+MyBOND%21%21%20https%3A%2F%2Fibug.io%2Fblog%2F2026%2F02%2Fbonding-iperf3%2F" class="btn btn--x" aria-label="Share on X" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on X">
+								<i class="fab fa-fw fa-x-twitter" aria-hidden="true"></i><span> X</span>
+							</a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2026%2F02%2Fbonding-iperf3%2F" class="btn btn--facebook" aria-label="Share on Facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook">
+								<i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span>
+							</a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://ibug.io/blog/2026/02/bonding-iperf3/" class="btn btn--linkedin" aria-label="Share on LinkedIn" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn">
+								<i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span>
+							</a>
+							<a href="https://bsky.app/intent/compose?text=BanD+Width%21+It%27s+MyBOND%21%21%20https%3A%2F%2Fibug.io%2Fblog%2F2026%2F02%2Fbonding-iperf3%2F" class="btn btn--bluesky" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Bluesky">
+								<i class="fab fa-fw fa-bluesky" aria-hidden="true"></i><span> Bluesky</span>
+							</a>
+						</section>
+						<nav class="pagination">
+							<a href="/blog/2025/07/palworld-0.6-resize-guild-chest/" class="pagination--pager" title="Manually resize Guild Chest in Palworld 0.6
+">Previous</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+				<div class="page__related">
+					<h2 class="page__related-title">You may also enjoy</h2>
+					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/linux-container.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are w...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											24 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2025/07/japan-june-2025/" rel="permalink">A trip to Japan
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">As a more meaningful way to celebrate our graduation as Master students and spend this last truly free time in a long while, I joined my friends on a trip to Japan.
+									</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2025-07-23T00:00:00+00:00">Jul 23, 2025</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											30 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/vpn-imagine.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/10/linux-ipsec-with-ip-xfrm/" rel="permalink">Secure site-to-site connection with Linux IPsec VPN
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Linux has a built-in framework for Internet Protocol Security (IPsec), which is often combined with other tunneling technologies (e.g. L2TP and GRE) to create secure cross-site network connections....</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-10-23T00:00:00+00:00">Oct 23, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											15 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2024/10/ustc-mirrors-zfs-rebuild/" rel="permalink">Beating $3k SSD with $2k HDD?
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">A.K.A. Practical ZFS application on USTC Mirrors. A writeup of the talk I gave at Nanjing University this August.
+									</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2024-10-27T00:00:00+00:00">Oct 27, 2024</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											12 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					<p>© 2026 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
+					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
+					<p>
+						Site version <a href="/status" class="version-text">G-958</a>
+					</p>
+				</div>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<script>
+			// Including InstantSearch.js library and styling
+			const loadSearch = function() {
+			  const loadCSS = function(src) {
+			    var link = document.createElement('link');
+			    link.rel = 'stylesheet';
+			    link.type = 'text/css';
+			    link.href = src;
+			    link.media = 'all';
+			    document.head.appendChild(link);
+			  };
+
+			  var script = document.createElement('script');
+			  script.setAttribute("type", "text/javascript");
+			  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
+			  script.addEventListener("load", function() {
+			    // Instantiating InstantSearch.js with Algolia credentials
+			    const search = instantsearch({
+			      appId: '14DZKASAEJ',
+			      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			      indexName: 'iBug_website',
+			      searchParameters: {
+			        restrictSearchableAttributes: ['title', 'content']
+			      }
+			    });
+
+			    const hitTemplate = function(hit) {
+			      const url = hit.url;
+			      const hightlight = hit._highlightResult;
+			      const title = hightlight.title && hightlight.title.value  || "";
+			      const content = hightlight.html && hightlight.html.value  || "";
+
+			      return `
+			        <div class="list__item">
+			          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			            <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			          </article>
+			        </div>
+			      `;
+			    }
+
+			    // Adding searchbar and results widgets
+			    search.addWidget(
+			      instantsearch.widgets.searchBox({
+			        container: '.search-searchbar',
+			        poweredBy: true,
+			        placeholder: 'Enter your search term...'
+			      })
+			    );
+			    search.addWidget(
+			      instantsearch.widgets.hits({
+			        container: '.search-hits',
+			        templates: {
+			          item: hitTemplate,
+			          empty: 'No results',
+			        }
+			      })
+			    );
+
+			    if (!search.started) {
+			      search.start();
+			    }
+			  });
+			  document.body.appendChild(script);
+
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
+			};
+
+			// Starting the search only when toggle is clicked
+			$(document).ready(function() {
+			  var scriptLoaded = false;
+
+			  $(".search__toggle").on("click", function() {
+			    if (!scriptLoaded) {
+			      loadSearch();
+			      scriptLoaded = true;
+			    }
+			  });
+			});
+		</script>
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-V93196TX91"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+
+			gtag('config', 'G-V93196TX91', { 'anonymize_ip': false});
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/blog/2026/02/bonding-iperf3/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2026/02/bonding-iperf3"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+		</noscript>
+	</body>
+</html>

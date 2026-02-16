@@ -393,6 +393,10 @@
 			<lastmod>2025-07-28T14:02:46+00:00</lastmod>
 		</url>
 		<url>
+			<loc>https://ibug.io/blog/2026/02/bonding-iperf3/</loc>
+			<lastmod>2026-02-16T23:31:52+00:00</lastmod>
+		</url>
+		<url>
 			<loc>https://ibug.io/project/OJSandbox/</loc>
 			<lastmod>2021-12-21T04:11:24+00:00</lastmod>
 		</url>
@@ -473,6 +477,9 @@
 		</url>
 		<url>
 			<loc>https://ibug.io/year/2025/</loc>
+		</url>
+		<url>
+			<loc>https://ibug.io/year/2026/</loc>
 		</url>
 		<url>
 			<loc>https://ibug.io/blog/</loc>
