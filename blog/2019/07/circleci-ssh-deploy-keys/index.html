@@ -1,7 +1,8 @@
 <!doctype html>
 <!--
-  Minimal Mistakes Jekyll Theme 4.27.3 by Michael Rose
-  Copyright 2013-2025 Michael Rose - mademistakes.com | @mmistakes
+  Minimal Mistakes Jekyll Theme 4.28.0 by Michael Rose
+  Copyright 2013-2026 Michael Rose - mademistakes.com | @mmistakes
+  Copyright 2024-2026 iBug - ibugone.com | @iBug
   Free for personal and commercial use under the MIT license
   https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
 -->
@@ -31,7 +32,7 @@
 			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
 		</script>
 		<!-- For all browsers -->
-		<link rel="stylesheet" href="/assets/css/main.css?v=ac7d90b">
+		<link rel="stylesheet" href="/assets/css/main.css?v=c0b811b">
 		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
 		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
 		<meta name="theme-color" content="#EDEDED">
@@ -41,7 +42,7 @@
 		</script>
 	</head>
 	<body class="layout--single" dir="ltr">
-		<nav class="skip-links">
+		<nav class="skip-links" aria-label="Skip links">
 			<ul>
 				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
 				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
@@ -51,7 +52,7 @@
 		<div class="masthead">
 			<div class="masthead__inner-wrap">
 				<div class="masthead__menu">
-					<nav id="site-nav" class="greedy-nav">
+					<nav id="site-nav" class="greedy-nav" aria-label="Primary navigation">
 						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt="iBug"></a>
 						<a class="site-title" href="/">
 							iBug
@@ -183,15 +184,15 @@
 						</ul>
 					</nav>
 				</div>
-				<article class="page" itemscope itemtype="https://schema.org/CreativeWork">
+				<article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
 					<meta itemprop="headline" content="Using SSH deploy keys on CircleCI">
 					<meta itemprop="description" content="A year ago back I wrote an article on automating build &amp; deployment of GitHub Pages website with Travis CI. It’s a great CI service at first, but since Travis CI has completely moved away from containers, speed is a real issue to whoever is concerned. On the other side, CircleCI is continuing their builds with Docker-based containers, whose rapid response is a great advantage against VMs with slow boot time.">
 					<meta itemprop="datePublished" content="2019-07-08T00:00:00+00:00">
 					<meta itemprop="dateModified" content="2022-04-30T19:59:16+00:00">
 					<div class="page__inner-wrap">
-						<section class="page__content" itemprop="text">
+						<section class="page__content e-content" itemprop="text">
 							<aside class="sidebar__right sticky">
-								<nav class="toc">
+								<nav class="toc" aria-label="Table of contents">
 									<header>
 										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
 									</header>
@@ -256,7 +257,7 @@ git clone <span class="nt">--depth</span><span class="o">=</span>3 <span class="
 									<a href="/tag/ssh" class="page__taxonomy-item p-category" rel="tag">ssh</a>
 								</span>
 							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2022-04-30">Apr 30, 2022</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-updated" datetime="2022-04-30">Apr 30, 2022</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
@@ -410,7 +411,7 @@ git clone <span class="nt">--depth</span><span class="o">=</span>3 <span class="
 					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
 					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
 					<p>
-						Site version <a href="/status" class="version-text">G-963</a>
+						Site version <a href="/status" class="version-text">G-964</a>
 					</p>
 				</div>
 			</footer>
