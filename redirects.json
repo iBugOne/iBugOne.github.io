@@ -1,5 +1,6 @@
 {
   "/blog/2019/02/setup-ubuntu-in-vmware-cn/": "https://ibug.io/cn/2019/02/setup-ubuntu-in-vmware/",
+  "/cn/2024/12/ustc-mirrors-zfs-rebuild/": "https://lug.ustc.edu.cn/planet/2024/12/ustc-mirrors-zfs-rebuild/",
   "/cn/about-internet-security/": "https://ibug.io/cn/2019/06/about-internet-security/",
   "/cn/backTCP-report/": "https://ibug.io/cn/2019/11/backTCP-report/",
   "/cn/chisel-101/": "https://ibug.io/cn/2018/12/chisel-101/",
@@ -77,6 +78,7 @@
   "/p/72": "https://ibug.io/blog/2024/08/nju-talk/",
   "/p/73": "https://ibug.io/blog/2024/09/python3.12-user-packages/",
   "/p/74": "https://ibug.io/blog/2024/10/ustc-mirrors-zfs-rebuild/",
+  "/p/74-cn": "https://ibug.io/cn/2024/12/ustc-mirrors-zfs-rebuild/",
   "/p/75": "https://ibug.io/blog/2025/04/windows-10-ltsc-onedrive-explorer-sidebar-fix/",
   "/p/76": "https://ibug.io/blog/2025/07/japan-june-2025/",
   "/p/77": "https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest/",
