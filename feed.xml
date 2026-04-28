@@ -1,280 +1,400 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2026-04-23T18:58:19+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">BanD Width! It’s MyBOND!!</title><link href="https://ibug.io/blog/2026/02/bonding-iperf3/" rel="alternate" type="text/html" title="BanD Width! It’s MyBOND!!" /><published>2026-02-16T00:00:00+00:00</published><updated>2026-02-24T11:27:10+00:00</updated><id>https://ibug.io/blog/2026/02/bonding-iperf3</id><content type="html" xml:base="https://ibug.io/blog/2026/02/bonding-iperf3/"><![CDATA[<p>My workstation in my univerity lab has consistently generated some 600&nbsp;TiB of annual upload across two PT sites. After an upgrade to the room a few months back, it received the most wanted upgrade for years: A second 1 Gbps line to the campus network. I immediately made the two NICs into one bonded 2 Gbps interface, and it has shined for many times with multiple popular torrents.</p>
-			<p>Inspired by my friend <a href="https://blog.yfycloud.site/about/">@TheRainstorm</a> who managed to double his upload by load-balancing WireGuard over two lines from the same ISP (China Mobile), I figured I’d leverage this chance and make a better understanding though some more detailed experiments.</p>
-			<h2 id="setup">Setup</h2>
-			<h3 id="sender">Sender</h3>
-			<p>My workstation:</p>
-			<ul>
-				<li>Ubuntu 24.04 (Kernel 6.8)</li>
-				<li>Two Intel I210 NICs, connected to the same switch of campus network</li>
-				<li>iperf 3.16</li>
-			</ul>
-			<p>Controlled variables:</p>
-			<ul>
-				<li>Bond mode: Round-robin (<code class="language-plaintext highlighter-rouge">balance-rr</code>, 0) vs Transmit Load Balancing (<code class="language-plaintext highlighter-rouge">balance-tlb</code>, 5)
-					<ul>
-						<li>For <code class="language-plaintext highlighter-rouge">balance-tlb</code> mode, <code class="language-plaintext highlighter-rouge">xmit_hash_policy</code> is set to <code class="language-plaintext highlighter-rouge">layer3+4</code>.</li>
-					</ul>
-				</li>
-				<li>TCP congestion control (CC) algorithm: CUBIC vs BBR</li>
-				<li>Parallelism (the value to <code class="language-plaintext highlighter-rouge">-P</code> option of iperf3): 1 vs 4
-					<ul>
-						<li>Note that due to the way <code class="language-plaintext highlighter-rouge">balance-tlb</code> works, with only one connection, bonding is not going to be different than using only one NIC.
-							&lt;!–</li>
-					</ul>
-				</li>
-				<li>Whether another application is constantly generating background upload activity.
-					<ul>
-						<li>This is implemented by letting qBittorrent run in the background with upload rate limited to 1&nbsp;MB/s, and is labeled <code class="language-plaintext highlighter-rouge">qB</code> during the experiment.
-							–&gt;</li>
-					</ul>
-				</li>
-			</ul>
-			<p>These variables combine into 8 different scenarios, which is enough dimensions to look at in isolation.</p>
-			<h3 id="receivers">Receivers</h3>
-			<p>I sourced three destination (receiver) hosts with &gt; 2 Gbps download bandwidth, labeled as following:</p>
-			<ul>
-				<li><strong>A</strong>. One of our usually idle lab servers.</li>
-				<li><strong>B</strong>. <a href="https://mirrors.ustc.edu.cn/">USTC Mirrors</a> server.</li>
-				<li><strong>C</strong>. Friend-sponsored home broadband in Shanghai.</li>
-			</ul>
-			<p>Typical traits of these destinations are:</p>
-			<table>
-				<thead>
-					<tr>
-						<th style="text-align: center">Destination</th>
-						<th style="text-align: center">Download BW</th>
-						<th style="text-align: center">Latency</th>
-						<th style="text-align: center">BDP*</th>
-						<th style="text-align: left">Other notes</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td style="text-align: center">A</td>
-						<td style="text-align: center">10 Gbps</td>
-						<td style="text-align: center">250 ± 30 us</td>
-						<td style="text-align: center">500&nbsp;KB</td>
-						<td style="text-align: left">Mostly idle</td>
-					</tr>
-					<tr>
-						<td style="text-align: center">B</td>
-						<td style="text-align: center">10 Gbps</td>
-						<td style="text-align: center">300 ± 200 us</td>
-						<td style="text-align: center">600&nbsp;KB</td>
-						<td style="text-align: left">Under constant load</td>
-					</tr>
-					<tr>
-						<td style="text-align: center">C</td>
-						<td style="text-align: center">~2.2 Gbps</td>
-						<td style="text-align: center">28 ± 0.2 ms</td>
-						<td style="text-align: center">56&nbsp;MB</td>
-						<td style="text-align: left">Mostly idle</td>
-					</tr>
-				</tbody>
-			</table>
-			<p>* Because my workstation can only generate upload at a theoretical maximum speed of 2 Gbps, BDP is calculated at this speed.</p>
-			<h2 id="analyses">Analyses</h2>
-			<p>iperf3 provides three indicators: Transmission bitrate, number of retransmissions and the congestion window size.</p>
-			<p>We cannot attach too much importance to the bond mode when testing bonding performance, so let’s get straight to it.</p>
-			<h3 id="single-stream">Single stream</h3>
-			<table>
-				<thead>
-					<tr>
-						<th style="text-align: center">Dest</th>
-						<th style="text-align: center">P</th>
-						<th style="text-align: center">CC</th>
-						<th style="text-align: right">Bitrate (RR)</th>
-						<th style="text-align: right">Bitrate (TLB)</th>
-						<th style="text-align: right">Retr (RR)</th>
-						<th style="text-align: right">Retr (TLB)</th>
-						<th style="text-align: right">Cwnd (RR)</th>
-						<th style="text-align: right">Cwnd (TLB)</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td style="text-align: center">A</td>
-						<td style="text-align: center">1</td>
-						<td style="text-align: center">BBR</td>
-						<td style="text-align: right">1.78 Gbps</td>
-						<td style="text-align: right">940 Mbps</td>
-						<td style="text-align: right">20079</td>
-						<td style="text-align: right">20</td>
-						<td style="text-align: right">331&nbsp;KB</td>
-						<td style="text-align: right">233&nbsp;KB</td>
-					</tr>
-					<tr>
-						<td style="text-align: center">A</td>
-						<td style="text-align: center">1</td>
-						<td style="text-align: center">CUBIC</td>
-						<td style="text-align: right">1.19 Gbps</td>
-						<td style="text-align: right">936 Mbps</td>
-						<td style="text-align: right">7258</td>
-						<td style="text-align: right">110</td>
-						<td style="text-align: right">103&nbsp;KB</td>
-						<td style="text-align: right">385&nbsp;KB</td>
-					</tr>
-					<tr>
-						<td style="text-align: center">B</td>
-						<td style="text-align: center">1</td>
-						<td style="text-align: center">BBR</td>
-						<td style="text-align: right">1.62 Gbps</td>
-						<td style="text-align: right">944 Mbps</td>
-						<td style="text-align: right">37018</td>
-						<td style="text-align: right">51</td>
-						<td style="text-align: right">343&nbsp;KB</td>
-						<td style="text-align: right">241&nbsp;KB</td>
-					</tr>
-					<tr>
-						<td style="text-align: center">B</td>
-						<td style="text-align: center">1</td>
-						<td style="text-align: center">CUBIC</td>
-						<td style="text-align: right">1.19 Gbps</td>
-						<td style="text-align: right">941 Mbps</td>
-						<td style="text-align: right">6914</td>
-						<td style="text-align: right">72</td>
-						<td style="text-align: right">98&nbsp;KB</td>
-						<td style="text-align: right">338&nbsp;KB</td>
-					</tr>
-					<tr>
-						<td style="text-align: center">C</td>
-						<td style="text-align: center">1</td>
-						<td style="text-align: center">BBR</td>
-						<td style="text-align: right">1.11 Gbps</td>
-						<td style="text-align: right">935 Mbps</td>
-						<td style="text-align: right">0</td>
-						<td style="text-align: right">0</td>
-						<td style="text-align: right">8.87&nbsp;MB</td>
-						<td style="text-align: right">7.67&nbsp;MB</td>
-					</tr>
-					<tr>
-						<td style="text-align: center">C</td>
-						<td style="text-align: center">1</td>
-						<td style="text-align: center">CUBIC</td>
-						<td style="text-align: right">1.16 Gbps</td>
-						<td style="text-align: right">931 Mbps</td>
-						<td style="text-align: right">0</td>
-						<td style="text-align: right">0</td>
-						<td style="text-align: right">6.44&nbsp;MB</td>
-						<td style="text-align: right">4.20&nbsp;MB</td>
-					</tr>
-				</tbody>
-			</table>
-			<p>We first look at TLB bond mode.
-				As expected, with one single stream, it runs on only one slave interface (confirmed by watching <code class="language-plaintext highlighter-rouge">bmon -p eth0,eth1,bond0</code> during execution).
-				And with the entire route being able to carry nearly 1.8 Gbps, there’s no surprise that different congestion algorithms don’t affect single-stream performance in all scenarios.</p>
-			<p>We then note the huge difference between the BBR and CUBIC algorithms in RR bond mode.
-				Because destinations A and B both have a very low BDP, any fluctuation in latency hits hard on CUBIC in forms of out-of-order packet deliveries, which reflects clearly in the difference of retransmitted packets and the Cwnd size.
-				In TLB mode, with only one active NIC, retransmission is kept low, but in RR mode it skyrocketed.</p>
-			<p>For destination C however, that’s an entirely different case (zero retransmission) with its own reason:
-				There’s enough BDP for the sender to raise Cwnd up to 8&nbsp;MiB, but the receiver reports a window of only 4&nbsp;MiB, so the entire transmission is limited by the receiver, not congestion or link load.</p>
-			<h3 id="parallel-streams">Parallel streams</h3>
-			<p>During the experiment, I found it very often that all 4 streams gets load-balanced onto one NIC in <code class="language-plaintext highlighter-rouge">balance-tlb</code> mode, so I had to re-run the tests multiple times to obtain the result where 4 streams are equally balanced onto both NICs.
-				Results from imbalanced stream distributions are discarded during retry.</p>
-			<p>For 4 parallel streams, the result looks much better:</p>
-			<table>
-				<thead>
-					<tr>
-						<th style="text-align: center">Dest</th>
-						<th style="text-align: center">P</th>
-						<th style="text-align: center">CC</th>
-						<th style="text-align: right">Bitrate (RR)</th>
-						<th style="text-align: right">Bitrate (TLB)</th>
-						<th style="text-align: right">Retr (RR)</th>
-						<th style="text-align: right">Retr (TLB)</th>
-						<th style="text-align: right">Cwnd (RR)</th>
-						<th style="text-align: right">Cwnd (TLB)</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td style="text-align: center">A</td>
-						<td style="text-align: center">4</td>
-						<td style="text-align: center">BBR</td>
-						<td style="text-align: right">1.79 Gbps</td>
-						<td style="text-align: right">1.77 Gbps</td>
-						<td style="text-align: right">41357</td>
-						<td style="text-align: right">18</td>
-						<td style="text-align: right">222&nbsp;KB</td>
-						<td style="text-align: right">178&nbsp;KB</td>
-					</tr>
-					<tr>
-						<td style="text-align: center">A</td>
-						<td style="text-align: center">4</td>
-						<td style="text-align: center">CUBIC</td>
-						<td style="text-align: right">1.80 Gbps</td>
-						<td style="text-align: right">1.77 Gbps</td>
-						<td style="text-align: right">13254</td>
-						<td style="text-align: right">82</td>
-						<td style="text-align: right">48&nbsp;KB</td>
-						<td style="text-align: right">306&nbsp;KB</td>
-					</tr>
-					<tr>
-						<td style="text-align: center">B</td>
-						<td style="text-align: center">4</td>
-						<td style="text-align: center">BBR</td>
-						<td style="text-align: right">1.79 Gbps</td>
-						<td style="text-align: right">1.72 Gbps</td>
-						<td style="text-align: right">61810</td>
-						<td style="text-align: right">9368</td>
-						<td style="text-align: right">237&nbsp;KB</td>
-						<td style="text-align: right">236&nbsp;KB</td>
-					</tr>
-					<tr>
-						<td style="text-align: center">B</td>
-						<td style="text-align: center">4</td>
-						<td style="text-align: center">CUBIC</td>
-						<td style="text-align: right">1.77 Gbps</td>
-						<td style="text-align: right">1.74 Gbps</td>
-						<td style="text-align: right">15549</td>
-						<td style="text-align: right">4243</td>
-						<td style="text-align: right">31&nbsp;KB</td>
-						<td style="text-align: right">174&nbsp;KB</td>
-					</tr>
-					<tr>
-						<td style="text-align: center">C</td>
-						<td style="text-align: center">4</td>
-						<td style="text-align: center">BBR</td>
-						<td style="text-align: right">1.70 Gbps</td>
-						<td style="text-align: right">1.82 Gbps</td>
-						<td style="text-align: right">185</td>
-						<td style="text-align: right">0</td>
-						<td style="text-align: right">4.04&nbsp;MB</td>
-						<td style="text-align: right">3.84&nbsp;MB</td>
-					</tr>
-					<tr>
-						<td style="text-align: center">C</td>
-						<td style="text-align: center">4</td>
-						<td style="text-align: center">CUBIC</td>
-						<td style="text-align: right">1.74 Gbps</td>
-						<td style="text-align: right">1.82 Gbps</td>
-						<td style="text-align: right">20</td>
-						<td style="text-align: right">17</td>
-						<td style="text-align: right">2.91&nbsp;MB</td>
-						<td style="text-align: right">2.89&nbsp;MB</td>
-					</tr>
-				</tbody>
-			</table>
-			<p>The gap between RR and TLB no longer exists, and differences in retransmissions and Cwnd size can be attributed entirely to the CC algorithms themselves.
-				In particular, due to Cwnd falling under 4&nbsp;MiB, or possibly just random network fluctuation, retransmission to destination C is observed for the first time.
-				It’s also interesting to note that the difference in Cwnd size between BBR and CUBIC increased to 5x, compared to some 3 ~ 3.5x in single-stream case.</p>
-			<p>However, the numbers of retransmissions are lower by magnitudes in TLB bond mode than in RR mode.
-				I believe this is because the latencies to destinations A and B have very high variation compared to their means (averages), which will result in high number of reordered packets when packets from the same stream are distributed through two underlying interfaces.</p>
-			<h2 id="bottom-line">Bottom line</h2>
-			<p>I did a set of rudimentary experiments in this article, and TCP upload is only a very generic use case.
-				For example, @TheRainstorm is running Sunshine streaming inside load-balanced WireGuard tunnel, and turning up forward error correction (FEC) level is one way to offset fluctuation and packet loss.
-				I’ve been running qBittorrent uploads under <code class="language-plaintext highlighter-rouge">balance-tlb</code> mode for months, and it’s been very stable because qBittorrent uploads torrent content over many connections.</p>
-			<p>If anyone wants a more reliable multi-NIC bonding setup, I’d definitely recommend getting a capable switch and doing bonding in <code class="language-plaintext highlighter-rouge">802.3ad</code> (LACP) mode.
-				But for a small homelab, <code class="language-plaintext highlighter-rouge">balance-rr</code> + BBR would probably suffice for optimizing single-stream transmission speed, at the cost of some overhead on bandwidth.</p>
-			]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[My workstation in my univerity lab has consistently generated some 600&nbsp;TiB of annual upload across two PT sites. After an upgrade to the room a few months back, it received the most wanted upgrade for years: A second 1 Gbps line to the campus network. I immediately made the two NICs into one bonded 2 Gbps interface, and it has shined for many times with multiple popular torrents.]]></summary></entry><entry><title type="html">Manually resize Guild Chest in Palworld 0.6</title><link href="https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest/" rel="alternate" type="text/html" title="Manually resize Guild Chest in Palworld 0.6" /><published>2025-07-28T00:00:00+00:00</published><updated>2025-07-28T14:02:46+00:00</updated><id>https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest</id><content type="html" xml:base="https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest/"><![CDATA[<p>The Guild Chest, first introduced in Feybreak Update, easily became the best way to move items between bases.
-			However, it only has 54 slots and is nowhere near enough for all the items you want to store.
-			For those who want to increase the size of the Guild Chest, especially in single player worlds, there’s a tutorial on how to do it manually:
-			<a href="https://www.nexusmods.com/palworld/mods/2419">Guild chest resizer after solo play started (Manual)</a>.</p>
-		<p>A few months back, I followed this tutorial and successfully resized my Guild Chest to 270 slots.
-			But this time on my friend’s save, the script no longer worked.</p>
-		<div class="language-console highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="gp">PS D:\Downloads\GuildChestResizer&gt;</span><span class="w"> </span>python sav-to-gvas.py D:<span class="se">\D</span>ownloads<span class="se">\G</span>uildChestResizer<span class="se">\L</span>evel.sav
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2026-04-28T07:53:46+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Venv at home: My solution to “error: externally-managed-environment”</title><link href="https://ibug.io/blog/2026/04/python-venv-at-home/" rel="alternate" type="text/html" title="Venv at home: My solution to “error: externally-managed-environment”" /><published>2026-04-28T00:00:00+00:00</published><updated>2026-04-28T15:53:02+00:00</updated><id>https://ibug.io/blog/2026/04/python-venv-at-home</id><content type="html" xml:base="https://ibug.io/blog/2026/04/python-venv-at-home/"><![CDATA[<p>Since Python 3.12 (which enforces <a href="https://peps.python.org/pep-0668/">PEP 668</a>) shipped with Ubuntu 24.04, like many others, I found my usual habit of installing PyPI packages to my user site directory (<code class="language-plaintext highlighter-rouge">~/.local</code>) no longer working due to the <code class="language-plaintext highlighter-rouge">externally-managed-environment</code> restriction.</p>
+			<p>I consider it a perfectly valid and common use case to install some frequently-used packages (e.g. <code class="language-plaintext highlighter-rouge">regex</code>, <code class="language-plaintext highlighter-rouge">requests</code>, <code class="language-plaintext highlighter-rouge">mkdocs</code>) to my home directory so that they’re conveniently available whenever and wherever I start a <code class="language-plaintext highlighter-rouge">python3</code> REPL shell.</p>
+			<p>Fortunately, it’s not hard to find a straightforward workaround once you know <a href="https://docs.python.org/3/library/sys_path_init.html">this</a>:</p>
+			<blockquote>
+				<p>If <code class="language-plaintext highlighter-rouge">PYTHONHOME</code> is not set, and <strong>a <code class="language-plaintext highlighter-rouge">pyvenv.cfg</code> file is found</strong> […] <strong>in its parent directory</strong>,
+					<code class="language-plaintext highlighter-rouge">sys.prefix</code> and <code class="language-plaintext highlighter-rouge">sys.exec_prefix</code> get set to the directory containing <code class="language-plaintext highlighter-rouge">pyvenv.cfg</code>, […].
+					This is used by Virtual Environments.</p>
+			</blockquote>
+			<p>So if we can trick Python into thinking <code class="language-plaintext highlighter-rouge">~/.local</code> is a virtual environment, the issue resolves itself.
+				It’s not hard to figure out the required content for <code class="language-plaintext highlighter-rouge">~/.local/pyvenv.cfg</code>, much less writing it.</p>
+			<div class="language-ini highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="py">include-system-site-packages</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">true</span>
+</code></pre>
+				</div>
+			</div>
+			<p>Of course an empty <code class="language-plaintext highlighter-rouge">pyvenv.cfg</code> will do the trick, but including system packages allows you to skip some redundancy between your user site and system site directories.</p>
+			<p>We also need to ensure that Python is invoked from <code class="language-plaintext highlighter-rouge">~/.local/bin</code>:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="nb">ln</span> <span class="nt">-sfn</span> /usr/bin/python3 ~/.local/bin/python3
+</code></pre>
+				</div>
+			</div>
+			<p>However, <code class="language-plaintext highlighter-rouge">pip3</code> still complains about <code class="language-plaintext highlighter-rouge">externally-managed-environment</code>.
+				This is because the Python interpreter that runs <code class="language-plaintext highlighter-rouge">pip3</code> is still launched from the system path (<code class="language-plaintext highlighter-rouge">/usr/bin/python3</code>) due to the shebang line.
+				To fix this, just call <code class="language-plaintext highlighter-rouge">pip</code> with our desired path to Python:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="c"># Assuming ~/.local/bin comes early in $PATH</span>
+python3 <span class="nt">-m</span> pip <span class="nb">install</span> <span class="nt">-U</span> pip
+</code></pre>
+				</div>
+			</div>
+			<p>We can now inspect the new <code class="language-plaintext highlighter-rouge">pip3</code> command at the new location:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="nv">$ </span><span class="nb">head</span> <span class="nt">-1</span> <span class="si">$(</span>which pip3<span class="si">)</span>
+<span class="c">#!/home/ubuntu/.local/bin/python3</span>
+</code></pre>
+				</div>
+			</div>
+			<p>Now this <code class="language-plaintext highlighter-rouge">pip3</code> command will happily install any requested package into <code class="language-plaintext highlighter-rouge">~/.local/lib</code> without complaining about environments:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="nv">$ </span>pip3 <span class="nb">install</span> <span class="nt">--user</span> <span class="nt">--upgrade</span> humanize
+Looking <span class="k">in </span>indexes: https://mirrors.ustc.edu.cn/pypi/simple
+Requirement already satisfied: humanize <span class="k">in</span> /usr/lib/python3/dist-packages <span class="o">(</span>4.12.1<span class="o">)</span>
+Collecting humanize
+  Using cached https://mirrors.ustc.edu.cn/pypi/packages/c5/7b/bca5613a0c3b542420cf92bd5e5fb8ebd5435ce1011a091f66bb7693285e/humanize-4.15.0-py3-none-any.whl <span class="o">(</span>132&nbsp;kB<span class="o">)</span>
+Installing collected packages: humanize
+Successfully installed humanize-4.15.0
+</code></pre>
+				</div>
+			</div>
+			<p>We don’t need the <code class="language-plaintext highlighter-rouge">--user</code> flag anymore but I kept it as a habit of being explicit.</p>
+			<h2 id="uv">Using <code class="language-plaintext highlighter-rouge">uv</code></h2>
+			<p>Python <code class="language-plaintext highlighter-rouge">pip</code> has no idea when a package is installed and <em>why</em>, and in particular it does not know the difference between your package demands and what has been installed.
+				If your <code class="language-plaintext highlighter-rouge">requirements.txt</code> undergoes changes and you want to ensure you have exactly the necessary set of packages installed, your best bet is to delete your <code class="language-plaintext highlighter-rouge">venv</code> and create it anew.</p>
+			<p>So here comes <a href="https://docs.astral.sh/uv/">uv</a>, a next-generation package <em>manager</em> for Python, whereas <code class="language-plaintext highlighter-rouge">pip</code> is at best a package <em>downloader</em>.
+				As uv is designed for managing virtual environments within projects, some minor hacks are needed to make it treat <code class="language-plaintext highlighter-rouge">~/.local</code> as our venv, instead of creating another <code class="language-plaintext highlighter-rouge">.venv</code> directory.
+				This is laid out in the <a href="https://docs.astral.sh/uv/reference/environment/#uv_project_environment">uv documentation</a>.</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="nb">export </span><span class="nv">UV_PROJECT_ENVIRONMENT</span><span class="o">=</span>~/.local
+</code></pre>
+				</div>
+			</div>
+			<p>I also migrated my manual installations to a proper <code class="language-plaintext highlighter-rouge">pyproject.toml</code>:</p>
+			<div class="language-toml highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="k">[</span><span class="n">project</span><span class="k">]</span>
+<span class="n">name</span> <span class="o">=</span><span class="w"> </span><span class="s">"home"</span>
+<span class="n">version</span> <span class="o">=</span><span class="w"> </span><span class="s">"0.0.1"</span>
+<span class="n">requires-python</span> <span class="o">=</span><span class="w"> </span><span class="s">"&gt;=3.12, &lt;4.0"</span>
+<span class="n">dependencies</span> <span class="o">=</span><span class="w"> </span><span class="p">[</span>
+  <span class="s">"jieba"</span><span class="p">,</span>
+  <span class="s">"matplotlib"</span><span class="p">,</span>
+  <span class="s">"mkdocs (&gt;=1.6.1, &lt;2)"</span><span class="p">,</span>
+  <span class="s">"mkdocs-material~=9.7.6"</span><span class="p">,</span>
+  <span class="s">"numpy"</span><span class="p">,</span>
+  <span class="s">"python-telegram-bot==13.15"</span><span class="p">,</span>
+  <span class="s">"regex"</span><span class="p">,</span>
+  <span class="s">"requests"</span><span class="p">,</span>
+  <span class="s">"tabulate"</span><span class="p">,</span>
+  <span class="s">"yt-dlp"</span><span class="p">,</span>
+<span class="p">]</span>
+</code></pre>
+				</div>
+			</div>
+			<p>Now we can simply run <code class="language-plaintext highlighter-rouge">uv sync</code> to have our desired packages ready with no fluff, and <code class="language-plaintext highlighter-rouge">uv sync --upgrade</code> to upgrade them when needed:</p>
+			<div class="language-shell highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="nv">$ </span>uv <span class="nb">sync</span> <span class="nt">--upgrade</span>
+Resolved 71 packages <span class="k">in </span>517ms
+Prepared 1 package <span class="k">in </span>447ms
+Uninstalled 2 packages <span class="k">in </span>57ms
+Installed 1 package <span class="k">in </span>45ms
+ - <span class="nv">humanize</span><span class="o">==</span>4.15.0  <span class="c"># oops</span>
+ - yt-dlp<span class="o">==</span>2026.3.3
+ + yt-dlp<span class="o">==</span>2026.3.13
+</code></pre>
+				</div>
+			</div>
+			<p>Because the environment variable <code class="language-plaintext highlighter-rouge">UV_PROJECT_ENVIRONMENT</code> is mandatory, I also created a Makefile to streamline command-line workflow:</p>
+			<div class="language-makefile highlighter-rouge">
+				<div class="highlight">
+					<pre class="highlight"><code><span class="k">export </span><span class="nv">UV_PROJECT_ENVIRONMENT</span> <span class="o">=</span> <span class="p">$(</span>HOME<span class="p">)</span>/.local
+
+<span class="nl">.PHONY</span><span class="o">:</span> <span class="nf">sync upgrade</span>
+<span class="nl">sync</span><span class="o">:</span>
+  <span class="err">uv</span> <span class="err">sync</span>
+
+<span class="nl">upgrade</span><span class="o">:</span>
+  <span class="err">uv</span> <span class="err">sync</span> <span class="err">--upgrade</span>
+</code></pre>
+				</div>
+			</div>
+			<p>Now whenever I need another package inside my “home environment”, I simply edit <code class="language-plaintext highlighter-rouge">pyproject.toml</code> here and run <code class="language-plaintext highlighter-rouge">make</code>.
+				<code class="language-plaintext highlighter-rouge">uv</code> will ensure a consistent and sane package state, and I’ll never worry about <code class="language-plaintext highlighter-rouge">pip</code> again.</p>
+			]]></content><author><name>iBug</name></author><category term="python" /><summary type="html"><![CDATA[Since Python 3.12 (which enforces PEP 668) shipped with Ubuntu 24.04, like many others, I found my usual habit of installing PyPI packages to my user site directory (~/.local) no longer working due to the externally-managed-environment restriction.]]></summary></entry><entry><title type="html">BanD Width! It’s MyBOND!!</title><link href="https://ibug.io/blog/2026/02/bonding-iperf3/" rel="alternate" type="text/html" title="BanD Width! It’s MyBOND!!" /><published>2026-02-16T00:00:00+00:00</published><updated>2026-02-24T11:27:10+00:00</updated><id>https://ibug.io/blog/2026/02/bonding-iperf3</id><content type="html" xml:base="https://ibug.io/blog/2026/02/bonding-iperf3/"><![CDATA[<p>My workstation in my univerity lab has consistently generated some 600&nbsp;TiB of annual upload across two PT sites. After an upgrade to the room a few months back, it received the most wanted upgrade for years: A second 1 Gbps line to the campus network. I immediately made the two NICs into one bonded 2 Gbps interface, and it has shined for many times with multiple popular torrents.</p>
+		<p>Inspired by my friend <a href="https://blog.yfycloud.site/about/">@TheRainstorm</a> who managed to double his upload by load-balancing WireGuard over two lines from the same ISP (China Mobile), I figured I’d leverage this chance and make a better understanding though some more detailed experiments.</p>
+		<h2 id="setup">Setup</h2>
+		<h3 id="sender">Sender</h3>
+		<p>My workstation:</p>
+		<ul>
+			<li>Ubuntu 24.04 (Kernel 6.8)</li>
+			<li>Two Intel I210 NICs, connected to the same switch of campus network</li>
+			<li>iperf 3.16</li>
+		</ul>
+		<p>Controlled variables:</p>
+		<ul>
+			<li>Bond mode: Round-robin (<code class="language-plaintext highlighter-rouge">balance-rr</code>, 0) vs Transmit Load Balancing (<code class="language-plaintext highlighter-rouge">balance-tlb</code>, 5)
+				<ul>
+					<li>For <code class="language-plaintext highlighter-rouge">balance-tlb</code> mode, <code class="language-plaintext highlighter-rouge">xmit_hash_policy</code> is set to <code class="language-plaintext highlighter-rouge">layer3+4</code>.</li>
+				</ul>
+			</li>
+			<li>TCP congestion control (CC) algorithm: CUBIC vs BBR</li>
+			<li>Parallelism (the value to <code class="language-plaintext highlighter-rouge">-P</code> option of iperf3): 1 vs 4
+				<ul>
+					<li>Note that due to the way <code class="language-plaintext highlighter-rouge">balance-tlb</code> works, with only one connection, bonding is not going to be different than using only one NIC.
+						&lt;!–</li>
+				</ul>
+			</li>
+			<li>Whether another application is constantly generating background upload activity.
+				<ul>
+					<li>This is implemented by letting qBittorrent run in the background with upload rate limited to 1&nbsp;MB/s, and is labeled <code class="language-plaintext highlighter-rouge">qB</code> during the experiment.
+						–&gt;</li>
+				</ul>
+			</li>
+		</ul>
+		<p>These variables combine into 8 different scenarios, which is enough dimensions to look at in isolation.</p>
+		<h3 id="receivers">Receivers</h3>
+		<p>I sourced three destination (receiver) hosts with &gt; 2 Gbps download bandwidth, labeled as following:</p>
+		<ul>
+			<li><strong>A</strong>. One of our usually idle lab servers.</li>
+			<li><strong>B</strong>. <a href="https://mirrors.ustc.edu.cn/">USTC Mirrors</a> server.</li>
+			<li><strong>C</strong>. Friend-sponsored home broadband in Shanghai.</li>
+		</ul>
+		<p>Typical traits of these destinations are:</p>
+		<table>
+			<thead>
+				<tr>
+					<th style="text-align: center">Destination</th>
+					<th style="text-align: center">Download BW</th>
+					<th style="text-align: center">Latency</th>
+					<th style="text-align: center">BDP*</th>
+					<th style="text-align: left">Other notes</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td style="text-align: center">A</td>
+					<td style="text-align: center">10 Gbps</td>
+					<td style="text-align: center">250 ± 30 us</td>
+					<td style="text-align: center">500&nbsp;KB</td>
+					<td style="text-align: left">Mostly idle</td>
+				</tr>
+				<tr>
+					<td style="text-align: center">B</td>
+					<td style="text-align: center">10 Gbps</td>
+					<td style="text-align: center">300 ± 200 us</td>
+					<td style="text-align: center">600&nbsp;KB</td>
+					<td style="text-align: left">Under constant load</td>
+				</tr>
+				<tr>
+					<td style="text-align: center">C</td>
+					<td style="text-align: center">~2.2 Gbps</td>
+					<td style="text-align: center">28 ± 0.2 ms</td>
+					<td style="text-align: center">56&nbsp;MB</td>
+					<td style="text-align: left">Mostly idle</td>
+				</tr>
+			</tbody>
+		</table>
+		<p>* Because my workstation can only generate upload at a theoretical maximum speed of 2 Gbps, BDP is calculated at this speed.</p>
+		<h2 id="analyses">Analyses</h2>
+		<p>iperf3 provides three indicators: Transmission bitrate, number of retransmissions and the congestion window size.</p>
+		<p>We cannot attach too much importance to the bond mode when testing bonding performance, so let’s get straight to it.</p>
+		<h3 id="single-stream">Single stream</h3>
+		<table>
+			<thead>
+				<tr>
+					<th style="text-align: center">Dest</th>
+					<th style="text-align: center">P</th>
+					<th style="text-align: center">CC</th>
+					<th style="text-align: right">Bitrate (RR)</th>
+					<th style="text-align: right">Bitrate (TLB)</th>
+					<th style="text-align: right">Retr (RR)</th>
+					<th style="text-align: right">Retr (TLB)</th>
+					<th style="text-align: right">Cwnd (RR)</th>
+					<th style="text-align: right">Cwnd (TLB)</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td style="text-align: center">A</td>
+					<td style="text-align: center">1</td>
+					<td style="text-align: center">BBR</td>
+					<td style="text-align: right">1.78 Gbps</td>
+					<td style="text-align: right">940 Mbps</td>
+					<td style="text-align: right">20079</td>
+					<td style="text-align: right">20</td>
+					<td style="text-align: right">331&nbsp;KB</td>
+					<td style="text-align: right">233&nbsp;KB</td>
+				</tr>
+				<tr>
+					<td style="text-align: center">A</td>
+					<td style="text-align: center">1</td>
+					<td style="text-align: center">CUBIC</td>
+					<td style="text-align: right">1.19 Gbps</td>
+					<td style="text-align: right">936 Mbps</td>
+					<td style="text-align: right">7258</td>
+					<td style="text-align: right">110</td>
+					<td style="text-align: right">103&nbsp;KB</td>
+					<td style="text-align: right">385&nbsp;KB</td>
+				</tr>
+				<tr>
+					<td style="text-align: center">B</td>
+					<td style="text-align: center">1</td>
+					<td style="text-align: center">BBR</td>
+					<td style="text-align: right">1.62 Gbps</td>
+					<td style="text-align: right">944 Mbps</td>
+					<td style="text-align: right">37018</td>
+					<td style="text-align: right">51</td>
+					<td style="text-align: right">343&nbsp;KB</td>
+					<td style="text-align: right">241&nbsp;KB</td>
+				</tr>
+				<tr>
+					<td style="text-align: center">B</td>
+					<td style="text-align: center">1</td>
+					<td style="text-align: center">CUBIC</td>
+					<td style="text-align: right">1.19 Gbps</td>
+					<td style="text-align: right">941 Mbps</td>
+					<td style="text-align: right">6914</td>
+					<td style="text-align: right">72</td>
+					<td style="text-align: right">98&nbsp;KB</td>
+					<td style="text-align: right">338&nbsp;KB</td>
+				</tr>
+				<tr>
+					<td style="text-align: center">C</td>
+					<td style="text-align: center">1</td>
+					<td style="text-align: center">BBR</td>
+					<td style="text-align: right">1.11 Gbps</td>
+					<td style="text-align: right">935 Mbps</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">8.87&nbsp;MB</td>
+					<td style="text-align: right">7.67&nbsp;MB</td>
+				</tr>
+				<tr>
+					<td style="text-align: center">C</td>
+					<td style="text-align: center">1</td>
+					<td style="text-align: center">CUBIC</td>
+					<td style="text-align: right">1.16 Gbps</td>
+					<td style="text-align: right">931 Mbps</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">6.44&nbsp;MB</td>
+					<td style="text-align: right">4.20&nbsp;MB</td>
+				</tr>
+			</tbody>
+		</table>
+		<p>We first look at TLB bond mode.
+			As expected, with one single stream, it runs on only one slave interface (confirmed by watching <code class="language-plaintext highlighter-rouge">bmon -p eth0,eth1,bond0</code> during execution).
+			And with the entire route being able to carry nearly 1.8 Gbps, there’s no surprise that different congestion algorithms don’t affect single-stream performance in all scenarios.</p>
+		<p>We then note the huge difference between the BBR and CUBIC algorithms in RR bond mode.
+			Because destinations A and B both have a very low BDP, any fluctuation in latency hits hard on CUBIC in forms of out-of-order packet deliveries, which reflects clearly in the difference of retransmitted packets and the Cwnd size.
+			In TLB mode, with only one active NIC, retransmission is kept low, but in RR mode it skyrocketed.</p>
+		<p>For destination C however, that’s an entirely different case (zero retransmission) with its own reason:
+			There’s enough BDP for the sender to raise Cwnd up to 8&nbsp;MiB, but the receiver reports a window of only 4&nbsp;MiB, so the entire transmission is limited by the receiver, not congestion or link load.</p>
+		<h3 id="parallel-streams">Parallel streams</h3>
+		<p>During the experiment, I found it very often that all 4 streams gets load-balanced onto one NIC in <code class="language-plaintext highlighter-rouge">balance-tlb</code> mode, so I had to re-run the tests multiple times to obtain the result where 4 streams are equally balanced onto both NICs.
+			Results from imbalanced stream distributions are discarded during retry.</p>
+		<p>For 4 parallel streams, the result looks much better:</p>
+		<table>
+			<thead>
+				<tr>
+					<th style="text-align: center">Dest</th>
+					<th style="text-align: center">P</th>
+					<th style="text-align: center">CC</th>
+					<th style="text-align: right">Bitrate (RR)</th>
+					<th style="text-align: right">Bitrate (TLB)</th>
+					<th style="text-align: right">Retr (RR)</th>
+					<th style="text-align: right">Retr (TLB)</th>
+					<th style="text-align: right">Cwnd (RR)</th>
+					<th style="text-align: right">Cwnd (TLB)</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td style="text-align: center">A</td>
+					<td style="text-align: center">4</td>
+					<td style="text-align: center">BBR</td>
+					<td style="text-align: right">1.79 Gbps</td>
+					<td style="text-align: right">1.77 Gbps</td>
+					<td style="text-align: right">41357</td>
+					<td style="text-align: right">18</td>
+					<td style="text-align: right">222&nbsp;KB</td>
+					<td style="text-align: right">178&nbsp;KB</td>
+				</tr>
+				<tr>
+					<td style="text-align: center">A</td>
+					<td style="text-align: center">4</td>
+					<td style="text-align: center">CUBIC</td>
+					<td style="text-align: right">1.80 Gbps</td>
+					<td style="text-align: right">1.77 Gbps</td>
+					<td style="text-align: right">13254</td>
+					<td style="text-align: right">82</td>
+					<td style="text-align: right">48&nbsp;KB</td>
+					<td style="text-align: right">306&nbsp;KB</td>
+				</tr>
+				<tr>
+					<td style="text-align: center">B</td>
+					<td style="text-align: center">4</td>
+					<td style="text-align: center">BBR</td>
+					<td style="text-align: right">1.79 Gbps</td>
+					<td style="text-align: right">1.72 Gbps</td>
+					<td style="text-align: right">61810</td>
+					<td style="text-align: right">9368</td>
+					<td style="text-align: right">237&nbsp;KB</td>
+					<td style="text-align: right">236&nbsp;KB</td>
+				</tr>
+				<tr>
+					<td style="text-align: center">B</td>
+					<td style="text-align: center">4</td>
+					<td style="text-align: center">CUBIC</td>
+					<td style="text-align: right">1.77 Gbps</td>
+					<td style="text-align: right">1.74 Gbps</td>
+					<td style="text-align: right">15549</td>
+					<td style="text-align: right">4243</td>
+					<td style="text-align: right">31&nbsp;KB</td>
+					<td style="text-align: right">174&nbsp;KB</td>
+				</tr>
+				<tr>
+					<td style="text-align: center">C</td>
+					<td style="text-align: center">4</td>
+					<td style="text-align: center">BBR</td>
+					<td style="text-align: right">1.70 Gbps</td>
+					<td style="text-align: right">1.82 Gbps</td>
+					<td style="text-align: right">185</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">4.04&nbsp;MB</td>
+					<td style="text-align: right">3.84&nbsp;MB</td>
+				</tr>
+				<tr>
+					<td style="text-align: center">C</td>
+					<td style="text-align: center">4</td>
+					<td style="text-align: center">CUBIC</td>
+					<td style="text-align: right">1.74 Gbps</td>
+					<td style="text-align: right">1.82 Gbps</td>
+					<td style="text-align: right">20</td>
+					<td style="text-align: right">17</td>
+					<td style="text-align: right">2.91&nbsp;MB</td>
+					<td style="text-align: right">2.89&nbsp;MB</td>
+				</tr>
+			</tbody>
+		</table>
+		<p>The gap between RR and TLB no longer exists, and differences in retransmissions and Cwnd size can be attributed entirely to the CC algorithms themselves.
+			In particular, due to Cwnd falling under 4&nbsp;MiB, or possibly just random network fluctuation, retransmission to destination C is observed for the first time.
+			It’s also interesting to note that the difference in Cwnd size between BBR and CUBIC increased to 5x, compared to some 3 ~ 3.5x in single-stream case.</p>
+		<p>However, the numbers of retransmissions are lower by magnitudes in TLB bond mode than in RR mode.
+			I believe this is because the latencies to destinations A and B have very high variation compared to their means (averages), which will result in high number of reordered packets when packets from the same stream are distributed through two underlying interfaces.</p>
+		<h2 id="bottom-line">Bottom line</h2>
+		<p>I did a set of rudimentary experiments in this article, and TCP upload is only a very generic use case.
+			For example, @TheRainstorm is running Sunshine streaming inside load-balanced WireGuard tunnel, and turning up forward error correction (FEC) level is one way to offset fluctuation and packet loss.
+			I’ve been running qBittorrent uploads under <code class="language-plaintext highlighter-rouge">balance-tlb</code> mode for months, and it’s been very stable because qBittorrent uploads torrent content over many connections.</p>
+		<p>If anyone wants a more reliable multi-NIC bonding setup, I’d definitely recommend getting a capable switch and doing bonding in <code class="language-plaintext highlighter-rouge">802.3ad</code> (LACP) mode.
+			But for a small homelab, <code class="language-plaintext highlighter-rouge">balance-rr</code> + BBR would probably suffice for optimizing single-stream transmission speed, at the cost of some overhead on bandwidth.</p>
+		]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[My workstation in my univerity lab has consistently generated some 600&nbsp;TiB of annual upload across two PT sites. After an upgrade to the room a few months back, it received the most wanted upgrade for years: A second 1 Gbps line to the campus network. I immediately made the two NICs into one bonded 2 Gbps interface, and it has shined for many times with multiple popular torrents.]]></summary></entry><entry><title type="html">Manually resize Guild Chest in Palworld 0.6</title><link href="https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest/" rel="alternate" type="text/html" title="Manually resize Guild Chest in Palworld 0.6" /><published>2025-07-28T00:00:00+00:00</published><updated>2025-07-28T14:02:46+00:00</updated><id>https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest</id><content type="html" xml:base="https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest/"><![CDATA[<p>The Guild Chest, first introduced in Feybreak Update, easily became the best way to move items between bases.
+		However, it only has 54 slots and is nowhere near enough for all the items you want to store.
+		For those who want to increase the size of the Guild Chest, especially in single player worlds, there’s a tutorial on how to do it manually:
+		<a href="https://www.nexusmods.com/palworld/mods/2419">Guild chest resizer after solo play started (Manual)</a>.</p>
+	<p>A few months back, I followed this tutorial and successfully resized my Guild Chest to 270 slots.
+		But this time on my friend’s save, the script no longer worked.</p>
+	<div class="language-console highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="gp">PS D:\Downloads\GuildChestResizer&gt;</span><span class="w"> </span>python sav-to-gvas.py D:<span class="se">\D</span>ownloads<span class="se">\G</span>uildChestResizer<span class="se">\L</span>evel.sav
 <span class="go">Traceback (most recent call last):
 </span><span class="gp">  File "D:\Downloads\GuildChestResizer\sav-to-gvas.py", line 30, in &lt;module&gt;</span><span class="w">
 </span><span class="go">    main()
@@ -284,58 +404,58 @@
 zlib.error: Error -3 while decompressing data: incorrect header check
 </span><span class="gp">PS D:\Downloads\GuildChestResizer&gt;</span><span class="w">
 </span></code></pre>
-			</div>
 		</div>
-		<p>Fortunately, I had my own save file where I performed the steps, so I could investigate the issue.</p>
-		<h2 id="investigation">Investigation</h2>
-		<p>Notice how the script tries to decompress the data using zlib, with the first 12&nbsp;bytes skipped.
-			So the first thing to check is to compare the header of the save files.</p>
-		<p>My save file (that worked):</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>00000000  7d d3 67 01 c8 51 23 00  50 6c 5a 32 78 9c 64 7a  |}.g..Q#.PlZ2x.dz|
+	</div>
+	<p>Fortunately, I had my own save file where I performed the steps, so I could investigate the issue.</p>
+	<h2 id="investigation">Investigation</h2>
+	<p>Notice how the script tries to decompress the data using zlib, with the first 12&nbsp;bytes skipped.
+		So the first thing to check is to compare the header of the save files.</p>
+	<p>My save file (that worked):</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>00000000  7d d3 67 01 c8 51 23 00  50 6c 5a 32 78 9c 64 7a  |}.g..Q#.PlZ2x.dz|
 </code></pre>
-			</div>
 		</div>
-		<p>My friend’s that no longer works:</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>00000000  09 c2 8b 01 a7 f1 20 00  50 6c 4d 31 8c 0a 00 36  |...... .PlM1...6|
+	</div>
+	<p>My friend’s that no longer works:</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>00000000  09 c2 8b 01 a7 f1 20 00  50 6c 4d 31 8c 0a 00 36  |...... .PlM1...6|
 </code></pre>
-			</div>
 		</div>
-		<p>According to <a href="https://stackoverflow.com/q/9050260/5958455">Stack Overflow</a>, <code class="language-plaintext highlighter-rouge">78 9c</code> indicates default compression for zlib, while <code class="language-plaintext highlighter-rouge">8c 0a</code> is not a valid zlib header.
-			After playing around with the save file, I concluded that the save file was not compressed with zlib at all, so time to look for other clues.</p>
-		<p>By examining the Python script, particularly the “convert back” one (<code class="language-plaintext highlighter-rouge">gvas-to-sav.py</code>), I figured out the header for the <code class="language-plaintext highlighter-rouge">.sav</code> file:</p>
-		<ul>
-			<li>Bytes 0-4: Size of uncompressed data (4&nbsp;bytes, little-endian)</li>
-			<li>Bytes 4-8: Size of compressed data (4&nbsp;bytes, little-endian)</li>
-			<li>Bytes 8-11: Magic number (3&nbsp;bytes, <code class="language-plaintext highlighter-rouge">PlZ</code>)</li>
-			<li>Bytes 12: Possibly type information, as the script checks for <code class="language-plaintext highlighter-rouge">0x32</code></li>
-		</ul>
-		<p>It’s easy to notice the discrepancies between the failing save file and the above structure:</p>
-		<ul>
-			<li>The magic number is <code class="language-plaintext highlighter-rouge">PlM</code> instead of <code class="language-plaintext highlighter-rouge">PlZ</code>.</li>
-			<li>The potential type information is <code class="language-plaintext highlighter-rouge">0x31</code> instead of <code class="language-plaintext highlighter-rouge">0x32</code>.</li>
-		</ul>
-		<p>The uncompressed size and compressed size fields are correct for that file itself, so most likely the new save file employs a different compression algorithm.
-			Time to identify it.</p>
-		<h2 id="finding-the-compression-algorithm">Finding the compression algorithm</h2>
-		<p>So here comes the trick: I know about this other tool called <a href="https://www.nexusmods.com/palworld/mods/104">PalEdit</a>, which is also written in Python and is <a href="https://github.com/EternalWraith/PalEdit">open-source on GitHub</a>, so it’s easy to read the code for clues and insights.</p>
-		<p>There’s a <code class="language-plaintext highlighter-rouge">SaveConverter.py</code> file that catches my attention, which refers:</p>
-		<div class="language-python highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="kn">from</span> <span class="n">palworld_save_tools.palsav</span> <span class="kn">import</span> <span class="n">compress_gvas_to_sav</span><span class="p">,</span> <span class="n">decompress_sav_to_gvas</span>
+	</div>
+	<p>According to <a href="https://stackoverflow.com/q/9050260/5958455">Stack Overflow</a>, <code class="language-plaintext highlighter-rouge">78 9c</code> indicates default compression for zlib, while <code class="language-plaintext highlighter-rouge">8c 0a</code> is not a valid zlib header.
+		After playing around with the save file, I concluded that the save file was not compressed with zlib at all, so time to look for other clues.</p>
+	<p>By examining the Python script, particularly the “convert back” one (<code class="language-plaintext highlighter-rouge">gvas-to-sav.py</code>), I figured out the header for the <code class="language-plaintext highlighter-rouge">.sav</code> file:</p>
+	<ul>
+		<li>Bytes 0-4: Size of uncompressed data (4&nbsp;bytes, little-endian)</li>
+		<li>Bytes 4-8: Size of compressed data (4&nbsp;bytes, little-endian)</li>
+		<li>Bytes 8-11: Magic number (3&nbsp;bytes, <code class="language-plaintext highlighter-rouge">PlZ</code>)</li>
+		<li>Bytes 12: Possibly type information, as the script checks for <code class="language-plaintext highlighter-rouge">0x32</code></li>
+	</ul>
+	<p>It’s easy to notice the discrepancies between the failing save file and the above structure:</p>
+	<ul>
+		<li>The magic number is <code class="language-plaintext highlighter-rouge">PlM</code> instead of <code class="language-plaintext highlighter-rouge">PlZ</code>.</li>
+		<li>The potential type information is <code class="language-plaintext highlighter-rouge">0x31</code> instead of <code class="language-plaintext highlighter-rouge">0x32</code>.</li>
+	</ul>
+	<p>The uncompressed size and compressed size fields are correct for that file itself, so most likely the new save file employs a different compression algorithm.
+		Time to identify it.</p>
+	<h2 id="finding-the-compression-algorithm">Finding the compression algorithm</h2>
+	<p>So here comes the trick: I know about this other tool called <a href="https://www.nexusmods.com/palworld/mods/104">PalEdit</a>, which is also written in Python and is <a href="https://github.com/EternalWraith/PalEdit">open-source on GitHub</a>, so it’s easy to read the code for clues and insights.</p>
+	<p>There’s a <code class="language-plaintext highlighter-rouge">SaveConverter.py</code> file that catches my attention, which refers:</p>
+	<div class="language-python highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="kn">from</span> <span class="n">palworld_save_tools.palsav</span> <span class="kn">import</span> <span class="n">compress_gvas_to_sav</span><span class="p">,</span> <span class="n">decompress_sav_to_gvas</span>
 </code></pre>
-			</div>
 		</div>
-		<p>… except there’s no <code class="language-plaintext highlighter-rouge">palworld_save_tools</code> directory anywhere in the repository.
-			Though interestingly, there <em>is</em> a <a href="https://github.com/EternalWraith/PalEdit/blob/main/palworld_save_tools.zip"><code class="language-plaintext highlighter-rouge">palworld_save_tools.zip</code> file</a> in the root of the repository.</p>
-		<p>Recalling how Python can <a href="https://docs.python.org/3/using/cmdline.html#interface-options">execute</a> a directory or a zip file if it contains a <code class="language-plaintext highlighter-rouge">__main__.py</code> script, it sure can <em>import</em> it as well if it contains a <code class="language-plaintext highlighter-rouge">__init__.py</code>, so time to unpack that ZIP archive and inspect the contents.
-			Within a few steps you’ll land at <code class="language-plaintext highlighter-rouge">compressor/__init__.py</code> which looks like this at its beginning:</p>
-		<div class="language-python highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">class</span> <span class="nc">SaveType</span><span class="p">:</span>
+	</div>
+	<p>… except there’s no <code class="language-plaintext highlighter-rouge">palworld_save_tools</code> directory anywhere in the repository.
+		Though interestingly, there <em>is</em> a <a href="https://github.com/EternalWraith/PalEdit/blob/main/palworld_save_tools.zip"><code class="language-plaintext highlighter-rouge">palworld_save_tools.zip</code> file</a> in the root of the repository.</p>
+	<p>Recalling how Python can <a href="https://docs.python.org/3/using/cmdline.html#interface-options">execute</a> a directory or a zip file if it contains a <code class="language-plaintext highlighter-rouge">__main__.py</code> script, it sure can <em>import</em> it as well if it contains a <code class="language-plaintext highlighter-rouge">__init__.py</code>, so time to unpack that ZIP archive and inspect the contents.
+		Within a few steps you’ll land at <code class="language-plaintext highlighter-rouge">compressor/__init__.py</code> which looks like this at its beginning:</p>
+	<div class="language-python highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">class</span> <span class="nc">SaveType</span><span class="p">:</span>
     <span class="n">CNK</span> <span class="o">=</span> <span class="mh">0x30</span>  <span class="c1"># Zlib compressed on xbox
 </span>    <span class="n">PLM</span> <span class="o">=</span> <span class="mh">0x31</span>  <span class="c1"># Oodle compressed
 </span>    <span class="n">PLZ</span> <span class="o">=</span> <span class="mh">0x32</span>  <span class="c1"># Zlib compressed
@@ -347,30 +467,30 @@ zlib.error: Error -3 while decompressing data: incorrect header check
 </span>    <span class="n">PLZ</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">PlZ</span><span class="sh">"</span>  <span class="c1"># Zlib magic
 </span>    <span class="n">PLM</span> <span class="o">=</span> <span class="sa">b</span><span class="sh">"</span><span class="s">PlM</span><span class="sh">"</span>  <span class="c1"># Oodle magic
 </span></code></pre>
-			</div>
 		</div>
-		<p>Now the details become clear:
-			The new save file contains <code class="language-plaintext highlighter-rouge">PlM</code> as its magic bytes and a matching <code class="language-plaintext highlighter-rouge">0x31</code> type information, so mystery solved and the next step is to figure out how to decompress it.</p>
-		<h2 id="patching-the-scripts">Patching the scripts</h2>
-		<p>Searching for <code class="language-plaintext highlighter-rouge">Oodle compression</code> on Google produces multiple results from Epic Games and Unreal Engine, guess that’s their latest feature maybe?
-			So I turned my focus back to PalEdit, where there’s the <code class="language-plaintext highlighter-rouge">compressor/oozlib.py</code> file with this:</p>
-		<div class="language-python highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="k">try</span><span class="p">:</span>
+	</div>
+	<p>Now the details become clear:
+		The new save file contains <code class="language-plaintext highlighter-rouge">PlM</code> as its magic bytes and a matching <code class="language-plaintext highlighter-rouge">0x31</code> type information, so mystery solved and the next step is to figure out how to decompress it.</p>
+	<h2 id="patching-the-scripts">Patching the scripts</h2>
+	<p>Searching for <code class="language-plaintext highlighter-rouge">Oodle compression</code> on Google produces multiple results from Epic Games and Unreal Engine, guess that’s their latest feature maybe?
+		So I turned my focus back to PalEdit, where there’s the <code class="language-plaintext highlighter-rouge">compressor/oozlib.py</code> file with this:</p>
+	<div class="language-python highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="n">ooz</span>
 <span class="k">except</span> <span class="nb">ImportError</span><span class="p">:</span>
     <span class="k">raise</span> <span class="nc">ImportError</span><span class="p">(</span>
         <span class="sa">f</span><span class="sh">"</span><span class="s">Failed to import </span><span class="sh">'</span><span class="s">ooz</span><span class="sh">'</span><span class="s"> module. Make sure the Ooz library exists in </span><span class="si">{</span><span class="n">local_ooz_path</span><span class="si">}</span><span class="s"> or latest pyooz is installed in your Python environment. Install using </span><span class="sh">'</span><span class="s">pip install git+https://github.com/MRHRTZ/pyooz.git</span><span class="sh">'"</span>
     <span class="p">)</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Problem solved, but I’m on Windows without a C toolchain (I no longer do Windows development), so I moved all relevant files onto my Linux server.
-			Then it’s just a matter of <code class="language-plaintext highlighter-rouge">pip install</code> command to get the requirements ready.</p>
-		<p>I also patched the decompressor script:</p>
-		<div class="language-python highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code><span class="c1">#!/usr/bin/env python3
+	</div>
+	<p>Problem solved, but I’m on Windows without a C toolchain (I no longer do Windows development), so I moved all relevant files onto my Linux server.
+		Then it’s just a matter of <code class="language-plaintext highlighter-rouge">pip install</code> command to get the requirements ready.</p>
+	<p>I also patched the decompressor script:</p>
+	<div class="language-python highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code><span class="c1">#!/usr/bin/env python3
 </span>
 <span class="kn">import</span> <span class="n">subprocess</span>
 <span class="kn">import</span> <span class="n">sys</span>
@@ -400,23 +520,23 @@ zlib.error: Error -3 while decompressing data: incorrect header check
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="sh">"</span><span class="s">__main__</span><span class="sh">"</span><span class="p">:</span>
     <span class="nf">main</span><span class="p">()</span>
 </code></pre>
-			</div>
 		</div>
-		<p>Now it correctly decompresses my friend’s <code class="language-plaintext highlighter-rouge">Level.sav</code> into <code class="language-plaintext highlighter-rouge">Level.sav.gvas</code> where I can follow the rest of <a href="https://www.nexusmods.com/palworld/mods/2419">the instructions</a> manually.
-			For compressing the edited file back, I just used the provided <code class="language-plaintext highlighter-rouge">gvas-to-sav.py</code> file in the belief that the previous zlib-based compression method is still supported by the game.</p>
-		<p>After sending the edited <code class="language-plaintext highlighter-rouge">Level.sav</code> file back to the game, we’re glad to see our Guild Chest containing 270 slots, which we probably would never use up.</p>
-		<h2 id="postface">Postface</h2>
-		<p>If you’re on Windows or don’t have a C/C++ compiler for installing <code class="language-plaintext highlighter-rouge">pyooz</code> yourself, the same <code class="language-plaintext highlighter-rouge">palworld_save_tools.zip</code> provides these files that you may find useful:</p>
-		<div class="language-text highlighter-rouge">
-			<div class="highlight">
-				<pre class="highlight"><code>lib/linux_arm64/ooz.so
+	</div>
+	<p>Now it correctly decompresses my friend’s <code class="language-plaintext highlighter-rouge">Level.sav</code> into <code class="language-plaintext highlighter-rouge">Level.sav.gvas</code> where I can follow the rest of <a href="https://www.nexusmods.com/palworld/mods/2419">the instructions</a> manually.
+		For compressing the edited file back, I just used the provided <code class="language-plaintext highlighter-rouge">gvas-to-sav.py</code> file in the belief that the previous zlib-based compression method is still supported by the game.</p>
+	<p>After sending the edited <code class="language-plaintext highlighter-rouge">Level.sav</code> file back to the game, we’re glad to see our Guild Chest containing 270 slots, which we probably would never use up.</p>
+	<h2 id="postface">Postface</h2>
+	<p>If you’re on Windows or don’t have a C/C++ compiler for installing <code class="language-plaintext highlighter-rouge">pyooz</code> yourself, the same <code class="language-plaintext highlighter-rouge">palworld_save_tools.zip</code> provides these files that you may find useful:</p>
+	<div class="language-text highlighter-rouge">
+		<div class="highlight">
+			<pre class="highlight"><code>lib/linux_arm64/ooz.so
 lib/linux_x86_64/ooz.so
 lib/windows/ooz.pyd
 </code></pre>
-			</div>
 		</div>
-		<p>Of course, how to utilize these files is left as an exercise for the readers.</p>
-		]]></content><author><name>iBug</name></author><category term="games" /><category term="palworld" /><summary type="html"><![CDATA[The Guild Chest, first introduced in Feybreak Update, easily became the best way to move items between bases. However, it only has 54 slots and is nowhere near enough for all the items you want to store. For those who want to increase the size of the Guild Chest, especially in single player worlds, there’s a tutorial on how to do it manually: Guild chest resizer after solo play started (Manual).]]></summary></entry><entry><title type="html">A trip to Japan</title><link href="https://ibug.io/blog/2025/07/japan-june-2025/" rel="alternate" type="text/html" title="A trip to Japan" /><published>2025-07-23T00:00:00+00:00</published><updated>2025-07-23T00:59:25+00:00</updated><id>https://ibug.io/blog/2025/07/japan-june-2025</id><content type="html" xml:base="https://ibug.io/blog/2025/07/japan-june-2025/"><![CDATA[<p>As a more meaningful way to celebrate our graduation as Master students and spend this last truly free time in a long while, I joined my friends on a trip to Japan.</p>
+	</div>
+	<p>Of course, how to utilize these files is left as an exercise for the readers.</p>
+	]]></content><author><name>iBug</name></author><category term="games" /><category term="palworld" /><summary type="html"><![CDATA[The Guild Chest, first introduced in Feybreak Update, easily became the best way to move items between bases. However, it only has 54 slots and is nowhere near enough for all the items you want to store. For those who want to increase the size of the Guild Chest, especially in single player worlds, there’s a tutorial on how to do it manually: Guild chest resizer after solo play started (Manual).]]></summary></entry><entry><title type="html">A trip to Japan</title><link href="https://ibug.io/blog/2025/07/japan-june-2025/" rel="alternate" type="text/html" title="A trip to Japan" /><published>2025-07-23T00:00:00+00:00</published><updated>2025-07-23T00:59:25+00:00</updated><id>https://ibug.io/blog/2025/07/japan-june-2025</id><content type="html" xml:base="https://ibug.io/blog/2025/07/japan-june-2025/"><![CDATA[<p>As a more meaningful way to celebrate our graduation as Master students and spend this last truly free time in a long while, I joined my friends on a trip to Japan.</p>
 	<h2 id="preparations">Preparations</h2>
 	<p>Kudos to my friends for planning the itinerary and discussing the details.
 		We planned to visit Tokyo, Kyoto, and Osaka, with a day trip to Nara.</p>
@@ -3178,169 +3298,4 @@ systemd-networkd[528]: enp2s0: DHCP-PD address 2001:db8:0:a01:2a0:c9ff:feee:c4c/
     </div>
 		</li>
 	</ul>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[I moved my soft router (Intel N5105, Debian) from school to home, and at home it’s behind an ONU on bridge mode, so it’ll have to do PPPoE itself.]]></summary></entry><entry><title type="html">Migrating Ubuntu onto ZFS</title><link href="https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs/" rel="alternate" type="text/html" title="Migrating Ubuntu onto ZFS" /><published>2024-05-14T00:00:00+00:00</published><updated>2024-05-14T23:37:49+00:00</updated><id>https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs</id><content type="html" xml:base="https://ibug.io/blog/2024/05/migrate-rootfs-to-zfs/"><![CDATA[<p>As part of a planned disk migration, I decided to move my Ubuntu installation from a traditional ext4 setup to ZFS.
-		I did a lot of preparation and research, but things went much smoother than I had previously anticipated.
-		I did not even have to consult IPMI for any recovery.</p>
-	<p>Existing partition layout:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>fdisk <span class="nt">-l</span> /dev/nvme1n1
-<span class="go">[...]
-Device             Start        End    Sectors  Size Type
-/dev/nvme1n1p1      2048    1050623    1048576  512M EFI System
-/dev/nvme1n1p2   1050624  269486079  268435456  128G Linux filesystem
-/dev/nvme1n1p3 269486080 3907029134 3637543055  1.7T Solaris /usr &amp; Apple ZFS
-</span></code></pre>
-		</div>
-	</div>
-	<p>Since I already have <code class="language-plaintext highlighter-rouge">/home</code> running on ZFS <code class="language-plaintext highlighter-rouge">pool0</code>, there’s not much to prepare.
-		All I need to move is the rootfs itself, which has around 20&nbsp;GB of data.</p>
-	<p>Start by installing anything necessary:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>apt <span class="nb">install </span>zfs-initramfs arch-install-scripts
-</code></pre>
-		</div>
-	</div>
-	<p>Then create the dataset layout:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="c"># pool0 already has xattr=sa</span>
-zfs create <span class="se">\</span>
-  <span class="nt">-o</span> <span class="nv">canmount</span><span class="o">=</span>off <span class="se">\</span>
-  <span class="nt">-o</span> <span class="nv">mountpoint</span><span class="o">=</span>none <span class="se">\</span>
-  <span class="nt">-o</span> <span class="nv">acltype</span><span class="o">=</span>posix <span class="se">\</span>
-  pool0/ROOT
-zfs create <span class="nt">-o</span> <span class="nv">mountpoint</span><span class="o">=</span>/mnt/new pool0/ROOT/ubuntu
-
-rsync <span class="nt">-avSHAXx</span> <span class="nt">--delete</span> / /mnt/new/
-</code></pre>
-		</div>
-	</div>
-	<p>Now there’s a little deviation from common setup.
-		I don’t trust GRUB’s ZFS support, so I’m going to merge <code class="language-plaintext highlighter-rouge">/boot</code> into the EFI partition (which has a decent 512&nbsp;MB of capacity).
-		This is a decision made after surveying my friends’ setup.</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="c"># Merge data</span>
-rsync <span class="nt">-ax</span> /boot/ /boot/efi/ <span class="c"># Ignore any errors</span>
-umount /boot/efi
-vim /etc/fstab
-<span class="c"># Change /boot/efi to /boot</span>
-<span class="c"># Also remove the current rootfs entry</span>
-systemctl daemon-reload
-mount /boot
-</code></pre>
-		</div>
-	</div>
-	<p>Now prepare GRUB:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>zpool <span class="nb">set </span><span class="nv">bootfs</span><span class="o">=</span>pool0/ROOT/ubuntu pool0
-mount <span class="nt">-o</span> <span class="nb">bind</span> /boot /mnt/new/boot
-arch-chroot /mnt/new
-</code></pre>
-		</div>
-	</div>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>grub-install
-<span class="go">Installing for x86_64-efi platform.
-grub-install: error: cannot find EFI directory.
-</span></code></pre>
-		</div>
-	</div>
-	<p>Well, if only <code class="language-plaintext highlighter-rouge">grub-install</code> didn’t hard-code <code class="language-plaintext highlighter-rouge">/boot/efi</code> (which is against the FHS standard anyways).
-		Fortunately, I recall a small detail that could make this work in another convenient way:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>dpkg-reconfigure grub-efi-amd64
-</code></pre>
-		</div>
-	</div>
-	<p>Also regenerate GRUB configuration:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>zfs <span class="nb">set </span><span class="nv">mountpoint</span><span class="o">=</span>/ pool0/ROOT/ubuntu
-update-grub
-</code></pre>
-		</div>
-	</div>
-	<p>Now double-check the GRUB configuration at <code class="language-plaintext highlighter-rouge">/boot/grub/grub.cfg</code> and make sure there are lines like this:</p>
-	<div class="language-text highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>linux /vmlinuz [...] root=ZFS=pool0/ROOT/ubuntu [...]
-</code></pre>
-		</div>
-	</div>
-	<p>After verifying paths to the kernel and the initrd image are correct, reboot:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>reboot
-</code></pre>
-		</div>
-	</div>
-	<p>In just a minute, I noticed my server came back up.
-		Time to confirm everything is working as expected:</p>
-	<div class="language-console highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="gp">#</span><span class="w"> </span>mount
-<span class="go">pool0/ROOT/ubuntu on / type zfs (rw,relatime,xattr,posixacl,casesensitive)
-
-</span><span class="gp">#</span><span class="w"> </span><span class="nb">df</span> <span class="nt">-h</span> /
-<span class="go">Filesystem         Size  Used Avail Use% Mounted on
-pool0/ROOT/ubuntu  1.2T   11G  1.1T   1% /
-
-</span><span class="gp">#</span><span class="w"> </span>zfs get compressratio pool0/ROOT
-<span class="go">NAME        PROPERTY       VALUE  SOURCE
-pool0/ROOT  compressratio  2.02x  -
-</span></code></pre>
-		</div>
-	</div>
-	<p>The last thing is to rewrite my rootfs backup script to take snapshots directly, instead of rsync-ing to another ZFS pool before taking a snapshot there.
-		After taking a snapshot, I can also send it away as a “backup against disk failure”.</p>
-	<p>A slightly revised version of my snapshotting script, sans the sending part:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="c">#!/bin/sh</span>
-
-<span class="nb">set</span> <span class="nt">-e</span>
-
-<span class="nv">DATASET</span><span class="o">=</span>pool0/ROOT/ubuntu
-<span class="nv">DATE</span><span class="o">=</span><span class="si">$(</span><span class="nb">date</span> +%Y%m%d<span class="si">)</span>
-<span class="nv">SNAPSHOT</span><span class="o">=</span><span class="s2">"</span><span class="nv">$DATASET</span><span class="s2">@</span><span class="nv">$DATE</span><span class="s2">"</span>
-<span class="nv">RETENTION_DAYS</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">1</span><span class="k">:-</span><span class="nv">7</span><span class="k">}</span><span class="s2">"</span>
-<span class="nv">RETENTION</span><span class="o">=</span><span class="s2">"</span><span class="k">$((</span>RETENTION_DAYS <span class="o">*</span> <span class="m">86400</span><span class="k">))</span><span class="s2">"</span>
-
-<span class="nv">NOW</span><span class="o">=</span><span class="s2">"</span><span class="k">$((</span><span class="si">$(</span><span class="nb">date</span> +%s<span class="si">)</span> <span class="o">-</span> <span class="m">3600</span><span class="k">))</span><span class="s2">"</span>
-<span class="k">if</span> <span class="o">[</span> <span class="s2">"</span><span class="si">$(</span>zfs list <span class="nt">-Hpo</span> name <span class="s2">"</span><span class="nv">$SNAPSHOT</span><span class="s2">"</span><span class="si">)</span><span class="s2">"</span> <span class="o">=</span> <span class="s2">"</span><span class="nv">$SNAPSHOT</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
-  </span><span class="nb">echo</span> <span class="s2">"Snapshot exists: </span><span class="nv">$SNAPSHOT</span><span class="s2">"</span>
-<span class="k">else
-  </span>zfs snapshot <span class="nt">-ro</span> ibug:retention<span class="o">=</span><span class="s2">"</span><span class="nv">$RETENTION</span><span class="s2">"</span> <span class="s2">"</span><span class="nv">$SNAPSHOT</span><span class="s2">"</span>
-<span class="k">fi
-
-</span>zfs list <span class="nt">-Hpt</span> snapshot <span class="nt">-o</span> name,creation,ibug:retention <span class="s2">"</span><span class="nv">$DATASET</span><span class="s2">"</span> |
-  <span class="k">while </span><span class="nb">read</span> <span class="nt">-r</span> zNAME zCREATION zRETENTION<span class="p">;</span> <span class="k">do
-  if</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$zRETENTION</span><span class="s2">"</span> <span class="o">=</span> <span class="s2">"-"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
-    <span class="c"># assume default value</span>
-    <span class="nv">zRETENTION</span><span class="o">=</span><span class="s2">"</span><span class="k">$((</span><span class="m">7</span> <span class="o">*</span> <span class="m">86400</span><span class="k">))</span><span class="s2">"</span>
-  <span class="k">fi
-  </span><span class="nv">UNTIL</span><span class="o">=</span><span class="s2">"</span><span class="k">$((</span>zCREATION <span class="o">+</span> zRETENTION<span class="k">))</span><span class="s2">"</span>
-  <span class="nv">UNTIL_DATE</span><span class="o">=</span><span class="s2">"</span><span class="si">$(</span><span class="nb">date</span> <span class="nt">-d</span> <span class="s2">"@</span><span class="nv">$UNTIL</span><span class="s2">"</span> <span class="s2">"+%Y-%m-%d %H:%M:%S"</span><span class="si">)</span><span class="s2">"</span>
-  <span class="nb">echo</span> <span class="s2">"</span><span class="nv">$zNAME</span><span class="s2">: </span><span class="nv">$UNTIL_DATE</span><span class="s2">"</span>
-  <span class="k">if</span> <span class="o">[</span> <span class="s2">"</span><span class="nv">$NOW</span><span class="s2">"</span> <span class="nt">-ge</span> <span class="s2">"</span><span class="nv">$UNTIL</span><span class="s2">"</span> <span class="o">]</span><span class="p">;</span> <span class="k">then
-    </span>zfs destroy <span class="nt">-rv</span> <span class="s2">"</span><span class="nv">$zNAME</span><span class="s2">"</span>
-  <span class="k">fi
-done</span>
-</code></pre>
-		</div>
-	</div>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="c"># crontab</span>
-15 4 <span class="k">*</span> <span class="k">*</span> 1,5     /root/backup.sh 30
-15 4 <span class="k">*</span> <span class="k">*</span> 0,2-4,6 /root/backup.sh  7
-</code></pre>
-		</div>
-	</div>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="server" /><category term="zfs" /><summary type="html"><![CDATA[As part of a planned disk migration, I decided to move my Ubuntu installation from a traditional ext4 setup to ZFS. I did a lot of preparation and research, but things went much smoother than I had previously anticipated. I did not even have to consult IPMI for any recovery.]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[I moved my soft router (Intel N5105, Debian) from school to home, and at home it’s behind an ONU on bridge mode, so it’ll have to do PPPoE itself.]]></summary></entry></feed>

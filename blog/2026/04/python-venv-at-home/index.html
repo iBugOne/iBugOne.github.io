@@ -10,20 +10,20 @@
 	<head>
 		<meta charset="utf-8">
 		<!-- begin _includes/seo.html -->
-		<title>Some ideas about multicore on Android - iBug</title>
-		<meta name="description" content="Why do Android phones have more cores than computers?">
+		<title>Venv at home: My solution to “error: externally-managed-environment” - iBug</title>
+		<meta name="description" content="Since Python 3.12 (which enforces PEP 668) shipped with Ubuntu 24.04, like many others, I found my usual habit of installing PyPI packages to my user site directory (~/.local) no longer working due to the externally-managed-environment restriction.">
 		<meta name="author" content="iBug">
 		<meta property="article:author" content="iBug">
 		<meta property="og:type" content="article">
 		<meta property="og:locale" content="en_US">
 		<meta property="og:site_name" content="iBug">
-		<meta property="og:title" content="Some ideas about multicore on Android">
-		<meta property="og:url" content="https://ibug.io/blog/2017/06/android-phone-cores/">
-		<meta property="og:description" content="Why do Android phones have more cores than computers?">
+		<meta property="og:title" content="Venv at home: My solution to “error: externally-managed-environment”">
+		<meta property="og:url" content="https://ibug.io/blog/2026/04/python-venv-at-home/">
+		<meta property="og:description" content="Since Python 3.12 (which enforces PEP 668) shipped with Ubuntu 24.04, like many others, I found my usual habit of installing PyPI packages to my user site directory (~/.local) no longer working due to the externally-managed-environment restriction.">
 		<meta property="og:image" content="https://ibug.io/image/og.jpg">
-		<meta property="article:published_time" content="2017-06-11T10:51:16+00:00">
-		<meta property="article:modified_time" content="2021-02-04T21:47:35+00:00">
-		<link rel="canonical" href="https://ibug.io/blog/2017/06/android-phone-cores/">
+		<meta property="article:published_time" content="2026-04-28T00:00:00+00:00">
+		<meta property="article:modified_time" content="2026-04-28T15:53:02+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2026/04/python-venv-at-home/">
 		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
 		<!-- end _includes/seo.html -->
 		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
@@ -113,23 +113,18 @@
 >
 				<div class="wrapper">
 					<h1 id="page-title" class="page__title" itemprop="headline">
-						Some ideas about multicore on Android
+						Venv at home: My solution to “error: externally-managed-environment”
 					</h1>
-					<p class="page__lead">An Android Enthusiasts Q&amp;A
-					</p>
 					<p class="page__meta">
 						<span class="page__meta-date">
 							<i class="far fa-calendar-alt" aria-hidden="true"></i>
-							<time datetime="2017-06-11T10:51:16+00:00">Jun 11, 2017</time>
+							<time datetime="2026-04-28T00:00:00+00:00">Apr 28, 2026</time>
 						</span>
 						<span class="page__meta-sep"></span>
 						<span class="page__meta-readtime">
 							<i class="far fa-clock" aria-hidden="true"></i>
 							3 minute read
 						</span>
-					</p>
-					<p>
-						<a href="https://android.stackexchange.com/a/176503/205764" class="btn btn--light-outline btn--large"><i class="fas fa-eye"></i> View on Stack Exchange</a>
 					</p>
 				</div>
 			</div>
@@ -190,67 +185,171 @@
 					</nav>
 				</div>
 				<article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
-					<meta itemprop="headline" content="Some ideas about multicore on Android">
-					<meta itemprop="description" content="Laptops have usually at most four cores, and dualcores are probably more common. I have recently switched from quadcore to dualcore and I can confirm there is a limited number of use cases for quadcore, even with CPU intensive tasks.">
-					<meta itemprop="datePublished" content="2017-06-11T10:51:16+00:00">
-					<meta itemprop="dateModified" content="2021-02-04T21:47:35+00:00">
+					<meta itemprop="headline" content="Venv at home: My solution to “error: externally-managed-environment”">
+					<meta itemprop="description" content="Since Python 3.12 (which enforces PEP 668) shipped with Ubuntu 24.04, like many others, I found my usual habit of installing PyPI packages to my user site directory (~/.local) no longer working due to the externally-managed-environment restriction.">
+					<meta itemprop="datePublished" content="2026-04-28T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2026-04-28T15:53:02+00:00">
 					<div class="page__inner-wrap">
 						<section class="page__content e-content" itemprop="text">
-							<p>Laptops have usually at most four cores, and dualcores are probably more common. I have recently switched from quadcore to dualcore and I can confirm there is a limited number of use cases for quadcore, even with CPU intensive tasks.</p>
-							<p>On the other hand, on mobile phones, quadcores, hexacores and octacores seem to be common. Why? What tasks can utilize them?</p>
-							<hr />
-							<p>First things first, <strong>the <a href="https://en.wikipedia.org/wiki/ARM_big.LITTLE">big.LITTLE</a> combination strategy</strong> (technically, <a href="https://en.m.wikipedia.org/wiki/Heterogeneous_computing"><strong>HMP</strong></a>, <strong>Heterogeneous Multi-Processing</strong> clusters) is the primary reason for so many (and sometimes overwhelmingly many) cores. A mobile device often runs into multiple scenarios, both heavy load and light load ones included.</p>
-							<p>An extreme consumer-class example is MediaTek’s Helio X20, which has 2 performance-oriented A72 cores, 4 balanced A53 cores, plus 4 energy-efficient A35 cores. That’s very flexible throughout different usage cases. However, I think <s>8 cores</s> 2 clusters is usually enough.</p>
-							<p>There’s also another desktop-like example, Qualcomm’s Snapdragon 800 series (S 800, S 801, and S 805). There are only 4 cores of the same microarchitecture in each SoC, with 2 clocked higher and 2 clocked lower. Qualcomm made these SoCs because they were very confident of their own microarchitecture (Krait 400 and Krait 450).</p>
-							<p>For games, even if they seemingly demand GPU performance rather than CPU, they still put a heavy load on the CPU. A GPU cannot work alone without something else supplying it with data to be processed, and that’s one of the major jobs that the CPU is doing while you’re gaming. In most gaming cases, the GPU only renders graphics, while all other jobs like loading data, resources and assets, and calculating in-game mechanics like the system, environment and physics are done by the  CPU. You won’t observe a higher frame rate if you upgrade your GPU while sticking to a low-end CPU.</p>
-							<p>A secondary reason is <strong>how Android utilizes CPU resources</strong>. Android pretty much makes their own application environment. It uses nothing but codes (and APIs) from Java, but it has its own virtual machine named Dalvik, which was later replaced by ART (API Level 21). APKs have their executable codes in a “neutral” format, much like <code class="language-plaintext highlighter-rouge">.class</code> files in Java. Before they’re run, the codes get compiled once more into the machine’s native instructions<sup>[1]</sup>. The compilation process is multi-threaded and can utilize multi-cores for a performance boost.<br />
-								And when an app is running, there are several other processes and mechanics (like the Garbage Collector) that run alongside, or parallel to the app. More cores can let the supportive processes run more efficiently, as well as the main app.<br />
-								<sub>1. If you use a file type identifier, you’ll find that “optimized” dex files are in ELF format, while the “neutral” dex files are just in a format of their own.</sub></p>
-							<p>Another lesser reason is that <strong>ARM cores can’t work as fast as an Intel x86 chip</strong>. The Intel x86 microarchitecture can be dated back to 1976, when the <a href="https://en.wikipedia.org/wiki/Intel_8086">Intel 8086</a> chip started to be designed, which means that the x86 has developed over a long time. A single modern high-end ARM Cortex-A73 core is only as powerful as an Intel Clarkdale core, taking <a href="http://browser.primatelabs.com/geekbench3/search?q=i5-660">Core i5-660</a> as an example (GeekBench, single-core). This is because x86 is a <a href="https://en.wikipedia.org/wiki/Complex_instruction_set_computer">CISC</a> microarchitecture while ARM is a <a href="https://en.wikipedia.org/wiki/Reduced_instruction_set_computer">RISC</a> microarchitecture. You surely don’t want a phone that becomes laggy with only two or so active apps. More cores will help relieve the pressure. That’s why dual-core SoCs are relatively popular only on smart watches. Who needs performance on a smart watch?</p>
-							<p>Interestingly, <strong>more cores will result in less power than a single core at the same load</strong>. The relationship between CPU frequency and power consumption is more than linear, so twice the frequency will always result in demanding more than twice, or even 3x or 4x as much power, while delivering less than twice the performance (due to other resource limitations like cache). So 4 cores can easily beat a single core at the same load, providing better performance and simultaneously demanding less power.</p>
-							<p>Further Reading:</p>
-							<ul>
-								<li><a href="http://www.androidauthority.com/why-8-and-10-cpu-cores-in-smartphones-are-a-good-idea-607894/">Why 8 and 10 CPU cores in smartphones are a good idea – a lesson from the kitchen</a></li>
-								<li>
-									<p><a href="https://www.quora.com/Why-some-phones-have-two-quad-core-processors-and-some-have-similar-clocked-octa-core-Which-is-better-one-in-terms-of-performance?share=1">Why some phones have two quad core processors and some have similar clocked octa core. Which is better one in terms of performance?</a></p>
-								</li>
-							</ul>
+							<aside class="sidebar__right sticky">
+								<nav class="toc" aria-label="Table of contents">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#uv">Using uv</a></li>
+									</ul>
+								</nav>
+							</aside>
+							<p>Since Python 3.12 (which enforces <a href="https://peps.python.org/pep-0668/">PEP 668</a>) shipped with Ubuntu 24.04, like many others, I found my usual habit of installing PyPI packages to my user site directory (<code class="language-plaintext highlighter-rouge">~/.local</code>) no longer working due to the <code class="language-plaintext highlighter-rouge">externally-managed-environment</code> restriction.</p>
+							<p>I consider it a perfectly valid and common use case to install some frequently-used packages (e.g. <code class="language-plaintext highlighter-rouge">regex</code>, <code class="language-plaintext highlighter-rouge">requests</code>, <code class="language-plaintext highlighter-rouge">mkdocs</code>) to my home directory so that they’re conveniently available whenever and wherever I start a <code class="language-plaintext highlighter-rouge">python3</code> REPL shell.</p>
+							<p>Fortunately, it’s not hard to find a straightforward workaround once you know <a href="https://docs.python.org/3/library/sys_path_init.html">this</a>:</p>
+							<blockquote>
+								<p>If <code class="language-plaintext highlighter-rouge">PYTHONHOME</code> is not set, and <strong>a <code class="language-plaintext highlighter-rouge">pyvenv.cfg</code> file is found</strong> […] <strong>in its parent directory</strong>,
+									<code class="language-plaintext highlighter-rouge">sys.prefix</code> and <code class="language-plaintext highlighter-rouge">sys.exec_prefix</code> get set to the directory containing <code class="language-plaintext highlighter-rouge">pyvenv.cfg</code>, […].
+									This is used by Virtual Environments.</p>
+							</blockquote>
+							<p>So if we can trick Python into thinking <code class="language-plaintext highlighter-rouge">~/.local</code> is a virtual environment, the issue resolves itself.
+								It’s not hard to figure out the required content for <code class="language-plaintext highlighter-rouge">~/.local/pyvenv.cfg</code>, much less writing it.</p>
+							<div class="language-ini highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="py">include-system-site-packages</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">true</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Of course an empty <code class="language-plaintext highlighter-rouge">pyvenv.cfg</code> will do the trick, but including system packages allows you to skip some redundancy between your user site and system site directories.</p>
+							<p>We also need to ensure that Python is invoked from <code class="language-plaintext highlighter-rouge">~/.local/bin</code>:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nb">ln</span> <span class="nt">-sfn</span> /usr/bin/python3 ~/.local/bin/python3
+</code></pre>
+								</div>
+							</div>
+							<p>However, <code class="language-plaintext highlighter-rouge">pip3</code> still complains about <code class="language-plaintext highlighter-rouge">externally-managed-environment</code>.
+								This is because the Python interpreter that runs <code class="language-plaintext highlighter-rouge">pip3</code> is still launched from the system path (<code class="language-plaintext highlighter-rouge">/usr/bin/python3</code>) due to the shebang line.
+								To fix this, just call <code class="language-plaintext highlighter-rouge">pip</code> with our desired path to Python:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="c"># Assuming ~/.local/bin comes early in $PATH</span>
+python3 <span class="nt">-m</span> pip <span class="nb">install</span> <span class="nt">-U</span> pip
+</code></pre>
+								</div>
+							</div>
+							<p>We can now inspect the new <code class="language-plaintext highlighter-rouge">pip3</code> command at the new location:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nv">$ </span><span class="nb">head</span> <span class="nt">-1</span> <span class="si">$(</span>which pip3<span class="si">)</span>
+<span class="c">#!/home/ubuntu/.local/bin/python3</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Now this <code class="language-plaintext highlighter-rouge">pip3</code> command will happily install any requested package into <code class="language-plaintext highlighter-rouge">~/.local/lib</code> without complaining about environments:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nv">$ </span>pip3 <span class="nb">install</span> <span class="nt">--user</span> <span class="nt">--upgrade</span> humanize
+Looking <span class="k">in </span>indexes: https://mirrors.ustc.edu.cn/pypi/simple
+Requirement already satisfied: humanize <span class="k">in</span> /usr/lib/python3/dist-packages <span class="o">(</span>4.12.1<span class="o">)</span>
+Collecting humanize
+  Using cached https://mirrors.ustc.edu.cn/pypi/packages/c5/7b/bca5613a0c3b542420cf92bd5e5fb8ebd5435ce1011a091f66bb7693285e/humanize-4.15.0-py3-none-any.whl <span class="o">(</span>132&nbsp;kB<span class="o">)</span>
+Installing collected packages: humanize
+Successfully installed humanize-4.15.0
+</code></pre>
+								</div>
+							</div>
+							<p>We don’t need the <code class="language-plaintext highlighter-rouge">--user</code> flag anymore but I kept it as a habit of being explicit.</p>
+							<h2 id="uv">Using <code class="language-plaintext highlighter-rouge">uv</code></h2>
+							<p>Python <code class="language-plaintext highlighter-rouge">pip</code> has no idea when a package is installed and <em>why</em>, and in particular it does not know the difference between your package demands and what has been installed.
+								If your <code class="language-plaintext highlighter-rouge">requirements.txt</code> undergoes changes and you want to ensure you have exactly the necessary set of packages installed, your best bet is to delete your <code class="language-plaintext highlighter-rouge">venv</code> and create it anew.</p>
+							<p>So here comes <a href="https://docs.astral.sh/uv/">uv</a>, a next-generation package <em>manager</em> for Python, whereas <code class="language-plaintext highlighter-rouge">pip</code> is at best a package <em>downloader</em>.
+								As uv is designed for managing virtual environments within projects, some minor hacks are needed to make it treat <code class="language-plaintext highlighter-rouge">~/.local</code> as our venv, instead of creating another <code class="language-plaintext highlighter-rouge">.venv</code> directory.
+								This is laid out in the <a href="https://docs.astral.sh/uv/reference/environment/#uv_project_environment">uv documentation</a>.</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nb">export </span><span class="nv">UV_PROJECT_ENVIRONMENT</span><span class="o">=</span>~/.local
+</code></pre>
+								</div>
+							</div>
+							<p>I also migrated my manual installations to a proper <code class="language-plaintext highlighter-rouge">pyproject.toml</code>:</p>
+							<div class="language-toml highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">[</span><span class="n">project</span><span class="k">]</span>
+<span class="n">name</span> <span class="o">=</span><span class="w"> </span><span class="s">"home"</span>
+<span class="n">version</span> <span class="o">=</span><span class="w"> </span><span class="s">"0.0.1"</span>
+<span class="n">requires-python</span> <span class="o">=</span><span class="w"> </span><span class="s">"&gt;=3.12, &lt;4.0"</span>
+<span class="n">dependencies</span> <span class="o">=</span><span class="w"> </span><span class="p">[</span>
+  <span class="s">"jieba"</span><span class="p">,</span>
+  <span class="s">"matplotlib"</span><span class="p">,</span>
+  <span class="s">"mkdocs (&gt;=1.6.1, &lt;2)"</span><span class="p">,</span>
+  <span class="s">"mkdocs-material~=9.7.6"</span><span class="p">,</span>
+  <span class="s">"numpy"</span><span class="p">,</span>
+  <span class="s">"python-telegram-bot==13.15"</span><span class="p">,</span>
+  <span class="s">"regex"</span><span class="p">,</span>
+  <span class="s">"requests"</span><span class="p">,</span>
+  <span class="s">"tabulate"</span><span class="p">,</span>
+  <span class="s">"yt-dlp"</span><span class="p">,</span>
+<span class="p">]</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Now we can simply run <code class="language-plaintext highlighter-rouge">uv sync</code> to have our desired packages ready with no fluff, and <code class="language-plaintext highlighter-rouge">uv sync --upgrade</code> to upgrade them when needed:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nv">$ </span>uv <span class="nb">sync</span> <span class="nt">--upgrade</span>
+Resolved 71 packages <span class="k">in </span>517ms
+Prepared 1 package <span class="k">in </span>447ms
+Uninstalled 2 packages <span class="k">in </span>57ms
+Installed 1 package <span class="k">in </span>45ms
+ - <span class="nv">humanize</span><span class="o">==</span>4.15.0  <span class="c"># oops</span>
+ - yt-dlp<span class="o">==</span>2026.3.3
+ + yt-dlp<span class="o">==</span>2026.3.13
+</code></pre>
+								</div>
+							</div>
+							<p>Because the environment variable <code class="language-plaintext highlighter-rouge">UV_PROJECT_ENVIRONMENT</code> is mandatory, I also created a Makefile to streamline command-line workflow:</p>
+							<div class="language-makefile highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="k">export </span><span class="nv">UV_PROJECT_ENVIRONMENT</span> <span class="o">=</span> <span class="p">$(</span>HOME<span class="p">)</span>/.local
+
+<span class="nl">.PHONY</span><span class="o">:</span> <span class="nf">sync upgrade</span>
+<span class="nl">sync</span><span class="o">:</span>
+  <span class="err">uv</span> <span class="err">sync</span>
+
+<span class="nl">upgrade</span><span class="o">:</span>
+  <span class="err">uv</span> <span class="err">sync</span> <span class="err">--upgrade</span>
+</code></pre>
+								</div>
+							</div>
+							<p>Now whenever I need another package inside my “home environment”, I simply edit <code class="language-plaintext highlighter-rouge">pyproject.toml</code> here and run <code class="language-plaintext highlighter-rouge">make</code>.
+								<code class="language-plaintext highlighter-rouge">uv</code> will ensure a consistent and sane package state, and I’ll never worry about <code class="language-plaintext highlighter-rouge">pip</code> again.</p>
 						</section>
 						<footer class="page__meta">
 							<p class="page__taxonomy">
 								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
 								<span itemprop="keywords">
-									<a href="/tag/android" class="page__taxonomy-item p-category" rel="tag">android</a>
+									<a href="/tag/python" class="page__taxonomy-item p-category" rel="tag">python</a>
 								</span>
 							</p>
-							<p class="page__taxonomy">
-								<strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
-								<span itemprop="keywords">
-									<a href="/category/stack-exchange" class="page__taxonomy-item p-category" rel="tag">stack-exchange</a>
-								</span>
-							</p>
-							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-updated" datetime="2021-02-04">Feb 4, 2021</time></p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-updated" datetime="2026-04-28">Apr 28, 2026</time></p>
 						</footer>
 						<section class="page__share">
 							<h4 class="page__share-title">Share on</h4>
-							<a href="https://x.com/intent/tweet?text=Some+ideas+about+multicore+on+Android%20https%3A%2F%2Fibug.io%2Fblog%2F2017%2F06%2Fandroid-phone-cores%2F" class="btn btn--x" aria-label="Share on X" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on X">
+							<a href="https://x.com/intent/tweet?text=Venv+at+home%3A+My+solution+to+%22error%3A+externally-managed-environment%22%20https%3A%2F%2Fibug.io%2Fblog%2F2026%2F04%2Fpython-venv-at-home%2F" class="btn btn--x" aria-label="Share on X" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on X">
 								<i class="fab fa-fw fa-x-twitter" aria-hidden="true"></i><span> X</span>
 							</a>
-							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2017%2F06%2Fandroid-phone-cores%2F" class="btn btn--facebook" aria-label="Share on Facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook">
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2026%2F04%2Fpython-venv-at-home%2F" class="btn btn--facebook" aria-label="Share on Facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook">
 								<i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span>
 							</a>
-							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https://ibug.io/blog/2017/06/android-phone-cores/" class="btn btn--linkedin" aria-label="Share on LinkedIn" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn">
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https://ibug.io/blog/2026/04/python-venv-at-home/" class="btn btn--linkedin" aria-label="Share on LinkedIn" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn">
 								<i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span>
 							</a>
-							<a href="https://bsky.app/intent/compose?text=Some+ideas+about+multicore+on+Android%20https%3A%2F%2Fibug.io%2Fblog%2F2017%2F06%2Fandroid-phone-cores%2F" class="btn btn--bluesky" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Bluesky">
+							<a href="https://bsky.app/intent/compose?text=Venv+at+home%3A+My+solution+to+%22error%3A+externally-managed-environment%22%20https%3A%2F%2Fibug.io%2Fblog%2F2026%2F04%2Fpython-venv-at-home%2F" class="btn btn--bluesky" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Bluesky">
 								<i class="fab fa-fw fa-bluesky" aria-hidden="true"></i><span> Bluesky</span>
 							</a>
 						</section>
 						<nav class="pagination">
-							<a href="/blog/2009/11/regex-match-open-tags-except-xhtml-self-contained-tags/" class="pagination--pager" title="RegEx match open tags except XHTML self-contained tags
+							<a href="/blog/2026/02/bonding-iperf3/" class="pagination--pager" title="BanD Width! It’s MyBOND!!
 ">Previous</a>
-							<a href="/blog/2017/08/append-int-to-stdstring/" class="pagination--pager" title="Append int to std::string
-">Next</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
 						</nav>
 					</div>
 					<div class="page__comments">
@@ -280,7 +379,54 @@
 										<span class="page__meta-sep"></span>
 										<span class="page__meta-readtime">
 											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											20 minute read
+											24 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/ldap.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											14 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2024/09/python3.12-user-packages/" rel="permalink">Make Python 3.12 install user packages without complaints
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">I have a habit of pip3 install --user and then expecting these packages under ~/.local/lib/ to be available for my Python scripts whenever I need them. However, with PEP 668 landing in Python 3.12,...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2024-09-02T00:00:00+00:00">Sep 2, 2024</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											1 minute read
 										</span>
 									</p>
 								</div>
@@ -303,54 +449,7 @@
 										<span class="page__meta-sep"></span>
 										<span class="page__meta-readtime">
 											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											35 minute read
-										</span>
-									</p>
-								</div>
-							</article>
-						</div>
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											16 minute read
-										</span>
-									</p>
-								</div>
-							</article>
-						</div>
-						<div class="grid__item">
-							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
-								<div class="archive__item-teaser">
-									<img src="/image/teaser/24.png" alt="">
-								</div>
-								<div class="archive__item-text">
-									<h2 class="archive__item-title no_toc" itemprop="headline">
-										<a href="/blog/2022/05/programming-24-game/" rel="permalink">Taking the 24 puzzle game to the next level
-										</a>
-									</h2>
-									<p class="archive__item-excerpt" itemprop="description">The 24 game is a classic math game where players try to arrange 4 integers into 24 using basic arithmetics (addition, subtraction, multiplication and division). Thanks to its popularity, it’s now a...</p>
-									<p class="page__meta">
-										<span class="page__meta-date">
-											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
-											<time datetime="2022-05-25T00:00:00+00:00">May 25, 2022</time>
-										</span>
-										<span class="page__meta-sep"></span>
-										<span class="page__meta-readtime">
-											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
-											12 minute read
+											30 minute read
 										</span>
 									</p>
 								</div>
@@ -482,8 +581,8 @@
 		</script>
 		<script>
 			var disqus_config = function () {
-			  this.page.url = "https://ibug.io/blog/2017/06/android-phone-cores/";  /* Replace PAGE_URL with your page's canonical URL variable */
-			  this.page.identifier = "/blog/2017/06/android-phone-cores"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			  this.page.url = "https://ibug.io/blog/2026/04/python-venv-at-home/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2026/04/python-venv-at-home"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
 			};
 			(function() { /* DON'T EDIT BELOW THIS LINE */
 			  var d = document, s = d.createElement('script');
