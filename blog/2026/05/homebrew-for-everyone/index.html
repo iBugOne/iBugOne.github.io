@@ -1,0 +1,561 @@
+<!doctype html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.28.0 by Michael Rose
+  Copyright 2013-2026 Michael Rose - mademistakes.com | @mmistakes
+  Copyright 2024-2026 iBug - ibugone.com | @iBug
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+-->
+<html lang="en-US" class="no-js">
+	<head>
+		<meta charset="utf-8">
+		<!-- begin _includes/seo.html -->
+		<title>Homebrew for Everyone: Easy FUSE trick for multi-user Homebrew on Linux setup - iBug</title>
+		<meta name="description" content="If you have tried looking for a multi-user Homebrew setup, chances are, this article from CodeJam is among your top Google results and you have read it many a time. It shared experiences of using a shared Homebrew setup and discussed three ways to make it work. Namely,">
+		<meta name="author" content="iBug">
+		<meta property="article:author" content="iBug">
+		<meta property="og:type" content="article">
+		<meta property="og:locale" content="en_US">
+		<meta property="og:site_name" content="iBug">
+		<meta property="og:title" content="Homebrew for Everyone: Easy FUSE trick for multi-user Homebrew on Linux setup">
+		<meta property="og:url" content="https://ibug.io/blog/2026/05/homebrew-for-everyone/">
+		<meta property="og:description" content="If you have tried looking for a multi-user Homebrew setup, chances are, this article from CodeJam is among your top Google results and you have read it many a time. It shared experiences of using a shared Homebrew setup and discussed three ways to make it work. Namely,">
+		<meta property="og:image" content="https://ibug.io/image/og.jpg">
+		<meta property="article:published_time" content="2026-05-09T00:00:00+00:00">
+		<meta property="article:modified_time" content="2026-05-09T19:56:26+00:00">
+		<link rel="canonical" href="https://ibug.io/blog/2026/05/homebrew-for-everyone/">
+		<meta name="google-site-verification" content="5_jn7a-vZslUtLJO-BkY-cPDGgah5JP49RGgeOBmYSk" />
+		<!-- end _includes/seo.html -->
+		<link href="/feed.xml" type="application/atom+xml" rel="alternate" title="iBug Feed">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<script type="text/javascript">
+			document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+		</script>
+		<!-- For all browsers -->
+		<link rel="stylesheet" href="/assets/css/main.css?v=d080169">
+		<link rel="stylesheet" href="https://static.ibugone.com/fontawesome/6/css/all.min.css" media="none" onload="if(media!='all')media='all'">
+		<link rel="shortcut icon" type="image/png" href="/assets/favicon.png">
+		<meta name="theme-color" content="#EDEDED">
+		<script>
+			const funcOnPageLoad = function() { document.body.classList.add("loaded"); };
+			document.addEventListener('DOMContentLoaded', funcOnPageLoad);
+		</script>
+	</head>
+	<body class="layout--single" dir="ltr">
+		<nav class="skip-links" aria-label="Skip links">
+			<ul>
+				<li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+				<li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+				<li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+			</ul>
+		</nav>
+		<div class="masthead">
+			<div class="masthead__inner-wrap">
+				<div class="masthead__menu">
+					<nav id="site-nav" class="greedy-nav" aria-label="Primary navigation">
+						<a class="site-logo" href="/"><img src="/assets/favicon.png" alt="iBug"></a>
+						<a class="site-title" href="/">
+							iBug
+						</a>
+						<ul class="visible-links">
+							<li class="masthead__menu-item">
+								<a
+                href="/about/"
+                
+                
+              >About</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a
+                href="/blog/"
+                
+                
+              >Blog</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a
+                href="/projects/"
+                
+                
+              >Projects</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a
+                href="/friends/"
+                
+                
+              >Friends</a>
+							</li>
+							<li class="masthead__menu-item">
+								<a
+                href="/cn/"
+                
+                
+              >中文内容</a>
+							</li>
+						</ul>
+						<button class="search__toggle" type="button">
+							<span class="visually-hidden">Toggle search</span>
+							<i class="fas fa-search"></i>
+						</button>
+						<button class="greedy-nav__toggle hidden" type="button">
+							<span class="visually-hidden">Toggle menu</span>
+							<div class="navicon"></div>
+						</button>
+						<ul class="hidden-links hidden"></ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+		<div class="initial-content">
+			<div class="page__hero--overlay"
+  style=" background-image: url('/image/header/mountain-1.jpg');"
+>
+				<div class="wrapper">
+					<h1 id="page-title" class="page__title" itemprop="headline">
+						Homebrew for Everyone: Easy FUSE trick for multi-user Homebrew on Linux setup
+					</h1>
+					<p class="page__meta">
+						<span class="page__meta-date">
+							<i class="far fa-calendar-alt" aria-hidden="true"></i>
+							<time datetime="2026-05-09T00:00:00+00:00">May 9, 2026</time>
+						</span>
+						<span class="page__meta-sep"></span>
+						<span class="page__meta-readtime">
+							<i class="far fa-clock" aria-hidden="true"></i>
+							3 minute read
+						</span>
+					</p>
+				</div>
+			</div>
+			<div id="main" role="main">
+				<div class="sidebar sticky">
+					<div itemscope itemtype="https://schema.org/Person" class="h-card">
+						<div class="author__avatar">
+							<a href="https://ibug.io/">
+								<img src="/image/avatar.png" alt="iBug" itemprop="image" class="u-photo">
+							</a>
+						</div>
+						<div class="author__content">
+							<h3 class="author__name p-name" itemprop="name">
+								<a class="u-url" rel="me" href="https://ibug.io/" itemprop="url">iBug</a>
+							</h3>
+							<div class="author__bio p-note" itemprop="description">
+								<p>Developer, System Administrator, Geek</p>
+							</div>
+						</div>
+						<div class="author__urls-wrapper">
+							<button class="btn btn--inverse">Follow</button>
+							<ul class="author__urls social-icons">
+								<li><a href="mailto:%69@ibugone.com" rel="nofollow noopener noreferrer me"><i class="fas fa-fw fa-envelope-square" aria-hidden="true"></i><span class="label">Email</span></a></li>
+								<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i><span class="label">Stack Overflow</span></a></li>
+								<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-github" aria-hidden="true"></i><span class="label">GitHub</span></a></li>
+								<li><a href="https://steamcommunity.com/id/ibugone" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-steam" aria-hidden="true"></i><span class="label">Steam</span></a></li>
+								<li><a href="https://t.me/iBugThought" rel="nofollow noopener noreferrer me" itemprop="sameAs"><i class="fab fa-fw fa-telegram" aria-hidden="true"></i><span class="label">Telegram Channel</span></a></li>
+								<!--
+  <li>
+    <a href="http://link-to-whatever-social-network.com/user/" itemprop="sameAs" rel="nofollow noopener noreferrer me">
+      <i class="fas fa-fw" aria-hidden="true"></i> Custom Social Profile Link
+    </a>
+  </li>
+-->
+							</ul>
+						</div>
+					</div>
+					<nav class="nav__list">
+						<input id="ac-toc" name="accordion-toc" type="checkbox" />
+						<label for="ac-toc">Toggle menu</label>
+						<ul class="nav__items">
+							<li>
+								<span class="nav__sub-title">iBug</span>
+								<ul>
+									<li><a href="/"><i class="fas fa-fw fa-home"></i> Home</a></li>
+									<li><a href="/about/"><i class="fas fa-fw fa-grin-alt"></i> About iBug</a></li>
+									<li><a href="/blog/"><i class="fas fa-fw fa-book"></i> Blog</a></li>
+									<li><a href="/skills/"><i class="fas fa-fw fa-wrench"></i> Skills</a></li>
+									<li><a href="/open-source/"><i class="fas fa-fw fa-box-open"></i> Open Source</a></li>
+									<li><a href="/projects/"><i class="fas fa-fw fa-puzzle-piece"></i> Projects</a></li>
+									<li><a href="https://notes.ibug.io/"><i class="fas fa-fw fa-sticky-note"></i> Notes</a></li>
+									<li><a href="/bookmarks/"><i class="fas fa-fw fa-bookmark"></i> Bookmarks</a></li>
+									<li><a href="/friends/"><i class="fas fa-fw fa-user-friends"></i> Friends</a></li>
+									<li><a href="/cn/"><i class="fas fa-fw fa-yin-yang"></i> Chinese Content</a></li>
+								</ul>
+							</li>
+						</ul>
+					</nav>
+				</div>
+				<article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
+					<meta itemprop="headline" content="Homebrew for Everyone: Easy FUSE trick for multi-user Homebrew on Linux setup">
+					<meta itemprop="description" content="If you have tried looking for a multi-user Homebrew setup, chances are, this article from CodeJam is among your top Google results and you have read it many a time.It shared experiences of using a shared Homebrew setup and discussed three ways to make it work.Namely,">
+					<meta itemprop="datePublished" content="2026-05-09T00:00:00+00:00">
+					<meta itemprop="dateModified" content="2026-05-09T19:56:26+00:00">
+					<div class="page__inner-wrap">
+						<section class="page__content e-content" itemprop="text">
+							<aside class="sidebar__right sticky">
+								<nav class="toc" aria-label="Table of contents">
+									<header>
+										<h4 class="nav__title"><i class="fas fa-file-alt fa-fw"></i> On this page</h4>
+									</header>
+									<ul class="toc__menu">
+										<li><a href="#idea">The idea</a></li>
+										<li><a href="#solution">The solution</a></li>
+									</ul>
+								</nav>
+							</aside>
+							<p>If you have tried looking for a multi-user Homebrew setup, chances are, <a href="https://www.codejam.info/2021/11/homebrew-multi-user.html">this article</a> from CodeJam is among your top Google results and you have read it many a time.
+								It shared experiences of using a shared Homebrew setup and discussed three ways to make it work.
+								Namely,</p>
+							<ol>
+								<li>
+									<p>Adding group-writable permission (<code class="language-plaintext highlighter-rouge">g+w</code>) on the Homebrew installation directory and add everyone to the homebrew group.</p>
+									<p>This worked at first until <code class="language-plaintext highlighter-rouge">brew</code> itself introduced more files without group-writable modes due to the default umask setup (presumably <code class="language-plaintext highlighter-rouge">0022</code>).</p>
+								</li>
+								<li>
+									<p>Have every user install their own Homebrew, with extra installations going to non-default prefix locations.</p>
+									<p>This worked reliably, with a major downside being having to compile <em>everything</em> from scratch, due to Homebrew casks relying on hardcoded default prefix (e.g. <code class="language-plaintext highlighter-rouge">/opt/homebrew</code> on macOS and <code class="language-plaintext highlighter-rouge">/home/linuxbrew/.linuxbrew</code> on Linux).
+										In particular, on Linux, the dynamic linker path embedded in ELF binaries is <code class="language-plaintext highlighter-rouge">/home/linuxbrew/.linuxbrew/lib/ld.so</code>.
+										Guess that’s why you have to compile everything from scratch.
+										It’s neither productive nor energy-efficient.</p>
+								</li>
+								<li>
+									<p>Create a shared user for Homebrew and have everyone <code class="language-plaintext highlighter-rouge">sudo</code> into it.</p>
+								</li>
+							</ol>
+							<p>The last option is indeed the best, and with shell aliasing to automatically prepend <code class="language-plaintext highlighter-rouge">brew</code> commands with <code class="language-plaintext highlighter-rouge">sudo</code>, usage experience is as smooth as regular single-user setup.</p>
+							<p>There is one implication, however, that every <code class="language-plaintext highlighter-rouge">brew</code> user must trust each other for not installing a malicious <code class="language-plaintext highlighter-rouge">ls</code> command.</p>
+							<p>This is the case for CodeJam, as both system users are the same physical user.
+								However, it may not always be the case, like on lab servers or shared workstations.</p>
+							<p>Is there a better way to allow every users install and manage their own Homebrew separately?</p>
+							<h2 id="idea">The idea</h2>
+							<p>To make things easier, I’ll focus on Homebew on Linux as I work exclusively with Linux.</p>
+							<p>Since there’s only one default prefix at <code class="language-plaintext highlighter-rouge">/home/linuxbrew/.linuxbrew</code> and its content is all stored with owner and group being the user who installed it, what if Homebrew can be installed in the user’s home directory and visible from the default prefix?</p>
+							<p>The first thing that came to my mind is <code class="language-plaintext highlighter-rouge">CLONE_NEWNS</code>, so that I can bind-mount the actual installation onto Homebrew’s prefix in each user’s own namespace.
+								To make things usable, this has to be implemented through systemd-logind so the mount namespace is applied on user login, possibly onto user service manager (i.e. <code class="language-plaintext highlighter-rouge">user@.service</code>).</p>
+							<p>After some careful research, I decided that while this is possible, it’s not going to be elegant:</p>
+							<p>There is <code class="language-plaintext highlighter-rouge">BindPaths=</code> in systemd services that is exactly what I was looking for, with two major issues that make it unreliable:</p>
+							<ul>
+								<li>While it may apply to <code class="language-plaintext highlighter-rouge">user@.service</code>, the use of private mount namespace means only processes spawned by the user service manager can see the bind mounts.
+									In particular, this may not always include login shell sessions, which is the most common way to use Homebrew.</li>
+								<li>There’s no variable for “user’s home directory” to be used in <code class="language-plaintext highlighter-rouge">BindPaths=</code>. Note that <code class="language-plaintext highlighter-rouge">user@.service</code> is managed by the system manager, so systemd template variables like <code class="language-plaintext highlighter-rouge">%h</code>, <code class="language-plaintext highlighter-rouge">%u</code> etc. all refer to the root user.
+									Even if <code class="language-plaintext highlighter-rouge">%i</code> can be used to refer to the instance name (in this case, user UID), it’s still not the home directory, and at best I can refer to <code class="language-plaintext highlighter-rouge">/home/linuxbrew/1000</code> with <code class="language-plaintext highlighter-rouge">%i</code>.
+									Far from ideal.</li>
+							</ul>
+							<h2 id="solution">The solution</h2>
+							<p>If all I need is a <code class="language-plaintext highlighter-rouge">/home/linuxbrew/.linuxbrew</code> directory that presents the actual Homebrew installation in the user’s home directory, a FUSE program that presents a symlink should suffice.</p>
+							<p>So here it goes: <a href="https://github.com/iBug/linuxbrew-fuse"><i class="fab fa-github"></i> iBug/linuxbrew-fuse</a></p>
+							<p>Showcase:</p>
+							<div class="language-console highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="gp">root@iBug-Server:~$</span><span class="w"> </span><span class="nb">df</span> <span class="nt">-h</span> /home/linuxbrew/
+<span class="go">Filesystem      Size  Used Avail Use% Mounted on
+linuxbrew-fuse   512   512     0 100% /home/linuxbrew
+
+</span><span class="gp">root@iBug-Server:~$</span><span class="w"> </span><span class="nb">ls</span> <span class="nt">-lA</span> /home/linuxbrew/
+<span class="go">total 0
+</span><span class="gp">lrw-r--r-- 0 root root 0 Jan  1  1970 .linuxbrew -&gt;</span><span class="w"> </span>/root/.linuxbrew
+<span class="go">
+</span><span class="gp">root@iBug-Server:~$</span><span class="w"> </span><span class="nb">sudo</span> <span class="nt">-iu</span> ubuntu <span class="nb">ls</span> <span class="nt">-lA</span> /home/linuxbrew/
+<span class="go">total 0
+</span><span class="gp">lrw-r--r-- 0 root root 0 Jan  1  1970 .linuxbrew -&gt;</span><span class="w"> </span>/home/ubuntu/.linuxbrew
+<span class="go">
+</span><span class="gp">root@iBug-Server:~$</span><span class="w"> </span><span class="nb">sudo</span> <span class="nt">-iu</span> ibug <span class="nb">ls</span> <span class="nt">-lA</span> /home/linuxbrew/
+<span class="go">total 0
+</span><span class="gp">lrw-r--r-- 0 root root 0 Jan  1  1970 .linuxbrew -&gt;</span><span class="w"> </span>/home/ibug/.linuxbrew
+</code></pre>
+								</div>
+							</div>
+							<p>Now any unprivileged user can install their own Homebrew using the provided Bash script, by creating a <code class="language-plaintext highlighter-rouge">.linuxbrew</code> directory beforehand:</p>
+							<div class="language-shell highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code><span class="nb">mkdir</span> <span class="nt">-p</span> ~/.linuxbrew
+/bin/bash <span class="nt">-c</span> <span class="s2">"</span><span class="si">$(</span>curl <span class="nt">-fsSL</span> https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh<span class="si">)</span><span class="s2">"</span>
+</code></pre>
+								</div>
+							</div>
+							<div class="language-text highlighter-rouge">
+								<div class="highlight">
+									<pre class="highlight"><code>==&gt; Checking for `sudo` access (which may request your password)...
+==&gt; This script will install:
+/home/linuxbrew/.linuxbrew/bin/brew
+/home/linuxbrew/.linuxbrew/share/doc/homebrew
+/home/linuxbrew/.linuxbrew/share/man/man1/brew.1
+/home/linuxbrew/.linuxbrew/share/zsh/site-functions/_brew
+/home/linuxbrew/.linuxbrew/etc/bash_completion.d/brew
+/home/linuxbrew/.linuxbrew/Homebrew
+</code></pre>
+								</div>
+							</div>
+							<p>A systemd service definition is also provided to automatically start the FUSE program on boot.</p>
+						</section>
+						<footer class="page__meta">
+							<p class="page__taxonomy">
+								<strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+								<span itemprop="keywords">
+									<a href="/tag/linux" class="page__taxonomy-item p-category" rel="tag">linux</a>
+								</span>
+							</p>
+							<p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-updated" datetime="2026-05-09">May 9, 2026</time></p>
+						</footer>
+						<section class="page__share">
+							<h4 class="page__share-title">Share on</h4>
+							<a href="https://x.com/intent/tweet?text=Homebrew+for+Everyone%3A+Easy+FUSE+trick+for+multi-user+Homebrew+on+Linux+setup%20https%3A%2F%2Fibug.io%2Fblog%2F2026%2F05%2Fhomebrew-for-everyone%2F" class="btn btn--x" aria-label="Share on X" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on X">
+								<i class="fab fa-fw fa-x-twitter" aria-hidden="true"></i><span> X</span>
+							</a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fibug.io%2Fblog%2F2026%2F05%2Fhomebrew-for-everyone%2F" class="btn btn--facebook" aria-label="Share on Facebook" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Facebook">
+								<i class="fab fa-fw fa-facebook" aria-hidden="true"></i><span> Facebook</span>
+							</a>
+							<a href="https://www.linkedin.com/shareArticle?mini=true&url=https://ibug.io/blog/2026/05/homebrew-for-everyone/" class="btn btn--linkedin" aria-label="Share on LinkedIn" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on LinkedIn">
+								<i class="fab fa-fw fa-linkedin" aria-hidden="true"></i><span> LinkedIn</span>
+							</a>
+							<a href="https://bsky.app/intent/compose?text=Homebrew+for+Everyone%3A+Easy+FUSE+trick+for+multi-user+Homebrew+on+Linux+setup%20https%3A%2F%2Fibug.io%2Fblog%2F2026%2F05%2Fhomebrew-for-everyone%2F" class="btn btn--bluesky" onclick="window.open(this.href, 'window', 'left=20,top=20,width=500,height=500,toolbar=1,resizable=0'); return false;" title="Share on Bluesky">
+								<i class="fab fa-fw fa-bluesky" aria-hidden="true"></i><span> Bluesky</span>
+							</a>
+						</section>
+						<nav class="pagination">
+							<a href="/blog/2026/04/python-venv-at-home/" class="pagination--pager" title="Venv at home: My solution to “error: externally-managed-environment”
+">Previous</a>
+							<a href="#" class="pagination--pager disabled">Next</a>
+						</nav>
+					</div>
+					<div class="page__comments">
+						<h4 class="page__comments-title">Leave a comment</h4>
+						<section id="disqus_thread"></section>
+					</div>
+				</article>
+				<div class="page__related">
+					<h2 class="page__related-title">You may also enjoy</h2>
+					<div class="grid__wrapper">
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/linux-container.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2021/01/linux-container-explained/" rel="permalink">A Deep Dive into Containers
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">Since years ago, containers have been a hot topic everywhere. There are many container softwares like Docker, Linux Containers and Singularity. It’s hard to say one understand what containers are w...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2021-01-31T00:00:00+00:00">Jan 31, 2021</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											24 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-teaser">
+									<img src="/image/teaser/ldap.jpg" alt="">
+								</div>
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2022/03/linux-openldap-server/" rel="permalink">Centralized Linux authentication with OpenLDAP
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">LDAP, the #1 way to get your graduation delayed (as has always been the meme around Tsinghua University), is every SysAdmin’s dream tool for their servers. As mighty as its rumors fly, LDAP takes t...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2022-03-18T00:00:00+00:00">Mar 18, 2022</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											14 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2025/07/japan-june-2025/" rel="permalink">A trip to Japan
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">As a more meaningful way to celebrate our graduation as Master students and spend this last truly free time in a long while, I joined my friends on a trip to Japan.
+									</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2025-07-23T00:00:00+00:00">Jul 23, 2025</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											30 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+						<div class="grid__item">
+							<article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+								<div class="archive__item-text">
+									<h2 class="archive__item-title no_toc" itemprop="headline">
+										<a href="/blog/2019/12/mass-crawl-douban-with-aws/" rel="permalink">High-performance mass web crawling on AWS
+										</a>
+									</h2>
+									<p class="archive__item-excerpt" itemprop="description">The 3rd-and-last experiment of course Web Information Processing and Application required us to create a recommendation engine, and “predict” the rating (1-5 stars) for 4M user-item pairs based on ...</p>
+									<p class="page__meta">
+										<span class="page__meta-date">
+											<i class="far fa-fw fa-calendar-alt" aria-hidden="true"></i>
+											<time datetime="2019-12-28T00:00:00+00:00">Dec 28, 2019</time>
+										</span>
+										<span class="page__meta-sep"></span>
+										<span class="page__meta-readtime">
+											<i class="far fa-fw fa-clock" aria-hidden="true"></i>
+											16 minute read
+										</span>
+									</p>
+								</div>
+							</article>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="search-content">
+			<div class="search-content__inner-wrap">
+				<div class="search-searchbar"></div>
+				<div class="search-hits"></div>
+			</div>
+		</div>
+		<div id="footer" class="page__footer">
+			<footer>
+				<!-- start custom footer snippets -->
+				<!-- end custom footer snippets -->
+				<div class="page__footer-follow">
+					<ul class="social-icons">
+						<li><strong>Follow:</strong></li>
+						<li><a href="https://github.com/iBug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+						<li><a href="https://stackoverflow.com/users/5958455/ibug" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-stack-overflow" aria-hidden="true"></i> Stack Overflow</a></li>
+						<li><a href="/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+					</ul>
+				</div>
+				<div class="page__footer-copyright">
+					<p>&copy; 2026 iBug. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</p>
+					<p>Except when otherwise noted, content on this site is licensed under the <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0 License</a>.</p>
+					<p><a href="/privacy-policy">Privacy Policy</a> | <a href="/sitemap.xml">Sitemap (XML)</a></p>
+					<p>
+						Site version <a href="/status" class="version-text">G-977</a>
+					</p>
+				</div>
+			</footer>
+		</div>
+		<script src="/assets/js/main.min.js"></script>
+		<script>
+			// Including InstantSearch.js library and styling
+			const loadSearch = function() {
+			  const loadCSS = function(src) {
+			    var link = document.createElement('link');
+			    link.rel = 'stylesheet';
+			    link.type = 'text/css';
+			    link.href = src;
+			    link.media = 'all';
+			    document.head.appendChild(link);
+			  };
+
+			  var script = document.createElement('script');
+			  script.setAttribute("type", "text/javascript");
+			  script.setAttribute("src", "https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.js");
+			  script.addEventListener("load", function() {
+			    // Instantiating InstantSearch.js with Algolia credentials
+			    const search = instantsearch({
+			      appId: '14DZKASAEJ',
+			      apiKey: 'a0d8cb9da2d6ad0d17dcd40c58c72a56',
+			      indexName: 'iBug_website',
+			      searchParameters: {
+			        restrictSearchableAttributes: ['title', 'content']
+			      }
+			    });
+
+			    const hitTemplate = function(hit) {
+			      const url = hit.url;
+			      const hightlight = hit._highlightResult;
+			      const title = hightlight.title && hightlight.title.value  || "";
+			      const content = hightlight.html && hightlight.html.value  || "";
+
+			      return `
+			        <div class="list__item">
+			          <article class="archive__item" itemscope itemtype="https://schema.org/CreativeWork">
+			            <h2 class="archive__item-title" itemprop="headline"><a href="${url}">${title}</a></h2>
+			            <div class="archive__item-excerpt" itemprop="description">${content}</div>
+			          </article>
+			        </div>
+			      `;
+			    }
+
+			    // Adding searchbar and results widgets
+			    search.addWidget(
+			      instantsearch.widgets.searchBox({
+			        container: '.search-searchbar',
+			        poweredBy: true,
+			        placeholder: 'Enter your search term...'
+			      })
+			    );
+			    search.addWidget(
+			      instantsearch.widgets.hits({
+			        container: '.search-hits',
+			        templates: {
+			          item: hitTemplate,
+			          empty: 'No results',
+			        }
+			      })
+			    );
+
+			    if (!search.started) {
+			      search.start();
+			    }
+			  });
+			  document.body.appendChild(script);
+
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch.min.css");
+			  loadCSS("https://cdn.jsdelivr.net/npm/instantsearch.js@2.3.3/dist/instantsearch-theme-algolia.min.css");
+			};
+
+			// Starting the search only when toggle is clicked
+			$(document).ready(function() {
+			  var scriptLoaded = false;
+
+			  $(".search__toggle").on("click", function() {
+			    if (!scriptLoaded) {
+			      loadSearch();
+			      scriptLoaded = true;
+			    }
+			  });
+			});
+		</script>
+		<!-- Global site tag (gtag.js) - Google Analytics -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-V93196TX91"></script>
+		<script>
+			window.dataLayer = window.dataLayer || [];
+			function gtag(){dataLayer.push(arguments);}
+			gtag('js', new Date());
+
+			gtag('config', 'G-V93196TX91', { 'anonymize_ip': false});
+		</script>
+		<script>
+			var disqus_config = function () {
+			  this.page.url = "https://ibug.io/blog/2026/05/homebrew-for-everyone/";  /* Replace PAGE_URL with your page's canonical URL variable */
+			  this.page.identifier = "/blog/2026/05/homebrew-for-everyone"; /* Replace PAGE_IDENTIFIER with your page's unique identifier variable */
+			};
+			(function() { /* DON'T EDIT BELOW THIS LINE */
+			  var d = document, s = d.createElement('script');
+			  s.src = 'https://ibugone.disqus.com/embed.js';
+			  s.setAttribute('data-timestamp', +new Date());
+			  (d.head || d.body).appendChild(s);
+			})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+	</body>
+</html>

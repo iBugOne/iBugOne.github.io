@@ -1,49 +1,133 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2026-05-09T11:55:16+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Venv at home: My solution to “error: externally-managed-environment”</title><link href="https://ibug.io/blog/2026/04/python-venv-at-home/" rel="alternate" type="text/html" title="Venv at home: My solution to “error: externally-managed-environment”" /><published>2026-04-28T00:00:00+00:00</published><updated>2026-04-28T15:53:02+00:00</updated><id>https://ibug.io/blog/2026/04/python-venv-at-home</id><content type="html" xml:base="https://ibug.io/blog/2026/04/python-venv-at-home/"><![CDATA[<p>Since Python 3.12 (which enforces <a href="https://peps.python.org/pep-0668/">PEP 668</a>) shipped with Ubuntu 24.04, like many others, I found my usual habit of installing PyPI packages to my user site directory (<code class="language-plaintext highlighter-rouge">~/.local</code>) no longer working due to the <code class="language-plaintext highlighter-rouge">externally-managed-environment</code> restriction.</p>
-			<p>I consider it a perfectly valid and common use case to install some frequently-used packages (e.g. <code class="language-plaintext highlighter-rouge">regex</code>, <code class="language-plaintext highlighter-rouge">requests</code>, <code class="language-plaintext highlighter-rouge">mkdocs</code>) to my home directory so that they’re conveniently available whenever and wherever I start a <code class="language-plaintext highlighter-rouge">python3</code> REPL shell.</p>
-			<p>Fortunately, it’s not hard to find a straightforward workaround once you know <a href="https://docs.python.org/3/library/sys_path_init.html">this</a>:</p>
-			<blockquote>
-				<p>If <code class="language-plaintext highlighter-rouge">PYTHONHOME</code> is not set, and <strong>a <code class="language-plaintext highlighter-rouge">pyvenv.cfg</code> file is found</strong> […] <strong>in its parent directory</strong>,
-					<code class="language-plaintext highlighter-rouge">sys.prefix</code> and <code class="language-plaintext highlighter-rouge">sys.exec_prefix</code> get set to the directory containing <code class="language-plaintext highlighter-rouge">pyvenv.cfg</code>, […].
-					This is used by Virtual Environments.</p>
-			</blockquote>
-			<p>So if we can trick Python into thinking <code class="language-plaintext highlighter-rouge">~/.local</code> is a virtual environment, the issue resolves itself.
-				It’s not hard to figure out the required content for <code class="language-plaintext highlighter-rouge">~/.local/pyvenv.cfg</code>, much less writing it.</p>
-			<div class="language-ini highlighter-rouge">
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://ibug.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://ibug.io/" rel="alternate" type="text/html" /><updated>2026-05-09T11:57:12+00:00</updated><id>https://ibug.io/feed.xml</id><title type="html">iBug</title><subtitle>The little personal site for iBug</subtitle><author><name>iBug</name></author><entry><title type="html">Homebrew for Everyone: Easy FUSE trick for multi-user Homebrew on Linux setup</title><link href="https://ibug.io/blog/2026/05/homebrew-for-everyone/" rel="alternate" type="text/html" title="Homebrew for Everyone: Easy FUSE trick for multi-user Homebrew on Linux setup" /><published>2026-05-09T00:00:00+00:00</published><updated>2026-05-09T19:56:26+00:00</updated><id>https://ibug.io/blog/2026/05/homebrew-for-everyone</id><content type="html" xml:base="https://ibug.io/blog/2026/05/homebrew-for-everyone/"><![CDATA[<p>If you have tried looking for a multi-user Homebrew setup, chances are, <a href="https://www.codejam.info/2021/11/homebrew-multi-user.html">this article</a> from CodeJam is among your top Google results and you have read it many a time.
+				It shared experiences of using a shared Homebrew setup and discussed three ways to make it work.
+				Namely,</p>
+			<ol>
+				<li>
+					<p>Adding group-writable permission (<code class="language-plaintext highlighter-rouge">g+w</code>) on the Homebrew installation directory and add everyone to the homebrew group.</p>
+					<p>This worked at first until <code class="language-plaintext highlighter-rouge">brew</code> itself introduced more files without group-writable modes due to the default umask setup (presumably <code class="language-plaintext highlighter-rouge">0022</code>).</p>
+				</li>
+				<li>
+					<p>Have every user install their own Homebrew, with extra installations going to non-default prefix locations.</p>
+					<p>This worked reliably, with a major downside being having to compile <em>everything</em> from scratch, due to Homebrew casks relying on hardcoded default prefix (e.g. <code class="language-plaintext highlighter-rouge">/opt/homebrew</code> on macOS and <code class="language-plaintext highlighter-rouge">/home/linuxbrew/.linuxbrew</code> on Linux).
+						In particular, on Linux, the dynamic linker path embedded in ELF binaries is <code class="language-plaintext highlighter-rouge">/home/linuxbrew/.linuxbrew/lib/ld.so</code>.
+						Guess that’s why you have to compile everything from scratch.
+						It’s neither productive nor energy-efficient.</p>
+				</li>
+				<li>
+					<p>Create a shared user for Homebrew and have everyone <code class="language-plaintext highlighter-rouge">sudo</code> into it.</p>
+				</li>
+			</ol>
+			<p>The last option is indeed the best, and with shell aliasing to automatically prepend <code class="language-plaintext highlighter-rouge">brew</code> commands with <code class="language-plaintext highlighter-rouge">sudo</code>, usage experience is as smooth as regular single-user setup.</p>
+			<p>There is one implication, however, that every <code class="language-plaintext highlighter-rouge">brew</code> user must trust each other for not installing a malicious <code class="language-plaintext highlighter-rouge">ls</code> command.</p>
+			<p>This is the case for CodeJam, as both system users are the same physical user.
+				However, it may not always be the case, like on lab servers or shared workstations.</p>
+			<p>Is there a better way to allow every users install and manage their own Homebrew separately?</p>
+			<h2 id="idea">The idea</h2>
+			<p>To make things easier, I’ll focus on Homebew on Linux as I work exclusively with Linux.</p>
+			<p>Since there’s only one default prefix at <code class="language-plaintext highlighter-rouge">/home/linuxbrew/.linuxbrew</code> and its content is all stored with owner and group being the user who installed it, what if Homebrew can be installed in the user’s home directory and visible from the default prefix?</p>
+			<p>The first thing that came to my mind is <code class="language-plaintext highlighter-rouge">CLONE_NEWNS</code>, so that I can bind-mount the actual installation onto Homebrew’s prefix in each user’s own namespace.
+				To make things usable, this has to be implemented through systemd-logind so the mount namespace is applied on user login, possibly onto user service manager (i.e. <code class="language-plaintext highlighter-rouge">user@.service</code>).</p>
+			<p>After some careful research, I decided that while this is possible, it’s not going to be elegant:</p>
+			<p>There is <code class="language-plaintext highlighter-rouge">BindPaths=</code> in systemd services that is exactly what I was looking for, with two major issues that make it unreliable:</p>
+			<ul>
+				<li>While it may apply to <code class="language-plaintext highlighter-rouge">user@.service</code>, the use of private mount namespace means only processes spawned by the user service manager can see the bind mounts.
+					In particular, this may not always include login shell sessions, which is the most common way to use Homebrew.</li>
+				<li>There’s no variable for “user’s home directory” to be used in <code class="language-plaintext highlighter-rouge">BindPaths=</code>. Note that <code class="language-plaintext highlighter-rouge">user@.service</code> is managed by the system manager, so systemd template variables like <code class="language-plaintext highlighter-rouge">%h</code>, <code class="language-plaintext highlighter-rouge">%u</code> etc. all refer to the root user.
+					Even if <code class="language-plaintext highlighter-rouge">%i</code> can be used to refer to the instance name (in this case, user UID), it’s still not the home directory, and at best I can refer to <code class="language-plaintext highlighter-rouge">/home/linuxbrew/1000</code> with <code class="language-plaintext highlighter-rouge">%i</code>.
+					Far from ideal.</li>
+			</ul>
+			<h2 id="solution">The solution</h2>
+			<p>If all I need is a <code class="language-plaintext highlighter-rouge">/home/linuxbrew/.linuxbrew</code> directory that presents the actual Homebrew installation in the user’s home directory, a FUSE program that presents a symlink should suffice.</p>
+			<p>So here it goes: <a href="https://github.com/iBug/linuxbrew-fuse"><i class="fab fa-github"></i> iBug/linuxbrew-fuse</a></p>
+			<p>Showcase:</p>
+			<div class="language-console highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code><span class="py">include-system-site-packages</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">true</span>
+					<pre class="highlight"><code><span class="gp">root@iBug-Server:~$</span><span class="w"> </span><span class="nb">df</span> <span class="nt">-h</span> /home/linuxbrew/
+<span class="go">Filesystem      Size  Used Avail Use% Mounted on
+linuxbrew-fuse   512   512     0 100% /home/linuxbrew
+
+</span><span class="gp">root@iBug-Server:~$</span><span class="w"> </span><span class="nb">ls</span> <span class="nt">-lA</span> /home/linuxbrew/
+<span class="go">total 0
+</span><span class="gp">lrw-r--r-- 0 root root 0 Jan  1  1970 .linuxbrew -&gt;</span><span class="w"> </span>/root/.linuxbrew
+<span class="go">
+</span><span class="gp">root@iBug-Server:~$</span><span class="w"> </span><span class="nb">sudo</span> <span class="nt">-iu</span> ubuntu <span class="nb">ls</span> <span class="nt">-lA</span> /home/linuxbrew/
+<span class="go">total 0
+</span><span class="gp">lrw-r--r-- 0 root root 0 Jan  1  1970 .linuxbrew -&gt;</span><span class="w"> </span>/home/ubuntu/.linuxbrew
+<span class="go">
+</span><span class="gp">root@iBug-Server:~$</span><span class="w"> </span><span class="nb">sudo</span> <span class="nt">-iu</span> ibug <span class="nb">ls</span> <span class="nt">-lA</span> /home/linuxbrew/
+<span class="go">total 0
+</span><span class="gp">lrw-r--r-- 0 root root 0 Jan  1  1970 .linuxbrew -&gt;</span><span class="w"> </span>/home/ibug/.linuxbrew
 </code></pre>
 				</div>
 			</div>
-			<p>Of course an empty <code class="language-plaintext highlighter-rouge">pyvenv.cfg</code> will do the trick, but including system packages allows you to skip some redundancy between your user site and system site directories.</p>
-			<p>We also need to ensure that Python is invoked from <code class="language-plaintext highlighter-rouge">~/.local/bin</code>:</p>
+			<p>Now any unprivileged user can install their own Homebrew using the provided Bash script, by creating a <code class="language-plaintext highlighter-rouge">.linuxbrew</code> directory beforehand:</p>
 			<div class="language-shell highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code><span class="nb">ln</span> <span class="nt">-sfn</span> /usr/bin/python3 ~/.local/bin/python3
+					<pre class="highlight"><code><span class="nb">mkdir</span> <span class="nt">-p</span> ~/.linuxbrew
+/bin/bash <span class="nt">-c</span> <span class="s2">"</span><span class="si">$(</span>curl <span class="nt">-fsSL</span> https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh<span class="si">)</span><span class="s2">"</span>
 </code></pre>
 				</div>
 			</div>
-			<p>However, <code class="language-plaintext highlighter-rouge">pip3</code> still complains about <code class="language-plaintext highlighter-rouge">externally-managed-environment</code>.
-				This is because the Python interpreter that runs <code class="language-plaintext highlighter-rouge">pip3</code> is still launched from the system path (<code class="language-plaintext highlighter-rouge">/usr/bin/python3</code>) due to the shebang line.
-				To fix this, just call <code class="language-plaintext highlighter-rouge">pip</code> with our desired path to Python:</p>
-			<div class="language-shell highlighter-rouge">
+			<div class="language-text highlighter-rouge">
 				<div class="highlight">
-					<pre class="highlight"><code><span class="c"># Assuming ~/.local/bin comes early in $PATH</span>
+					<pre class="highlight"><code>==&gt; Checking for `sudo` access (which may request your password)...
+==&gt; This script will install:
+/home/linuxbrew/.linuxbrew/bin/brew
+/home/linuxbrew/.linuxbrew/share/doc/homebrew
+/home/linuxbrew/.linuxbrew/share/man/man1/brew.1
+/home/linuxbrew/.linuxbrew/share/zsh/site-functions/_brew
+/home/linuxbrew/.linuxbrew/etc/bash_completion.d/brew
+/home/linuxbrew/.linuxbrew/Homebrew
+</code></pre>
+				</div>
+			</div>
+			<p>A systemd service definition is also provided to automatically start the FUSE program on boot.</p>
+			]]></content><author><name>iBug</name></author><category term="linux" /><summary type="html"><![CDATA[If you have tried looking for a multi-user Homebrew setup, chances are, this article from CodeJam is among your top Google results and you have read it many a time. It shared experiences of using a shared Homebrew setup and discussed three ways to make it work. Namely,]]></summary></entry><entry><title type="html">Venv at home: My solution to “error: externally-managed-environment”</title><link href="https://ibug.io/blog/2026/04/python-venv-at-home/" rel="alternate" type="text/html" title="Venv at home: My solution to “error: externally-managed-environment”" /><published>2026-04-28T00:00:00+00:00</published><updated>2026-04-28T15:53:02+00:00</updated><id>https://ibug.io/blog/2026/04/python-venv-at-home</id><content type="html" xml:base="https://ibug.io/blog/2026/04/python-venv-at-home/"><![CDATA[<p>Since Python 3.12 (which enforces <a href="https://peps.python.org/pep-0668/">PEP 668</a>) shipped with Ubuntu 24.04, like many others, I found my usual habit of installing PyPI packages to my user site directory (<code class="language-plaintext highlighter-rouge">~/.local</code>) no longer working due to the <code class="language-plaintext highlighter-rouge">externally-managed-environment</code> restriction.</p>
+		<p>I consider it a perfectly valid and common use case to install some frequently-used packages (e.g. <code class="language-plaintext highlighter-rouge">regex</code>, <code class="language-plaintext highlighter-rouge">requests</code>, <code class="language-plaintext highlighter-rouge">mkdocs</code>) to my home directory so that they’re conveniently available whenever and wherever I start a <code class="language-plaintext highlighter-rouge">python3</code> REPL shell.</p>
+		<p>Fortunately, it’s not hard to find a straightforward workaround once you know <a href="https://docs.python.org/3/library/sys_path_init.html">this</a>:</p>
+		<blockquote>
+			<p>If <code class="language-plaintext highlighter-rouge">PYTHONHOME</code> is not set, and <strong>a <code class="language-plaintext highlighter-rouge">pyvenv.cfg</code> file is found</strong> […] <strong>in its parent directory</strong>,
+				<code class="language-plaintext highlighter-rouge">sys.prefix</code> and <code class="language-plaintext highlighter-rouge">sys.exec_prefix</code> get set to the directory containing <code class="language-plaintext highlighter-rouge">pyvenv.cfg</code>, […].
+				This is used by Virtual Environments.</p>
+		</blockquote>
+		<p>So if we can trick Python into thinking <code class="language-plaintext highlighter-rouge">~/.local</code> is a virtual environment, the issue resolves itself.
+			It’s not hard to figure out the required content for <code class="language-plaintext highlighter-rouge">~/.local/pyvenv.cfg</code>, much less writing it.</p>
+		<div class="language-ini highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="py">include-system-site-packages</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">true</span>
+</code></pre>
+			</div>
+		</div>
+		<p>Of course an empty <code class="language-plaintext highlighter-rouge">pyvenv.cfg</code> will do the trick, but including system packages allows you to skip some redundancy between your user site and system site directories.</p>
+		<p>We also need to ensure that Python is invoked from <code class="language-plaintext highlighter-rouge">~/.local/bin</code>:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="nb">ln</span> <span class="nt">-sfn</span> /usr/bin/python3 ~/.local/bin/python3
+</code></pre>
+			</div>
+		</div>
+		<p>However, <code class="language-plaintext highlighter-rouge">pip3</code> still complains about <code class="language-plaintext highlighter-rouge">externally-managed-environment</code>.
+			This is because the Python interpreter that runs <code class="language-plaintext highlighter-rouge">pip3</code> is still launched from the system path (<code class="language-plaintext highlighter-rouge">/usr/bin/python3</code>) due to the shebang line.
+			To fix this, just call <code class="language-plaintext highlighter-rouge">pip</code> with our desired path to Python:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="c"># Assuming ~/.local/bin comes early in $PATH</span>
 python3 <span class="nt">-m</span> pip <span class="nb">install</span> <span class="nt">-U</span> pip
 </code></pre>
-				</div>
 			</div>
-			<p>We can now inspect the new <code class="language-plaintext highlighter-rouge">pip3</code> command at the new location:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="nv">$ </span><span class="nb">head</span> <span class="nt">-1</span> <span class="si">$(</span>which pip3<span class="si">)</span>
+		</div>
+		<p>We can now inspect the new <code class="language-plaintext highlighter-rouge">pip3</code> command at the new location:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="nv">$ </span><span class="nb">head</span> <span class="nt">-1</span> <span class="si">$(</span>which pip3<span class="si">)</span>
 <span class="c">#!/home/ubuntu/.local/bin/python3</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Now this <code class="language-plaintext highlighter-rouge">pip3</code> command will happily install any requested package into <code class="language-plaintext highlighter-rouge">~/.local/lib</code> without complaining about environments:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="nv">$ </span>pip3 <span class="nb">install</span> <span class="nt">--user</span> <span class="nt">--upgrade</span> humanize
+		</div>
+		<p>Now this <code class="language-plaintext highlighter-rouge">pip3</code> command will happily install any requested package into <code class="language-plaintext highlighter-rouge">~/.local/lib</code> without complaining about environments:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="nv">$ </span>pip3 <span class="nb">install</span> <span class="nt">--user</span> <span class="nt">--upgrade</span> humanize
 Looking <span class="k">in </span>indexes: https://mirrors.ustc.edu.cn/pypi/simple
 Requirement already satisfied: humanize <span class="k">in</span> /usr/lib/python3/dist-packages <span class="o">(</span>4.12.1<span class="o">)</span>
 Collecting humanize
@@ -51,25 +135,25 @@ Collecting humanize
 Installing collected packages: humanize
 Successfully installed humanize-4.15.0
 </code></pre>
-				</div>
 			</div>
-			<p>We don’t need the <code class="language-plaintext highlighter-rouge">--user</code> flag anymore but I kept it as a habit of being explicit.</p>
-			<h2 id="uv">Using <code class="language-plaintext highlighter-rouge">uv</code></h2>
-			<p>Python <code class="language-plaintext highlighter-rouge">pip</code> has no idea when a package is installed and <em>why</em>, and in particular it does not know the difference between your package demands and what has been installed.
-				If your <code class="language-plaintext highlighter-rouge">requirements.txt</code> undergoes changes and you want to ensure you have exactly the necessary set of packages installed, your best bet is to delete your <code class="language-plaintext highlighter-rouge">venv</code> and create it anew.</p>
-			<p>So here comes <a href="https://docs.astral.sh/uv/">uv</a>, a next-generation package <em>manager</em> for Python, whereas <code class="language-plaintext highlighter-rouge">pip</code> is at best a package <em>downloader</em>.
-				As uv is designed for managing virtual environments within projects, some minor hacks are needed to make it treat <code class="language-plaintext highlighter-rouge">~/.local</code> as our venv, instead of creating another <code class="language-plaintext highlighter-rouge">.venv</code> directory.
-				This is laid out in the <a href="https://docs.astral.sh/uv/reference/environment/#uv_project_environment">uv documentation</a>.</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="nb">export </span><span class="nv">UV_PROJECT_ENVIRONMENT</span><span class="o">=</span>~/.local
+		</div>
+		<p>We don’t need the <code class="language-plaintext highlighter-rouge">--user</code> flag anymore but I kept it as a habit of being explicit.</p>
+		<h2 id="uv">Using <code class="language-plaintext highlighter-rouge">uv</code></h2>
+		<p>Python <code class="language-plaintext highlighter-rouge">pip</code> has no idea when a package is installed and <em>why</em>, and in particular it does not know the difference between your package demands and what has been installed.
+			If your <code class="language-plaintext highlighter-rouge">requirements.txt</code> undergoes changes and you want to ensure you have exactly the necessary set of packages installed, your best bet is to delete your <code class="language-plaintext highlighter-rouge">venv</code> and create it anew.</p>
+		<p>So here comes <a href="https://docs.astral.sh/uv/">uv</a>, a next-generation package <em>manager</em> for Python, whereas <code class="language-plaintext highlighter-rouge">pip</code> is at best a package <em>downloader</em>.
+			As uv is designed for managing virtual environments within projects, some minor hacks are needed to make it treat <code class="language-plaintext highlighter-rouge">~/.local</code> as our venv, instead of creating another <code class="language-plaintext highlighter-rouge">.venv</code> directory.
+			This is laid out in the <a href="https://docs.astral.sh/uv/reference/environment/#uv_project_environment">uv documentation</a>.</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="nb">export </span><span class="nv">UV_PROJECT_ENVIRONMENT</span><span class="o">=</span>~/.local
 </code></pre>
-				</div>
 			</div>
-			<p>I also migrated my manual installations to a proper <code class="language-plaintext highlighter-rouge">pyproject.toml</code>:</p>
-			<div class="language-toml highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">[</span><span class="n">project</span><span class="k">]</span>
+		</div>
+		<p>I also migrated my manual installations to a proper <code class="language-plaintext highlighter-rouge">pyproject.toml</code>:</p>
+		<div class="language-toml highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">[</span><span class="n">project</span><span class="k">]</span>
 <span class="n">name</span> <span class="o">=</span><span class="w"> </span><span class="s">"home"</span>
 <span class="n">version</span> <span class="o">=</span><span class="w"> </span><span class="s">"0.0.1"</span>
 <span class="n">requires-python</span> <span class="o">=</span><span class="w"> </span><span class="s">"&gt;=3.12, &lt;4.0"</span>
@@ -86,12 +170,12 @@ Successfully installed humanize-4.15.0
   <span class="s">"yt-dlp"</span><span class="p">,</span>
 <span class="p">]</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Now we can simply run <code class="language-plaintext highlighter-rouge">uv sync</code> to have our desired packages ready with no fluff, and <code class="language-plaintext highlighter-rouge">uv sync --upgrade</code> to upgrade them when needed:</p>
-			<div class="language-shell highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="nv">$ </span>uv <span class="nb">sync</span> <span class="nt">--upgrade</span>
+		</div>
+		<p>Now we can simply run <code class="language-plaintext highlighter-rouge">uv sync</code> to have our desired packages ready with no fluff, and <code class="language-plaintext highlighter-rouge">uv sync --upgrade</code> to upgrade them when needed:</p>
+		<div class="language-shell highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="nv">$ </span>uv <span class="nb">sync</span> <span class="nt">--upgrade</span>
 Resolved 71 packages <span class="k">in </span>517ms
 Prepared 1 package <span class="k">in </span>447ms
 Uninstalled 2 packages <span class="k">in </span>57ms
@@ -100,12 +184,12 @@ Installed 1 package <span class="k">in </span>45ms
  - yt-dlp<span class="o">==</span>2026.3.3
  + yt-dlp<span class="o">==</span>2026.3.13
 </code></pre>
-				</div>
 			</div>
-			<p>Because the environment variable <code class="language-plaintext highlighter-rouge">UV_PROJECT_ENVIRONMENT</code> is mandatory, I also created a Makefile to streamline command-line workflow:</p>
-			<div class="language-makefile highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="k">export </span><span class="nv">UV_PROJECT_ENVIRONMENT</span> <span class="o">=</span> <span class="p">$(</span>HOME<span class="p">)</span>/.local
+		</div>
+		<p>Because the environment variable <code class="language-plaintext highlighter-rouge">UV_PROJECT_ENVIRONMENT</code> is mandatory, I also created a Makefile to streamline command-line workflow:</p>
+		<div class="language-makefile highlighter-rouge">
+			<div class="highlight">
+				<pre class="highlight"><code><span class="k">export </span><span class="nv">UV_PROJECT_ENVIRONMENT</span> <span class="o">=</span> <span class="p">$(</span>HOME<span class="p">)</span>/.local
 
 <span class="nl">.PHONY</span><span class="o">:</span> <span class="nf">sync upgrade</span>
 <span class="nl">sync</span><span class="o">:</span>
@@ -114,279 +198,279 @@ Installed 1 package <span class="k">in </span>45ms
 <span class="nl">upgrade</span><span class="o">:</span>
   <span class="err">uv</span> <span class="err">sync</span> <span class="err">--upgrade</span>
 </code></pre>
-				</div>
 			</div>
-			<p>Now whenever I need another package inside my “home environment”, I simply edit <code class="language-plaintext highlighter-rouge">pyproject.toml</code> here and run <code class="language-plaintext highlighter-rouge">make</code>.
-				<code class="language-plaintext highlighter-rouge">uv</code> will ensure a consistent and sane package state, and I’ll never worry about <code class="language-plaintext highlighter-rouge">pip</code> again.</p>
-			]]></content><author><name>iBug</name></author><category term="python" /><summary type="html"><![CDATA[Since Python 3.12 (which enforces PEP 668) shipped with Ubuntu 24.04, like many others, I found my usual habit of installing PyPI packages to my user site directory (~/.local) no longer working due to the externally-managed-environment restriction.]]></summary></entry><entry><title type="html">BanD Width! It’s MyBOND!!</title><link href="https://ibug.io/blog/2026/02/bonding-iperf3/" rel="alternate" type="text/html" title="BanD Width! It’s MyBOND!!" /><published>2026-02-16T00:00:00+00:00</published><updated>2026-02-24T11:27:10+00:00</updated><id>https://ibug.io/blog/2026/02/bonding-iperf3</id><content type="html" xml:base="https://ibug.io/blog/2026/02/bonding-iperf3/"><![CDATA[<p>My workstation in my univerity lab has consistently generated some 600&nbsp;TiB of annual upload across two PT sites. After an upgrade to the room a few months back, it received the most wanted upgrade for years: A second 1 Gbps line to the campus network. I immediately made the two NICs into one bonded 2 Gbps interface, and it has shined for many times with multiple popular torrents.</p>
-		<p>Inspired by my friend <a href="https://blog.yfycloud.site/about/">@TheRainstorm</a> who managed to double his upload by load-balancing WireGuard over two lines from the same ISP (China Mobile), I figured I’d leverage this chance and make a better understanding though some more detailed experiments.</p>
-		<h2 id="setup">Setup</h2>
-		<h3 id="sender">Sender</h3>
-		<p>My workstation:</p>
-		<ul>
-			<li>Ubuntu 24.04 (Kernel 6.8)</li>
-			<li>Two Intel I210 NICs, connected to the same switch of campus network</li>
-			<li>iperf 3.16</li>
-		</ul>
-		<p>Controlled variables:</p>
-		<ul>
-			<li>Bond mode: Round-robin (<code class="language-plaintext highlighter-rouge">balance-rr</code>, 0) vs Transmit Load Balancing (<code class="language-plaintext highlighter-rouge">balance-tlb</code>, 5)
-				<ul>
-					<li>For <code class="language-plaintext highlighter-rouge">balance-tlb</code> mode, <code class="language-plaintext highlighter-rouge">xmit_hash_policy</code> is set to <code class="language-plaintext highlighter-rouge">layer3+4</code>.</li>
-				</ul>
-			</li>
-			<li>TCP congestion control (CC) algorithm: CUBIC vs BBR</li>
-			<li>Parallelism (the value to <code class="language-plaintext highlighter-rouge">-P</code> option of iperf3): 1 vs 4
-				<ul>
-					<li>Note that due to the way <code class="language-plaintext highlighter-rouge">balance-tlb</code> works, with only one connection, bonding is not going to be different than using only one NIC.
-						&lt;!–</li>
-				</ul>
-			</li>
-			<li>Whether another application is constantly generating background upload activity.
-				<ul>
-					<li>This is implemented by letting qBittorrent run in the background with upload rate limited to 1&nbsp;MB/s, and is labeled <code class="language-plaintext highlighter-rouge">qB</code> during the experiment.
-						–&gt;</li>
-				</ul>
-			</li>
-		</ul>
-		<p>These variables combine into 8 different scenarios, which is enough dimensions to look at in isolation.</p>
-		<h3 id="receivers">Receivers</h3>
-		<p>I sourced three destination (receiver) hosts with &gt; 2 Gbps download bandwidth, labeled as following:</p>
-		<ul>
-			<li><strong>A</strong>. One of our usually idle lab servers.</li>
-			<li><strong>B</strong>. <a href="https://mirrors.ustc.edu.cn/">USTC Mirrors</a> server.</li>
-			<li><strong>C</strong>. Friend-sponsored home broadband in Shanghai.</li>
-		</ul>
-		<p>Typical traits of these destinations are:</p>
-		<table>
-			<thead>
-				<tr>
-					<th style="text-align: center">Destination</th>
-					<th style="text-align: center">Download BW</th>
-					<th style="text-align: center">Latency</th>
-					<th style="text-align: center">BDP*</th>
-					<th style="text-align: left">Other notes</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td style="text-align: center">A</td>
-					<td style="text-align: center">10 Gbps</td>
-					<td style="text-align: center">250 ± 30 us</td>
-					<td style="text-align: center">500&nbsp;KB</td>
-					<td style="text-align: left">Mostly idle</td>
-				</tr>
-				<tr>
-					<td style="text-align: center">B</td>
-					<td style="text-align: center">10 Gbps</td>
-					<td style="text-align: center">300 ± 200 us</td>
-					<td style="text-align: center">600&nbsp;KB</td>
-					<td style="text-align: left">Under constant load</td>
-				</tr>
-				<tr>
-					<td style="text-align: center">C</td>
-					<td style="text-align: center">~2.2 Gbps</td>
-					<td style="text-align: center">28 ± 0.2 ms</td>
-					<td style="text-align: center">56&nbsp;MB</td>
-					<td style="text-align: left">Mostly idle</td>
-				</tr>
-			</tbody>
-		</table>
-		<p>* Because my workstation can only generate upload at a theoretical maximum speed of 2 Gbps, BDP is calculated at this speed.</p>
-		<h2 id="analyses">Analyses</h2>
-		<p>iperf3 provides three indicators: Transmission bitrate, number of retransmissions and the congestion window size.</p>
-		<p>We cannot attach too much importance to the bond mode when testing bonding performance, so let’s get straight to it.</p>
-		<h3 id="single-stream">Single stream</h3>
-		<table>
-			<thead>
-				<tr>
-					<th style="text-align: center">Dest</th>
-					<th style="text-align: center">P</th>
-					<th style="text-align: center">CC</th>
-					<th style="text-align: right">Bitrate (RR)</th>
-					<th style="text-align: right">Bitrate (TLB)</th>
-					<th style="text-align: right">Retr (RR)</th>
-					<th style="text-align: right">Retr (TLB)</th>
-					<th style="text-align: right">Cwnd (RR)</th>
-					<th style="text-align: right">Cwnd (TLB)</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td style="text-align: center">A</td>
-					<td style="text-align: center">1</td>
-					<td style="text-align: center">BBR</td>
-					<td style="text-align: right">1.78 Gbps</td>
-					<td style="text-align: right">940 Mbps</td>
-					<td style="text-align: right">20079</td>
-					<td style="text-align: right">20</td>
-					<td style="text-align: right">331&nbsp;KB</td>
-					<td style="text-align: right">233&nbsp;KB</td>
-				</tr>
-				<tr>
-					<td style="text-align: center">A</td>
-					<td style="text-align: center">1</td>
-					<td style="text-align: center">CUBIC</td>
-					<td style="text-align: right">1.19 Gbps</td>
-					<td style="text-align: right">936 Mbps</td>
-					<td style="text-align: right">7258</td>
-					<td style="text-align: right">110</td>
-					<td style="text-align: right">103&nbsp;KB</td>
-					<td style="text-align: right">385&nbsp;KB</td>
-				</tr>
-				<tr>
-					<td style="text-align: center">B</td>
-					<td style="text-align: center">1</td>
-					<td style="text-align: center">BBR</td>
-					<td style="text-align: right">1.62 Gbps</td>
-					<td style="text-align: right">944 Mbps</td>
-					<td style="text-align: right">37018</td>
-					<td style="text-align: right">51</td>
-					<td style="text-align: right">343&nbsp;KB</td>
-					<td style="text-align: right">241&nbsp;KB</td>
-				</tr>
-				<tr>
-					<td style="text-align: center">B</td>
-					<td style="text-align: center">1</td>
-					<td style="text-align: center">CUBIC</td>
-					<td style="text-align: right">1.19 Gbps</td>
-					<td style="text-align: right">941 Mbps</td>
-					<td style="text-align: right">6914</td>
-					<td style="text-align: right">72</td>
-					<td style="text-align: right">98&nbsp;KB</td>
-					<td style="text-align: right">338&nbsp;KB</td>
-				</tr>
-				<tr>
-					<td style="text-align: center">C</td>
-					<td style="text-align: center">1</td>
-					<td style="text-align: center">BBR</td>
-					<td style="text-align: right">1.11 Gbps</td>
-					<td style="text-align: right">935 Mbps</td>
-					<td style="text-align: right">0</td>
-					<td style="text-align: right">0</td>
-					<td style="text-align: right">8.87&nbsp;MB</td>
-					<td style="text-align: right">7.67&nbsp;MB</td>
-				</tr>
-				<tr>
-					<td style="text-align: center">C</td>
-					<td style="text-align: center">1</td>
-					<td style="text-align: center">CUBIC</td>
-					<td style="text-align: right">1.16 Gbps</td>
-					<td style="text-align: right">931 Mbps</td>
-					<td style="text-align: right">0</td>
-					<td style="text-align: right">0</td>
-					<td style="text-align: right">6.44&nbsp;MB</td>
-					<td style="text-align: right">4.20&nbsp;MB</td>
-				</tr>
-			</tbody>
-		</table>
-		<p>We first look at TLB bond mode.
-			As expected, with one single stream, it runs on only one slave interface (confirmed by watching <code class="language-plaintext highlighter-rouge">bmon -p eth0,eth1,bond0</code> during execution).
-			And with the entire route being able to carry nearly 1.8 Gbps, there’s no surprise that different congestion algorithms don’t affect single-stream performance in all scenarios.</p>
-		<p>We then note the huge difference between the BBR and CUBIC algorithms in RR bond mode.
-			Because destinations A and B both have a very low BDP, any fluctuation in latency hits hard on CUBIC in forms of out-of-order packet deliveries, which reflects clearly in the difference of retransmitted packets and the Cwnd size.
-			In TLB mode, with only one active NIC, retransmission is kept low, but in RR mode it skyrocketed.</p>
-		<p>For destination C however, that’s an entirely different case (zero retransmission) with its own reason:
-			There’s enough BDP for the sender to raise Cwnd up to 8&nbsp;MiB, but the receiver reports a window of only 4&nbsp;MiB, so the entire transmission is limited by the receiver, not congestion or link load.</p>
-		<h3 id="parallel-streams">Parallel streams</h3>
-		<p>During the experiment, I found it very often that all 4 streams gets load-balanced onto one NIC in <code class="language-plaintext highlighter-rouge">balance-tlb</code> mode, so I had to re-run the tests multiple times to obtain the result where 4 streams are equally balanced onto both NICs.
-			Results from imbalanced stream distributions are discarded during retry.</p>
-		<p>For 4 parallel streams, the result looks much better:</p>
-		<table>
-			<thead>
-				<tr>
-					<th style="text-align: center">Dest</th>
-					<th style="text-align: center">P</th>
-					<th style="text-align: center">CC</th>
-					<th style="text-align: right">Bitrate (RR)</th>
-					<th style="text-align: right">Bitrate (TLB)</th>
-					<th style="text-align: right">Retr (RR)</th>
-					<th style="text-align: right">Retr (TLB)</th>
-					<th style="text-align: right">Cwnd (RR)</th>
-					<th style="text-align: right">Cwnd (TLB)</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td style="text-align: center">A</td>
-					<td style="text-align: center">4</td>
-					<td style="text-align: center">BBR</td>
-					<td style="text-align: right">1.79 Gbps</td>
-					<td style="text-align: right">1.77 Gbps</td>
-					<td style="text-align: right">41357</td>
-					<td style="text-align: right">18</td>
-					<td style="text-align: right">222&nbsp;KB</td>
-					<td style="text-align: right">178&nbsp;KB</td>
-				</tr>
-				<tr>
-					<td style="text-align: center">A</td>
-					<td style="text-align: center">4</td>
-					<td style="text-align: center">CUBIC</td>
-					<td style="text-align: right">1.80 Gbps</td>
-					<td style="text-align: right">1.77 Gbps</td>
-					<td style="text-align: right">13254</td>
-					<td style="text-align: right">82</td>
-					<td style="text-align: right">48&nbsp;KB</td>
-					<td style="text-align: right">306&nbsp;KB</td>
-				</tr>
-				<tr>
-					<td style="text-align: center">B</td>
-					<td style="text-align: center">4</td>
-					<td style="text-align: center">BBR</td>
-					<td style="text-align: right">1.79 Gbps</td>
-					<td style="text-align: right">1.72 Gbps</td>
-					<td style="text-align: right">61810</td>
-					<td style="text-align: right">9368</td>
-					<td style="text-align: right">237&nbsp;KB</td>
-					<td style="text-align: right">236&nbsp;KB</td>
-				</tr>
-				<tr>
-					<td style="text-align: center">B</td>
-					<td style="text-align: center">4</td>
-					<td style="text-align: center">CUBIC</td>
-					<td style="text-align: right">1.77 Gbps</td>
-					<td style="text-align: right">1.74 Gbps</td>
-					<td style="text-align: right">15549</td>
-					<td style="text-align: right">4243</td>
-					<td style="text-align: right">31&nbsp;KB</td>
-					<td style="text-align: right">174&nbsp;KB</td>
-				</tr>
-				<tr>
-					<td style="text-align: center">C</td>
-					<td style="text-align: center">4</td>
-					<td style="text-align: center">BBR</td>
-					<td style="text-align: right">1.70 Gbps</td>
-					<td style="text-align: right">1.82 Gbps</td>
-					<td style="text-align: right">185</td>
-					<td style="text-align: right">0</td>
-					<td style="text-align: right">4.04&nbsp;MB</td>
-					<td style="text-align: right">3.84&nbsp;MB</td>
-				</tr>
-				<tr>
-					<td style="text-align: center">C</td>
-					<td style="text-align: center">4</td>
-					<td style="text-align: center">CUBIC</td>
-					<td style="text-align: right">1.74 Gbps</td>
-					<td style="text-align: right">1.82 Gbps</td>
-					<td style="text-align: right">20</td>
-					<td style="text-align: right">17</td>
-					<td style="text-align: right">2.91&nbsp;MB</td>
-					<td style="text-align: right">2.89&nbsp;MB</td>
-				</tr>
-			</tbody>
-		</table>
-		<p>The gap between RR and TLB no longer exists, and differences in retransmissions and Cwnd size can be attributed entirely to the CC algorithms themselves.
-			In particular, due to Cwnd falling under 4&nbsp;MiB, or possibly just random network fluctuation, retransmission to destination C is observed for the first time.
-			It’s also interesting to note that the difference in Cwnd size between BBR and CUBIC increased to 5x, compared to some 3 ~ 3.5x in single-stream case.</p>
-		<p>However, the numbers of retransmissions are lower by magnitudes in TLB bond mode than in RR mode.
-			I believe this is because the latencies to destinations A and B have very high variation compared to their means (averages), which will result in high number of reordered packets when packets from the same stream are distributed through two underlying interfaces.</p>
-		<h2 id="bottom-line">Bottom line</h2>
-		<p>I did a set of rudimentary experiments in this article, and TCP upload is only a very generic use case.
-			For example, @TheRainstorm is running Sunshine streaming inside load-balanced WireGuard tunnel, and turning up forward error correction (FEC) level is one way to offset fluctuation and packet loss.
-			I’ve been running qBittorrent uploads under <code class="language-plaintext highlighter-rouge">balance-tlb</code> mode for months, and it’s been very stable because qBittorrent uploads torrent content over many connections.</p>
-		<p>If anyone wants a more reliable multi-NIC bonding setup, I’d definitely recommend getting a capable switch and doing bonding in <code class="language-plaintext highlighter-rouge">802.3ad</code> (LACP) mode.
-			But for a small homelab, <code class="language-plaintext highlighter-rouge">balance-rr</code> + BBR would probably suffice for optimizing single-stream transmission speed, at the cost of some overhead on bandwidth.</p>
-		]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[My workstation in my univerity lab has consistently generated some 600&nbsp;TiB of annual upload across two PT sites. After an upgrade to the room a few months back, it received the most wanted upgrade for years: A second 1 Gbps line to the campus network. I immediately made the two NICs into one bonded 2 Gbps interface, and it has shined for many times with multiple popular torrents.]]></summary></entry><entry><title type="html">Manually resize Guild Chest in Palworld 0.6</title><link href="https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest/" rel="alternate" type="text/html" title="Manually resize Guild Chest in Palworld 0.6" /><published>2025-07-28T00:00:00+00:00</published><updated>2025-07-28T14:02:46+00:00</updated><id>https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest</id><content type="html" xml:base="https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest/"><![CDATA[<p>The Guild Chest, first introduced in Feybreak Update, easily became the best way to move items between bases.
+		</div>
+		<p>Now whenever I need another package inside my “home environment”, I simply edit <code class="language-plaintext highlighter-rouge">pyproject.toml</code> here and run <code class="language-plaintext highlighter-rouge">make</code>.
+			<code class="language-plaintext highlighter-rouge">uv</code> will ensure a consistent and sane package state, and I’ll never worry about <code class="language-plaintext highlighter-rouge">pip</code> again.</p>
+		]]></content><author><name>iBug</name></author><category term="python" /><summary type="html"><![CDATA[Since Python 3.12 (which enforces PEP 668) shipped with Ubuntu 24.04, like many others, I found my usual habit of installing PyPI packages to my user site directory (~/.local) no longer working due to the externally-managed-environment restriction.]]></summary></entry><entry><title type="html">BanD Width! It’s MyBOND!!</title><link href="https://ibug.io/blog/2026/02/bonding-iperf3/" rel="alternate" type="text/html" title="BanD Width! It’s MyBOND!!" /><published>2026-02-16T00:00:00+00:00</published><updated>2026-02-24T11:27:10+00:00</updated><id>https://ibug.io/blog/2026/02/bonding-iperf3</id><content type="html" xml:base="https://ibug.io/blog/2026/02/bonding-iperf3/"><![CDATA[<p>My workstation in my univerity lab has consistently generated some 600&nbsp;TiB of annual upload across two PT sites. After an upgrade to the room a few months back, it received the most wanted upgrade for years: A second 1 Gbps line to the campus network. I immediately made the two NICs into one bonded 2 Gbps interface, and it has shined for many times with multiple popular torrents.</p>
+	<p>Inspired by my friend <a href="https://blog.yfycloud.site/about/">@TheRainstorm</a> who managed to double his upload by load-balancing WireGuard over two lines from the same ISP (China Mobile), I figured I’d leverage this chance and make a better understanding though some more detailed experiments.</p>
+	<h2 id="setup">Setup</h2>
+	<h3 id="sender">Sender</h3>
+	<p>My workstation:</p>
+	<ul>
+		<li>Ubuntu 24.04 (Kernel 6.8)</li>
+		<li>Two Intel I210 NICs, connected to the same switch of campus network</li>
+		<li>iperf 3.16</li>
+	</ul>
+	<p>Controlled variables:</p>
+	<ul>
+		<li>Bond mode: Round-robin (<code class="language-plaintext highlighter-rouge">balance-rr</code>, 0) vs Transmit Load Balancing (<code class="language-plaintext highlighter-rouge">balance-tlb</code>, 5)
+			<ul>
+				<li>For <code class="language-plaintext highlighter-rouge">balance-tlb</code> mode, <code class="language-plaintext highlighter-rouge">xmit_hash_policy</code> is set to <code class="language-plaintext highlighter-rouge">layer3+4</code>.</li>
+			</ul>
+		</li>
+		<li>TCP congestion control (CC) algorithm: CUBIC vs BBR</li>
+		<li>Parallelism (the value to <code class="language-plaintext highlighter-rouge">-P</code> option of iperf3): 1 vs 4
+			<ul>
+				<li>Note that due to the way <code class="language-plaintext highlighter-rouge">balance-tlb</code> works, with only one connection, bonding is not going to be different than using only one NIC.
+					&lt;!–</li>
+			</ul>
+		</li>
+		<li>Whether another application is constantly generating background upload activity.
+			<ul>
+				<li>This is implemented by letting qBittorrent run in the background with upload rate limited to 1&nbsp;MB/s, and is labeled <code class="language-plaintext highlighter-rouge">qB</code> during the experiment.
+					–&gt;</li>
+			</ul>
+		</li>
+	</ul>
+	<p>These variables combine into 8 different scenarios, which is enough dimensions to look at in isolation.</p>
+	<h3 id="receivers">Receivers</h3>
+	<p>I sourced three destination (receiver) hosts with &gt; 2 Gbps download bandwidth, labeled as following:</p>
+	<ul>
+		<li><strong>A</strong>. One of our usually idle lab servers.</li>
+		<li><strong>B</strong>. <a href="https://mirrors.ustc.edu.cn/">USTC Mirrors</a> server.</li>
+		<li><strong>C</strong>. Friend-sponsored home broadband in Shanghai.</li>
+	</ul>
+	<p>Typical traits of these destinations are:</p>
+	<table>
+		<thead>
+			<tr>
+				<th style="text-align: center">Destination</th>
+				<th style="text-align: center">Download BW</th>
+				<th style="text-align: center">Latency</th>
+				<th style="text-align: center">BDP*</th>
+				<th style="text-align: left">Other notes</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td style="text-align: center">A</td>
+				<td style="text-align: center">10 Gbps</td>
+				<td style="text-align: center">250 ± 30 us</td>
+				<td style="text-align: center">500&nbsp;KB</td>
+				<td style="text-align: left">Mostly idle</td>
+			</tr>
+			<tr>
+				<td style="text-align: center">B</td>
+				<td style="text-align: center">10 Gbps</td>
+				<td style="text-align: center">300 ± 200 us</td>
+				<td style="text-align: center">600&nbsp;KB</td>
+				<td style="text-align: left">Under constant load</td>
+			</tr>
+			<tr>
+				<td style="text-align: center">C</td>
+				<td style="text-align: center">~2.2 Gbps</td>
+				<td style="text-align: center">28 ± 0.2 ms</td>
+				<td style="text-align: center">56&nbsp;MB</td>
+				<td style="text-align: left">Mostly idle</td>
+			</tr>
+		</tbody>
+	</table>
+	<p>* Because my workstation can only generate upload at a theoretical maximum speed of 2 Gbps, BDP is calculated at this speed.</p>
+	<h2 id="analyses">Analyses</h2>
+	<p>iperf3 provides three indicators: Transmission bitrate, number of retransmissions and the congestion window size.</p>
+	<p>We cannot attach too much importance to the bond mode when testing bonding performance, so let’s get straight to it.</p>
+	<h3 id="single-stream">Single stream</h3>
+	<table>
+		<thead>
+			<tr>
+				<th style="text-align: center">Dest</th>
+				<th style="text-align: center">P</th>
+				<th style="text-align: center">CC</th>
+				<th style="text-align: right">Bitrate (RR)</th>
+				<th style="text-align: right">Bitrate (TLB)</th>
+				<th style="text-align: right">Retr (RR)</th>
+				<th style="text-align: right">Retr (TLB)</th>
+				<th style="text-align: right">Cwnd (RR)</th>
+				<th style="text-align: right">Cwnd (TLB)</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td style="text-align: center">A</td>
+				<td style="text-align: center">1</td>
+				<td style="text-align: center">BBR</td>
+				<td style="text-align: right">1.78 Gbps</td>
+				<td style="text-align: right">940 Mbps</td>
+				<td style="text-align: right">20079</td>
+				<td style="text-align: right">20</td>
+				<td style="text-align: right">331&nbsp;KB</td>
+				<td style="text-align: right">233&nbsp;KB</td>
+			</tr>
+			<tr>
+				<td style="text-align: center">A</td>
+				<td style="text-align: center">1</td>
+				<td style="text-align: center">CUBIC</td>
+				<td style="text-align: right">1.19 Gbps</td>
+				<td style="text-align: right">936 Mbps</td>
+				<td style="text-align: right">7258</td>
+				<td style="text-align: right">110</td>
+				<td style="text-align: right">103&nbsp;KB</td>
+				<td style="text-align: right">385&nbsp;KB</td>
+			</tr>
+			<tr>
+				<td style="text-align: center">B</td>
+				<td style="text-align: center">1</td>
+				<td style="text-align: center">BBR</td>
+				<td style="text-align: right">1.62 Gbps</td>
+				<td style="text-align: right">944 Mbps</td>
+				<td style="text-align: right">37018</td>
+				<td style="text-align: right">51</td>
+				<td style="text-align: right">343&nbsp;KB</td>
+				<td style="text-align: right">241&nbsp;KB</td>
+			</tr>
+			<tr>
+				<td style="text-align: center">B</td>
+				<td style="text-align: center">1</td>
+				<td style="text-align: center">CUBIC</td>
+				<td style="text-align: right">1.19 Gbps</td>
+				<td style="text-align: right">941 Mbps</td>
+				<td style="text-align: right">6914</td>
+				<td style="text-align: right">72</td>
+				<td style="text-align: right">98&nbsp;KB</td>
+				<td style="text-align: right">338&nbsp;KB</td>
+			</tr>
+			<tr>
+				<td style="text-align: center">C</td>
+				<td style="text-align: center">1</td>
+				<td style="text-align: center">BBR</td>
+				<td style="text-align: right">1.11 Gbps</td>
+				<td style="text-align: right">935 Mbps</td>
+				<td style="text-align: right">0</td>
+				<td style="text-align: right">0</td>
+				<td style="text-align: right">8.87&nbsp;MB</td>
+				<td style="text-align: right">7.67&nbsp;MB</td>
+			</tr>
+			<tr>
+				<td style="text-align: center">C</td>
+				<td style="text-align: center">1</td>
+				<td style="text-align: center">CUBIC</td>
+				<td style="text-align: right">1.16 Gbps</td>
+				<td style="text-align: right">931 Mbps</td>
+				<td style="text-align: right">0</td>
+				<td style="text-align: right">0</td>
+				<td style="text-align: right">6.44&nbsp;MB</td>
+				<td style="text-align: right">4.20&nbsp;MB</td>
+			</tr>
+		</tbody>
+	</table>
+	<p>We first look at TLB bond mode.
+		As expected, with one single stream, it runs on only one slave interface (confirmed by watching <code class="language-plaintext highlighter-rouge">bmon -p eth0,eth1,bond0</code> during execution).
+		And with the entire route being able to carry nearly 1.8 Gbps, there’s no surprise that different congestion algorithms don’t affect single-stream performance in all scenarios.</p>
+	<p>We then note the huge difference between the BBR and CUBIC algorithms in RR bond mode.
+		Because destinations A and B both have a very low BDP, any fluctuation in latency hits hard on CUBIC in forms of out-of-order packet deliveries, which reflects clearly in the difference of retransmitted packets and the Cwnd size.
+		In TLB mode, with only one active NIC, retransmission is kept low, but in RR mode it skyrocketed.</p>
+	<p>For destination C however, that’s an entirely different case (zero retransmission) with its own reason:
+		There’s enough BDP for the sender to raise Cwnd up to 8&nbsp;MiB, but the receiver reports a window of only 4&nbsp;MiB, so the entire transmission is limited by the receiver, not congestion or link load.</p>
+	<h3 id="parallel-streams">Parallel streams</h3>
+	<p>During the experiment, I found it very often that all 4 streams gets load-balanced onto one NIC in <code class="language-plaintext highlighter-rouge">balance-tlb</code> mode, so I had to re-run the tests multiple times to obtain the result where 4 streams are equally balanced onto both NICs.
+		Results from imbalanced stream distributions are discarded during retry.</p>
+	<p>For 4 parallel streams, the result looks much better:</p>
+	<table>
+		<thead>
+			<tr>
+				<th style="text-align: center">Dest</th>
+				<th style="text-align: center">P</th>
+				<th style="text-align: center">CC</th>
+				<th style="text-align: right">Bitrate (RR)</th>
+				<th style="text-align: right">Bitrate (TLB)</th>
+				<th style="text-align: right">Retr (RR)</th>
+				<th style="text-align: right">Retr (TLB)</th>
+				<th style="text-align: right">Cwnd (RR)</th>
+				<th style="text-align: right">Cwnd (TLB)</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td style="text-align: center">A</td>
+				<td style="text-align: center">4</td>
+				<td style="text-align: center">BBR</td>
+				<td style="text-align: right">1.79 Gbps</td>
+				<td style="text-align: right">1.77 Gbps</td>
+				<td style="text-align: right">41357</td>
+				<td style="text-align: right">18</td>
+				<td style="text-align: right">222&nbsp;KB</td>
+				<td style="text-align: right">178&nbsp;KB</td>
+			</tr>
+			<tr>
+				<td style="text-align: center">A</td>
+				<td style="text-align: center">4</td>
+				<td style="text-align: center">CUBIC</td>
+				<td style="text-align: right">1.80 Gbps</td>
+				<td style="text-align: right">1.77 Gbps</td>
+				<td style="text-align: right">13254</td>
+				<td style="text-align: right">82</td>
+				<td style="text-align: right">48&nbsp;KB</td>
+				<td style="text-align: right">306&nbsp;KB</td>
+			</tr>
+			<tr>
+				<td style="text-align: center">B</td>
+				<td style="text-align: center">4</td>
+				<td style="text-align: center">BBR</td>
+				<td style="text-align: right">1.79 Gbps</td>
+				<td style="text-align: right">1.72 Gbps</td>
+				<td style="text-align: right">61810</td>
+				<td style="text-align: right">9368</td>
+				<td style="text-align: right">237&nbsp;KB</td>
+				<td style="text-align: right">236&nbsp;KB</td>
+			</tr>
+			<tr>
+				<td style="text-align: center">B</td>
+				<td style="text-align: center">4</td>
+				<td style="text-align: center">CUBIC</td>
+				<td style="text-align: right">1.77 Gbps</td>
+				<td style="text-align: right">1.74 Gbps</td>
+				<td style="text-align: right">15549</td>
+				<td style="text-align: right">4243</td>
+				<td style="text-align: right">31&nbsp;KB</td>
+				<td style="text-align: right">174&nbsp;KB</td>
+			</tr>
+			<tr>
+				<td style="text-align: center">C</td>
+				<td style="text-align: center">4</td>
+				<td style="text-align: center">BBR</td>
+				<td style="text-align: right">1.70 Gbps</td>
+				<td style="text-align: right">1.82 Gbps</td>
+				<td style="text-align: right">185</td>
+				<td style="text-align: right">0</td>
+				<td style="text-align: right">4.04&nbsp;MB</td>
+				<td style="text-align: right">3.84&nbsp;MB</td>
+			</tr>
+			<tr>
+				<td style="text-align: center">C</td>
+				<td style="text-align: center">4</td>
+				<td style="text-align: center">CUBIC</td>
+				<td style="text-align: right">1.74 Gbps</td>
+				<td style="text-align: right">1.82 Gbps</td>
+				<td style="text-align: right">20</td>
+				<td style="text-align: right">17</td>
+				<td style="text-align: right">2.91&nbsp;MB</td>
+				<td style="text-align: right">2.89&nbsp;MB</td>
+			</tr>
+		</tbody>
+	</table>
+	<p>The gap between RR and TLB no longer exists, and differences in retransmissions and Cwnd size can be attributed entirely to the CC algorithms themselves.
+		In particular, due to Cwnd falling under 4&nbsp;MiB, or possibly just random network fluctuation, retransmission to destination C is observed for the first time.
+		It’s also interesting to note that the difference in Cwnd size between BBR and CUBIC increased to 5x, compared to some 3 ~ 3.5x in single-stream case.</p>
+	<p>However, the numbers of retransmissions are lower by magnitudes in TLB bond mode than in RR mode.
+		I believe this is because the latencies to destinations A and B have very high variation compared to their means (averages), which will result in high number of reordered packets when packets from the same stream are distributed through two underlying interfaces.</p>
+	<h2 id="bottom-line">Bottom line</h2>
+	<p>I did a set of rudimentary experiments in this article, and TCP upload is only a very generic use case.
+		For example, @TheRainstorm is running Sunshine streaming inside load-balanced WireGuard tunnel, and turning up forward error correction (FEC) level is one way to offset fluctuation and packet loss.
+		I’ve been running qBittorrent uploads under <code class="language-plaintext highlighter-rouge">balance-tlb</code> mode for months, and it’s been very stable because qBittorrent uploads torrent content over many connections.</p>
+	<p>If anyone wants a more reliable multi-NIC bonding setup, I’d definitely recommend getting a capable switch and doing bonding in <code class="language-plaintext highlighter-rouge">802.3ad</code> (LACP) mode.
+		But for a small homelab, <code class="language-plaintext highlighter-rouge">balance-rr</code> + BBR would probably suffice for optimizing single-stream transmission speed, at the cost of some overhead on bandwidth.</p>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[My workstation in my univerity lab has consistently generated some 600&nbsp;TiB of annual upload across two PT sites. After an upgrade to the room a few months back, it received the most wanted upgrade for years: A second 1 Gbps line to the campus network. I immediately made the two NICs into one bonded 2 Gbps interface, and it has shined for many times with multiple popular torrents.]]></summary></entry><entry><title type="html">Manually resize Guild Chest in Palworld 0.6</title><link href="https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest/" rel="alternate" type="text/html" title="Manually resize Guild Chest in Palworld 0.6" /><published>2025-07-28T00:00:00+00:00</published><updated>2025-07-28T14:02:46+00:00</updated><id>https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest</id><content type="html" xml:base="https://ibug.io/blog/2025/07/palworld-0.6-resize-guild-chest/"><![CDATA[<p>The Guild Chest, first introduced in Feybreak Update, easily became the best way to move items between bases.
 		However, it only has 54 slots and is nowhere near enough for all the items you want to store.
 		For those who want to increase the size of the Guild Chest, especially in single player worlds, there’s a tutorial on how to do it manually:
 		<a href="https://www.nexusmods.com/palworld/mods/2419">Guild chest resizer after solo play started (Manual)</a>.</p>
@@ -3112,190 +3196,4 @@ Conntrack destroyed (IPv4): src=172.17.0.2 sport=39456 mark=0 proto=6
 	<p>As far as function inlining goes, there’s only one way <code class="language-plaintext highlighter-rouge">nf_nat_inet_fn</code> calls into <code class="language-plaintext highlighter-rouge">nf_ct_delete</code>, which is through <code class="language-plaintext highlighter-rouge">nf_ct_kill_acct</code>. And the only reason for that is <code class="language-plaintext highlighter-rouge">nf_nat_oif_changed</code>.</p>
 	<h2 id="conclusion">Conclusion</h2>
 	<p>Now everything makes sense. With a badly placed <code class="language-plaintext highlighter-rouge">ACCEPT</code> rule, the conntrack connection gets saved a different mark than desired, and then destroyed because subsequent packets are routed differently for having the wrong mark. The timestamp difference of related events also roughly matches up the distance of the code path. It also must be a NAT’ed connection, as this way of <code class="language-plaintext highlighter-rouge">nf_ct_delete</code> is only reachable when the packet is about to be sent to the egress interface.</p>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[I run a Debian-based software router on my home network. It’s connected to multiple ISPs, so I have some policy routing rules to balance the traffic between them. Some time ago, I noticed that the IPv4 connectivity got stuck intermittently when it didn’t use to, while IPv6 was working fine. It’s also interesting that the issue only happened with one specific ISP, in the egress direction, and only a few specific devices were affected.]]></summary></entry><entry><title type="html">Driving pppd with systemd</title><link href="https://ibug.io/blog/2024/07/pppd-with-systemd/" rel="alternate" type="text/html" title="Driving pppd with systemd" /><published>2024-07-07T00:00:00+00:00</published><updated>2024-07-16T01:25:55+00:00</updated><id>https://ibug.io/blog/2024/07/pppd-with-systemd</id><content type="html" xml:base="https://ibug.io/blog/2024/07/pppd-with-systemd/"><![CDATA[<p>I moved my soft router (Intel N5105, Debian) from school to home, and at home it’s behind an ONU on bridge mode, so it’ll have to do PPPoE itself.</p>
-	<p>Getting started with PPPoE on Debian is exactly the same as on Ubuntu: Install <code class="language-plaintext highlighter-rouge">pppoeconf</code> and run <code class="language-plaintext highlighter-rouge">pppoeconf</code>, then fill in the DSL username and password. Then I can see <code class="language-plaintext highlighter-rouge">ppp0</code> interface up and working.</p>
-	<p>However, as I use <code class="language-plaintext highlighter-rouge">systemd-networkd</code> on my router while <code class="language-plaintext highlighter-rouge">pppd</code> appears to bundle ifupdown, I’ll have to fix everything needed for <code class="language-plaintext highlighter-rouge">pppd</code> to work with systemd-networkd.</p>
-	<h2 id="systemd-service">Systemd service</h2>
-	<p>The first thing is to get it to start at boot. Looking through Google, a <a href="https://gist.github.com/rany2/330c8fe202b318cacdcb54830c20f98c">Gist</a> provides the exact systemd service file I need. After copying it to <code class="language-plaintext highlighter-rouge">/etc/systemd/system/ppp@.service</code>, I tried to start it with <code class="language-plaintext highlighter-rouge">systemctl start pppd@dsl-provider</code>. It seems like there’s a misconfiguration:</p>
-	<div class="language-text highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>/usr/sbin/pppd: Can't open options file /etc/ppp/peers/dsl/provider: No such file or directory
-</code></pre>
-		</div>
-	</div>
-	<p>The instance name is surely <code class="language-plaintext highlighter-rouge">dsl-provider</code> and not <code class="language-plaintext highlighter-rouge">dsl/provider</code>, so I look more closely at the service file.</p>
-	<div class="language-ini highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="nn">[...]</span><span class="w">
-</span><span class="py">Description</span><span class="p">=</span><span class="s">PPP connection for %I</span>
-<span class="nn">[...]</span><span class="w">
-</span><span class="py">ExecStart</span><span class="p">=</span><span class="s">/usr/sbin/pppd up_sdnotify nolog call %I</span>
-</code></pre>
-		</div>
-	</div>
-	<p>The systemd man page <a href="https://www.freedesktop.org/software/systemd/man/latest/systemd.unit.html"><code class="language-plaintext highlighter-rouge">systemd.unit(5)</code></a> says:</p>
-	<blockquote>
-		<table>
-			<thead>
-				<tr>
-					<th>Specifier</th>
-					<th>Meaning</th>
-					<th>Details</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>“%i”</td>
-					<td>Instance name</td>
-					<td>For instantiated units this is the string between the first “@” character and the type suffix. Empty for non-instantiated units.</td>
-				</tr>
-				<tr>
-					<td>“%I”</td>
-					<td>Unescaped instance name</td>
-					<td>Same as “%i”, but with escaping undone.</td>
-				</tr>
-			</tbody>
-		</table>
-	</blockquote>
-	<p>Fair enough, let’s change <code class="language-plaintext highlighter-rouge">%I</code> to <code class="language-plaintext highlighter-rouge">%i</code> and try starting <code class="language-plaintext highlighter-rouge">pppd@dsl-provider</code> again.</p>
-	<h2 id="systemd-networkd">systemd-networkd</h2>
-	<p>Now that <code class="language-plaintext highlighter-rouge">ppp0</code> is up, time to configure routes and routing rules with <code class="language-plaintext highlighter-rouge">systemd-networkd</code>. I created a file <code class="language-plaintext highlighter-rouge">/etc/systemd/network/10-ppp0.network</code>.</p>
-	<div class="language-ini highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="nn">[Match]</span><span class="w">
-</span><span class="py">Name</span><span class="p">=</span><span class="s">ppp0</span>
-<span class="w">
-</span><span class="nn">[Network]</span><span class="w">
-</span><span class="py">DHCP</span><span class="p">=</span><span class="s">yes</span>
-<span class="c"># ...
-</span></code></pre>
-		</div>
-	</div>
-	<p>After restarting systemd-networkd, I was disappointed to see the PPP-negotiated IP address removed, only leaving an SLAAC IPv6 address behind. With some searching through <code class="language-plaintext highlighter-rouge">systemd.network(5)</code>, I found <code class="language-plaintext highlighter-rouge">KeepConfiguration=yes</code> was what I was looking for.</p>
-	<h2 id="start-order">Start order</h2>
-	<p>One problem still remains: At the time systemd-networkd starts, <code class="language-plaintext highlighter-rouge">ppp0</code> is not yet up, and systemd-networkd simply skips its configuration. A solution seems trivial:</p>
-	<div class="language-ini highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="c"># systemctl edit pppd@dsl-provider
-</span><span class="nn">[Unit]</span><span class="w">
-</span><span class="py">Before</span><span class="p">=</span><span class="s">systemd-networkd.service</span>
-</code></pre>
-		</div>
-	</div>
-	<p>… except it doesn’t seem to have any effect.</p>
-	<p>I wouldn’t bother digging into pppd, so I look around for something analogous to ifupdown’s <code class="language-plaintext highlighter-rouge">up</code> script, which is <code class="language-plaintext highlighter-rouge">/etc/ppp/ip-up.d/</code>. So I could just drop another script to notify systemd-networkd.</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="c"># /etc/ppp/ip-up.d/1systemd-networkd</span>
-<span class="c">#!/bin/sh</span>
-
-networkctl reconfigure <span class="s2">"</span><span class="nv">$PPP_IFACE</span><span class="s2">"</span>
-</code></pre>
-		</div>
-	</div>
-	<p>I also noticed that when bringing in ifupdown, the <code class="language-plaintext highlighter-rouge">pppoeconf</code>-created config looks like this:</p>
-	<div class="language-shell highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>auto dsl-provider
-iface dsl-provider inet ppp
-    pre-up /bin/ip <span class="nb">link set </span>enp3s0 up <span class="c"># line maintained by pppoeconf</span>
-    provider dsl-provider
-</code></pre>
-		</div>
-	</div>
-	<p>So to maintain behavioral compatibility, I configured the systemd service like this:</p>
-	<div class="language-ini highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="c"># systemctl edit pppd@dsl-provider
-</span><span class="nn">[Unit]</span><span class="w">
-</span><span class="py">BindsTo</span><span class="p">=</span><span class="s">sys-subsystem-net-devices-enp3s0.device</span>
-<span class="py">After</span><span class="p">=</span><span class="s">sys-subsystem-net-devices-enp3s0.device</span>
-</code></pre>
-		</div>
-	</div>
-	<p>After multiple reboots and manual restarts of <code class="language-plaintext highlighter-rouge">pppd@dsl-provider.service</code>, I’m convinced that this is a reliable solution.</p>
-	<h2 id="extra">Extra: IPv6 PD</h2>
-	<p>As the home ISP provides IPv6 Prefix Delegation (but my school didn’t), it would be nice to take it and distribute it to the LAN. Online tutorials are abundant, e.g. <a href="https://major.io/p/dhcpv6-prefix-delegation-with-systemd-networkd/" rel="nofollow noopener">this one</a>. With everything set supposedly up, I was again disappointed to see only a single SLAAC IPv6 address on <code class="language-plaintext highlighter-rouge">ppp0</code> itself, and <code class="language-plaintext highlighter-rouge">journalctl -eu systemd-networkd</code> shows no sign of receiving a PD allocation.</p>
-	<p>After poking around with <code class="language-plaintext highlighter-rouge">IPv6AcceptRA=</code> and <code class="language-plaintext highlighter-rouge">[DHCPv6] PrefixDelegationHint=</code> settings for a while, I decided to capture some packets for investigation. I started <code class="language-plaintext highlighter-rouge">tcpdump -i ppp0 -w /tmp/ppp0.pcap icmp6 or udp port 546</code> and restarted <code class="language-plaintext highlighter-rouge">systemd-networkd</code>. After a few seconds, the pcap file contains exactly 4 packets that I need (some items omitted for brevity):</p>
-	<div class="language-markdown highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="p">-</span> ICMPv6: Router Solicitation from 00:00:00:00:00:00
-<span class="p">-</span> ICMPv6: Router Advertisement from 00:00:5e:00:01:99
-<span class="p">  -</span> Flags: 0x40 (only O)
-<span class="p">  -</span> ICMPv6 Option: Prefix information (2001:db8::/64)
-<span class="p">    -</span> Flags: L + A
-<span class="p">-</span> DHCPv6: Information-request XID: 0x8bf4f0 CID: 00020000ab11503f79e54f10745d
-<span class="p">  -</span> Option Request
-<span class="p">    -</span> Option: Option Request (6)
-<span class="p">    -</span> Length: 10
-<span class="p">    -</span> Requested Option code: DNS recursive name server (23)
-<span class="p">    -</span> Requested Option code: Simple Network Time Protocol Server (31)
-<span class="p">    -</span> Requested Option code: Lifetime (32)
-<span class="p">    -</span> Requested Option code: NTP Server (56)
-<span class="p">    -</span> Requested Option code: INF_MAX_RT (83)
-<span class="p">-</span> DHCPv6: Reply XID: 0x8bf4f0 CID: 00020000ab11503f79e54f10745d
-</code></pre>
-		</div>
-	</div>
-	<p>Clearly the client isn’t even requesting a PD allocation with <code class="language-plaintext highlighter-rouge">PrefixDelegationHint=</code> set. With some more Google-ing, I added <code class="language-plaintext highlighter-rouge">[DHCPv6] WithoutRA=solicit</code> to <code class="language-plaintext highlighter-rouge">10-ppp0.network</code> and restarted <code class="language-plaintext highlighter-rouge">systemd-networkd</code>. There are 6 packets, but the order appears a little bit off:</p>
-	<div class="language-markdown highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code><span class="p">-</span> Solicit XID: 0x2bc2aa CID: 00020000ab11503f79e54f10745d
-<span class="p">-</span> Advertise XID: 0x2bc2aa CID: 00020000ab11503f79e54f10745d
-<span class="p">-</span> Request XID: 0xf8c1dd CID: 00020000ab11503f79e54f10745d
-<span class="p">  -</span> Identity Association for Prefix Delegation
-<span class="p">-</span> Reply XID: 0xf8c1dd CID: 00020000ab11503f79e54f10745d
-<span class="p">-</span> Router Solicitation from 00:00:00:00:00:00
-<span class="p">-</span> Router Advertisement from 00:00:5e:00:01:99
-</code></pre>
-		</div>
-	</div>
-	<p>This time DHCP request comes <em>before</em> the RS/RA pair, which is not what I expected. But at least it’s now requesting a PD prefix.</p>
-	<p>Then I found <a href="https://unix.stackexchange.com/a/715025/211239">this answer</a> straight to the point, summarized as:</p>
-	<ul>
-		<li>The “managed” (M) flag indicates the client should acquire an address via DHCPv6, and triggers DHCPv6 Solicit and Request messages.</li>
-		<li>The “other” (O) flag indicates the client should do SLAAC while acquiring other configuration information via DHCPv6, and triggers DHCPv6 Information-request messages.</li>
-		<li>When both flags are present, the O flag is superseded by the M flag and has no effect.</li>
-	</ul>
-	<p>So systemd-networkd is implementing everything correctly, and I should configure systemd-networkd to always send Solicit messages regardless of the RA flags received. This is done by setting <code class="language-plaintext highlighter-rouge">[IPv6AcceptRA] DHCPv6Client=always</code></p>
-	<p>Now with every detail understood, after a restart of <code class="language-plaintext highlighter-rouge">systemd-networkd</code>, I finally see the PD prefix allocated:</p>
-	<div class="language-text highlighter-rouge">
-		<div class="highlight">
-			<pre class="highlight"><code>systemd-networkd[528]: ppp0: DHCP: received delegated prefix 2001:db8:0:a00::/60
-systemd-networkd[528]: enp1s0: DHCP-PD address 2001:db8:0:a00:2a0:c9ff:feee:c4b/64 (valid for 2d 23h 59min 59s, preferred for 1d 23h 59min 59s)
-systemd-networkd[528]: enp2s0: DHCP-PD address 2001:db8:0:a01:2a0:c9ff:feee:c4c/64 (valid for 2d 23h 59min 59s, preferred for 1d 23h 59min 59s)
-</code></pre>
-		</div>
-	</div>
-	<h2 id="update-1">Update: Stuck booting</h2>
-	<p>A few days after this blog post, my local ISP ran into an outage that rendered the PPPoE connection unoperational.
-		When I couldn’t identify the issue initially, I tried rebooting the router and it never came back up again.
-		I plugged in a monitor and a keyboard, only to find systemd repeatedly trying to bring up <code class="language-plaintext highlighter-rouge">pppd@dsl-provider.service</code> when it would not succeed.
-		The failure to start <code class="language-plaintext highlighter-rouge">pppd</code> resulted in complete unavailability of the network stack.</p>
-	<p>I recalled that with OpenWRT this wasn’t the case, as the PPPoE interface being down would not impact any other interfaces.
-		So I ended up removing all dependencies on <code class="language-plaintext highlighter-rouge">pppd@.service</code>, making it an ordinary system service that’s only <code class="language-plaintext highlighter-rouge">WantedBy=multi-user.target</code>.
-		Considering that pppd will call <code class="language-plaintext highlighter-rouge">networkctl reconfigure</code> when it establishes the <code class="language-plaintext highlighter-rouge">ppp0</code> interface, the removal of systemd dependences shouldn’t have any consequences.</p>
-	<h2 id="sum-up">Sum up</h2>
-	<ul>
-		<li>Use systemd to start <code class="language-plaintext highlighter-rouge">pppd</code> as a system service.
-			<ul>
-				<li>No need to bother with ordering.</li>
-			</ul>
-		</li>
-		<li>Add <code class="language-plaintext highlighter-rouge">KeepConfiguration=yes</code> to <code class="language-plaintext highlighter-rouge">ppp0.network</code>.</li>
-		<li>Use a custom script in <code class="language-plaintext highlighter-rouge">ip-up.d</code> to invoake systemd-networkd to reconfigure after it’s up.</li>
-		<li>
-			<p>For IPv6 PD, use both:</p>
-			<div class="language-ini highlighter-rouge">
-				<div class="highlight">
-					<pre class="highlight"><code><span class="nn">[DHCPv6]</span><span class="w">
-</span><span class="py">PrefixDelegationHint</span><span class="p">=</span><span class="s">::/60</span>
-<span class="w">
-</span><span class="nn">[IPv6AcceptRA]</span><span class="w">
-</span><span class="py">DHCPv6Client</span><span class="p">=</span><span class="s">always</span>
-</code></pre>
-				</div>
-    </div>
-		</li>
-	</ul>
-	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[I moved my soft router (Intel N5105, Debian) from school to home, and at home it’s behind an ONU on bridge mode, so it’ll have to do PPPoE itself.]]></summary></entry></feed>
+	]]></content><author><name>iBug</name></author><category term="linux" /><category term="networking" /><summary type="html"><![CDATA[I run a Debian-based software router on my home network. It’s connected to multiple ISPs, so I have some policy routing rules to balance the traffic between them. Some time ago, I noticed that the IPv4 connectivity got stuck intermittently when it didn’t use to, while IPv6 was working fine. It’s also interesting that the issue only happened with one specific ISP, in the egress direction, and only a few specific devices were affected.]]></summary></entry></feed>
